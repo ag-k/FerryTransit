@@ -34,17 +34,17 @@
                     {{departure|translate}}<span class="caret"></span>
                   </button>
                   <ul class="dropdown-menu" uib-dropdown-menu role="menu" aria-labelledby="single-button">
-                    <li class="groupname">{{'本土'|translate}}</li>
+                    <li class="groupname">{{'MAINLAND'|translate}}</li>
                     <li role="menuitem">
                       <a href="#" ng-click="changeTransitDeparture(port)" ng-repeat="port in hondoPorts">{{port|translate}}</a>
                     </li>
                     <li class="divider"></li>
-                    <li class="groupname">{{'島前'|translate}}</li>
+                    <li class="groupname">{{'DOZEN'|translate}}</li>
                     <li role="menuitem">
                       <a href="#" ng-click="changeTransitDeparture(port)" ng-repeat="port in dozenPorts">{{port|translate}}</a>
                     </li>
                     <li class="divider"></li>
-                    <li class="groupname">{{'島後'|translate}}</li>
+                    <li class="groupname">{{'DOGO'|translate}}</li>
                     <li role="menuitem">
                       <a href="#" ng-click="changeTransitDeparture(port)" ng-repeat="port in dogoPorts">{{port|translate}}</a>
                     </li>
@@ -57,17 +57,17 @@
                     {{arrival|translate}}<span class="caret"></span>
                   </button>
                   <ul class="dropdown-menu" uib-dropdown-menu role="menu" aria-labelledby="single-button">
-                    <li class="groupname">{{'本土'|translate}}</li>
+                    <li class="groupname">{{'MAINLAND'|translate}}</li>
                     <li role="menuitem">
                       <a href="#" ng-click="changeTransitArrival(port)" ng-repeat="port in hondoPorts">{{port|translate}}</a>
                     </li>
                     <li class="divider"></li>
-                    <li class="groupname">{{'島前'|translate}}</li>
+                    <li class="groupname">{{'DOZEN'|translate}}</li>
                     <li role="menuitem">
                       <a href="#" ng-click="changeTransitArrival(port)" ng-repeat="port in dozenPorts">{{port|translate}}</a>
                     </li>
                     <li class="divider"></li>
-                    <li class="groupname">{{'島後'|translate}}</li>
+                    <li class="groupname">{{'DOGO'|translate}}</li>
                     <li role="menuitem">
                       <a href="#" ng-click="changeTransitArrival(port)" ng-repeat="port in dogoPorts">{{port|translate}}</a>
                     </li>
@@ -84,8 +84,8 @@
                 <div class="row">
                   <div class="col-md-12">
                     <div class="btn-group">
-                      <label class="btn btn-success" ng-model="daytimeModel" ng-click="selectDepartureTime()" uib-btn-radio="'departureTime'">{{'DEPARTURE_TIME'|translate}}</label>
-                      <label class="btn btn-success" ng-model="daytimeModel" ng-click="selectArrivalTime()" uib-btn-radio="'arrivalTime'">{{'ARRIVAL_TIME'|translate}}</label>
+                      <label class="btn btn-primary" ng-model="daytimeModel" ng-click="selectDepartureTime()" uib-btn-radio="'departureTime'">{{'DEPARTURE_TIME'|translate}}</label>
+                      <label class="btn btn-primary" ng-model="daytimeModel" ng-click="selectArrivalTime()" uib-btn-radio="'arrivalTime'">{{'ARRIVAL_TIME'|translate}}</label>
                     </div>
                   </div>
                 </div>

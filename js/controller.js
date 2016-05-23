@@ -40,13 +40,13 @@ function mainCtrl($scope, $http, SharedStateService, $filter) {
         //console.log('Dropdown is now: ', open);
     };
     $scope.hondoPorts = [
-        "境港", "七類"
+        "SAKAIMINATO", "SHICHIRUI"
     ];
     $scope.dozenPorts = [
-        "来居", "別府", "菱浦"
+        "KURI", "BEPPU", "HISHIURA"
     ];
     $scope.dogoPorts = [
-        "西郷"
+        "SAIGO"
     ];
     $scope.filteredTimetable = null;
     $scope.changeTransitDeparture = function (name) {
@@ -322,18 +322,18 @@ function mainCtrl($scope, $http, SharedStateService, $filter) {
         }
         var getPrice = function (name, departure, arrival) {
             var isDogo = function (port) {
-                return (port == '西郷');
+                return (port == 'SAIGO');
             };
             var isDozen = function (port) {
-                return ((port == '来居') || (port == '別府') || (port == '菱浦'));
+                return ((port == 'KURI') || (port == 'BEPPU') || (port == 'HISHIURA'));
             };
             var isMainland = function (port) {
-                return ((port == '境港') || (port == '七類'));
+                return ((port == 'SAKAIMINATO') || (port == 'SHICHIRUI'));
             };
-            if ((name == 'フェリーおき') || (name == 'フェリーしらしま') || (name == 'フェリーくにが')) {
+            if ((name == 'FERRY_OKI') || (name == 'FERRY_SHIRASHIMA') || (name == 'FERRY_KUNIGA')) {
                 if (isDozen(departure)) {
                     if (isDozen(arrival)) {
-                        if ((departure == '来居') || (arrival == '来居')) {
+                        if ((departure == 'KURI') || (arrival == 'KURI')) {
                             return 640;
                         }
                         else {
@@ -373,7 +373,7 @@ function mainCtrl($scope, $http, SharedStateService, $filter) {
                     console.error("Invalid 'departure'");
                 }
             }
-            else if (name == 'レインボージェット') {
+            else if (name == 'RAINBOWJET') {
                 if (isDozen(departure)) {
                     if (isDozen(arrival)) {
                         return 340;
@@ -406,7 +406,7 @@ function mainCtrl($scope, $http, SharedStateService, $filter) {
                     console.error("Invalid 'departure'");
                 }
             }
-            else if ((name == 'いそかぜ') || (name == 'フェリーどうぜん')) {
+            else if ((name == 'ISOKAZE') || (name == 'FERRY_DOZEN')) {
                 return 300;
             }
             else {
@@ -562,24 +562,24 @@ app.config(['$translateProvider', function ($translateProvider) {
             'TODAY': '今日',
             'CLEAR': '削除',
             'CLOSE': '閉じる',
-            '七類': '七類(松江市)',
-            '境港': '境港(境港市)',
-            '来居': '来居(知夫村)',
-            '別府': '別府(西ノ島町)',
-            '菱浦': '菱浦(海士町)',
-            '西郷': '西郷(隠岐の島町)',
-            '本土': '本土',
-            '島前': '島前',
-            '島後': '島後',
-            'フェリーおき': 'フェリーおき',
-            'フェリーしらしま': 'フェリーしらしま',
-            'フェリーくにが': 'フェリーくにが',
-            'フェリーどうぜん': 'フェリーどうぜん(内航船)',
-            'いそかぜ': 'いそかぜ(内航船)',
-            'レインボージェット': 'レインボージェット'
+            'SHICHIRUI': '七類(松江市)',
+            'SAKAIMINATO': '境港(境港市)',
+            'KURI': '来居(知夫村)',
+            'BEPPU': '別府(西ノ島町)',
+            'HISHIURA': '菱浦(海士町)',
+            'SAIGO': '西郷(隠岐の島町)',
+            'MAINLAND': '本土',
+            'DOZEN': '島前',
+            'DOGO': '島後',
+            'FERRY_OKI': 'フェリーおき',
+            'FERRY_SHIRASHIMA': 'フェリーしらしま',
+            'FERRY_KUNIGA': 'フェリーくにが',
+            'FERRY_DOZEN': 'フェリーどうぜん(内航船)',
+            'ISOKAZE': 'いそかぜ(内航船)',
+            'RAINBOWJET': 'レインボージェット'
         });
         $translateProvider.translations('en', {
-            'TITLE': 'Oki Islands Trip Planner',
+            'TITLE': 'Oki Islands Sea Line Information',
             'CURRENCY_UNIT': 'yen',
             'HOURS': 'hours',
             'MINUTES': 'mins',
@@ -605,21 +605,21 @@ app.config(['$translateProvider', function ($translateProvider) {
             'TODAY': 'Today',
             'CLEAR': 'Clear',
             'CLOSE': 'Close',
-            '七類': 'Shichirui',
-            '境港': 'Sakaiminato',
-            '来居': 'Kurī (Chibu)',
-            '別府': 'Beppu (Nishinoshima)',
-            '菱浦': 'Hishiura (Ama)',
-            '西郷': 'Saigō (Okinoshima)',
-            '本土': 'Mainland',
-            '島前': 'Dōzen',
-            '島後': 'Dōgo',
-            'フェリーおき': 'Ferry Oki',
-            'フェリーしらしま': 'Ferry Shirashima',
-            'フェリーくにが': 'Ferry Kuniga',
-            'フェリーどうぜん': 'Ferry Dōzen (Inter-Island Ship)',
-            'いそかぜ': 'Isokaze (Inter-Island Ship)',
-            'レインボージェット': 'Rainbow Jet (Fast Ferry)'
+            'SHICHIRUI': 'Shichirui',
+            'SAKAIMINATO': 'Sakaiminato',
+            'KURI': 'Kurī (Chibu)',
+            'BEPPU': 'Beppu (Nishinoshima)',
+            'HISHIURA': 'Hishiura (Ama)',
+            'SAIGO': 'Saigō (Okinoshima)',
+            'MAINLAND': 'Mainland',
+            'DOZEN': 'Dōzen',
+            'DOGO': 'Dōgo',
+            'FERRY_OKI': 'Ferry Oki',
+            'FERRY_SHIRASHIMA': 'Ferry Shirashima',
+            'FERRY_KUNIGA': 'Ferry Kuniga',
+            'FERRY_DOZEN': 'Ferry Dōzen (Inter-Island Ferry)',
+            'ISOKAZE': 'Isokaze (Inter-Island Ferry)',
+            'RAINBOWJET': 'Rainbow Jet (Fast Ferry)'
         });
         $translateProvider.determinePreferredLanguage(function () {
             // define a function to determine the language
