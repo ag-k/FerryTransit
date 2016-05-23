@@ -460,7 +460,7 @@ function mainCtrl($scope, $http, SharedStateService, $filter) {
         }
 
         var duration = (route.arrival_time.getTime() - route.departure_time.getTime()) / 1000 / 60;
-        var hours = Math.round(duration / 60);
+        var hours = Math.floor(duration / 60);
         var minutes = duration % 60;
         tempResults.push({
           time: ((hours > 0) ? hours + $filter('translate')('HOURS') : "") + " " + minutes + $filter('translate')('MINUTES'), //所要時間
