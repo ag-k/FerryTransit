@@ -21,7 +21,7 @@ function mainCtrl($scope, $http, SharedStateService, $filter) {
       $scope.rawTimetable = res.data;
 
       angular.forEach($scope.rawTimetable, function(value, key) {
-        var dateStr = $filter('date')($scope.data.date, 'yyyy/MM/dd/', '+0900');
+        var dateStr = $filter('date')($scope.data.date, 'yyyy/MM/dd ', '+0900');
 
         value.departure_time = new Date(dateStr + value.departure_time + ':00');
         value.arrival_time = new Date(dateStr + value.arrival_time + ':00');
@@ -480,7 +480,7 @@ function mainCtrl($scope, $http, SharedStateService, $filter) {
 
       //検索結果が0件だった場合にアラートを表示
     });
-
+    console.log($scope.searchResults);
 /*
     { time: "8:30", port: "別府港(西ノ島町)", price: ""},
     { time: "20分", port: "いそかぜ", price: "300円"},
@@ -510,9 +510,6 @@ function datePickerCtrl($scope, SharedStateService) {
     customClass: getDayClass,
     minDate: new Date(),
     showWeeks: false,
-    currentText: '今日',
-    clearText: 'クリア',
-    closeText: '閉じる'
   };
 
   $scope.dateOptions = {

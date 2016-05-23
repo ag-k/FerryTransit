@@ -82,16 +82,16 @@
               </div>
               <div class="panel-body">
                 <div class="row">
-                  <div class="col-md-3">
+                  <div class="col-md-12">
                     <div class="btn-group">
                       <label class="btn btn-success" ng-model="daytimeModel" ng-click="selectDepartureTime()" uib-btn-radio="'departureTime'">{{'DEPARTURE_TIME'|translate}}</label>
                       <label class="btn btn-success" ng-model="daytimeModel" ng-click="selectArrivalTime()" uib-btn-radio="'arrivalTime'">{{'ARRIVAL_TIME'|translate}}</label>
                     </div>
                   </div>
                 </div>
-                <br><br>
+                <br>
                 <div class="row">
-                  <div class="col-md-3">
+                  <div class="col-md-12">
                     <p class="input-group" ng-controller="datePickerCtrl as datePicker">
                       <input type="text" class="form-control" uib-datepicker-popup="{{format}}" ng-model="data.date" is-open="popup1.opened" datepicker-options="dateOptions" ng-required="true" current-text="{{'TODAY'|translate}}" clear-text="{{'CLEAR'|translate}}" close-text="{{'CLOSE'|translate}}" alt-input-formats="altInputFormats" />
                       <span class="input-group-btn">
@@ -99,14 +99,12 @@
                       </span>
                     </p>
                   </div>
-                  <div class="col-md-3">
-                    <uib-timepicker ng-model="data.date" ng-change="timeChanged()" hour-step="hstep" minute-step="mstep" show-meridian="ismeridian"></uib-timepicker>
+                  <div class="col-md-12">
+                    <input type="time" class="form-control visible-xs-block" ng-model="data.date" ng-change="timeChanged()"/>
+                    <div class="hidden-xs">
+                      <uib-timepicker ng-model="data.date" ng-change="timeChanged()" hour-step="hstep" minute-step="mstep" show-meridian="ismeridian"></uib-timepicker>
+                    </div>
                   </div>
-<!--
-                  <div class='col-md-6' ng-controller='TimePickerPopController as timePickerPopCtrl'>
-                    <timepicker-pop input-time="time1" class="input-group" show-meridian='showMeridian'></timepicker-pop>
-                  </div>
--->
                 </div>
               </div>
             </div>
