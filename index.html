@@ -191,15 +191,15 @@
                   </button>
                   <ul class="dropdown-menu" uib-dropdown-menu role="menu" aria-labelledby="single-button">
                     <li role="menuitem">
-                      <a href="#" ng-click="changeTimetableArrival(port)" ng-repeat="port in hondoPorts">{{port}}</a>
+                      <a href="#" ng-click="changeTimetableArrival(port)" ng-repeat="port in hondoPorts">{{port|translate}}</a>
                     </li>
                     <li class="divider"></li>
                     <li role="menuitem">
-                      <a href="#" ng-click="changeTimetableArrival(port)" ng-repeat="port in dozenPorts">{{port}}</a>
+                      <a href="#" ng-click="changeTimetableArrival(port)" ng-repeat="port in dozenPorts">{{port|translate}}</a>
                     </li>
                     <li class="divider"></li>
                     <li role="menuitem">
-                      <a href="#" ng-click="changeTimetableArrival(port)" ng-repeat="port in dogoPorts">{{port}}</a>
+                      <a href="#" ng-click="changeTimetableArrival(port)" ng-repeat="port in dogoPorts">{{port|translate}}</a>
                     </li>
                   </ul>
                 </div>
