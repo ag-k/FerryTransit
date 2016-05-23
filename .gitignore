@@ -1,0 +1,8 @@
+*.csv
+*.zip
+note_modules
+dist
+.tmp
+.sass-cache
+bower_components
+typings
