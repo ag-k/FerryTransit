@@ -3,11 +3,11 @@
 <html ng-app = 'ferryTransit'>
   <head>
     <link rel="stylesheet" type="text/css" href="./bower_components/bootstrap/dist/css/bootstrap.min.css">
-    <script type="text/javascript" src="./bower_components/angular/angular.js"></script>
+    <script type="text/javascript" src="./bower_components/angular/angular.min.js"></script>
     <script type="text/javascript" src="./bower_components/angular-i18n/angular-locale_ja.js"></script>
-    <script type="text/javascript" src="./bower_components/angular-bootstrap/ui-bootstrap-tpls.js"></script>
-    <script type="text/javascript" src="./bower_components/angular-filter/dist/angular-filter.js"></script>
-    <script type="text/javascript" src="./bower_components/angular-translate/angular-translate.js"></script>
+    <script type="text/javascript" src="./bower_components/angular-bootstrap/ui-bootstrap-tpls.min.js"></script>
+    <script type="text/javascript" src="./bower_components/angular-filter/dist/angular-filter.min.js"></script>
+    <script type="text/javascript" src="./bower_components/angular-translate/angular-translate.min.js"></script>
     <script type="text/javascript" src="./js/controller.js"></script>
     <meta name="viewport" content="width=device-width,initial-scale=1.0,minimum-scale=1.0,maximum-scale=1.0,user-scalable=no">
   </head>
@@ -51,6 +51,7 @@
                   </ul>
                 </div>
                 <label>{{ 'FROM_' | translate }}</label>
+                <br>
                 <label>{{ '_TO' | translate }}</label>
                 <div class="btn-group" uib-dropdown is-open="status.arrivalIsOpen">
                   <button id="single-button" type="button" class="btn btn-primary" uib-dropdown-toggle ng-disabled="disabled">
@@ -129,6 +130,7 @@
             -->
             <button type="button" class="btn btn-primary btn-lg btn-block" ng-click="searchRoute()">{{'SEARCH_ROUTE'|translate}}</button>
             <br>
+            <uib-alert ng-repeat="alert in alerts" type="{{alert.type}}" close="closeAlert($index)">{{alert.msg}}</uib-alert>
             <div class="panel panel-primary" ng-repeat="result in searchResults">
               <div class="panel-heading">
                 <h2 class="panel-title">{{'ROUTE' | translate}}{{$index+1}}</h2>
@@ -184,6 +186,7 @@
                   </ul>
                 </div>
                 <label>{{'FROM_' | translate}}</label>
+                <br>
                 <label>{{'_TO' | translate}}</label>
                 <div class="btn-group" uib-dropdown is-open="status.tableArrivalIsOpen">
                   <button id="single-button" type="button" class="btn btn-primary" uib-dropdown-toggle ng-disabled="disabled">

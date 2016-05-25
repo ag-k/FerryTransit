@@ -3,6 +3,11 @@
 function mainCtrl($scope, $http, SharedStateService, $filter) {
   const MAX_NEXT_CHAIN = 5;
 
+  $scope.alerts = [];
+  $scope.closeAlert = function(index) {
+      $scope.alerts.splice(index, 1);
+  };
+
   //時刻入力
   $scope.hstep = 1;
   $scope.mstep = 15;
@@ -17,16 +22,26 @@ function mainCtrl($scope, $http, SharedStateService, $filter) {
   $scope.departure = $filter('translate')('DEPARTURE');
   $scope.arrival = $filter('translate')('ARRIVAL');
 
-  $http.get('timetable.php').then(function(res) {
-      $scope.rawTimetable = res.data;
+  var restoreDateObjects = function() {
+    //JSONでシリアライズされた日付をDateオブジェクトに復元
+    angular.forEach($scope.rawTimetable, function(value, key) {
+      var dateStr = $filter('date')($scope.data.date, 'yyyy/MM/dd ', '+0900');
+      value.departure_time = new Date(dateStr + value.departure_time + ':00');
+      value.arrival_time = new Date(dateStr + value.arrival_time + ':00');
+    });
+  }
 
-      angular.forEach($scope.rawTimetable, function(value, key) {
-        var dateStr = $filter('date')($scope.data.date, 'yyyy/MM/dd ', '+0900');
-
-        value.departure_time = new Date(dateStr + value.departure_time + ':00');
-        value.arrival_time = new Date(dateStr + value.arrival_time + ':00');
-      });
+  $http.get('http://naturebot-lab.com/ferry_transit/timetable.php').then(function(res) {
+    $scope.rawTimetable = res.data;
+    localStorage.setItem('rawTimetable', JSON.stringify($scope.rawTimetable));
+    restoreDateObjects();
+  }, function(res) {
+    //Error handling
+    console.log("Failed to get timetable.");
+    $scope.rawTimetable = JSON.parse(localStorage.getItem('rawTimetable'));
+    restoreDateObjects();
   });
+
 
   $scope.ismeridian = false;
   $scope.toggleMode = function() {
@@ -436,6 +451,13 @@ function mainCtrl($scope, $http, SharedStateService, $filter) {
       return 0;
     }
 
+    //検索結果が0件だった場合にアラートを表示
+    if (results.length > 0) {
+      $scope.alerts = [];
+    } else {
+      $scope.alerts.push({msg: $filter('translate')('NO_RESULT_ERROR')});
+    }
+
     //View 用にコンバート
     $scope.searchResults = [];
     angular.forEach(results, function(result, index) {
@@ -477,18 +499,7 @@ function mainCtrl($scope, $http, SharedStateService, $filter) {
       });
 
       $scope.searchResults.push(tempResults);
-
-      //検索結果が0件だった場合にアラートを表示
     });
-    console.log($scope.searchResults);
-/*
-    { time: "8:30", port: "別府港(西ノ島町)", price: ""},
-    { time: "20分", port: "いそかぜ", price: "300円"},
-    { time: "8:50 - 9:00", port: "菱浦港(海士町)", price: ""},
-    { time: "15分", port: "どうぜん", price: "300円"},
-    { time: "9:00", port: "来居港(知夫村)", price: ""},
-*/
-
   }
 }
 
@@ -621,7 +632,8 @@ app.config(['$translateProvider', function ($translateProvider) {
     'FERRY_KUNIGA': 'フェリーくにが',
     'FERRY_DOZEN': 'フェリーどうぜん(内航船)',
     'ISOKAZE': 'いそかぜ(内航船)',
-    'RAINBOWJET': 'レインボージェット'
+    'RAINBOWJET': 'レインボージェット',
+    'NO_RESULT_ERROR': '条件に一致する経路がありません。'
   });
 
   $translateProvider.translations('en', {
@@ -634,8 +646,8 @@ app.config(['$translateProvider', function ($translateProvider) {
     'FARE': 'Fare',
     'DEPARTURE': 'Departure',
     'ARRIVAL': 'Arrival',
-    'DEPARTURE_TIME': 'Departure Time',
-    'ARRIVAL_TIME': 'Arrival Time',
+    'DEPARTURE_TIME': 'Depart at',
+    'ARRIVAL_TIME': 'Arrive by',
     'TIMETABLE': 'Timetable',
     'TRANSIT': 'Transit',
     'DATE': 'Date',
@@ -665,7 +677,8 @@ app.config(['$translateProvider', function ($translateProvider) {
     'FERRY_KUNIGA': 'Ferry Kuniga',
     'FERRY_DOZEN': 'Ferry Dōzen (Inter-Island Ferry)',
     'ISOKAZE': 'Isokaze (Inter-Island Ferry)',
-    'RAINBOWJET': 'Rainbow Jet (Fast Ferry)'
+    'RAINBOWJET': 'Rainbow Jet (Fast Ferry)',
+    'NO_RESULT_ERROR': 'No Routes have been found.'
   });
 
   $translateProvider.determinePreferredLanguage(function () {
