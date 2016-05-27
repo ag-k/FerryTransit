@@ -154,16 +154,6 @@ function mainCtrl($scope, $http, SharedStateService, $filter, $location, $anchor
         }
       }
 
-      if ($scope.arrival === "HONDO") {
-        if (trip.arrival === "HONDO_SHICHIRUI") {
-          arrival = "TIMETABLE_SUP_SHICHIRUI";
-        } else if (trip.arrival === "HONDO_SAKAIMINATO") {
-          arrival = "TIMETABLE_SUP_SAKAIMINATO";
-        } else {
-          arrival = "";
-        }
-      }
-
       if (trip.next_id != "") {
         var getNextTrip = function(srcTimetable, nextId) {
           var trips = $filter("filter")(srcTimetable, {trip_id:nextId}, true);
@@ -176,7 +166,29 @@ function mainCtrl($scope, $http, SharedStateService, $filter, $location, $anchor
           if (nextTrip != null) {
             //出発地を経由するパスは省く
             if (nextTrip.departure == trip.departure) break;
-            if (nextTrip.arrival == $scope.arrival) {
+
+            if ($scope.arrival === "HONDO") {
+              if ((nextTrip.arrival === "HONDO_SHICHIRUI")
+                  || (nextTrip.arrival === "HONDO_SAKAIMINATO")) {
+
+                if (nextTrip.arrival === "HONDO_SHICHIRUI") {
+                  arrival = "TIMETABLE_SUP_SHICHIRUI";
+                } else if (nextTrip.arrival === "HONDO_SAKAIMINATO") {
+                  arrival = "TIMETABLE_SUP_SAKAIMINATO";
+                } else {
+                  arrival = "";
+                }
+
+                resultTimetable.push({
+                  name: trip.name,
+                  departure: departure,
+                  departure_time: trip.departure_time,
+                  arrival: arrival,
+                  arrival_time: nextTrip.arrival_time
+                });
+                break;
+              }
+            } else if (nextTrip.arrival == $scope.arrival) {
               resultTimetable.push({
                 name: trip.name,
                 departure: departure,
@@ -185,10 +197,10 @@ function mainCtrl($scope, $http, SharedStateService, $filter, $location, $anchor
                 arrival_time: nextTrip.arrival_time
               });
               break;
-            } else {
-              if (nextTrip.next_id == "") break;
-              nextId = nextTrip.next_id;
             }
+            if (nextTrip.next_id == "") break;
+            nextId = nextTrip.next_id;
+
           } else {
             break;
           }
@@ -377,7 +389,7 @@ function mainCtrl($scope, $http, SharedStateService, $filter, $location, $anchor
           nextTimetable = $filter("omit")(nextTimetable, omitBeforeTime);
 
           //目的地でフィルタリング
-          var arrivedTimetable = $filter('filter')(nextTimetable, {arrival:$scope.arrival}, true);
+          var arrivedTimetable = $filter('filter')(nextTimetable, {arrival:$scope.arrival});
 
           //目的地に到達したルートを保存
           angular.forEach(arrivedTimetable, function(nextTrip, index) {
