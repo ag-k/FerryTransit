@@ -60,7 +60,7 @@ function mainCtrl($scope, $http, SharedStateService, $filter, $location, $anchor
         //console.log('Dropdown is now: ', open);
     };
     $scope.hondoPorts = [
-        "SAKAIMINATO", "SHICHIRUI"
+        "HONDO", "HONDO_SAKAIMINATO", "HONDO_SHICHIRUI"
     ];
     $scope.dozenPorts = [
         "KURI", "BEPPU", "HISHIURA"
@@ -84,26 +84,88 @@ function mainCtrl($scope, $http, SharedStateService, $filter, $location, $anchor
         //出発地でフィルタリング
         var departureTimetable = $filter("filter")(validTimetable, { departure: $scope.departure });
         //出発地と目的地が指定どおりのパスを抽出
-        var resultTimetable = $filter("filter")(departureTimetable, { arrival: $scope.arrival });
+        var onePathTimetable = $filter("filter")(departureTimetable, { arrival: $scope.arrival });
+        var resultTimetable = [];
+        if (($scope.departure === "HONDO") || ($scope.arrival === "HONDO")) {
+            angular.forEach(onePathTimetable, function (trip, index) {
+                var departure;
+                var arrival;
+                if (trip.departure === "HONDO_SHICHIRUI") {
+                    departure = "TIMETABLE_SUP_SHICHIRUI";
+                }
+                else if (trip.departure === "HONDO_SAKAIMINATO") {
+                    departure = "TIMETABLE_SUP_SAKAIMINATO";
+                }
+                else {
+                    departure = "";
+                }
+                if (trip.arrival === "HONDO_SHICHIRUI") {
+                    arrival = "TIMETABLE_SUP_SHICHIRUI";
+                }
+                else if (trip.arrival === "HONDO_SAKAIMINATO") {
+                    arrival = "TIMETABLE_SUP_SAKAIMINATO";
+                }
+                else {
+                    arrival = "";
+                }
+                resultTimetable.push({
+                    trip_id: trip.trip_id,
+                    name: trip.name,
+                    departure: departure,
+                    departure_time: trip.departure_time,
+                    arrival: arrival,
+                    arrival_time: trip.arrival_time
+                });
+            });
+        }
+        else {
+            resultTimetable.join(onePathTimetable);
+        }
         //有効なパスリストからすでに抽出済みのパスを削除
         departureTimetable = $filter("xor")(departureTimetable, resultTimetable, 'trip_id');
-        angular.forEach(departureTimetable, function (value, key) {
-            if (value.next_id != "") {
+        angular.forEach(departureTimetable, function (trip, index) {
+            var departure;
+            var arrival;
+            if ($scope.departure === "HONDO") {
+                if (trip.departure === "HONDO_SHICHIRUI") {
+                    departure = "TIMETABLE_SUP_SHICHIRUI";
+                }
+                else if (trip.departure === "HONDO_SAKAIMINATO") {
+                    departure = "TIMETABLE_SUP_SAKAIMINATO";
+                }
+                else {
+                    departure = "";
+                }
+            }
+            if ($scope.arrival === "HONDO") {
+                if (trip.arrival === "HONDO_SHICHIRUI") {
+                    arrival = "TIMETABLE_SUP_SHICHIRUI";
+                }
+                else if (trip.arrival === "HONDO_SAKAIMINATO") {
+                    arrival = "TIMETABLE_SUP_SAKAIMINATO";
+                }
+                else {
+                    arrival = "";
+                }
+            }
+            if (trip.next_id != "") {
                 var getNextTrip = function (srcTimetable, nextId) {
                     var trips = $filter("filter")(srcTimetable, { trip_id: nextId }, true);
                     return trips[0];
                 };
-                var nextId = value.next_id;
+                var nextId = trip.next_id;
                 for (var i = 0; i < MAX_NEXT_CHAIN; i++) {
                     var nextTrip = getNextTrip(validTimetable, nextId);
                     if (nextTrip != null) {
                         //出発地を経由するパスは省く
-                        if (nextTrip.departure == value.departure)
+                        if (nextTrip.departure == trip.departure)
                             break;
                         if (nextTrip.arrival == $scope.arrival) {
                             resultTimetable.push({
-                                name: value.name,
-                                departure_time: value.departure_time,
+                                name: trip.name,
+                                departure: departure,
+                                departure_time: trip.departure_time,
+                                arrival: arrival,
                                 arrival_time: nextTrip.arrival_time
                             });
                             break;
@@ -169,9 +231,6 @@ function mainCtrl($scope, $http, SharedStateService, $filter, $location, $anchor
         $scope.daytimeModel = "arrivalTime";
     };
     $scope.searchRoute = function () {
-        //エラーチェック
-        //出発地/目的地が未設定
-        //日時が未設定
         //期間でフィルタリング
         var validTimetable = $filter("omit")($scope.rawTimetable, $scope.nodepart);
         var specifiedDate = new Date($scope.data.date.getTime());
@@ -351,8 +410,8 @@ function mainCtrl($scope, $http, SharedStateService, $filter, $location, $anchor
             //出発時間が遅い上位5ルートを抽出
             results = $filter('orderBy')(results, "departureTime", true);
         }
-        if (results.length > 5) {
-            results.length = 5;
+        if (results.length > 10) {
+            results.length = 10;
         }
         var getPrice = function (name, departure, arrival) {
             var isDogo = function (port) {
@@ -362,7 +421,7 @@ function mainCtrl($scope, $http, SharedStateService, $filter, $location, $anchor
                 return ((port == 'KURI') || (port == 'BEPPU') || (port == 'HISHIURA'));
             };
             var isMainland = function (port) {
-                return ((port == 'SAKAIMINATO') || (port == 'SHICHIRUI'));
+                return ((port == 'HONDO_SAKAIMINATO') || (port == 'HONDO_SHICHIRUI'));
             };
             if ((name == 'FERRY_OKI') || (name == 'FERRY_SHIRASHIMA') || (name == 'FERRY_KUNIGA')) {
                 if (isDozen(departure)) {
@@ -596,8 +655,9 @@ app.config(['$translateProvider', function ($translateProvider) {
             'TODAY': '今日',
             'CLEAR': '削除',
             'CLOSE': '閉じる',
-            'SHICHIRUI': '七類(松江市)',
-            'SAKAIMINATO': '境港(境港市)',
+            'HONDO': '七類(松江市)または境港(境港市)',
+            'HONDO_SHICHIRUI': '七類(松江市)',
+            'HONDO_SAKAIMINATO': '境港(境港市)',
             'KURI': '来居(知夫村)',
             'BEPPU': '別府(西ノ島町)',
             'HISHIURA': '菱浦(海士町)',
@@ -611,7 +671,9 @@ app.config(['$translateProvider', function ($translateProvider) {
             'FERRY_DOZEN': 'フェリーどうぜん(内航船)',
             'ISOKAZE': 'いそかぜ(内航船)',
             'RAINBOWJET': 'レインボージェット',
-            'NO_RESULT_ERROR': '条件に一致する経路がありません。'
+            'NO_RESULT_ERROR': '条件に一致する経路がありません。',
+            'TIMETABLE_SUP_SHICHIRUI': '(七類)',
+            'TIMETABLE_SUP_SAKAIMINATO': '(境港)'
         });
         $translateProvider.translations('en', {
             'TITLE': 'Oki Islands Sea Line Information',
@@ -640,8 +702,9 @@ app.config(['$translateProvider', function ($translateProvider) {
             'TODAY': 'Today',
             'CLEAR': 'Clear',
             'CLOSE': 'Close',
-            'SHICHIRUI': 'Shichirui',
-            'SAKAIMINATO': 'Sakaiminato',
+            'HONDO': 'Shichirui or Sakaiminato',
+            'HONDO_SHICHIRUI': 'Shichirui',
+            'HONDO_SAKAIMINATO': 'Sakaiminato',
             'KURI': 'Kurī (Chibu)',
             'BEPPU': 'Beppu (Nishinoshima)',
             'HISHIURA': 'Hishiura (Ama)',
@@ -655,7 +718,9 @@ app.config(['$translateProvider', function ($translateProvider) {
             'FERRY_DOZEN': 'Ferry Dōzen (Inter-Island Ferry)',
             'ISOKAZE': 'Isokaze (Inter-Island Ferry)',
             'RAINBOWJET': 'Rainbow Jet (Fast Ferry)',
-            'NO_RESULT_ERROR': 'No Routes have been found.'
+            'NO_RESULT_ERROR': 'No Routes have been found.',
+            'TIMETABLE_SUP_SHICHIRUI': '(Shichirui)',
+            'TIMETABLE_SUP_SAKAIMINATO': '(Sakaiminato)'
         });
         $translateProvider.determinePreferredLanguage(function () {
             // define a function to determine the language
