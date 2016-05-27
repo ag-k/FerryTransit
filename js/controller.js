@@ -1,5 +1,5 @@
 /// <reference path="../typings/tsd.d.ts" />
-function mainCtrl($scope, $http, SharedStateService, $filter) {
+function mainCtrl($scope, $http, SharedStateService, $filter, $location, $anchorScroll) {
     var MAX_NEXT_CHAIN = 5;
     $scope.alerts = [];
     $scope.closeAlert = function (index) {
@@ -14,8 +14,14 @@ function mainCtrl($scope, $http, SharedStateService, $filter) {
     dt.setSeconds(0);
     dt.setMilliseconds(0);
     $scope.daytimeModel = "departureTime";
-    $scope.departure = $filter('translate')('DEPARTURE');
-    $scope.arrival = $filter('translate')('ARRIVAL');
+    $scope.departure = localStorage.getItem('departure');
+    if ($scope.departure == null) {
+        $scope.departure = $filter('translate')('DEPARTURE');
+    }
+    $scope.arrival = localStorage.getItem('arrival');
+    if ($scope.arrival == null) {
+        $scope.arrival = $filter('translate')('ARRIVAL');
+    }
     var restoreDateObjects = function () {
         //JSONでシリアライズされた日付をDateオブジェクトに復元
         angular.forEach($scope.rawTimetable, function (value, key) {
@@ -64,9 +70,11 @@ function mainCtrl($scope, $http, SharedStateService, $filter) {
     ];
     $scope.filteredTimetable = null;
     $scope.changeTransitDeparture = function (name) {
+        localStorage.setItem('departure', name);
         $scope.departure = name;
     };
     $scope.changeTransitArrival = function (name) {
+        localStorage.setItem('arrival', name);
         $scope.arrival = name;
     };
     $scope.updateTimetable = function () {
@@ -122,6 +130,15 @@ function mainCtrl($scope, $http, SharedStateService, $filter) {
         $scope.arrival = name;
         $scope.updateTimetable();
     };
+    $scope.reversal = function () {
+        var newdep = $scope.arrival;
+        $scope.arrival = $scope.departure;
+        $scope.departure = newdep;
+        $scope.updateTimetable();
+    };
+    $scope.$watch('data.date', function (newvalue, oldvalue) {
+        $scope.updateTimetable();
+    });
     //時刻表Omitフィルタ
     $scope.nodepart = function (e) {
         var dt = $scope.data.date.getTime();
@@ -474,6 +491,8 @@ function mainCtrl($scope, $http, SharedStateService, $filter) {
             });
             $scope.searchResults.push(tempResults);
         });
+        $location.hash('searchButton');
+        $anchorScroll();
     };
 }
 function datePickerCtrl($scope, SharedStateService) {

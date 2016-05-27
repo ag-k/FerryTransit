@@ -10,6 +10,8 @@
     <script type="text/javascript" src="./bower_components/angular-translate/angular-translate.min.js"></script>
     <script type="text/javascript" src="./js/controller.js"></script>
     <meta name="viewport" content="width=device-width,initial-scale=1.0,minimum-scale=1.0,maximum-scale=1.0,user-scalable=no">
+    <link rel="icon" type="image/vnd.microsoft.icon" href="favicon.ico">
+    <link rel="apple-touch-icon-precomposed" href="webclip.png" />
   </head>
   <body>
     <div class="container">
@@ -18,63 +20,86 @@
           <h2>{{ 'TITLE' | translate }}</h2>
         </div>
         <uib-tabset ng-model="tabModel">
-          <uib-tab index="0" heading="{{'TRANSIT'| translate}}" select="updateTimetable()">
+          <uib-tab index="0" heading="{{'TRANSIT'| translate}}">
             <p></p>
             <div class="panel panel-default">
               <div class="panel-heading">
                 <h2 class="panel-title">{{'DEPARTURE' | translate}}/{{'ARRIVAL' | translate}}</h2>
               </div>
               <div class="panel-body">
-                <style>
-                  li.groupname { margin-left: 10px; font-weight: bold;}
-                </style>
-                <label>{{ '_FROM' | translate }}</label>
-                <div class="btn-group" uib-dropdown is-open="status.departureIsOpen" ng-click="submit()">
-                  <button id="single-button" on-toggle="toggled(open)" type="button" class="btn btn-primary" uib-dropdown-toggle ng-disabled="disabled">
-                    {{departure|translate}}<span class="caret"></span>
-                  </button>
-                  <ul class="dropdown-menu" uib-dropdown-menu role="menu" aria-labelledby="single-button">
-                    <li class="groupname">{{'MAINLAND'|translate}}</li>
-                    <li role="menuitem">
-                      <a href="#" ng-click="changeTransitDeparture(port)" ng-repeat="port in hondoPorts">{{port|translate}}</a>
-                    </li>
-                    <li class="divider"></li>
-                    <li class="groupname">{{'DOZEN'|translate}}</li>
-                    <li role="menuitem">
-                      <a href="#" ng-click="changeTransitDeparture(port)" ng-repeat="port in dozenPorts">{{port|translate}}</a>
-                    </li>
-                    <li class="divider"></li>
-                    <li class="groupname">{{'DOGO'|translate}}</li>
-                    <li role="menuitem">
-                      <a href="#" ng-click="changeTransitDeparture(port)" ng-repeat="port in dogoPorts">{{port|translate}}</a>
-                    </li>
-                  </ul>
+                <div class="row">
+                  <div class="col-xs-9">
+                    <style>
+                      li.groupname { margin-left: 10px; font-weight: bold;}
+                    </style>
+                    <label>{{ '_FROM' | translate }}</label>
+                    <div class="btn-group" uib-dropdown is-open="status.departureIsOpen" ng-click="submit()">
+                      <button id="from-button" on-toggle="toggled(open)" type="button" class="btn btn-primary" uib-dropdown-toggle ng-disabled="disabled">
+                        {{departure|translate}}<span class="caret"></span>
+                      </button>
+                      <ul class="dropdown-menu" uib-dropdown-menu role="menu" aria-labelledby="from-button">
+                        <li class="groupname">{{'MAINLAND'|translate}}</li>
+                        <li role="menuitem">
+                          <a href="#" ng-click="changeTransitDeparture(port)" ng-repeat="port in hondoPorts">{{port|translate}}</a>
+                        </li>
+                        <li class="divider"></li>
+                        <li class="groupname">{{'DOZEN'|translate}}</li>
+                        <li role="menuitem">
+                          <a href="#" ng-click="changeTransitDeparture(port)" ng-repeat="port in dozenPorts">{{port|translate}}</a>
+                        </li>
+                        <li class="divider"></li>
+                        <li class="groupname">{{'DOGO'|translate}}</li>
+                        <li role="menuitem">
+                          <a href="#" ng-click="changeTransitDeparture(port)" ng-repeat="port in dogoPorts">{{port|translate}}</a>
+                        </li>
+                      </ul>
+                    </div>
+                    <label>{{ 'FROM_' | translate }}</label>
+                    <br>
+                    <label>{{ '_TO' | translate }}</label>
+                    <div class="btn-group" uib-dropdown is-open="status.arrivalIsOpen">
+                      <button id="to-button" type="button" class="btn btn-primary" uib-dropdown-toggle ng-disabled="disabled">
+                        {{arrival|translate}}<span class="caret"></span>
+                      </button>
+                      <ul class="dropdown-menu" uib-dropdown-menu role="menu" aria-labelledby="to-button">
+                        <li class="groupname">{{'MAINLAND'|translate}}</li>
+                        <li role="menuitem">
+                          <a href="#" ng-click="changeTransitArrival(port)" ng-repeat="port in hondoPorts">{{port|translate}}</a>
+                        </li>
+                        <li class="divider"></li>
+                        <li class="groupname">{{'DOZEN'|translate}}</li>
+                        <li role="menuitem">
+                          <a href="#" ng-click="changeTransitArrival(port)" ng-repeat="port in dozenPorts">{{port|translate}}</a>
+                        </li>
+                        <li class="divider"></li>
+                        <li class="groupname">{{'DOGO'|translate}}</li>
+                        <li role="menuitem">
+                          <a href="#" ng-click="changeTransitArrival(port)" ng-repeat="port in dogoPorts">{{port|translate}}</a>
+                        </li>
+                      </ul>
+                    </div>
+                    <label>{{ 'TO_' | translate }}</label>
+                  </div>
+                  <div class="col-xs-3">
+                    <div class="row">
+                      <div class="col-xs-12">
+                        <br>
+                      </div>
+                    </div>
+                    <div class="row">
+                      <div class="col-xs-12">
+                        <button type="button" class="btn btn-primary" ng-click="reversal()">
+                          <span class="glyphicon glyphicon-sort" aria-hidden="true"></span>
+                        </button>
+                      </div>
+                    </div>
+                    <div class="row">
+                      <div class="col-xs-12">
+                         <br>
+                      </div>
+                    </div>
+                  </div>
                 </div>
-                <label>{{ 'FROM_' | translate }}</label>
-                <br>
-                <label>{{ '_TO' | translate }}</label>
-                <div class="btn-group" uib-dropdown is-open="status.arrivalIsOpen">
-                  <button id="single-button" type="button" class="btn btn-primary" uib-dropdown-toggle ng-disabled="disabled">
-                    {{arrival|translate}}<span class="caret"></span>
-                  </button>
-                  <ul class="dropdown-menu" uib-dropdown-menu role="menu" aria-labelledby="single-button">
-                    <li class="groupname">{{'MAINLAND'|translate}}</li>
-                    <li role="menuitem">
-                      <a href="#" ng-click="changeTransitArrival(port)" ng-repeat="port in hondoPorts">{{port|translate}}</a>
-                    </li>
-                    <li class="divider"></li>
-                    <li class="groupname">{{'DOZEN'|translate}}</li>
-                    <li role="menuitem">
-                      <a href="#" ng-click="changeTransitArrival(port)" ng-repeat="port in dozenPorts">{{port|translate}}</a>
-                    </li>
-                    <li class="divider"></li>
-                    <li class="groupname">{{'DOGO'|translate}}</li>
-                    <li role="menuitem">
-                      <a href="#" ng-click="changeTransitArrival(port)" ng-repeat="port in dogoPorts">{{port|translate}}</a>
-                    </li>
-                  </ul>
-                </div>
-                <label>{{ 'TO_' | translate }}</label>
               </div>
             </div>
             <div class="panel panel-default">
@@ -94,7 +119,7 @@
                 <div class="row">
                   <div class="col-md-12">
                     <p class="input-group" ng-controller="datePickerCtrl as datePicker">
-                      <input type="text" class="form-control" uib-datepicker-popup="{{format}}" ng-model="data.date" is-open="popup1.opened" datepicker-options="dateOptions" ng-required="true" current-text="{{'TODAY'|translate}}" clear-text="{{'CLEAR'|translate}}" close-text="{{'CLOSE'|translate}}" alt-input-formats="altInputFormats" />
+                      <input type="text" class="form-control" uib-datepicker-popup="{{format}}" ng-model="data.date" is-open="popup1.opened" datepicker-options="dateOptions" ng-required="true" current-text="{{'TODAY'|translate}}" clear-text="{{'CLEAR'|translate}}" close-text="{{'CLOSE'|translate}}" alt-input-formats="altInputFormats"/>
                       <span class="input-group-btn">
                         <button type="button" class="btn btn-default" ng-click="open1()"><i class="glyphicon glyphicon-calendar"></i></button>
                       </span>
@@ -128,7 +153,7 @@
               </uib-accordion-group>
             </uib-accordion>
             -->
-            <button type="button" class="btn btn-primary btn-lg btn-block" ng-click="searchRoute()">{{'SEARCH_ROUTE'|translate}}</button>
+            <button type="button" id="searchButton" class="btn btn-primary btn-lg btn-block" ng-click="searchRoute()">{{'SEARCH_ROUTE'|translate}}</button>
             <br>
             <uib-alert ng-repeat="alert in alerts" type="{{alert.type}}" close="closeAlert($index)">{{alert.msg}}</uib-alert>
             <div class="panel panel-primary" ng-repeat="result in searchResults">
@@ -159,54 +184,77 @@
               </div>
             </div>
           </uib-tab>
-          <uib-tab index="1" heading="{{'TIMETABLE' | translate}}">
+          <uib-tab index="1" heading="{{'TIMETABLE' | translate}}" select="updateTimetable()">
             <p></p>
             <div class="panel panel-default">
               <div class="panel-heading">
                 <h2 class="panel-title">{{'DEPARTURE' | translate}}/{{'ARRIVAL' | translate}}</h2>
               </div>
               <div class="panel-body">
-                <label>{{'_FROM' | translate}}</label>
-                <div class="btn-group" uib-dropdown is-open="status.tableDepartureIsOpen" ng-click="submit()">
-                  <button id="single-button" on-toggle="toggled(open)" type="button" class="btn btn-primary" uib-dropdown-toggle ng-disabled="disabled">
-                    {{departure|translate}}<span class="caret"></span>
-                  </button>
-                  <ul class="dropdown-menu" uib-dropdown-menu role="menu" aria-labelledby="single-button">
-                    <li role="menuitem">
-                      <a href="#" ng-click="changeTimetableDeparture(port)" ng-repeat="port in hondoPorts">{{port|translate}}</a>
-                    </li>
-                    <li class="divider"></li>
-                    <li role="menuitem">
-                      <a href="#" ng-click="changeTimetableDeparture(port)" ng-repeat="port in dozenPorts">{{port|translate}}</a>
-                    </li>
-                    <li class="divider"></li>
-                    <li role="menuitem">
-                      <a href="#" ng-click="changeTimetableDeparture(port)" ng-repeat="port in dogoPorts">{{port|translate}}</a>
-                    </li>
-                  </ul>
+                <div class="row">
+                  <div class="col-xs-9">
+                    <label>{{'_FROM' | translate}}</label>
+                    <div class="btn-group" uib-dropdown is-open="status.tableDepartureIsOpen" ng-click="submit()">
+                      <button id="from-button" on-toggle="toggled(open)" type="button" class="btn btn-primary" uib-dropdown-toggle ng-disabled="disabled">
+                        {{departure|translate}}<span class="caret"></span>
+                      </button>
+                      <ul class="dropdown-menu" uib-dropdown-menu role="menu" aria-labelledby="from-button">
+                        <li role="menuitem">
+                          <a href="#" ng-click="changeTimetableDeparture(port)" ng-repeat="port in hondoPorts">{{port|translate}}</a>
+                        </li>
+                        <li class="divider"></li>
+                        <li role="menuitem">
+                          <a href="#" ng-click="changeTimetableDeparture(port)" ng-repeat="port in dozenPorts">{{port|translate}}</a>
+                        </li>
+                        <li class="divider"></li>
+                        <li role="menuitem">
+                          <a href="#" ng-click="changeTimetableDeparture(port)" ng-repeat="port in dogoPorts">{{port|translate}}</a>
+                        </li>
+                      </ul>
+                    </div>
+                    <label>{{'FROM_' | translate}}</label>
+                    <br>
+                    <label>{{'_TO' | translate}}</label>
+                    <div class="btn-group" uib-dropdown is-open="status.tableArrivalIsOpen">
+                      <button id="to-button" type="button" class="btn btn-primary" uib-dropdown-toggle ng-disabled="disabled">
+                        {{arrival|translate}}<span class="caret"></span>
+                      </button>
+                      <ul class="dropdown-menu" uib-dropdown-menu role="menu" aria-labelledby="to-button">
+                        <li role="menuitem">
+                          <a href="#" ng-click="changeTimetableArrival(port)" ng-repeat="port in hondoPorts">{{port|translate}}</a>
+                        </li>
+                        <li class="divider"></li>
+                        <li role="menuitem">
+                          <a href="#" ng-click="changeTimetableArrival(port)" ng-repeat="port in dozenPorts">{{port|translate}}</a>
+                        </li>
+                        <li class="divider"></li>
+                        <li role="menuitem">
+                          <a href="#" ng-click="changeTimetableArrival(port)" ng-repeat="port in dogoPorts">{{port|translate}}</a>
+                        </li>
+                      </ul>
+                    </div>
+                    <label>{{'TO_' | translate}}</label>
+                  </div>
+                  <div class="col-xs-3">
+                    <div class="row">
+                      <div class="col-xs-12">
+                        <br>
+                      </div>
+                    </div>
+                    <div class="row">
+                      <div class="col-xs-12">
+                        <button type="button" class="btn btn-primary" ng-click="reversal()">
+                          <span class="glyphicon glyphicon-sort" aria-hidden="true"></span>
+                        </button>
+                      </div>
+                    </div>
+                    <div class="row">
+                      <div class="col-xs-12">
+                         <br>
+                      </div>
+                    </div>
+                  </div>
                 </div>
-                <label>{{'FROM_' | translate}}</label>
-                <br>
-                <label>{{'_TO' | translate}}</label>
-                <div class="btn-group" uib-dropdown is-open="status.tableArrivalIsOpen">
-                  <button id="single-button" type="button" class="btn btn-primary" uib-dropdown-toggle ng-disabled="disabled">
-                    {{arrival|translate}}<span class="caret"></span>
-                  </button>
-                  <ul class="dropdown-menu" uib-dropdown-menu role="menu" aria-labelledby="single-button">
-                    <li role="menuitem">
-                      <a href="#" ng-click="changeTimetableArrival(port)" ng-repeat="port in hondoPorts">{{port|translate}}</a>
-                    </li>
-                    <li class="divider"></li>
-                    <li role="menuitem">
-                      <a href="#" ng-click="changeTimetableArrival(port)" ng-repeat="port in dozenPorts">{{port|translate}}</a>
-                    </li>
-                    <li class="divider"></li>
-                    <li role="menuitem">
-                      <a href="#" ng-click="changeTimetableArrival(port)" ng-repeat="port in dogoPorts">{{port|translate}}</a>
-                    </li>
-                  </ul>
-                </div>
-                <label>{{'TO_' | translate}}</label>
               </div>
             </div>
             <div class="panel panel-default">
@@ -217,7 +265,7 @@
                 <div class="row">
                   <div class="col-md-3">
                     <p class="input-group" ng-controller="datePickerCtrl as datePicker">
-                      <input type="text" class="form-control" uib-datepicker-popup="{{format}}" ng-model="data.date" is-open="popup2.opened" datepicker-options="dateOptions" ng-required="true" current-text="{{'TODAY'|translate}}" clear-text="{{'CLEAR'|translate}}" close-text="{{'CLOSE'|translate}}" alt-input-formats="altInputFormats" />
+                      <input type="text" class="form-control" uib-datepicker-popup="{{format}}" ng-model="data.date" is-open="popup2.opened" datepicker-options="dateOptions" ng-required="true" current-text="{{'TODAY'|translate}}" clear-text="{{'CLEAR'|translate}}" close-text="{{'CLOSE'|translate}}" alt-input-formats="altInputFormats"/>
                       <span class="input-group-btn">
                         <button type="button" class="btn btn-default" ng-click="open2()"><i class="glyphicon glyphicon-calendar"></i></button>
                       </span>
