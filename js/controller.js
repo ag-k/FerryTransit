@@ -268,12 +268,10 @@ function mainCtrl($scope, $http, SharedStateService, $filter, $location, $anchor
                 arrivalTime.setHours(rootTrip.arrival_time.getHours());
                 arrivalTime.setMinutes(rootTrip.arrival_time.getMinutes());
                 var nestCount = 0;
-                var nestMax = 4;
+                var nestMax = 1;
                 var findRoute = function (currentTrip, route) {
                     //出発地でフィルタリング
                     var nextTimetable = $filter('filter')(validTimetable, { departure: currentTrip.arrival }, true);
-                    //目的地でフィルタリング
-                    nextTimetable = $filter('filter')(nextTimetable, { arrival: $scope.arrival }, true);
                     //出発時刻でフィルタリング
                     arrivalTime.setHours(currentTrip.arrival_time.getHours());
                     arrivalTime.setMinutes(currentTrip.arrival_time.getMinutes());
@@ -288,8 +286,10 @@ function mainCtrl($scope, $http, SharedStateService, $filter, $location, $anchor
                         }
                     };
                     nextTimetable = $filter("omit")(nextTimetable, omitBeforeTime);
+                    //目的地でフィルタリング
+                    var arrivedTimetable = $filter('filter')(nextTimetable, { arrival: $scope.arrival }, true);
                     //目的地に到達したルートを保存
-                    angular.forEach(nextTimetable, function (nextTrip, index) {
+                    angular.forEach(arrivedTimetable, function (nextTrip, index) {
                         //ルートを正規化
                         var tempRoute = route.concat();
                         tempRoute.push(nextTrip);
@@ -328,12 +328,15 @@ function mainCtrl($scope, $http, SharedStateService, $filter, $location, $anchor
                             arrivalTime: tempRoute[tempRoute.length - 1].arrival_time
                         });
                     });
+                    //到達したルートを削除
+                    nextTimetable = $filter("xor")(nextTimetable, arrivedTimetable, 'trip_id');
                     //目的地に未達のルートを掘り下げる
                     if (nestCount < nestMax) {
                         nestCount++;
                         angular.forEach(nextTimetable, function (nextTrip, index) {
-                            route.push(nextTrip);
-                            findRoute(nextTrip, route);
+                            var newRoute = route.concat();
+                            newRoute.push(nextTrip);
+                            findRoute(nextTrip, newRoute);
                         });
                     }
                 };
