@@ -245,10 +245,10 @@ function mainCtrl($scope, $http, SharedStateService, $filter, $location, $anchor
     var edt:number = edtDate.getTime();
 
     if ((sdt <= dt) && (dt <= edt)) {
-      console.log("OK >" + e.name + ":" + e.start_date + "-" + e.end_date)
+      //console.log("OK >" + e.name + ":" + e.start_date + "-" + e.end_date)
       return false;
     } else {
-      console.log("NG >" + e.name + ":" + e.start_date + "-" + e.end_date)
+      //console.log("NG >" + e.name + ":" + e.start_date + "-" + e.end_date)
       return true;
     }
   }
@@ -559,13 +559,15 @@ function mainCtrl($scope, $http, SharedStateService, $filter, $location, $anchor
           tempResults.push({
             time: $filter('date')(prevRoute.arrival_time, 'H:mm', '+0900')
                   + "-" + $filter('date')(route.departure_time, 'H:mm', '+0900'),
-            port: $filter('translate')(route.departure),
+            //port: $filter('translate')(route.departure),
+            port: route.departure,
             price: ""
           });
         } else {
           tempResults.push({
             time: $filter('date')(route.departure_time, 'H:mm', '+0900'),
-            port: $filter('translate')(route.departure),
+//            port: $filter('translate')(route.departure),
+            port: route.departure,
             price: ""
           });
         }
@@ -575,7 +577,8 @@ function mainCtrl($scope, $http, SharedStateService, $filter, $location, $anchor
         var minutes = duration % 60;
         tempResults.push({
           time: ((hours > 0) ? hours + $filter('translate')('HOURS') : "") + " " + minutes + $filter('translate')('MINUTES'), //所要時間
-          port: $filter('translate')(route.name),
+//          port: $filter('translate')(route.name),
+          port: route.name,
           price: getPrice(route.name, route.departure, route.arrival) + $filter('translate')('CURRENCY_UNIT')
         });
 
@@ -583,7 +586,8 @@ function mainCtrl($scope, $http, SharedStateService, $filter, $location, $anchor
       }
       tempResults.push({
         time: $filter('date')(route.arrival_time, 'H:mm', '+0900'),
-        port: $filter('translate')(route.arrival),
+//        port: $filter('translate')(route.arrival),
+        port: route.arrival,
         price: ""
       });
 

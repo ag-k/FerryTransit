@@ -282,11 +282,16 @@
                       tr.tbl-bg-clr-odd { background-color: lightblue; }
                       tr.tbl-bg-clr-even { background-color: white;}
                       td#time.tbl-bg-clr-even { text-align: right; }
-                      td#port.tbl-bg-clr-even { border-left: double 10px #0000ff; }
+                      td#FERRY_OKI.tbl-bg-clr-even { border-left: double 10px #DA6272; }
+                      td#FERRY_SHIRASHIMA.tbl-bg-clr-even { border-left: double 10px #DA6272; }
+                      td#FERRY_KUNIGA.tbl-bg-clr-even { border-left: double 10px #DA6272; }
+                      td#FERRY_DOZEN.tbl-bg-clr-even { border-left: double 10px #F3C759; }
+                      td#ISOKAZE.tbl-bg-clr-even { border-left: double 10px #45A1CF; }
+                      td#RAINBOWJET.tbl-bg-clr-even { border-left: double 10px #40BFB0; }
                     </style>
                     <tr ng-repeat="desc in result" ng-class-even="tblBgClr.even" ng-class-odd="tblBgClr.odd">
                       <td id="time" ng-class-even="tblBgClr.even" ng-class-odd="tblBgClr.odd">{{desc.time}}</td>
-                      <td id="port" ng-class-even="tblBgClr.even" ng-class-odd="tblBgClr.odd">{{desc.port}}</td>
+                      <td id="{{desc.port}}" ng-class-even="tblBgClr.even" ng-class-odd="tblBgClr.odd">{{desc.port | translate}}</td>
                       <td>{{desc.price}}</td>
                     </tr>
                   </tbody>
