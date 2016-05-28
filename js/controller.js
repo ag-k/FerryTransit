@@ -8,6 +8,8 @@ function mainCtrl($scope, $http, SharedStateService, $filter, $location, $anchor
     //時刻入力
     $scope.hstep = 1;
     $scope.mstep = 15;
+    //もっと見るボタンは隠しておく
+    $scope.hideMore = true;
     $scope.data = SharedStateService;
     var dt = $scope.data.date;
     dt.setMinutes(Math.round(dt.getMinutes() / $scope.mstep) * $scope.mstep);
@@ -34,11 +36,13 @@ function mainCtrl($scope, $http, SharedStateService, $filter, $location, $anchor
         $scope.rawTimetable = res.data;
         localStorage.setItem('rawTimetable', JSON.stringify($scope.rawTimetable));
         restoreDateObjects();
+        $scope.updateTimetable();
     }, function (res) {
         //Error handling
         console.log("Failed to get timetable.");
         $scope.rawTimetable = JSON.parse(localStorage.getItem('rawTimetable'));
         restoreDateObjects();
+        $scope.updateTimetable();
     });
     $scope.ismeridian = false;
     $scope.toggleMode = function () {
@@ -214,13 +218,15 @@ function mainCtrl($scope, $http, SharedStateService, $filter, $location, $anchor
     $scope.nodepart = function (e) {
         var dt = $scope.data.date.getTime();
         var sdt = new Date(e.start_date).getTime();
-        var edt = new Date(e.end_date).getTime();
+        var edtDate = new Date(e.end_date);
+        edtDate.setDate(edtDate.getDate() + 1);
+        var edt = edtDate.getTime();
         if ((sdt <= dt) && (dt <= edt)) {
-            //console.log("OK >" + e.name + ":" + e.start_date + "-" + e.end_date)
+            console.log("OK >" + e.name + ":" + e.start_date + "-" + e.end_date);
             return false;
         }
         else {
-            //console.log("NG >" + e.name + ":" + e.start_date + "-" + e.end_date)
+            console.log("NG >" + e.name + ":" + e.start_date + "-" + e.end_date);
             return true;
         }
     };
@@ -419,9 +425,6 @@ function mainCtrl($scope, $http, SharedStateService, $filter, $location, $anchor
             //出発時間が遅い上位5ルートを抽出
             results = $filter('orderBy')(results, "departureTime", true);
         }
-        if (results.length > 10) {
-            results.length = 10;
-        }
         var getPrice = function (name, departure, arrival) {
             var isDogo = function (port) {
                 return (port == 'SAIGO');
@@ -525,6 +528,7 @@ function mainCtrl($scope, $http, SharedStateService, $filter, $location, $anchor
         }
         //View 用にコンバート
         $scope.searchResults = [];
+        $scope.resultPool = [];
         angular.forEach(results, function (result, index) {
             var tempResults = [];
             var prevRoute = null;
@@ -560,10 +564,18 @@ function mainCtrl($scope, $http, SharedStateService, $filter, $location, $anchor
                 port: $filter('translate')(route.arrival),
                 price: ""
             });
-            $scope.searchResults.push(tempResults);
+            $scope.resultPool.push(tempResults);
         });
+        var array = $scope.resultPool.splice(0, 5);
+        $scope.searchResults = $scope.searchResults.concat(array);
+        $scope.hideMore = ($scope.resultPool.length > 0) ? false : true;
         $location.hash('searchButton');
         $anchorScroll();
+    };
+    $scope.showMore = function () {
+        var array = $scope.resultPool.splice(0, 5);
+        $scope.searchResults = $scope.searchResults.concat(array);
+        $scope.hideMore = ($scope.resultPool.length > 0) ? false : true;
     };
 }
 function datePickerCtrl($scope, SharedStateService) {
@@ -682,7 +694,8 @@ app.config(['$translateProvider', function ($translateProvider) {
             'RAINBOWJET': 'レインボージェット',
             'NO_RESULT_ERROR': '条件に一致する経路がありません。',
             'TIMETABLE_SUP_SHICHIRUI': '(七類)',
-            'TIMETABLE_SUP_SAKAIMINATO': '(境港)'
+            'TIMETABLE_SUP_SAKAIMINATO': '(境港)',
+            'MORE_BUTTON': 'もっと見る'
         });
         $translateProvider.translations('en', {
             'TITLE': 'Oki Islands Sea Line Information',
@@ -729,7 +742,8 @@ app.config(['$translateProvider', function ($translateProvider) {
             'RAINBOWJET': 'Rainbow Jet (Fast Ferry)',
             'NO_RESULT_ERROR': 'No Routes have been found.',
             'TIMETABLE_SUP_SHICHIRUI': '(Shichirui)',
-            'TIMETABLE_SUP_SAKAIMINATO': '(Sakaiminato)'
+            'TIMETABLE_SUP_SAKAIMINATO': '(Sakaiminato)',
+            'MORE_BUTTON': 'See more'
         });
         $translateProvider.determinePreferredLanguage(function () {
             // define a function to determine the language
