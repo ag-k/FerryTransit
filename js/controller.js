@@ -703,7 +703,8 @@ app.config(['$translateProvider', function ($translateProvider) {
             'SHIP_STATUS': '運航状況',
             'OKI_KISEN': '隠岐汽船',
             'OKI_KANKO': '隠岐観光',
-            'CONTACT': 'お問い合わせ'
+            'CONTACT': 'お問い合わせ',
+            'COMPANY': '(株)'
         });
         $translateProvider.translations('en', {
             'TITLE': 'Oki Islands Sea Line Information',
@@ -755,7 +756,8 @@ app.config(['$translateProvider', function ($translateProvider) {
             'SHIP_STATUS': 'Service Status',
             'OKI_KISEN': 'Oki Kisen',
             'OKI_KANKO': 'Oki Kankō',
-            'CONTACT': 'Contact'
+            'CONTACT': 'Contact',
+            'COMPANY': ' Co., Ltd.'
         });
         $translateProvider.determinePreferredLanguage(function () {
             // define a function to determine the language
