@@ -123,7 +123,16 @@ function mainCtrl($scope, $http, SharedStateService, $filter, $location, $anchor
             });
         }
         else {
-            resultTimetable.join(onePathTimetable);
+            angular.forEach(departureTimetable, function (trip, index) {
+                resultTimetable.push({
+                    trip_id: trip.trip_id,
+                    name: trip.name,
+                    departure: "",
+                    departure_time: trip.departure_time,
+                    arrival: "",
+                    arrival_time: trip.arrival_time
+                });
+            });
         }
         //有効なパスリストからすでに抽出済みのパスを削除
         departureTimetable = $filter("xor")(departureTimetable, resultTimetable, 'trip_id');
