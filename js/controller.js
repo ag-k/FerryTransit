@@ -699,7 +699,11 @@ app.config(['$translateProvider', function ($translateProvider) {
             'NO_RESULT_ERROR': '条件に一致する経路がありません。',
             'TIMETABLE_SUP_SHICHIRUI': '(七類)',
             'TIMETABLE_SUP_SAKAIMINATO': '(境港)',
-            'MORE_BUTTON': 'もっと見る'
+            'MORE_BUTTON': 'もっと見る',
+            'SHIP_STATUS': '運航状況',
+            'OKI_KISEN': '隠岐汽船',
+            'OKI_KANKO': '隠岐観光',
+            'CONTACT': 'お問い合わせ'
         });
         $translateProvider.translations('en', {
             'TITLE': 'Oki Islands Sea Line Information',
@@ -747,7 +751,11 @@ app.config(['$translateProvider', function ($translateProvider) {
             'NO_RESULT_ERROR': 'No Routes have been found.',
             'TIMETABLE_SUP_SHICHIRUI': '(Shichirui)',
             'TIMETABLE_SUP_SAKAIMINATO': '(Sakaiminato)',
-            'MORE_BUTTON': 'See more'
+            'MORE_BUTTON': 'See more',
+            'SHIP_STATUS': 'Service Status',
+            'OKI_KISEN': 'Oki Kisen',
+            'OKI_KANKO': 'Oki Kankō',
+            'CONTACT': 'Contact'
         });
         $translateProvider.determinePreferredLanguage(function () {
             // define a function to determine the language
