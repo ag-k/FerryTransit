@@ -139,7 +139,7 @@ function mainCtrl($scope, $http, SharedStateService, $filter, $location, $anchor
         });
       });
     } else {
-      angular.forEach(departureTimetable, function(trip, index) {
+      angular.forEach(onePathTimetable, function(trip, index) {
         resultTimetable.push({
           trip_id: trip.trip_id,
           name: trip.name,
