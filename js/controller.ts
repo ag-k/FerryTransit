@@ -172,10 +172,18 @@ function mainCtrl($scope, $http, SharedStateService, $filter, $location, $anchor
             //出発地を経由するパスは省く
             if (nextTrip.departure == trip.departure) break;
 
+            //本土経由ルートは省く
+            if ((nextTrip.arrival === "HONDO_SHICHIRUI")
+                || (nextTrip.arrival === "HONDO_SAKAIMINATO")) {
+              if ((trip.departure === "HONDO_SHICHIRUI")
+                  || (trip.departure === "HONDO_SAKAIMINATO")) {
+                  break;
+              }
+            }
+
             if ($scope.arrival === "HONDO") {
               if ((nextTrip.arrival === "HONDO_SHICHIRUI")
                   || (nextTrip.arrival === "HONDO_SAKAIMINATO")) {
-
                 if (nextTrip.arrival === "HONDO_SHICHIRUI") {
                   arrival = "TIMETABLE_SUP_SHICHIRUI";
                 } else if (nextTrip.arrival === "HONDO_SAKAIMINATO") {
@@ -387,13 +395,17 @@ function mainCtrl($scope, $http, SharedStateService, $filter, $location, $anchor
           var omitBeforeTime = function(trip) {
             dTime.setHours(trip.departure_time.getHours());
             dTime.setMinutes(trip.departure_time.getMinutes());
-            if (dTime.getTime() < arrivalTime.getTime()) {
-              return true;
-            } else {
-              return false;
-            }
+            return (dTime.getTime() < arrivalTime.getTime());
           }
           nextTimetable = $filter("omit")(nextTimetable, omitBeforeTime);
+
+          //本土経由ルートを排除
+          if ((rootTrip.departure === "HONDO_SHICHIRUI") || (rootTrip.departure === "HONDO_SAKAIMINATO")) {
+            var omitMainlandRoute = function(trip) {
+              return ((trip.departure === "HONDO_SHICHIRUI") || (trip.departure === "HONDO_SAKAIMINATO"));
+            }
+            nextTimetable = $filter("omit")(nextTimetable, omitMainlandRoute);
+          }
 
           //目的地でフィルタリング
           var arrivedTimetable = $filter('filter')(nextTimetable, {arrival:$scope.arrival});
@@ -409,8 +421,9 @@ function mainCtrl($scope, $http, SharedStateService, $filter, $location, $anchor
 
               var startTrip = tempRoute[0];
               var endTrip = tempRoute[0];
+              var lastId = startTrip.next_id;
               for (var i = 1; i < tempRoute.length; i++) {
-                if (startTrip.name == tempRoute[i].name) {
+                if (tempRoute[i].trip_id === lastId) {
                   endTrip = tempRoute[i];
                 } else {
                   normarizedRoute.push({
@@ -423,6 +436,7 @@ function mainCtrl($scope, $http, SharedStateService, $filter, $location, $anchor
                   startTrip = tempRoute[i];
                   endTrip = tempRoute[i];
                 }
+                lastId = endTrip.next_id;
               }
               normarizedRoute.push({
                 name: startTrip.name,
@@ -559,14 +573,12 @@ function mainCtrl($scope, $http, SharedStateService, $filter, $location, $anchor
           tempResults.push({
             time: $filter('date')(prevRoute.arrival_time, 'H:mm', '+0900')
                   + "-" + $filter('date')(route.departure_time, 'H:mm', '+0900'),
-            //port: $filter('translate')(route.departure),
             port: route.departure,
             price: ""
           });
         } else {
           tempResults.push({
             time: $filter('date')(route.departure_time, 'H:mm', '+0900'),
-//            port: $filter('translate')(route.departure),
             port: route.departure,
             price: ""
           });
@@ -577,7 +589,6 @@ function mainCtrl($scope, $http, SharedStateService, $filter, $location, $anchor
         var minutes = duration % 60;
         tempResults.push({
           time: ((hours > 0) ? hours + $filter('translate')('HOURS') : "") + " " + minutes + $filter('translate')('MINUTES'), //所要時間
-//          port: $filter('translate')(route.name),
           port: route.name,
           price: getPrice(route.name, route.departure, route.arrival) + $filter('translate')('CURRENCY_UNIT')
         });
@@ -586,7 +597,6 @@ function mainCtrl($scope, $http, SharedStateService, $filter, $location, $anchor
       }
       tempResults.push({
         time: $filter('date')(route.arrival_time, 'H:mm', '+0900'),
-//        port: $filter('translate')(route.arrival),
         port: route.arrival,
         price: ""
       });
