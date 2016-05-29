@@ -139,7 +139,11 @@ function mainCtrl($scope, $http, SharedStateService, $filter, $location, $anchor
         });
       });
     } else {
-      resultTimetable.join(onePathTimetable);
+      resultTimetable = resultTimetable.concat(onePathTimetable);
+      angular.forEach(resultTimetable, function(trip, index) {
+        trip.departure = "";
+        trip.arrival = "";
+      });
     }
 
     //有効なパスリストからすでに抽出済みのパスを削除
