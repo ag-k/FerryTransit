@@ -817,10 +817,10 @@ app.config(['$translateProvider', function ($translateProvider) {
     'TIMETABLE_SUP_SAKAIMINATO': '(Sakaiminato)',
     'MORE_BUTTON':'See more',
     'SHIP_STATUS': 'Service Status',
-    'OKI_KISEN': 'Oki Kisen',
-    'OKI_KANKO': 'Oki Kankō',
+    'OKI_KISEN': 'Oki Kisen ',
+    'OKI_KANKO': 'Oki Kankō ',
     'CONTACT': 'Contact',
-    'COMPANY': ' Co., Ltd.'
+    'COMPANY': 'Co., Ltd.'
   });
 
   $translateProvider.determinePreferredLanguage(function () {
