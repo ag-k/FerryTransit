@@ -22,11 +22,16 @@ function mainCtrl($scope, $http, SharedStateService, $filter, $location, $anchor
   dt.setMilliseconds(0);
 
   $scope.daytimeModel = "departureTime";
-  $scope.departure = localStorage.getItem('departure');
+
+  try {
+    $scope.departure = localStorage.getItem('departure');
+  } catch(e) {}
   if ($scope.departure == null) {
     $scope.departure = $filter('translate')('DEPARTURE');
   }
-  $scope.arrival = localStorage.getItem('arrival');
+  try {
+    $scope.arrival = localStorage.getItem('arrival');
+  } catch(e) {}
   if ($scope.arrival == null) {
     $scope.arrival = $filter('translate')('ARRIVAL');
   }
@@ -41,13 +46,18 @@ function mainCtrl($scope, $http, SharedStateService, $filter, $location, $anchor
 
   $http.get('http://naturebot-lab.com/ferry_transit/timetable.php').then(function(res) {
     $scope.rawTimetable = res.data;
-    localStorage.setItem('rawTimetable', JSON.stringify($scope.rawTimetable));
+    try {
+      localStorage.setItem('rawTimetable', JSON.stringify($scope.rawTimetable));
+    } catch(e) {}
     restoreDateObjects();
     $scope.updateTimetable();
   }, function(res) {
     //Error handling
     console.log("Failed to get timetable.");
-    $scope.rawTimetable = JSON.parse(localStorage.getItem('rawTimetable'));
+    try {
+      $scope.rawTimetable = JSON.parse(localStorage.getItem('rawTimetable'));
+    } catch(e) {}
+    //TODO:オフライン時のアラートを出す
     restoreDateObjects();
     $scope.updateTimetable();
   });
@@ -91,12 +101,16 @@ function mainCtrl($scope, $http, SharedStateService, $filter, $location, $anchor
   $scope.filteredTimetable = null;
 
   $scope.changeTransitDeparture = function(name) {
-    localStorage.setItem('departure', name);
+    try {
+      localStorage.setItem('departure', name);
+    } catch(e) {}
     $scope.departure = name;
   }
 
   $scope.changeTransitArrival = function(name) {
-    localStorage.setItem('arrival', name);
+    try {
+      localStorage.setItem('arrival', name);
+    } catch(e) {}
     $scope.arrival = name;
   }
 
