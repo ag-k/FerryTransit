@@ -38,7 +38,7 @@ function mainCtrl($scope, $http, SharedStateService, $filter, $location, $anchor
             value.arrival_time = new Date(dateStr + value.arrival_time + ':00');
         });
     };
-    $http.get('http://naturebot-lab.com/ferry_transit/timetable.php').then(function (res) {
+    $http.get('https://naturebot-lab.com/ferry_transit/timetable.php').then(function (res) {
         $scope.rawTimetable = res.data;
         try {
             localStorage.setItem('rawTimetable', JSON.stringify($scope.rawTimetable));
@@ -639,7 +639,7 @@ function datePickerCtrl($scope, SharedStateService) {
         dateDisabled: null,
         formatYear: 'yy',
         formatDay: 'd',
-        maxDate: new Date(2016, 12, 30),
+        maxDate: new Date(9999, 12, 30),
         minDate: new Date(),
         startingDay: 0,
         showWeeks: false,
