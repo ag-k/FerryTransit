@@ -337,7 +337,7 @@ function mainCtrl($scope, $http, SharedStateService, $filter, $location, $anchor
             var trips = $filter("filter")(srcTimetable, {trip_id:nextId}, true);
             return trips[0];
           }
-
+    
           if (trip.next_id != "") {
             var nextId = trip.next_id;
             for (var i = 0; i < MAX_NEXT_CHAIN; i++) {

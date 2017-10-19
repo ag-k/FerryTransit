@@ -778,6 +778,7 @@ app.config(['$translateProvider', function ($translateProvider) {
     'MORE_BUTTON': 'もっと見る',
     'SHIP_STATUS': '運航状況',
     'OKI_KISEN': '隠岐汽船',
+    'OKI_KISEN_STATUS_URL': 'http://www.oki-kisen.co.jp/situation/',
     'OKI_KANKO': '隠岐観光',
     'CONTACT': 'お問い合わせ',
     'COMPANY': '(株)'
@@ -832,6 +833,7 @@ app.config(['$translateProvider', function ($translateProvider) {
     'MORE_BUTTON':'See more',
     'SHIP_STATUS': 'Service Status',
     'OKI_KISEN': 'Oki Kisen ',
+    'OKI_KISEN_STATUS_URL': 'http://www.oki-kisen.co.jp/m/m_situation/',
     'OKI_KANKO': 'Oki Kankō ',
     'CONTACT': 'Contact',
     'COMPANY': 'Co., Ltd.'
