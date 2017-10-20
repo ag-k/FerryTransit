@@ -3,12 +3,15 @@
   <head>
     <meta charset="utf-8">
     <meta name="description" content="島根県隠岐諸島のフェリー・内航船の時刻表と乗換案内" />
-    <link rel="stylesheet" type="text/css" href="./bower_components/bootstrap/dist/css/bootstrap.min.css">
-    <script type="text/javascript" src="./bower_components/angular/angular.min.js"></script>
-    <script type="text/javascript" src="./bower_components/angular-i18n/angular-locale_ja.js"></script>
-    <script type="text/javascript" src="./bower_components/angular-bootstrap/ui-bootstrap-tpls.min.js"></script>
-    <script type="text/javascript" src="./bower_components/angular-filter/dist/angular-filter.min.js"></script>
-    <script type="text/javascript" src="./bower_components/angular-translate/angular-translate.min.js"></script>
+    <link rel="stylesheet" type="text/css" href="./node_modules/bootstrap/dist/css/bootstrap.min.css">
+    <link rel="stylesheet" type="text/css" href="./css/style.css">
+    <script type="text/javascript" src="./node_modules/angular/angular.min.js"></script>
+    <script type="text/javascript" src="./node_modules/angular-i18n/angular-locale_ja.js"></script>
+    <script type="text/javascript" src="./node_modules/angular-ui-bootstrap/dist/ui-bootstrap-tpls.js"></script>
+    <script type="text/javascript" src="./node_modules/angular-filter/dist/angular-filter.min.js"></script>
+    <script type="text/javascript" src="./node_modules/angular-translate/dist/angular-translate.min.js"></script>
+    <script type="text/javascript" src="./node_modules/jquery/dist/jquery.min.js"></script>
+    <script type="text/javascript" src="./node_modules/bootstrap/dist/js/bootstrap.min.js"></script>
     <script type="text/javascript" src="./js/controller.js"></script>
     <script>
       (function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){
@@ -30,6 +33,7 @@
         <div class="page-header">
           <h2>{{ 'TITLE' | translate }}</h2>
         </div>
+
         <uib-tabset ng-model="tabModel">
           <uib-tab index="0" heading="{{'TIMETABLE' | translate}}" select="updateTimetable()">
             <p></p>
@@ -128,11 +132,11 @@
               <div class="panel-body">
                 <table class="table">
                   <thead>
-                    <tr><th>{{'SHIP'|translate}}</th><th>{{departure|translate}}</th><th>{{arrival|translate}}</th></tr>
+                    <tr><th>{{'SHIP'|translate}}</th><th><a href="" ng-click="showPort(departure)">{{departure|translate}}</a></th><th><a href="" ng-click="showPort(arrival)">{{arrival|translate}}</a></th></tr>
                   </thead>
                   <tbody>
                     <tr ng-repeat="trip in timetable | orderBy: 'departure_time'">
-                      <td>{{trip.name|translate}}</td>
+                      <td><a href="" ng-click="showShip(trip.name)">{{trip.name|translate}}</a></td>
                       <td>{{trip.departure_time | date:'H:mm'}} {{trip.departure | translate}}</td>
                       <td>{{trip.arrival_time | date:'H:mm'}} {{trip.arrival | translate}}</td>
                     </tr>
@@ -290,7 +294,7 @@
                   </thead>
                   <tbody>
                     <style>
-                      tr.tbl-bg-clr-odd { background-color: lightblue; }
+                      tr.tbl-bg-clr-odd { background-color: #D8ECF3; }
                       tr.tbl-bg-clr-even { background-color: white;}
                       td#time.tbl-bg-clr-even { text-align: right; }
                       td#FERRY_OKI.tbl-bg-clr-even { border-left: double 10px #DA6272; }
@@ -302,7 +306,7 @@
                     </style>
                     <tr ng-repeat="desc in result" ng-class-even="tblBgClr.even" ng-class-odd="tblBgClr.odd">
                       <td id="time" ng-class-even="tblBgClr.even" ng-class-odd="tblBgClr.odd">{{desc.time}}</td>
-                      <td id="{{desc.port}}" ng-class-even="tblBgClr.even" ng-class-odd="tblBgClr.odd">{{desc.port | translate}}</td>
+                      <td id="{{desc.port}}" ng-class-even="tblBgClr.even" ng-class-odd="tblBgClr.odd"><a href="" ng-click="showShipOrPort(desc.port)">{{desc.port | translate}}</a></td>
                       <td>{{desc.price}}</td>
                     </tr>
                   </tbody>
@@ -327,16 +331,16 @@
                     </tr>
                     <tr>
                       <td>
-                        {{'FERRY_OKI' | translate}}<br>
-                        {{'FERRY_SHIRASHIMA' | translate}}<br>
-                        {{'FERRY_KUNIGA' | translate}}
+                        <a href="" ng-click="showShip('FERRY_OKI')">{{'FERRY_OKI' | translate}}</a><br>
+                        <a href="" ng-click="showShip('FERRY_SHIRASHIMA')">{{'FERRY_SHIRASHIMA' | translate}}</a><br>
+                        <a href="" ng-click="showShip('FERRY_KUNIGA')">{{'FERRY_KUNIGA' | translate}}</a>
                       </td>
                       <td rowspan="2">
                         <a href="{{'OKI_KISEN_STATUS_URL'|translate}}">{{'OKI_KISEN'|translate}}{{'SHIP_STATUS'|translate}}</a>
                       </td>
                     </tr>
                     <tr>
-                      <td>{{'RAINBOWJET' | translate}}</td>
+                      <td><a href="" ng-click="showShip('RAINBOWJET')">{{'RAINBOWJET' | translate}}</a></td>
                     </tr>
                   </tbody>
                 </table>
@@ -355,7 +359,7 @@
                     </tr>
                     <tr>
                       <td>
-                        {{'FERRY_DOZEN' | translate}}
+                        <a href="" ng-click="showShip('FERRY_DOZEN')">{{'FERRY_DOZEN' | translate}}</a>
                       </td>
                       <td rowspan="2">
                         <address>
@@ -366,15 +370,18 @@
                     </tr>
                     <tr>
                       <td>
-                        {{'ISOKAZE' | translate}}
+                        <a href="" ng-click="showShip('ISOKAZE')">{{'ISOKAZE' | translate}}</a>
                       </td>
                     </tr>
                     <tr>
-                      <td>
-                        国賀定期船
-                      </td>
-                      <td>
-                        <a class="twitter-timeline" href="https://twitter.com/SA0mOfVrmEHcluR?ref_src=twsrc%5Etfw">Tweets by SA0mOfVrmEHcluR</a> <script async src="//platform.twitter.com/widgets.js" charset="utf-8"></script>
+                      <td colspan="2">
+                        <div class="row">
+                          <div class="col-xs-12 col-sm-6">
+                            <a href="" ng-click="showShip('KUNIGA_SIGHTSEEING_BOAT')">{{'KUNIGA_SIGHTSEEING_BOAT' | translate}}({{'NISHINOSHIMA_CHO' | translate}})</a>
+                          </div>
+                          <div class="col-xs-12 col-sm-6">
+                            <a class="twitter-timeline" href="https://twitter.com/SA0mOfVrmEHcluR?ref_src=twsrc%5Etfw">Tweets by SA0mOfVrmEHcluR</a> <script async src="//platform.twitter.com/widgets.js" charset="utf-8"></script>
+                          </div>
                       </td>
                     </tr>
                   </tbody>
