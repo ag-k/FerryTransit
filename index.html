@@ -436,12 +436,12 @@
               <div class="panel-heading">
                 <h2 class="panel-title" ng-cloak>{{'OKI_KANKO' | translate}}</h2>
               </div>
-              <div ng-if="statusSuccess" class="panel-body">
-                <div class="panel" ng-class="{'panel-default': !statusIsokaze.hasAlert, 'panel-info': statusIsokaze.status === 0, 'panel-danger': statusIsokaze.status === 1, 'panel-warning': (2 <= statusIsokaze.status) && (statusIsokaze.status <= 3), 'panel-success': statusIsokaze.status === 4}">
+              <div class="panel-body">
+                <div class="panel" ng-if="statusSuccess" ng-class="{'panel-default': !statusIsokaze.hasAlert, 'panel-info': statusIsokaze.status === 0, 'panel-danger': statusIsokaze.status === 1, 'panel-warning': (2 <= statusIsokaze.status) && (statusIsokaze.status <= 3), 'panel-success': statusIsokaze.status === 4}">
                   <div class="panel-heading">
                     <h2 class="panel-title" ng-cloak><a href="" ng-click="showShip('ISOKAZE')">{{'ISOKAZE' | translate}}</a></h2>
                   </div>
-                  <div class="panel-body">
+                  <div ng-if="statusSuccess" class="panel-body">
                     <div ng-if="statusIsokaze.hasAlert" ng-cloak>
                       <dl>
                         <dt>{{'UPDATE_TIME' | translate}}</dt>
@@ -519,7 +519,18 @@
                     </div>
                   </div>
                 </div>
-                <div class="panel" ng-class="{'panel-default': !statusDozen.hasAlert, 'panel-info': statusDozen.status === 0, 'panel-danger': statusDozen.status === 1, 'panel-warning': (2 <= statusDozen.status) && (statusDozen.status <= 3), 'panel-success': statusDozen.status === 4}">
+                <div ng-if="!statusSuccess" class="panel">
+                  <div class="panel-heading">
+                    <h2 class="panel-title" ng-cloak><a href="" ng-click="showShip('ISOKAZE')">{{'ISOKAZE' | translate}}</a></h2>
+                  </div>
+                  <div class="panel-body">
+                    {{'NO_STATUS' | translate}}
+                    <address ng-cloak>
+                      {{'CONTACT' | translate}}: {{'OKI_KANKO' | translate}}{{'COMPANY' | translate}} <a href="tel:0851460016">08514-6-0016</a>
+                    </address>
+                  </div>
+                </div>
+                <div class="panel" ng-if="statusSuccess" ng-class="{'panel-default': !statusDozen.hasAlert, 'panel-info': statusDozen.status === 0, 'panel-danger': statusDozen.status === 1, 'panel-warning': (2 <= statusDozen.status) && (statusDozen.status <= 3), 'panel-success': statusDozen.status === 4}">
                   <div class="panel-heading">
                     <h2 class="panel-title" ng-cloak><a href="" ng-click="showShip('FERRY_DOZEN')">{{'FERRY_DOZEN' | translate}}</a></h2>
                   </div>
@@ -601,20 +612,25 @@
                     </div>
                   </div>
                 </div>
+                <div ng-if="!statusSuccess" class="panel">
+                  <div class="panel-heading">
+                    <h2 class="panel-title" ng-cloak><a href="" ng-click="showShip('ISOKAZE')">{{'ISOKAZE' | translate}}</a></h2>
+                  </div>
+                  <div class="panel-body">
+                    {{'NO_STATUS' | translate}}
+                    <address ng-cloak>
+                      {{'CONTACT' | translate}}: {{'OKI_KANKO' | translate}}{{'COMPANY' | translate}} <a href="tel:0851460016">08514-6-0016</a>
+                    </address>
+                  </div>
+                </div>
                 <div class="panel panel-default">
                   <div class="panel-heading">
-                    <h2 class="panel-title" ng-cloak><a href="" ng-click="showShip('KUNIGA_SIGHTSEEING_BOAT')">{{'KUNIGA_SIGHTSEEING_BOAT' | translate}}({{'NISHINOSHIMA_CHO' | translate}})</a></h2>
+                    <h2 class="panel-title"><a href="" ng-click="showShip('KUNIGA_SIGHTSEEING_BOAT')">{{'KUNIGA_SIGHTSEEING_BOAT' | translate}}({{'NISHINOSHIMA_CHO' | translate}})</a></h2>
                   </div>
                   <div class="panel-body">
                     <a class="twitter-timeline" href="https://twitter.com/teikikankousen?ref_src=twsrc%5Etfw"  data-tweet-limit=1>Tweets by teikikankousen</a> <script async src="https://platform.twitter.com/widgets.js" charset="utf-8"></script>
                   </div>
                 </div>
-                <address ng-cloak>
-                  {{'CONTACT' | translate}}: {{'OKI_KANKO' | translate}}{{'COMPANY' | translate}} <a href="tel:0851460016">08514-6-0016</a>
-                </address>
-              </div>
-              <div ng-if="!statusSuccess" class="panel-body">
-                {{'NO_STATUS' | translate}}
                 <address ng-cloak>
                   {{'CONTACT' | translate}}: {{'OKI_KANKO' | translate}}{{'COMPANY' | translate}} <a href="tel:0851460016">08514-6-0016</a>
                 </address>
