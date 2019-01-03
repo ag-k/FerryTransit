@@ -31,22 +31,36 @@
     <div class="container">
       <div ng-controller="mainCtrl as main">
         <div class="page-header">
-          <h2>{{ 'TITLE' | translate }}</h2>
+          <h2 ng-cloak>{{ 'TITLE' | translate }}</h2>
         </div>
-
+        <uib-alert ng-repeat="alert in warningAlerts" type="{{alert.type}}" close="closeWarningAlert($index)" ng-cloak>
+          <div ng-if="warningAlerts.length > 0" class="alert alert-warning alert-dismissible" role="alert">
+          	<button type="button" class="close" data-dismiss="alert" aria-label="閉じる"><span aria-hidden="true">×</span></button>
+            {{alert.msg}}
+          </div>
+        </uib-alert>
+        <uib-alert ng-repeat="alert in dangerAlerts" type="{{alert.type}}" close="closeDangerAlert($index)" ng-cloak>
+          <div ng-if="dangerAlerts.length > 0" class="alert alert-danger alert-dismissible" role="alert">
+          	<button type="button" class="close" data-dismiss="alert" aria-label="閉じる"><span aria-hidden="true">×</span></button>
+            {{alert.msg}}
+          </div>
+        </uib-alert>
         <uib-tabset ng-model="tabModel">
-          <uib-tab index="0" heading="{{'TIMETABLE' | translate}}" select="updateTimetable()">
+          <uib-tab index="0" select="updateTimetable()">
+            <uib-tab-heading>
+              <b ng-cloak>{{'TIMETABLE' | translate}}</b>
+            </uib-tab-heading>
             <p></p>
             <div class="panel panel-default">
               <div class="panel-heading">
-                <h2 class="panel-title">{{'DEPARTURE' | translate}}/{{'ARRIVAL' | translate}}</h2>
+                <h2 class="panel-title" ng-cloak>{{'DEPARTURE' | translate}}/{{'ARRIVAL' | translate}}</h2>
               </div>
               <div class="panel-body">
                 <div class="row">
                   <div class="col-xs-10">
-                    <label>{{'_FROM' | translate}}</label>
-                    <div class="btn-group" uib-dropdown is-open="status.tableDepartureIsOpen" ng-click="submit()">
-                      <button id="from-button" on-toggle="toggled(open)" type="button" class="btn btn-primary" uib-dropdown-toggle ng-disabled="disabled">
+                    <label ng-cloak>{{'_FROM' | translate}}</label>
+                    <div class="btn-group" uib-dropdown is-open="status.tableDepartureIsOpen" ng-click="submit()" ng-cloak>
+                      <button id="from-button" on-toggle="toggled(open)" type="button" class="btn btn-primary" uib-dropdown-toggle ng-disabled="disabled" ng-cloak>
                         {{departure|translate}}<span class="caret"></span>
                       </button>
                       <ul class="dropdown-menu" uib-dropdown-menu role="menu" aria-labelledby="from-button">
@@ -63,11 +77,11 @@
                         </li>
                       </ul>
                     </div>
-                    <label>{{'FROM_' | translate}}</label>
+                    <label ng-cloak>{{'FROM_' | translate}}</label>
                     <br>
-                    <label>{{'_TO' | translate}}</label>
+                    <label ng-cloak>{{'_TO' | translate}}</label>
                     <div class="btn-group" uib-dropdown is-open="status.tableArrivalIsOpen">
-                      <button id="to-button" type="button" class="btn btn-primary" uib-dropdown-toggle ng-disabled="disabled">
+                      <button id="to-button" type="button" class="btn btn-primary" uib-dropdown-toggle ng-disabled="disabled" ng-cloak>
                         {{arrival|translate}}<span class="caret"></span>
                       </button>
                       <ul class="dropdown-menu" uib-dropdown-menu role="menu" aria-labelledby="to-button">
@@ -84,7 +98,7 @@
                         </li>
                       </ul>
                     </div>
-                    <label>{{'TO_' | translate}}</label>
+                    <label ng-cloak>{{'TO_' | translate}}</label>
                   </div>
                   <div class="col-xs-2">
                     <div class="row">
@@ -110,7 +124,7 @@
             </div>
             <div class="panel panel-default">
               <div class="panel-heading">
-                <h2 class="panel-title">{{'DATE' | translate}}</h2>
+                <h2 class="panel-title" ng-cloak>{{'DATE' | translate}}</h2>
               </div>
               <div class="panel-body">
                 <div class="row">
@@ -127,29 +141,37 @@
             </div>
             <div class="panel panel-primary">
               <div class="panel-heading">
-                <h2 class="panel-title">{{'TIMETABLE' | translate}}</h2>
+                <h2 class="panel-title" ng-cloak>{{'TIMETABLE' | translate}}</h2>
               </div>
               <div class="panel-body">
-                <table class="table">
+                <table class="table" ng-cloak>
                   <thead>
                     <tr><th>{{'SHIP'|translate}}</th><th><a href="" ng-click="showPort(departure)">{{departure|translate}}</a></th><th><a href="" ng-click="showPort(arrival)">{{arrival|translate}}</a></th></tr>
                   </thead>
                   <tbody>
                     <tr ng-repeat="trip in timetable | orderBy: 'departure_time'">
-                      <td><a href="" ng-click="showShip(trip.name)">{{trip.name|translate}}</a></td>
-                      <td>{{trip.departure_time | date:'H:mm'}} {{trip.departure | translate}}</td>
-                      <td>{{trip.arrival_time | date:'H:mm'}} {{trip.arrival | translate}}</td>
+                      <td ng-if="trip.status >= 0">
+                        <span ng-if="(trip.status > 0) && (trip.status < 3)"><i class="glyphicon glyphicon-remove-sign text-danger"></i> </span>
+                        <span ng-if="trip.status === 3"><i class="glyphicon glyphicon-warning-sign text-warning"></i> </span>
+                        <span ng-if="trip.status === 4"><i class="glyphicon glyphicon-plus-sign text-success"></i> </span>
+                        <a href="" ng-click="showShip(trip.name)">{{trip.name|translate}}</a>
+                      </td>
+                      <td ng-if="trip.status >= 0"><span ng-class="{'del': (0 < trip.status) && (trip.status < 3)}">{{trip.departure_time | date:'H:mm'}} {{trip.departure | translate}}</span></td>
+                      <td ng-if="trip.status >= 0"><span ng-class="{'del': (0 < trip.status) && (trip.status < 3)}">{{trip.arrival_time | date:'H:mm'}} {{trip.arrival | translate}}</span></td>
                     </tr>
                   </tbody>
                 </table>
               </div>
             </div>
           </uib-tab>
-          <uib-tab index="1" heading="{{'TRANSIT'| translate}}">
+          <uib-tab index="1">
+            <uib-tab-heading>
+              <b ng-cloak>{{'TRANSIT'| translate}}</b>
+            </uib-tab-heading>
             <p></p>
             <div class="panel panel-default">
               <div class="panel-heading">
-                <h2 class="panel-title">{{'DEPARTURE' | translate}}/{{'ARRIVAL' | translate}}</h2>
+                <h2 class="panel-title" ng-cloak>{{'DEPARTURE' | translate}}/{{'ARRIVAL' | translate}}</h2>
               </div>
               <div class="panel-body">
                 <div class="row">
@@ -157,12 +179,12 @@
                     <style>
                       li.groupname { margin-left: 10px; font-weight: bold;}
                     </style>
-                    <label>{{ '_FROM' | translate }}</label>
+                    <label ng-cloak>{{ '_FROM' | translate }}</label>
                     <div class="btn-group" uib-dropdown is-open="status.departureIsOpen" ng-click="submit()">
-                      <button id="from-button" on-toggle="toggled(open)" type="button" class="btn btn-primary" uib-dropdown-toggle ng-disabled="disabled">
+                      <button id="from-button" on-toggle="toggled(open)" type="button" class="btn btn-primary" uib-dropdown-toggle ng-disabled="disabled" ng-cloak>
                         {{departure|translate}}<span class="caret"></span>
                       </button>
-                      <ul class="dropdown-menu" uib-dropdown-menu role="menu" aria-labelledby="from-button">
+                      <ul class="dropdown-menu" uib-dropdown-menu role="menu" aria-labelledby="from-button" ng-cloak>
                         <li class="groupname">{{'MAINLAND'|translate}}</li>
                         <li role="menuitem">
                           <a href="#" ng-click="changeTransitDeparture(port)" ng-repeat="port in hondoPorts">{{port|translate}}</a>
@@ -179,10 +201,10 @@
                         </li>
                       </ul>
                     </div>
-                    <label>{{ 'FROM_' | translate }}</label>
+                    <label ng-cloak>{{ 'FROM_' | translate }}</label>
                     <br>
-                    <label>{{ '_TO' | translate }}</label>
-                    <div class="btn-group" uib-dropdown is-open="status.arrivalIsOpen">
+                    <label ng-cloak>{{ '_TO' | translate }}</label>
+                    <div class="btn-group" uib-dropdown is-open="status.arrivalIsOpen" ng-cloak>
                       <button id="to-button" type="button" class="btn btn-primary" uib-dropdown-toggle ng-disabled="disabled">
                         {{arrival|translate}}<span class="caret"></span>
                       </button>
@@ -203,7 +225,7 @@
                         </li>
                       </ul>
                     </div>
-                    <label>{{ 'TO_' | translate }}</label>
+                    <label ng-cloak>{{ 'TO_' | translate }}</label>
                   </div>
                   <div class="col-xs-2">
                     <div class="row">
@@ -229,12 +251,12 @@
             </div>
             <div class="panel panel-default">
               <div class="panel-heading">
-                <h2 class="panel-title">{{'DATE' | translate}}</h2>
+                <h2 class="panel-title" ng-cloak>{{'DATE' | translate}}</h2>
               </div>
               <div class="panel-body">
                 <div class="row">
                   <div class="col-md-12">
-                    <div class="btn-group">
+                    <div class="btn-group" ng-cloak>
                       <label class="btn btn-primary" ng-model="daytimeModel" ng-click="selectDepartureTime()" uib-btn-radio="'departureTime'">{{'DEPARTURE_TIME'|translate}}</label>
                       <label class="btn btn-primary" ng-model="daytimeModel" ng-click="selectArrivalTime()" uib-btn-radio="'arrivalTime'">{{'ARRIVAL_TIME'|translate}}</label>
                     </div>
@@ -243,7 +265,7 @@
                 <br>
                 <div class="row">
                   <div class="col-md-12">
-                    <p class="input-group" ng-controller="datePickerCtrl as datePicker">
+                    <p class="input-group" ng-controller="datePickerCtrl as datePicker" ng-cloak>
                       <input type="text" class="form-control" uib-datepicker-popup="{{format}}" ng-model="data.date" is-open="popup1.opened" datepicker-options="dateOptions" ng-required="true" current-text="{{'TODAY'|translate}}" clear-text="{{'CLEAR'|translate}}" close-text="{{'CLOSE'|translate}}" alt-input-formats="altInputFormats"/>
                       <span class="input-group-btn">
                         <button type="button" class="btn btn-default" ng-click="open1()"><i class="glyphicon glyphicon-calendar"></i></button>
@@ -278,15 +300,15 @@
               </uib-accordion-group>
             </uib-accordion>
             -->
-            <button type="button" id="searchButton" class="btn btn-primary btn-lg btn-block" ng-click="searchRoute()">{{'SEARCH_ROUTE'|translate}}</button>
+            <button type="button" id="searchButton" class="btn btn-primary btn-lg btn-block" ng-click="searchRoute()" ng-cloak>{{'SEARCH_ROUTE'|translate}}</button>
             <br>
-            <uib-alert ng-repeat="alert in alerts" type="{{alert.type}}" close="closeAlert($index)">{{alert.msg}}</uib-alert>
+            <uib-alert ng-repeat="alert in alerts" type="{{alert.type}}" close="closeAlert($index)" ng-cloak>{{alert.msg}}</uib-alert>
             <div class="panel panel-primary" ng-repeat="result in searchResults">
               <div class="panel-heading">
-                <h2 class="panel-title">{{'ROUTE' | translate}}{{$index+1}}</h2>
+                <h2 class="panel-title" ng-cloak>{{'ROUTE' | translate}}{{$index+1}}</h2>
               </div>
               <div class="panel-body">
-                <table class="table">
+                <table class="table" ng-cloak>
                   <thead>
                     <tr>
                       <th>{{'TIME' | translate}}</th><th>{{'ROUTE' | translate}}</th><th>{{'FARE' | translate}}</th>
@@ -306,89 +328,296 @@
                     </style>
                     <tr ng-repeat="desc in result" ng-class-even="tblBgClr.even" ng-class-odd="tblBgClr.odd">
                       <td id="time" ng-class-even="tblBgClr.even" ng-class-odd="tblBgClr.odd">{{desc.time}}</td>
-                      <td id="{{desc.port}}" ng-class-even="tblBgClr.even" ng-class-odd="tblBgClr.odd"><a href="" ng-click="showShipOrPort(desc.port)">{{desc.port | translate}}</a></td>
+                      <td id="{{desc.port}}" ng-class-even="tblBgClr.even" ng-class-odd="tblBgClr.odd">
+                        <span ng-if="(desc.status > 0) && (desc.status < 3)"><i class="glyphicon glyphicon-remove-sign text-danger"></i> </span>
+                        <span ng-if="desc.status === 3"><i class="glyphicon glyphicon-warning-sign text-warning"></i> </span>
+                        <span ng-if="desc.status === 4"><i class="glyphicon glyphicon-plus-sign text-success"></i> </span><a href="" ng-click="showShipOrPort(desc.port)">{{desc.port | translate}}</a></td>
                       <td>{{desc.price}}</td>
                     </tr>
                   </tbody>
                 </table>
               </div>
             </div>
-            <button type="button" id="moreRoute" ng-hide="hideMore" class="btn btn-primary btn-lg btn-block" ng-click="showMore()">{{'MORE_BUTTON'|translate}}</button>
+            <button type="button" id="moreRoute" ng-hide="hideMore" class="btn btn-primary btn-lg btn-block" ng-click="showMore()" ng-cloak>{{'MORE_BUTTON'|translate}}</button>
             <br>
           </uib-tab>
-          <uib-tab index="2" heading="{{'SHIP_STATUS'| translate}}">
+          <uib-tab index="2">
+            <uib-tab-heading ng-cloak><b>{{'SHIP_STATUS'| translate}}</b>
+              <span ng-if="(statusIsokaze.hasAlert && statusIsokaze.status !== 0) || (statusDozen.hasAlert && statusDozen.status !== 0) || (statusFerry.hasAlert && ((statusFerry.ferryState !== '正常運航') || (statusFerry.fastFerryState !== '正常運航')))" class="badge" style="background-color: #a94442;">!</span>
+            </uib-tab-heading>
             <br>
             <div class="panel panel-default">
               <div class="panel-heading">
-                <h2 class="panel-title">{{'OKI_KISEN' | translate}}</h2>
+                <h2 class="panel-title" ng-cloak>{{'OKI_KISEN' | translate}}</h2>
               </div>
-              <div class="panel-body">
-                <table class="table">
-                  <tbody>
-                    <tr>
-                      <th>{{'SHIP' | translate}}</th>
-                      <th>{{'SHIP_STATUS' | translate}}</th>
-                    </tr>
-                    <tr>
-                      <td>
-                        <a href="" ng-click="showShip('FERRY_OKI')">{{'FERRY_OKI' | translate}}</a><br>
-                        <a href="" ng-click="showShip('FERRY_SHIRASHIMA')">{{'FERRY_SHIRASHIMA' | translate}}</a><br>
-                        <a href="" ng-click="showShip('FERRY_KUNIGA')">{{'FERRY_KUNIGA' | translate}}</a>
-                      </td>
-                      <td rowspan="2">
-                        <a href="{{'OKI_KISEN_STATUS_URL'|translate}}">{{'OKI_KISEN'|translate}}{{'SHIP_STATUS'|translate}}</a>
-                      </td>
-                    </tr>
-                    <tr>
-                      <td><a href="" ng-click="showShip('RAINBOWJET')">{{'RAINBOWJET' | translate}}</a></td>
-                    </tr>
-                  </tbody>
-                </table>
+              <div ng-if="statusSuccess" class="panel-body">
+                <dl>
+                  <dt>{{'UPDATE_TIME' | translate}}</dt>
+                  <dd>{{ statusFerry.date }}</dd>
+                </dl>
+                <div class="panel" ng-class="{'panel-default': !statusFerry.hasAlert, 'panel-info': statusFerry.ferryState === '定期運航', 'panel-danger': statusFerry.ferryState === '欠航', 'panel-warning': (statusFerry.ferryState === '運航に変更あり') || (statusFerry.ferryState === '休航')}">
+                  <div class="panel-heading">
+                    <h2 class="panel-title" ng-cloak>
+                      <a href="" ng-click="showShip('FERRY_OKI')">{{'FERRY_OKI' | translate}}</a> /
+                      <a href="" ng-click="showShip('FERRY_SHIRASHIMA')">{{'FERRY_SHIRASHIMA' | translate}}</a> /
+                      <a href="" ng-click="showShip('FERRY_KUNIGA')">{{'FERRY_KUNIGA' | translate}}</a>
+                    </h2>
+                  </div>
+                  <div class="panel-body">
+                    <div ng-if="statusFerry.hasAlert" ng-cloak>
+                      <dl>
+                        <dt>{{'SHIP_STATUS' | translate}}</dt>
+                        <dd>{{ statusFerry.ferryState | translate }}</dd>
+                      </dl>
+                      <dl>
+                        <dt>{{'COMMENT' | translate}}</dt>
+                        <dd>{{ statusFerry.ferryComment }}</dd>
+                      </dl>
+                    </div>
+                    <div ng-if="!statusFerry.hasAlert" ng-cloak>
+                      {{'NO_ALERT' | translate}}
+                    </div>
+                  </div>
+                </div>
+
+                <div class="panel" ng-class="{'panel-default': !statusFerry.hasAlert, 'panel-info': statusFerry.fastFerryState === '定期運航', 'panel-danger': statusFerry.fastFerryState === '欠航', 'panel-warning': (statusFerry.fastFerryState === '運航に変更あり') || (statusFerry.fastFerryState === '休航')}">
+                  <div class="panel-heading">
+                    <h2 class="panel-title" ng-cloak>
+                      <a href="" ng-click="showShip('RAINBOWJET')">{{'RAINBOWJET' | translate}}</a>
+                    </h2>
+                  </div>
+                  <div class="panel-body">
+                    <div ng-if="statusFerry.hasAlert" ng-cloak>
+                      <dl>
+                        <dt>{{'SHIP_STATUS' | translate}}</dt>
+                        <dd>{{ statusFerry.fastFerryState | translate }}</dd>
+                      </dl>
+                      <dl>
+                        <dt>{{'COMMENT' | translate}}</dt>
+                        <dd>{{ statusFerry.fastFerryComment }}</dd>
+                      </dl>
+                    </div>
+                    <div ng-if="!statusFerry.hasAlert" ng-cloak>
+                      {{'NO_ALERT' | translate}}
+                    </div>
+                  </div>
+                </div>
+
+                <div class="panel panel-default">
+                  <div class="panel-heading">
+                    <h2 class="panel-title" ng-cloak>
+                      {{'WAVEINFO' | translate}}
+                    </h2>
+                  </div>
+                  <div class="panel-body">
+                    <div ng-if="statusFerry.hasAlert" ng-cloak>
+                      <dl>
+                        <dt>{{'TODAY' | translate}}</dt>
+                        <dd>{{ statusFerry.todayWave }}</dd>
+                      </dl>
+                      <dl>
+                        <dt>{{'TOMORROW' | translate}}</dt>
+                        <dd>{{ statusFerry.tomorrowWave }}</dd>
+                      </dl>
+                    </div>
+                    <div ng-if="!statusFerry.hasAlert" ng-cloak>
+                      {{'NO_ALERT' | translate}}
+                    </div>
+                  </div>
+                </div>
+                <a href="{{'OKI_KISEN_STATUS_URL'|translate}}">{{'OKI_KISEN'|translate}}{{'SHIP_STATUS'|translate}}</a>
+              </div>
+              <div ng-if="!statusSuccess" class="panel-body" ng-cloak>
+                {{'NO_STATUS' | translate}}<br>
+                <a href="{{'OKI_KISEN_STATUS_URL'|translate}}">{{'OKI_KISEN'|translate}}{{'SHIP_STATUS'|translate}}</a>
               </div>
             </div>
             <div class="panel panel-default">
               <div class="panel-heading">
-                <h2 class="panel-title">{{'OKI_KANKO' | translate}}</h2>
+                <h2 class="panel-title" ng-cloak>{{'OKI_KANKO' | translate}}</h2>
               </div>
-              <div class="panel-body">
-                <table class="table">
-                  <tbody>
-                    <tr>
-                      <th>{{'SHIP' | translate}}</th>
-                      <th>{{'SHIP_STATUS' | translate}}</th>
-                    </tr>
-                    <tr>
-                      <td colspan="2">
-                        <div class="row">
-                          <div class="col-xs-12 col-sm-6">
-                            <a href="" ng-click="showShip('FERRY_DOZEN')">{{'FERRY_DOZEN' | translate}}</a>
-                            <br>
-                            <a href="" ng-click="showShip('ISOKAZE')">{{'ISOKAZE' | translate}}</a>
-                          </div>
-                          <div class="col-xs-12 col-sm-6">
-                            <a class="twitter-timeline" data-lang="ja" data-tweet-limit="1" href="https://twitter.com/ZKvEQv5rVnwEedu?ref_src=twsrc%5Etfw">Tweets by ZKvEQv5rVnwEedu</a> <script async src="https://platform.twitter.com/widgets.js" charset="utf-8"></script>
-                            <address>
-                              {{'CONTACT' | translate}}:<br>
-                              {{'OKI_KANKO' | translate}}{{'COMPANY' | translate}} <a href="tel:0851460016">08514-6-0016</a>
-                            </address>
-                          </div>
-                        </div>
-                      </td>
-                    </tr>
-                    <tr>
-                      <td colspan="2">
-                        <div class="row">
-                          <div class="col-xs-12 col-sm-6">
-                            <a href="" ng-click="showShip('KUNIGA_SIGHTSEEING_BOAT')">{{'KUNIGA_SIGHTSEEING_BOAT' | translate}}({{'NISHINOSHIMA_CHO' | translate}})</a>
-                          </div>
-                          <div class="col-xs-12 col-sm-6">
-                            <a class="twitter-timeline" data-lang="ja" data-tweet-limit="1" href="https://twitter.com/SA0mOfVrmEHcluR?ref_src=twsrc%5Etfw">Tweets by SA0mOfVrmEHcluR</a> <script async src="//platform.twitter.com/widgets.js" charset="utf-8"></script>
-                          </div>
-                        </div>
-                      </td>
-                    </tr>
-                  </tbody>
-                </table>
+              <div ng-if="statusSuccess" class="panel-body">
+                <div class="panel" ng-class="{'panel-default': !statusIsokaze.hasAlert, 'panel-info': statusIsokaze.status === 0, 'panel-danger': statusIsokaze.status === 1, 'panel-warning': (2 <= statusIsokaze.status) && (statusIsokaze.status <= 3), 'panel-success': statusIsokaze.status === 4}">
+                  <div class="panel-heading">
+                    <h2 class="panel-title" ng-cloak><a href="" ng-click="showShip('ISOKAZE')">{{'ISOKAZE' | translate}}</a></h2>
+                  </div>
+                  <div class="panel-body">
+                    <div ng-if="statusIsokaze.hasAlert" ng-cloak>
+                      <dl>
+                        <dt>{{'UPDATE_TIME' | translate}}</dt>
+                        <dd>{{ statusIsokaze.updated }}</dd>
+                      </dl>
+                      <dl>
+                        <dt>{{'SHIP_STATUS' | translate}}</dt>
+                        <dd ng-if="statusIsokaze.status === 0">{{'NORMAL_SERVICE' | translate}}</dd>
+                        <dd ng-if="statusIsokaze.status === 1">{{'FULLY_CANCELLED' | translate}}</dd>
+                        <dd ng-if="statusIsokaze.status === 2">{{'PARTIALLY_CANCELLED' | translate}}</dd>
+                        <dd ng-if="statusIsokaze.status === 3">{{'KURI_SKIPPED' | translate}}</dd>
+                        <dd ng-if="statusIsokaze.status === 4">{{'SERVICE_RESUMED' | translate}}</dd>
+                      </dl>
+                      <dl>
+                        <dd ng-if="(2 <= statusIsokaze.status) && (statusIsokaze.status <= 4)">
+                          <table class="table">
+                            <thead>
+                              <tr><th>{{'DEPARTURE' | translate }}</th><th>{{'DEPARTURE_TIME' | translate }}</th><th>{{'ARRIVAL' | translate }}</th></tr>
+                            </thead>
+                            <tbody>
+                              <tr>
+                                <td>{{statusIsokaze.departure | translate}}</td>
+                                <td>{{statusIsokaze.startTime | date:'H:mm'}}</td>
+                                <td>{{statusIsokaze.arrival | translate}}</td>
+                              </tr>
+                            </tbody>
+                          </table>
+                        </dd>
+                      </dl>
+                      <dl ng-if="(1 <= statusIsokaze.status) && (statusIsokaze.status <= 3)" >
+                        <dt>{{'REASON' | translate}}</dt>
+                        <dd>{{ statusIsokaze.reason | translate }}</dd>
+                      </dl>
+                      <dl ng-if="statusIsokaze.extraShips.length > 0">
+                        <dt>{{'EXTRA_SHIPS' | translate}}</dt>
+                        <dd>
+                          <table class="table">
+                            <thead>
+                              <tr><th>{{'DEPARTURE' | translate }}</th><th>{{'DEPARTURE_TIME' | translate }}</th><th>{{'ARRIVAL' | translate }}</th></tr>
+                            </thead>
+                            <tbody>
+                              <tr ng-repeat="trip in statusIsokaze.extraShips">
+                                <td>{{trip.departure | translate}}</td>
+                                <td>{{trip.departure_time | date:'H:mm'}}</td>
+                                <td>{{trip.arrival | translate}}</td>
+                              </tr>
+                            </tbody>
+                          </table>
+                        </dd>
+                      </dl>
+                      <dl ng-if="(statusIsokaze.extraShips.length === 0) && (statusIsokaze.lastShips.length > 0)">
+                        <dt>{{'LAST_SHIPS' | translate}}</dt>
+                        <dd>
+                          <table class="table">
+                            <thead>
+                              <tr><th>{{'DEPARTURE' | translate }}</th><th>{{'DEPARTURE_TIME' | translate }}</th><th>{{'ARRIVAL' | translate }}</th></tr>
+                            </thead>
+                            <tbody>
+                              <tr ng-repeat="trip in statusIsokaze.lastShips">
+                                <td>{{trip.departure | translate}}</td>
+                                <td>{{trip.departure_time | date:'H:mm'}}</td>
+                                <td>{{trip.arrival | translate}}</td>
+                              </tr>
+                            </tbody>
+                          </table>
+                        </dd>
+                      </dl>
+                      <dl ng-if="statusIsokaze.comment">
+                        <dt>{{'COMMENT' | translate}}</dt>
+                        <dd>{{ statusIsokaze.comment }}</dd>
+                      </dl>
+                    </div>
+                    <div ng-if="!statusIsokaze.hasAlert" ng-cloak>
+                      {{'NO_ALERT' | translate}}
+                    </div>
+                  </div>
+                </div>
+                <div class="panel" ng-class="{'panel-default': !statusDozen.hasAlert, 'panel-info': statusDozen.status === 0, 'panel-danger': statusDozen.status === 1, 'panel-warning': (2 <= statusDozen.status) && (statusDozen.status <= 3), 'panel-success': statusDozen.status === 4}">
+                  <div class="panel-heading">
+                    <h2 class="panel-title" ng-cloak><a href="" ng-click="showShip('FERRY_DOZEN')">{{'FERRY_DOZEN' | translate}}</a></h2>
+                  </div>
+                  <div class="panel-body">
+                    <div ng-if="statusDozen.hasAlert" ng-cloak>
+                      <dl>
+                        <dt>{{'UPDATE_TIME' | translate}}</dt>
+                        <dd>{{ statusDozen.updated }}</dd>
+                      </dl>
+                      <dl>
+                        <dt>{{'SHIP_STATUS' | translate}}</dt>
+                        <dd ng-if="statusDozen.status === 0">{{'NORMAL_SERVICE' | translate}}</dd>
+                        <dd ng-if="statusDozen.status === 1">{{'FULLY_CANCELLED' | translate}}</dd>
+                        <dd ng-if="statusDozen.status === 2">{{'PARTIALLY_CANCELLED' | translate}}</dd>
+                        <dd ng-if="statusDozen.status === 3">{{'KURI_CANCELLED' | translate}}</dd>
+                        <dd ng-if="statusDozen.status === 4">{{'SERVICE_RESUMED' | translate}}</dd>
+                      </dl>
+                      <dl>
+                        <dd ng-if="(2 <= statusDozen.status) && (statusDozen.status <= 4)">
+                          <table class="table">
+                            <thead>
+                              <tr><th>{{'DEPARTURE' | translate }}</th><th>{{'DEPARTURE_TIME' | translate }}</th><th>{{'ARRIVAL' | translate }}</th></tr>
+                            </thead>
+                            <tbody>
+                              <tr>
+                                <td>{{statusDozen.departure | translate}}</td>
+                                <td>{{statusDozen.startTime | date:'H:mm'}}</td>
+                                <td>{{statusDozen.arrival | translate}}</td>
+                              </tr>
+                            </tbody>
+                          </table>
+                        </dd>
+                      </dl>
+                      <dl ng-if="(1 <= statusDozen.status) && (statusDozen.status <= 3)" >
+                        <dt>{{'REASON' | translate}}</dt>
+                        <dd>{{ statusDozen.reason | translate }}</dd>
+                      </dl>
+                      <dl ng-if="statusDozen.extraShips.length > 0">
+                        <dt>{{'EXTRA_SHIPS' | translate}}</dt>
+                        <dd>
+                          <table class="table">
+                            <thead>
+                              <tr><th>{{'DEPARTURE' | translate }}</th><th>{{'DEPARTURE_TIME' | translate }}</th><th>{{'ARRIVAL' | translate }}</th></tr>
+                            </thead>
+                            <tbody>
+                              <tr ng-repeat="trip in statusDozen.extraShips">
+                                <td>{{trip.departure | translate}}</td>
+                                <td>{{trip.departure_time | date:'H:mm'}}</td>
+                                <td>{{trip.arrival | translate}}</td>
+                              </tr>
+                            </tbody>
+                          </table>
+                        </dd>
+                      </dl>
+                      <dl ng-if="(statusDozen.extraShips.length === 0) && (statusDozen.lastShips.length > 0)">
+                        <dt>{{'LAST_SHIPS' | translate}}</dt>
+                        <dd>
+                          <table class="table">
+                            <thead>
+                              <tr><th>{{'DEPARTURE' | translate }}</th><th>{{'DEPARTURE_TIME' | translate }}</th><th>{{'ARRIVAL' | translate }}</th></tr>
+                            </thead>
+                            <tbody>
+                              <tr ng-repeat="trip in statusDozen.lastShips">
+                                <td>{{trip.departure | translate}}</td>
+                                <td>{{trip.departure_time | date:'H:mm'}}</td>
+                                <td>{{trip.arrival | translate}}</td>
+                              </tr>
+                            </tbody>
+                          </table>
+                        </dd>
+                      </dl>
+                      <dl ng-if="statusDozen.comment">
+                        <dt>{{'COMMENT' | translate}}</dt>
+                        <dd>{{ statusDozen.comment }}</dd>
+                      </dl>
+                    </div>
+                    <div ng-if="!statusDozen.hasAlert">
+                      {{'NO_ALERT' | translate}}
+                    </div>
+                  </div>
+                </div>
+                <div class="panel panel-default">
+                  <div class="panel-heading">
+                    <h2 class="panel-title" ng-cloak><a href="" ng-click="showShip('KUNIGA_SIGHTSEEING_BOAT')">{{'KUNIGA_SIGHTSEEING_BOAT' | translate}}({{'NISHINOSHIMA_CHO' | translate}})</a></h2>
+                  </div>
+                  <div class="panel-body">
+                    <a class="twitter-timeline" href="https://twitter.com/teikikankousen?ref_src=twsrc%5Etfw"  data-tweet-limit=1>Tweets by teikikankousen</a> <script async src="https://platform.twitter.com/widgets.js" charset="utf-8"></script>
+                  </div>
+                </div>
+                <address ng-cloak>
+                  {{'CONTACT' | translate}}: {{'OKI_KANKO' | translate}}{{'COMPANY' | translate}} <a href="tel:0851460016">08514-6-0016</a>
+                </address>
+              </div>
+              <div ng-if="!statusSuccess" class="panel-body">
+                {{'NO_STATUS' | translate}}
+                <address ng-cloak>
+                  {{'CONTACT' | translate}}: {{'OKI_KANKO' | translate}}{{'COMPANY' | translate}} <a href="tel:0851460016">08514-6-0016</a>
+                </address>
               </div>
             </div>
           </uib-tab>

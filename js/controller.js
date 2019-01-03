@@ -1,5 +1,13 @@
 function mainCtrl($scope, $uibModal, $http, SharedStateService, $filter, $location, $anchorScroll) {
     var MAX_NEXT_CHAIN = 5;
+    var TripStatus = {
+        hidden: -1,
+        normal: 0,
+        delay: 1,
+        cancel: 2,
+        change: 3,
+        extra: 4
+    };
     $scope.portMaps = { "HONDO": '<iframe src="https://www.google.com/maps/d/embed?mid=10LYdFfHjM-C6lq36egqxMuDIiMg" width="640" height="480"></iframe>',
         "HONDO_SAKAIMINATO": '<iframe src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d2292.317150965745!2d133.22227226073633!3d35.54509842041033!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x355655ad5deb0d71%3A0x177b9c28785fc8a3!2z6Zqg5bKQ5rG96Ii5IOWig-a4ryDjg5Xjgqfjg6rjg7zjgr_jg7zjg5_jg4rjg6s!5e0!3m2!1sja!2sjp!4v1508490999479" width="600" height="450" frameborder="0" style="border:0" allowfullscreen></iframe>',
         "HONDO_SHICHIRUI": '<iframe src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3245.2782127375426!2d133.22755195027142!3d35.57152434349223!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x3556547244a8948d%3A0xd6870c7a99239d6c!2z5LiD6aGe5riv!5e0!3m2!1sja!2sjp!4v1508490937348" width="600" height="450" frameborder="0" style="border:0" allowfullscreen></iframe>',
@@ -34,6 +42,36 @@ function mainCtrl($scope, $uibModal, $http, SharedStateService, $filter, $locati
     $scope.closeAlert = function (index) {
         $scope.alerts.splice(index, 1);
     };
+    $scope.warningAlerts = [];
+    $scope.closeWarningAlert = function (index) {
+        $scope.warningAlerts.splice(index, 1);
+    };
+    $scope.dangerAlerts = [];
+    $scope.closeDangerAlert = function (index) {
+        $scope.dangerAlerts.splice(index, 1);
+    };
+    $scope.statusIsokaze = {};
+    $scope.statusIsokaze.hasAlert = false;
+    $scope.statusIsokaze.status = 0;
+    $scope.statusIsokaze.date = null;
+    $scope.statusIsokaze.updated = null;
+    $scope.statusIsokaze.summary = null;
+    $scope.statusIsokaze.lastShips = null;
+    $scope.statusIsokaze.extraShips = null;
+    $scope.statusIsokaze.comment = null;
+    $scope.statusDozen = {};
+    $scope.statusDozen.hasAlert = false;
+    $scope.statusDozen.status = 0;
+    $scope.statusDozen.date = null;
+    $scope.statusDozen.updated = null;
+    $scope.statusDozen.summary = null;
+    $scope.statusDozen.lastShips = null;
+    $scope.statusDozen.extraShips = null;
+    $scope.statusDozen.comment = null;
+    $scope.statusFerry = {};
+    $scope.statusFerry.hasAlert = false;
+    $scope.statusFerry.date = null;
+    $scope.statusSuccess = false;
     //時刻入力
     $scope.hstep = 1;
     $scope.mstep = 15;
@@ -74,15 +112,118 @@ function mainCtrl($scope, $uibModal, $http, SharedStateService, $filter, $locati
         }
         catch (e) { }
         restoreDateObjects();
-        $scope.updateTimetable();
+        $http.get('https://ship.nkk-oki.com/api/status').then(function (res) {
+            //console.log(res);
+            var st1 = res.data[0];
+            var st2 = res.data[1];
+            var ferryState = res.data[2];
+            if (st1 === null) {
+                $scope.statusIsokaze.hasAlert = false;
+            }
+            else {
+                var dateStr = $filter('date')($scope.data.date, 'yyyy/MM/dd', '+0900');
+                $scope.statusIsokaze.hasAlert = true;
+                $scope.statusIsokaze.date = st1.date;
+                $scope.statusIsokaze.updated = st1.updated_at;
+                $scope.statusIsokaze.status = st1.status;
+                $scope.statusIsokaze.prevStatus = st1.prev_status;
+                $scope.statusIsokaze.departure = st1.departure;
+                $scope.statusIsokaze.startTime = st1.start_time;
+                $scope.statusIsokaze.arrival = st1.arrival;
+                $scope.statusIsokaze.reason = st1.reason;
+                $scope.statusIsokaze.summary = st1.summary;
+                $scope.statusIsokaze.lastShips = st1.lastShips;
+                $scope.statusIsokaze.extraShips = st1.extraShips;
+                $scope.statusIsokaze.comment = st1.comment;
+                //臨時便を追加
+                if (st1.extraShips) {
+                    angular.forEach(st1.lastShips, function (trip, index) {
+                        var departureTime = new Date(dateStr + ' ' + trip.departure_time + ':00');
+                        $scope.rawTimetable.push({
+                            trip_id: -1,
+                            start_date: dateStr,
+                            end_date: dateStr,
+                            name: "ISOKAZE",
+                            departure: trip.departure,
+                            departure_time: departureTime,
+                            arrival: trip.arrival,
+                            arrival_time: null,
+                            status: TripStatus.extra
+                        });
+                    });
+                }
+            }
+            if (st2 === null) {
+                $scope.statusDozen.hasAlert = false;
+            }
+            else {
+                $scope.statusDozen.hasAlert = true;
+                $scope.statusDozen.date = st2.date;
+                $scope.statusDozen.updated = st2.updated_at;
+                $scope.statusDozen.status = st2.status;
+                $scope.statusDozen.prevStatus = st2.prev_status;
+                $scope.statusDozen.departure = st2.departure;
+                $scope.statusDozen.startTime = st2.start_time;
+                $scope.statusDozen.arrival = st2.arrival;
+                $scope.statusDozen.reason = st2.reason;
+                $scope.statusDozen.summary = st2.summary;
+                $scope.statusDozen.lastShips = st2.lastShips;
+                $scope.statusDozen.extraShips = st2.extraShips;
+                $scope.statusDozen.comment = st2.comment;
+                //臨時便を追加
+                if (st2.extraShips) {
+                    angular.forEach(st2.lastShips, function (trip, index) {
+                        var departureTime = new Date(dateStr + ' ' + trip.departure_time + ':00');
+                        $scope.rawTimetable.push({
+                            trip_id: -1,
+                            start_date: dateStr,
+                            end_date: dateStr,
+                            name: "FERRY_DOZEN",
+                            departure: trip.departure,
+                            departure_time: departureTime,
+                            arrival: trip.arrival,
+                            arrival_time: null,
+                            status: TripStatus.extra
+                        });
+                    });
+                }
+            }
+            if (ferryState === null) {
+                $scope.statusFerry.hasAlert = false;
+            }
+            else {
+                $scope.statusFerry.hasAlert = true;
+                $scope.statusFerry.date = ferryState.date;
+                $scope.statusFerry.ferryState = ferryState.ferry_state;
+                $scope.statusFerry.ferryComment = ferryState.ferry_comment;
+                $scope.statusFerry.fastFerryState = ferryState.fast_ferry_state;
+                $scope.statusFerry.fastFerryComment = ferryState.fast_ferry_comment;
+                $scope.statusFerry.todayWave = ferryState.today_wave;
+                $scope.statusFerry.tomorrowWave = ferryState.tomorrow_wave;
+            }
+            $scope.statusSuccess = true;
+            $scope.updateTimetable();
+        }, function (res) {
+            $scope.warningAlerts.push({ msg: $filter('translate')('LOAD_STATUS_ERROR') });
+            $scope.statusSuccess = false;
+            //console.log(res);
+        });
     }, function (res) {
         //Error handling
-        console.log("Failed to get timetable.");
         try {
             $scope.rawTimetable = JSON.parse(localStorage.getItem('rawTimetable'));
+            if ($scope.rawTimetable) {
+                $scope.warningAlerts.push({ msg: $filter('translate')('OFFLINE_TIMETABLE_ERROR') });
+            }
+            else {
+                $scope.dangerAlerts.push({ msg: $filter('translate')('LOAD_TIMETABLE_ERROR') });
+            }
+            $scope.warningAlerts.push({ msg: $filter('translate')('LOAD_STATUS_ERROR') });
+            $scope.statusSuccess = false;
         }
-        catch (e) { }
-        //TODO:オフライン時のアラートを出す
+        catch (e) {
+            $scope.dangerAlerts.push({ msg: $filter('translate')('LOAD_TIMETABLE_ERROR') });
+        }
         restoreDateObjects();
         $scope.updateTimetable();
     });
@@ -142,6 +283,7 @@ function mainCtrl($scope, $uibModal, $http, SharedStateService, $filter, $locati
             angular.forEach(onePathTimetable, function (trip, index) {
                 var departure;
                 var arrival;
+                var tripStatus;
                 if (trip.departure === "HONDO_SHICHIRUI") {
                     departure = "TIMETABLE_SUP_SHICHIRUI";
                 }
@@ -160,33 +302,71 @@ function mainCtrl($scope, $uibModal, $http, SharedStateService, $filter, $locati
                 else {
                     arrival = "";
                 }
+                if (trip.status === 4) {
+                    tripStatus = trip.status;
+                }
+                else {
+                    if (trip.name === "ISOKAZE_EX") {
+                        tripStatus = TripStatus.hidden;
+                    }
+                    else {
+                        tripStatus = TripStatus.normal;
+                    }
+                }
                 resultTimetable.push({
                     trip_id: trip.trip_id,
                     name: trip.name,
                     departure: departure,
                     departure_time: trip.departure_time,
                     arrival: arrival,
-                    arrival_time: trip.arrival_time
+                    arrival_time: trip.arrival_time,
+                    status: tripStatus
                 });
             });
         }
         else {
             angular.forEach(onePathTimetable, function (trip, index) {
+                var tripStatus;
+                if (trip.status === 4) {
+                    tripStatus = trip.status;
+                }
+                else {
+                    if (trip.name === "ISOKAZE_EX") {
+                        tripStatus = TripStatus.hidden;
+                    }
+                    else {
+                        tripStatus = TripStatus.normal;
+                    }
+                }
                 resultTimetable.push({
                     trip_id: trip.trip_id,
                     name: trip.name,
                     departure: "",
                     departure_time: trip.departure_time,
                     arrival: "",
-                    arrival_time: trip.arrival_time
+                    arrival_time: trip.arrival_time,
+                    status: tripStatus
                 });
             });
         }
         //有効なパスリストからすでに抽出済みのパスを削除
         departureTimetable = $filter("xor")(departureTimetable, resultTimetable, 'trip_id');
+        //2パス以上の経路を探索
         angular.forEach(departureTimetable, function (trip, index) {
             var departure;
             var arrival;
+            var tripStatus;
+            if (trip.status === 4) {
+                tripStatus = trip.status;
+            }
+            else {
+                if (trip.name === "ISOKAZE_EX") {
+                    tripStatus = TripStatus.hidden;
+                }
+                else {
+                    tripStatus = TripStatus.normal;
+                }
+            }
             if ($scope.departure === "HONDO") {
                 if (trip.departure === "HONDO_SHICHIRUI") {
                     departure = "TIMETABLE_SUP_SHICHIRUI";
@@ -235,7 +415,8 @@ function mainCtrl($scope, $uibModal, $http, SharedStateService, $filter, $locati
                                     departure: departure,
                                     departure_time: trip.departure_time,
                                     arrival: arrival,
-                                    arrival_time: nextTrip.arrival_time
+                                    arrival_time: nextTrip.arrival_time,
+                                    status: tripStatus
                                 });
                                 break;
                             }
@@ -246,7 +427,8 @@ function mainCtrl($scope, $uibModal, $http, SharedStateService, $filter, $locati
                                 departure: departure,
                                 departure_time: trip.departure_time,
                                 arrival: arrival,
-                                arrival_time: nextTrip.arrival_time
+                                arrival_time: nextTrip.arrival_time,
+                                status: tripStatus
                             });
                             break;
                         }
@@ -260,7 +442,315 @@ function mainCtrl($scope, $uibModal, $http, SharedStateService, $filter, $locati
                 }
             }
         });
+        //欠航情報を反映
+        var dateStr = $filter('date')($scope.data.date, 'yyyy/MM/dd ', '+0900');
+        if ($scope.statusFerry.hasAlert) {
+            if ($scope.statusFerry.ferryState === '正常運航') {
+                //正常運航
+            }
+            else if ($scope.statusFerry.ferryState === "欠航") {
+                //全便欠航
+                angular.forEach(resultTimetable, function (trip, index) {
+                    if ((trip.name === "FERRY_OKI") || (trip.name === "FERRY_KUNIGA") || (trip.name === "FERRY_SHIRASHIMA")) {
+                        trip.status = TripStatus.cancel;
+                    }
+                });
+            }
+            else if ($scope.statusFerry.ferryState === "運航に変更あり") {
+                //運航に変更あり
+                angular.forEach(resultTimetable, function (trip, index) {
+                    if ((trip.name === "FERRY_OKI") || (trip.name === "FERRY_KUNIGA") || (trip.name === "FERRY_SHIRASHIMA")) {
+                        trip.status = TripStatus.change;
+                    }
+                });
+            }
+            else if ($scope.statusFerry.ferryState === "休航") {
+                angular.forEach(resultTimetable, function (trip, index) {
+                    if ((trip.name === "FERRY_OKI") || (trip.name === "FERRY_KUNIGA") || (trip.name === "FERRY_SHIRASHIMA")) {
+                        trip.status = TripStatus.cancel;
+                    }
+                });
+            }
+            if ($scope.statusFerry.fastFerryState === '正常運航') {
+                //正常運航
+            }
+            else if ($scope.statusFerry.fastFerryState === "欠航") {
+                //全便欠航
+                angular.forEach(resultTimetable, function (trip, index) {
+                    if (trip.name === "RAINBOWJET") {
+                        trip.status = TripStatus.cancel;
+                    }
+                });
+            }
+            else if ($scope.statusFerry.fastFerryState === "運航に変更あり") {
+                //運航に変更あり
+                angular.forEach(resultTimetable, function (trip, index) {
+                    if (trip.name === "RAINBOWJET") {
+                        trip.status = TripStatus.change;
+                    }
+                });
+            }
+            else if ($scope.statusFerry.fastFerryState === "休航") {
+                angular.forEach(resultTimetable, function (trip, index) {
+                    if (trip.name === "RAINBOWJET") {
+                        trip.status = TripStatus.cancel;
+                    }
+                });
+            }
+        }
+        if ($scope.statusIsokaze.hasAlert) {
+            if ($scope.statusIsokaze.status === 0) {
+                //通常運航
+            }
+            else if ($scope.statusIsokaze.status === 1) {
+                //全便欠航
+                angular.forEach(resultTimetable, function (trip, index) {
+                    if (trip.name === "ISOKAZE") {
+                        trip.status = TripStatus.cancel;
+                    }
+                });
+            }
+            else if ($scope.statusIsokaze.status === 2) {
+                //一部欠航
+                var startTime = new Date(dateStr + $scope.statusIsokaze.startTime + ':00');
+                angular.forEach(resultTimetable, function (trip, index) {
+                    var tripTime = new Date();
+                    var cancelTime = new Date();
+                    cancelTime.setHours(startTime.getHours());
+                    cancelTime.setMinutes(startTime.getMinutes());
+                    if (trip.name === "ISOKAZE") {
+                        tripTime.setHours(trip.departure_time.getHours());
+                        tripTime.setMinutes(trip.departure_time.getMinutes());
+                        if (cancelTime.getTime() < tripTime.getTime()) {
+                            trip.status = TripStatus.cancel;
+                        }
+                    }
+                });
+            }
+            else if ($scope.statusIsokaze.status === 3) {
+                //臨時ダイヤ(来居抜港)
+                var startTime = new Date(dateStr + $scope.statusIsokaze.startTime + ':00');
+                angular.forEach(resultTimetable, function (trip, index) {
+                    var tripTime = new Date();
+                    var cancelTime = new Date();
+                    cancelTime.setHours(startTime.getHours());
+                    cancelTime.setMinutes(startTime.getMinutes());
+                    tripTime.setHours(trip.departure_time.getHours());
+                    tripTime.setMinutes(trip.departure_time.getMinutes());
+                    if (trip.name === "ISOKAZE") {
+                        if (cancelTime.getTime() < tripTime.getTime()) {
+                            trip.status = TripStatus.change;
+                        }
+                    }
+                    else if (trip.name === "ISOKAZE_EX") {
+                        if (cancelTime.getTime() < tripTime.getTime()) {
+                            trip.status = TripStatus.normal;
+                        }
+                    }
+                });
+            }
+        }
+        if ($scope.statusDozen.hasAlert) {
+            if ($scope.statusDozen.status === 0) {
+                //通常運航
+            }
+            else if ($scope.statusDozen.status === 1) {
+                //全便欠航
+                angular.forEach(resultTimetable, function (trip, index) {
+                    if (trip.name === "FERRY_DOZEN") {
+                        trip.status = TripStatus.cancel;
+                    }
+                });
+            }
+            else if ($scope.statusDozen.status === 2) {
+                //一部欠航
+                var startTime = new Date(dateStr + $scope.statusDozen.startTime + ':00');
+                angular.forEach(resultTimetable, function (trip, index) {
+                    var tripTime = new Date();
+                    var cancelTime = new Date();
+                    cancelTime.setHours(startTime.getHours());
+                    cancelTime.setMinutes(startTime.getMinutes());
+                    if (trip.name === "FERRY_DOZEN") {
+                        tripTime.setHours(trip.departure_time.getHours());
+                        tripTime.setMinutes(trip.departure_time.getMinutes());
+                        if (cancelTime.getTime() < tripTime.getTime()) {
+                            trip.status = TripStatus.cancel;
+                        }
+                    }
+                });
+            }
+            else if ($scope.statusDozen.status === 3) {
+                //来居便欠航
+                var startTime = new Date(dateStr + $scope.statusDozen.startTime + ':00');
+                angular.forEach(resultTimetable, function (trip, index) {
+                    var tripTime = new Date();
+                    var cancelTime = new Date();
+                    cancelTime.setHours(startTime.getHours());
+                    cancelTime.setMinutes(startTime.getMinutes());
+                    tripTime.setHours(trip.departure_time.getHours());
+                    tripTime.setMinutes(trip.departure_time.getMinutes());
+                    if (trip.name === "FERRY_DOZEN") {
+                        if (cancelTime.getTime() === tripTime.getTime()) {
+                            trip.status = TripStatus.cancel;
+                        }
+                    }
+                });
+            }
+        }
         $scope.timetable = resultTimetable;
+    };
+    $scope.checkTripStatus = function (trip) {
+        var dateStr = $filter('date')($scope.data.date, 'yyyy/MM/dd ', '+0900');
+        if ((trip.name === "FERRY_OKI") || (trip.name === "FERRY_KUNIGA") || (trip.name === "FERRY_SHIRASHIMA")) {
+            if ($scope.statusFerry.hasAlert) {
+                if ($scope.statusFerry.ferryState === '正常運航') {
+                    return TripStatus.normal; //正常運航
+                }
+                else if ($scope.statusFerry.ferryState === "欠航") {
+                    return TripStatus.cancel;
+                }
+                else if ($scope.statusFerry.ferryState === "運航に変更あり") {
+                    return TripStatus.change;
+                }
+                else if ($scope.statusFerry.ferryState === "休航") {
+                    return TripStatus.cancel;
+                }
+            }
+            else {
+                return TripStatus.normal; //通知なし
+            }
+        }
+        else if (trip.name === "RAINBOWJET") {
+            if ($scope.statusFerry.hasAlert) {
+                if ($scope.statusFerry.fastFerryState === '正常運航') {
+                    return TripStatus.normal;
+                }
+                else if ($scope.statusFerry.fastFerryState === "欠航") {
+                    return TripStatus.cancel;
+                }
+                else if ($scope.statusFerry.fastFerryState === "運航に変更あり") {
+                    return TripStatus.change;
+                }
+                else if ($scope.statusFerry.fastFerryState === "休航") {
+                    return TripStatus.cancel;
+                }
+            }
+            else {
+                return TripStatus.normal; //通知なし
+            }
+        }
+        else if (trip.name === "ISOKAZE") {
+            if ($scope.statusIsokaze.hasAlert) {
+                if ($scope.statusIsokaze.status === 0) {
+                    return TripStatus.normal; //通常運航
+                }
+                else if ($scope.statusIsokaze.status === 1) {
+                    return TripStatus.cancel; //全便欠航
+                }
+                else if ($scope.statusIsokaze.status === 2) {
+                    //一部欠航
+                    var startTime = new Date(dateStr + $scope.statusIsokaze.startTime + ':00');
+                    var tripTime = new Date();
+                    var cancelTime = new Date();
+                    cancelTime.setHours(startTime.getHours());
+                    cancelTime.setMinutes(startTime.getMinutes());
+                    tripTime.setHours(trip.departure_time.getHours());
+                    tripTime.setMinutes(trip.departure_time.getMinutes());
+                    if (cancelTime.getTime() < tripTime.getTime()) {
+                        return TripStatus.cancel;
+                    }
+                    else {
+                        return TripStatus.normal;
+                    }
+                }
+                else if ($scope.statusIsokaze.status === 3) {
+                    //臨時ダイヤ(来居抜港)
+                    var startTime = new Date(dateStr + $scope.statusIsokaze.startTime + ':00');
+                    var tripTime = new Date();
+                    var cancelTime = new Date();
+                    cancelTime.setHours(startTime.getHours());
+                    cancelTime.setMinutes(startTime.getMinutes());
+                    tripTime.setHours(trip.departure_time.getHours());
+                    tripTime.setMinutes(trip.departure_time.getMinutes());
+                    if (cancelTime.getTime() < tripTime.getTime()) {
+                        return TripStatus.change;
+                    }
+                    else {
+                        return TripStatus.normal;
+                    }
+                }
+            }
+            else {
+                return TripStatus.normal; //通知なし
+            }
+        }
+        else if (trip.name === "ISOKAZE_EX") {
+            if ($scope.statusIsokaze.status === 3) {
+                //臨時ダイヤ(来居抜港)
+                var startTime = new Date(dateStr + $scope.statusIsokaze.startTime + ':00');
+                var tripTime = new Date();
+                var cancelTime = new Date();
+                cancelTime.setHours(startTime.getHours());
+                cancelTime.setMinutes(startTime.getMinutes());
+                tripTime.setHours(trip.departure_time.getHours());
+                tripTime.setMinutes(trip.departure_time.getMinutes());
+                if (cancelTime.getTime() < tripTime.getTime()) {
+                    return TripStatus.normal;
+                }
+                else {
+                    return TripStatus.hidden;
+                }
+            }
+            else {
+                return TripStatus.hidden;
+            }
+        }
+        else if (trip.name === "FERRY_DOZEN") {
+            if ($scope.statusDozen.hasAlert) {
+                if ($scope.statusDozen.status === 0) {
+                    return TripStatus.normal; //通常運航
+                }
+                else if ($scope.statusDozen.status === 1) {
+                    return TripStatus.cancel; //全便欠航
+                }
+                else if ($scope.statusDozen.status === 2) {
+                    //一部欠航
+                    var startTime = new Date(dateStr + $scope.statusDozen.startTime + ':00');
+                    var tripTime = new Date();
+                    var cancelTime = new Date();
+                    cancelTime.setHours(startTime.getHours());
+                    cancelTime.setMinutes(startTime.getMinutes());
+                    tripTime.setHours(trip.departure_time.getHours());
+                    tripTime.setMinutes(trip.departure_time.getMinutes());
+                    if (cancelTime.getTime() < tripTime.getTime()) {
+                        return TripStatus.cancel;
+                    }
+                    else {
+                        return TripStatus.normal;
+                    }
+                }
+                else if ($scope.statusDozen.status === 3) {
+                    //来居便欠航
+                    var startTime = new Date(dateStr + $scope.statusDozen.startTime + ':00');
+                    var tripTime = new Date();
+                    var cancelTime = new Date();
+                    cancelTime.setHours(startTime.getHours());
+                    cancelTime.setMinutes(startTime.getMinutes());
+                    tripTime.setHours(trip.departure_time.getHours());
+                    tripTime.setMinutes(trip.departure_time.getMinutes());
+                    if (cancelTime.getTime() === tripTime.getTime()) {
+                        return TripStatus.cancel;
+                    }
+                    else {
+                        return TripStatus.normal;
+                    }
+                }
+            }
+        }
+        else {
+            console.error("Unkown ship name");
+            return TripStatus.normal;
+        }
     };
     $scope.changeTimetableDeparture = function (name) {
         $scope.departure = name;
@@ -403,87 +893,89 @@ function mainCtrl($scope, $uibModal, $http, SharedStateService, $filter, $locati
         if (results.length <= 5) {
             //乗換ルートを検索
             angular.forEach(departureTimetable, function (rootTrip, index) {
-                var arrivalTime = new Date(specifiedDate.getTime());
-                arrivalTime.setHours(rootTrip.arrival_time.getHours());
-                arrivalTime.setMinutes(rootTrip.arrival_time.getMinutes());
-                var nestCount = 0;
-                var nestMax = 1;
-                var findRoute = function (currentTrip, route) {
-                    //出発地でフィルタリング
-                    var nextTimetable = $filter('filter')(validTimetable, { departure: currentTrip.arrival }, true);
-                    //出発時刻でフィルタリング
-                    arrivalTime.setHours(currentTrip.arrival_time.getHours());
-                    arrivalTime.setMinutes(currentTrip.arrival_time.getMinutes());
-                    var omitBeforeTime = function (trip) {
-                        dTime.setHours(trip.departure_time.getHours());
-                        dTime.setMinutes(trip.departure_time.getMinutes());
-                        return (dTime.getTime() < arrivalTime.getTime());
-                    };
-                    nextTimetable = $filter("omit")(nextTimetable, omitBeforeTime);
-                    //本土経由ルートを排除
-                    if ((rootTrip.departure === "HONDO_SHICHIRUI") || (rootTrip.departure === "HONDO_SAKAIMINATO")) {
-                        var omitMainlandRoute = function (trip) {
-                            return ((trip.departure === "HONDO_SHICHIRUI") || (trip.departure === "HONDO_SAKAIMINATO"));
+                if (rootTrip.arrival_time) {
+                    var arrivalTime = new Date(specifiedDate.getTime());
+                    arrivalTime.setHours(rootTrip.arrival_time.getHours());
+                    arrivalTime.setMinutes(rootTrip.arrival_time.getMinutes());
+                    var nestCount = 0;
+                    var nestMax = 1;
+                    var findRoute = function (currentTrip, route) {
+                        //出発地でフィルタリング
+                        var nextTimetable = $filter('filter')(validTimetable, { departure: currentTrip.arrival }, true);
+                        //出発時刻でフィルタリング
+                        arrivalTime.setHours(currentTrip.arrival_time.getHours());
+                        arrivalTime.setMinutes(currentTrip.arrival_time.getMinutes());
+                        var omitBeforeTime = function (trip) {
+                            dTime.setHours(trip.departure_time.getHours());
+                            dTime.setMinutes(trip.departure_time.getMinutes());
+                            return (dTime.getTime() < arrivalTime.getTime());
                         };
-                        nextTimetable = $filter("omit")(nextTimetable, omitMainlandRoute);
-                    }
-                    //目的地でフィルタリング
-                    var arrivedTimetable = $filter('filter')(nextTimetable, { arrival: $scope.arrival });
-                    //目的地に到達したルートを保存
-                    angular.forEach(arrivedTimetable, function (nextTrip, index) {
-                        //ルートを正規化
-                        var tempRoute = route.concat();
-                        tempRoute.push(nextTrip);
-                        if (tempRoute.length > 1) {
-                            var normarizedRoute = [];
-                            var startTrip = tempRoute[0];
-                            var endTrip = tempRoute[0];
-                            var lastId = startTrip.next_id;
-                            for (var i = 1; i < tempRoute.length; i++) {
-                                if (tempRoute[i].trip_id === lastId) {
-                                    endTrip = tempRoute[i];
-                                }
-                                else {
-                                    normarizedRoute.push({
-                                        name: startTrip.name,
-                                        departure: startTrip.departure,
-                                        departure_time: startTrip.departure_time,
-                                        arrival: endTrip.arrival,
-                                        arrival_time: endTrip.arrival_time
-                                    });
-                                    startTrip = tempRoute[i];
-                                    endTrip = tempRoute[i];
-                                }
-                                lastId = endTrip.next_id;
-                            }
-                            normarizedRoute.push({
-                                name: startTrip.name,
-                                departure: startTrip.departure,
-                                departure_time: startTrip.departure_time,
-                                arrival: endTrip.arrival,
-                                arrival_time: endTrip.arrival_time
-                            });
-                            tempRoute = normarizedRoute;
+                        nextTimetable = $filter("omit")(nextTimetable, omitBeforeTime);
+                        //本土経由ルートを排除
+                        if ((rootTrip.departure === "HONDO_SHICHIRUI") || (rootTrip.departure === "HONDO_SAKAIMINATO")) {
+                            var omitMainlandRoute = function (trip) {
+                                return ((trip.departure === "HONDO_SHICHIRUI") || (trip.departure === "HONDO_SAKAIMINATO"));
+                            };
+                            nextTimetable = $filter("omit")(nextTimetable, omitMainlandRoute);
                         }
-                        results.push({
-                            routes: tempRoute,
-                            departureTime: tempRoute[0].departure_time,
-                            arrivalTime: tempRoute[tempRoute.length - 1].arrival_time
+                        //目的地でフィルタリング
+                        var arrivedTimetable = $filter('filter')(nextTimetable, { arrival: $scope.arrival });
+                        //目的地に到達したルートを保存
+                        angular.forEach(arrivedTimetable, function (nextTrip, index) {
+                            //ルートを正規化
+                            var tempRoute = route.concat();
+                            tempRoute.push(nextTrip);
+                            if (tempRoute.length > 1) {
+                                var normarizedRoute = [];
+                                var startTrip = tempRoute[0];
+                                var endTrip = tempRoute[0];
+                                var lastId = startTrip.next_id;
+                                for (var i = 1; i < tempRoute.length; i++) {
+                                    if (tempRoute[i].trip_id === lastId) {
+                                        endTrip = tempRoute[i];
+                                    }
+                                    else {
+                                        normarizedRoute.push({
+                                            name: startTrip.name,
+                                            departure: startTrip.departure,
+                                            departure_time: startTrip.departure_time,
+                                            arrival: endTrip.arrival,
+                                            arrival_time: endTrip.arrival_time
+                                        });
+                                        startTrip = tempRoute[i];
+                                        endTrip = tempRoute[i];
+                                    }
+                                    lastId = endTrip.next_id;
+                                }
+                                normarizedRoute.push({
+                                    name: startTrip.name,
+                                    departure: startTrip.departure,
+                                    departure_time: startTrip.departure_time,
+                                    arrival: endTrip.arrival,
+                                    arrival_time: endTrip.arrival_time
+                                });
+                                tempRoute = normarizedRoute;
+                            }
+                            results.push({
+                                routes: tempRoute,
+                                departureTime: tempRoute[0].departure_time,
+                                arrivalTime: tempRoute[tempRoute.length - 1].arrival_time
+                            });
                         });
-                    });
-                    //到達したルートを削除
-                    nextTimetable = $filter("xor")(nextTimetable, arrivedTimetable, 'trip_id');
-                    //目的地に未達のルートを掘り下げる
-                    if (nestCount < nestMax) {
-                        nestCount++;
-                        angular.forEach(nextTimetable, function (nextTrip, index) {
-                            var newRoute = route.concat();
-                            newRoute.push(nextTrip);
-                            findRoute(nextTrip, newRoute);
-                        });
-                    }
-                };
-                findRoute(rootTrip, [rootTrip]);
+                        //到達したルートを削除
+                        nextTimetable = $filter("xor")(nextTimetable, arrivedTimetable, 'trip_id');
+                        //目的地に未達のルートを掘り下げる
+                        if (nestCount < nestMax) {
+                            nestCount++;
+                            angular.forEach(nextTimetable, function (nextTrip, index) {
+                                var newRoute = route.concat();
+                                newRoute.push(nextTrip);
+                                findRoute(nextTrip, newRoute);
+                            });
+                        }
+                    };
+                    findRoute(rootTrip, [rootTrip]);
+                }
             });
         }
         if ($scope.daytimeModel == 'departureTime') {
@@ -494,7 +986,8 @@ function mainCtrl($scope, $uibModal, $http, SharedStateService, $filter, $locati
             //出発時間が遅い上位5ルートを抽出
             results = $filter('orderBy')(results, "departureTime", true);
         }
-        var getPrice = function (name, departure, arrival) {
+        var getPrice = function (name, departure, arrival, date) {
+            var newPriceDate = new Date(2019, 0, 1);
             var isDogo = function (port) {
                 return (port == 'SAIGO');
             };
@@ -504,83 +997,164 @@ function mainCtrl($scope, $uibModal, $http, SharedStateService, $filter, $locati
             var isMainland = function (port) {
                 return ((port == 'HONDO_SAKAIMINATO') || (port == 'HONDO_SHICHIRUI'));
             };
+            //2019-01-01〜の新料金
             if ((name == 'FERRY_OKI') || (name == 'FERRY_SHIRASHIMA') || (name == 'FERRY_KUNIGA')) {
-                if (isDozen(departure)) {
-                    if (isDozen(arrival)) {
-                        if ((departure == 'KURI') || (arrival == 'KURI')) {
-                            return 640;
+                if (date.getTime() >= newPriceDate.getTime()) {
+                    if (isDozen(departure)) {
+                        if (isDozen(arrival)) {
+                            if ((departure == 'KURI') || (arrival == 'KURI')) {
+                                return 710;
+                            }
+                            else {
+                                return 360;
+                            }
+                        }
+                        else if (isDogo(arrival)) {
+                            return 1470;
+                        }
+                        else if (isMainland(arrival)) {
+                            return 3240;
                         }
                         else {
-                            return 340;
+                            console.error("Invalid 'arrival'");
                         }
                     }
-                    else if (isDogo(arrival)) {
-                        return 1330;
+                    else if (isDogo(departure)) {
+                        if (isDozen(arrival)) {
+                            return 1470;
+                        }
+                        else if (isMainland(arrival)) {
+                            return 3240;
+                        }
+                        else {
+                            console.error("Invalid 'arrival'");
+                        }
                     }
-                    else if (isMainland(arrival)) {
-                        return 2920;
-                    }
-                    else {
-                        console.error("Invalid 'arrival'");
-                    }
-                }
-                else if (isDogo(departure)) {
-                    if (isDozen(arrival)) {
-                        return 1330;
-                    }
-                    else if (isMainland(arrival)) {
-                        return 2920;
-                    }
-                    else {
-                        console.error("Invalid 'arrival'");
-                    }
-                }
-                else if (isMainland(departure)) {
-                    if ((isDozen(arrival)) || (isDogo(arrival))) {
-                        return 2920;
+                    else if (isMainland(departure)) {
+                        if ((isDozen(arrival)) || (isDogo(arrival))) {
+                            return 3240;
+                        }
+                        else {
+                            console.error("Invalid 'arrival'");
+                        }
                     }
                     else {
-                        console.error("Invalid 'arrival'");
+                        console.error("Invalid 'departure'");
                     }
                 }
                 else {
-                    console.error("Invalid 'departure'");
+                    if (isDozen(departure)) {
+                        if (isDozen(arrival)) {
+                            if ((departure == 'KURI') || (arrival == 'KURI')) {
+                                return 640;
+                            }
+                            else {
+                                return 340;
+                            }
+                        }
+                        else if (isDogo(arrival)) {
+                            return 1330;
+                        }
+                        else if (isMainland(arrival)) {
+                            return 2920;
+                        }
+                        else {
+                            console.error("Invalid 'arrival'");
+                        }
+                    }
+                    else if (isDogo(departure)) {
+                        if (isDozen(arrival)) {
+                            return 1330;
+                        }
+                        else if (isMainland(arrival)) {
+                            return 2920;
+                        }
+                        else {
+                            console.error("Invalid 'arrival'");
+                        }
+                    }
+                    else if (isMainland(departure)) {
+                        if ((isDozen(arrival)) || (isDogo(arrival))) {
+                            return 2920;
+                        }
+                        else {
+                            console.error("Invalid 'arrival'");
+                        }
+                    }
+                    else {
+                        console.error("Invalid 'departure'");
+                    }
                 }
             }
             else if (name == 'RAINBOWJET') {
-                if (isDozen(departure)) {
-                    if (isDozen(arrival)) {
-                        return 340;
+                if (date.getTime() >= newPriceDate.getTime()) {
+                    if (isDozen(departure)) {
+                        if (isDozen(arrival)) {
+                            return 360;
+                        }
+                        else if (isDogo(arrival)) {
+                            return 2800;
+                        }
+                        else if (isMainland(arrival)) {
+                            return 6170;
+                        }
+                        else {
+                            console.error("Invalid 'arrival'");
+                        }
                     }
-                    else if (isDogo(arrival)) {
-                        return 2630;
+                    else if (isDogo(departure)) {
+                        if (isDozen(arrival)) {
+                            return 2800;
+                        }
+                        else if (isMainland(arrival)) {
+                            return 6170;
+                        }
+                        else {
+                            console.error("Invalid 'arrival'");
+                        }
                     }
-                    else if (isMainland(arrival)) {
-                        return 5760;
+                    else if (isMainland(departure)) {
+                        return 6170;
                     }
                     else {
-                        console.error("Invalid 'arrival'");
+                        console.error("Invalid 'departure'");
                     }
-                }
-                else if (isDogo(departure)) {
-                    if (isDozen(arrival)) {
-                        return 2630;
-                    }
-                    else if (isMainland(arrival)) {
-                        return 5760;
-                    }
-                    else {
-                        console.error("Invalid 'arrival'");
-                    }
-                }
-                else if (isMainland(departure)) {
-                    return 5760;
                 }
                 else {
-                    console.error("Invalid 'departure'");
+                    if (isDozen(departure)) {
+                        if (isDozen(arrival)) {
+                            return 340;
+                        }
+                        else if (isDogo(arrival)) {
+                            return 2630;
+                        }
+                        else if (isMainland(arrival)) {
+                            return 5760;
+                        }
+                        else {
+                            console.error("Invalid 'arrival'");
+                        }
+                    }
+                    else if (isDogo(departure)) {
+                        if (isDozen(arrival)) {
+                            return 2630;
+                        }
+                        else if (isMainland(arrival)) {
+                            return 5760;
+                        }
+                        else {
+                            console.error("Invalid 'arrival'");
+                        }
+                    }
+                    else if (isMainland(departure)) {
+                        return 5760;
+                    }
+                    else {
+                        console.error("Invalid 'departure'");
+                    }
                 }
             }
-            else if ((name == 'ISOKAZE') || (name == 'FERRY_DOZEN')) {
+            else if ((name == 'ISOKAZE') || (name == 'ISOKAZE_EX') || (name == 'FERRY_DOZEN')) {
                 return 300;
             }
             else {
@@ -618,14 +1192,25 @@ function mainCtrl($scope, $uibModal, $http, SharedStateService, $filter, $locati
                         price: ""
                     });
                 }
-                var duration = (route.arrival_time.getTime() - route.departure_time.getTime()) / 1000 / 60;
-                var hours = Math.floor(duration / 60);
-                var minutes = duration % 60;
-                tempResults.push({
-                    time: ((hours > 0) ? hours + $filter('translate')('HOURS') : "") + " " + minutes + $filter('translate')('MINUTES'),
-                    port: route.name,
-                    price: getPrice(route.name, route.departure, route.arrival) + $filter('translate')('CURRENCY_UNIT')
-                });
+                if (route.arrival_time) {
+                    var duration = (route.arrival_time.getTime() - route.departure_time.getTime()) / 1000 / 60;
+                    var hours = Math.floor(duration / 60);
+                    var minutes = duration % 60;
+                    tempResults.push({
+                        time: ((hours > 0) ? hours + $filter('translate')('HOURS') : "") + " " + minutes + $filter('translate')('MINUTES'),
+                        port: route.name,
+                        price: getPrice(route.name, route.departure, route.arrival, specifiedDate) + $filter('translate')('CURRENCY_UNIT'),
+                        status: $scope.checkTripStatus(route)
+                    });
+                }
+                else {
+                    tempResults.push({
+                        time: "",
+                        port: route.name,
+                        price: getPrice(route.name, route.departure, route.arrival, specifiedDate) + $filter('translate')('CURRENCY_UNIT'),
+                        status: $scope.checkTripStatus(route)
+                    });
+                }
                 prevRoute = route;
             }
             tempResults.push({
@@ -742,7 +1327,8 @@ app.config(['$translateProvider', function ($translateProvider) {
             'VIA_CAR': '車で乗船する',
             'ADD_CONDITIONS': '条件を追加',
             'SEARCH_ROUTE': '経路検索',
-            'TODAY': '今日',
+            'TODAY': '本日',
+            'TOMORROW': '明日',
             'CLEAR': '削除',
             'CLOSE': '閉じる',
             'HONDO': '七類(松江市)または境港(境港市)',
@@ -760,8 +1346,8 @@ app.config(['$translateProvider', function ($translateProvider) {
             'FERRY_KUNIGA': 'フェリーくにが',
             'FERRY_DOZEN': 'フェリーどうぜん(内航船)',
             'ISOKAZE': 'いそかぜ(内航船)',
+            'ISOKAZE_EX': 'いそかぜ(内航船)',
             'RAINBOWJET': 'レインボージェット',
-            'NO_RESULT_ERROR': '条件に一致する経路がありません。',
             'TIMETABLE_SUP_SHICHIRUI': '(七類)',
             'TIMETABLE_SUP_SAKAIMINATO': '(境港)',
             'MORE_BUTTON': 'もっと見る',
@@ -775,7 +1361,26 @@ app.config(['$translateProvider', function ($translateProvider) {
             'NISHINOSHIMA_CHO': '西ノ島町',
             'AMA_CHO': '海士町',
             'CHIBU_MURA': '知夫村',
-            'OKINOSHIMA_CHO': '隠岐の島町'
+            'OKINOSHIMA_CHO': '隠岐の島町',
+            'NO_ALERT': '通知はありません。',
+            'UPDATE_TIME': '更新日時',
+            'COMMENT': '備考',
+            'LAST_SHIPS': '最終便',
+            'EXTRA_SHIPS': '臨時便',
+            'NORMAL_SERVICE': '通常運航',
+            'FULLY_CANCELLED': '全便欠航',
+            'PARTIALLY_CANCELLED': '下記の便より欠航',
+            'KURI_SKIPPED': '下記の便より臨時ダイヤ(来居港抜港)に変更',
+            'KURI_CANCELLED': '来居(知夫村)行きの下記の便を欠航',
+            'SERVICE_RESUMED': '下記の便より運航再開',
+            'REASON': '理由',
+            'NO_STATUS': '運航状況が取得できません。',
+            'WAVEINFO': '隠岐の海況波高',
+            //エラー
+            'OFFLINE_TIMETABLE_ERROR': '時刻表の取得に失敗しました。最後に取得した時刻表データを表示しているため、最新の情報ではない可能性があります。',
+            'LOAD_TIMETABLE_ERROR': '時刻表の取得に失敗しました。ネットワークの接続状況を確認してください。',
+            'LOAD_STATUS_ERROR': '運航状況の取得に失敗しました。ネットワークの接続状況を確認してください。',
+            'NO_RESULT_ERROR': '条件に一致する経路がありません。',
         });
         $translateProvider.translations('en', {
             'TITLE': 'Oki Islands Sea Line Information',
@@ -802,6 +1407,7 @@ app.config(['$translateProvider', function ($translateProvider) {
             'ADD_CONDITIONS': 'Add conditions',
             'SEARCH_ROUTE': 'Search Route',
             'TODAY': 'Today',
+            'TOMORROW': 'Tomorrow',
             'CLEAR': 'Clear',
             'CLOSE': 'Close',
             'HONDO': 'Shichirui or Sakaiminato',
@@ -819,8 +1425,8 @@ app.config(['$translateProvider', function ($translateProvider) {
             'FERRY_KUNIGA': 'Ferry Kuniga',
             'FERRY_DOZEN': 'Ferry Dōzen (Inter-Island Ferry)',
             'ISOKAZE': 'Isokaze (Inter-Island Ferry)',
+            'ISOKAZE_EX': 'Isokaze (Inter-Island Ferry)',
             'RAINBOWJET': 'Rainbow Jet (Fast Ferry)',
-            'NO_RESULT_ERROR': 'No Routes have been found.',
             'TIMETABLE_SUP_SHICHIRUI': '(Shichirui)',
             'TIMETABLE_SUP_SAKAIMINATO': '(Sakaiminato)',
             'MORE_BUTTON': 'See more',
@@ -834,7 +1440,35 @@ app.config(['$translateProvider', function ($translateProvider) {
             'NISHINOSHIMA_CHO': 'Nishinoshima',
             'AMA_CHO': 'Ama',
             'CHIBU_MURA': 'Chibu',
-            'OKINOSHIMA_CHO': 'Okinoshima'
+            'OKINOSHIMA_CHO': 'Okinoshima',
+            'NO_ALERT': 'No alerts.',
+            'UPDATE_TIME': 'Updated At',
+            'COMMENT': 'Comment',
+            'LAST_SHIPS': 'Last Ships',
+            'EXTRA_SHIPS': 'Extra Ships',
+            'NORMAL_SERVICE': 'Normal service.',
+            'FULLY_CANCELLED': 'Fully cancelled.',
+            'PARTIALLY_CANCELLED': 'Canceled from the following trip.',
+            'KURI_SKIPPED': 'A special timetable applied from the following trip.',
+            'KURI_CANCELLED': 'The following trip is cancelled.',
+            'SERVICE_RESUMED': 'Normal service will be resumed from the following trip.',
+            'REASON': 'Reason',
+            'NO_STATUS': 'Failed to get ships status.',
+            'WAVEINFO': 'Wave Height',
+            //欠航理由
+            '海上時化': 'Rough seas',
+            '悪天候': 'Bad weather',
+            '機関故障': 'Engine trouble',
+            '台風接近': 'Typhoon approaching',
+            //隠岐汽船ステータス
+            '正常運航': 'in Operation',
+            '欠航': 'Canceled',
+            '運航に変更あり': 'Changed',
+            //Errors
+            'OFFLINE_TIMETABLE_ERROR': 'Failed to get timetable. It may not be the latest information because the timetable data that was last acquired is displayed.',
+            'LOAD_TIMETABLE_ERROR': 'Failed to get timetable. Please check the network connection status.',
+            'LOAD_STATUS_ERROR': 'Failed to get ships status. Please check the network connection status.',
+            'NO_RESULT_ERROR': 'No Routes have been found.',
         });
         $translateProvider.determinePreferredLanguage(function () {
             // define a function to determine the language

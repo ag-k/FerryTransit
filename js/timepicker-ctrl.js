@@ -1,5 +1,5 @@
 /// <reference path="../typings/tsd.d.ts" />
-var TimePickerPopController = (function () {
+var TimePickerPopController = /** @class */ (function () {
     function TimePickerPopController() {
         this.time1 = new Date();
         this.showMeridian = true;
