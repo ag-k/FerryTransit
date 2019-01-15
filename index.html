@@ -452,11 +452,11 @@
                         <dd ng-if="statusIsokaze.status === 0">{{'NORMAL_SERVICE' | translate}}</dd>
                         <dd ng-if="statusIsokaze.status === 1">{{'FULLY_CANCELLED' | translate}}</dd>
                         <dd ng-if="statusIsokaze.status === 2">{{'PARTIALLY_CANCELLED' | translate}}</dd>
-                        <dd ng-if="statusIsokaze.status === 3">{{'KURI_SKIPPED' | translate}}</dd>
+                        <dd ng-if="statusIsokaze.status === 3">{{'CHANGED' | translate}}</dd>
                         <dd ng-if="statusIsokaze.status === 4">{{'SERVICE_RESUMED' | translate}}</dd>
                       </dl>
                       <dl>
-                        <dd ng-if="(2 <= statusIsokaze.status) && (statusIsokaze.status <= 4)">
+                        <dd ng-if="(statusIsokaze.status === 2) || (statusIsokaze.status === 4)">
                           <table class="table">
                             <thead>
                               <tr><th>{{'DEPARTURE' | translate }}</th><th>{{'DEPARTURE_TIME' | translate }}</th><th>{{'ARRIVAL' | translate }}</th></tr>
@@ -471,7 +471,7 @@
                           </table>
                         </dd>
                       </dl>
-                      <dl ng-if="(1 <= statusIsokaze.status) && (statusIsokaze.status <= 3)" >
+                      <dl ng-if="(1 <= statusIsokaze.status) && (statusIsokaze.status <= 2)" >
                         <dt>{{'REASON' | translate}}</dt>
                         <dd>{{ statusIsokaze.reason | translate }}</dd>
                       </dl>
@@ -503,7 +503,7 @@
                               <tr ng-repeat="trip in statusIsokaze.lastShips">
                                 <td>{{trip.departure | translate}}</td>
                                 <td>{{trip.departure_time | date:'H:mm'}}</td>
-                                <td>{{trip.arrival | translate}}</td>
+                                <td><span ng-if="trip.via !== null">{{trip.via | translate}}経由 </span>{{trip.arrival | translate}}</td>
                               </tr>
                             </tbody>
                           </table>

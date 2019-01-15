@@ -153,11 +153,12 @@ function mainCtrl($scope, $uibModal, $http, SharedStateService, $filter, $locati
 
         //臨時便を追加
         if (st1.extraShips) {
-          angular.forEach(st1.lastShips, function(trip, index) {
+          var tripId = 1000
+          angular.forEach(st1.extraShips, function(trip, index) {
             var departureTime = new Date(dateStr + ' ' + trip.departure_time + ':00');
 
             $scope.rawTimetable.push({
-              trip_id: -1,
+              trip_id: tripId,
               start_date: dateStr,
               end_date: dateStr,
               name: "ISOKAZE",
@@ -165,8 +166,10 @@ function mainCtrl($scope, $uibModal, $http, SharedStateService, $filter, $locati
               departure_time: departureTime,
               arrival: trip.arrival,
               arrival_time: null,
+              next_id: tripId + 1,
               status: TripStatus.extra
             });
+            tripId += 1
           });
         }
       }
@@ -189,11 +192,12 @@ function mainCtrl($scope, $uibModal, $http, SharedStateService, $filter, $locati
 
         //臨時便を追加
         if (st2.extraShips) {
-          angular.forEach(st2.lastShips, function(trip, index) {
+          var tripId = 2000
+          angular.forEach(st2.extraShips, function(trip, index) {
             var departureTime = new Date(dateStr + ' ' + trip.departure_time + ':00');
 
             $scope.rawTimetable.push({
-              trip_id: -1,
+              trip_id: tripId,
               start_date: dateStr,
               end_date: dateStr,
               name: "FERRY_DOZEN",
@@ -201,8 +205,10 @@ function mainCtrl($scope, $uibModal, $http, SharedStateService, $filter, $locati
               departure_time: departureTime,
               arrival: trip.arrival,
               arrival_time: null,
+              next_id: tripId + 1,
               status: TripStatus.extra
             });
+            tripId += 1
           });
         }
       }
@@ -405,7 +411,7 @@ function mainCtrl($scope, $uibModal, $http, SharedStateService, $filter, $locati
         }
       }
 
-      if (trip.next_id != "") {
+      if (trip.next_id !== "") {
         var getNextTrip = function(srcTimetable, nextId) {
           var trips = $filter("filter")(srcTimetable, {trip_id:nextId}, true);
           return trips[0];
@@ -544,13 +550,21 @@ function mainCtrl($scope, $uibModal, $http, SharedStateService, $filter, $locati
           if (trip.name === "ISOKAZE") {
             tripTime.setHours(trip.departure_time.getHours());
             tripTime.setMinutes(trip.departure_time.getMinutes());
-            if (cancelTime.getTime() < tripTime.getTime()) {
-              trip.status = TripStatus.cancel;
+            if (cancelTime.getTime() <= tripTime.getTime()) {
+              if (trip.status !== TripStatus.extra) {
+                trip.status = TripStatus.cancel;
+              }
             }
           }
         });
       } else if ($scope.statusIsokaze.status === 3) {
-        //臨時ダイヤ(来居抜港)
+        //変更あり
+        angular.forEach(resultTimetable, function(trip, index) {
+          if (trip.name === "ISOKAZE") {
+            trip.status = TripStatus.change;
+          }
+        });
+        /*
         var startTime = new Date(dateStr + $scope.statusIsokaze.startTime + ':00');
         angular.forEach(resultTimetable, function(trip, index) {
           var tripTime = new Date();
@@ -570,6 +584,7 @@ function mainCtrl($scope, $uibModal, $http, SharedStateService, $filter, $locati
             }
           }
         });
+        */
       }
     }
     if ($scope.statusDozen.hasAlert) {
@@ -594,8 +609,10 @@ function mainCtrl($scope, $uibModal, $http, SharedStateService, $filter, $locati
           if (trip.name === "FERRY_DOZEN") {
             tripTime.setHours(trip.departure_time.getHours());
             tripTime.setMinutes(trip.departure_time.getMinutes());
-            if (cancelTime.getTime() < tripTime.getTime()) {
-              trip.status = TripStatus.cancel;
+            if (cancelTime.getTime() <= tripTime.getTime()) {
+              if (trip.status !== TripStatus.extra) {
+                trip.status = TripStatus.cancel;
+              }
             }
           }
         });
@@ -661,20 +678,26 @@ function mainCtrl($scope, $uibModal, $http, SharedStateService, $filter, $locati
           return TripStatus.cancel; //全便欠航
         } else if ($scope.statusIsokaze.status === 2) {
           //一部欠航
-          var startTime = new Date(dateStr + $scope.statusIsokaze.startTime + ':00');
-          var tripTime = new Date();
-          var cancelTime = new Date();
-          cancelTime.setHours(startTime.getHours());
-          cancelTime.setMinutes(startTime.getMinutes());
-          tripTime.setHours(trip.departure_time.getHours());
-          tripTime.setMinutes(trip.departure_time.getMinutes());
-          if (cancelTime.getTime() < tripTime.getTime()) {
-            return TripStatus.cancel;
+          if (trip.status === TripStatus.extra) {
+            return TripStatus.extra;
           } else {
-            return TripStatus.normal;
+            var startTime = new Date(dateStr + $scope.statusIsokaze.startTime + ':00');
+            var tripTime = new Date();
+            var cancelTime = new Date();
+            cancelTime.setHours(startTime.getHours());
+            cancelTime.setMinutes(startTime.getMinutes());
+            tripTime.setHours(trip.departure_time.getHours());
+            tripTime.setMinutes(trip.departure_time.getMinutes());
+            if (cancelTime.getTime() <= tripTime.getTime()) {
+              return TripStatus.cancel;
+            } else {
+              return TripStatus.normal;
+            }
           }
         } else if ($scope.statusIsokaze.status === 3) {
+          return TripStatus.change; //変更あり
           //臨時ダイヤ(来居抜港)
+          /*
           var startTime = new Date(dateStr + $scope.statusIsokaze.startTime + ':00');
           var tripTime = new Date();
           var cancelTime = new Date();
@@ -687,6 +710,7 @@ function mainCtrl($scope, $uibModal, $http, SharedStateService, $filter, $locati
           } else {
             return TripStatus.normal;
           }
+          */
         }
       } else {
         return TripStatus.normal; //通知なし
@@ -702,7 +726,7 @@ function mainCtrl($scope, $uibModal, $http, SharedStateService, $filter, $locati
         tripTime.setHours(trip.departure_time.getHours());
         tripTime.setMinutes(trip.departure_time.getMinutes());
 
-        if (cancelTime.getTime() < tripTime.getTime()) {
+        if (cancelTime.getTime() <= tripTime.getTime()) {
           return TripStatus.normal;
         } else {
           return TripStatus.hidden;
@@ -725,7 +749,7 @@ function mainCtrl($scope, $uibModal, $http, SharedStateService, $filter, $locati
           cancelTime.setMinutes(startTime.getMinutes());
           tripTime.setHours(trip.departure_time.getHours());
           tripTime.setMinutes(trip.departure_time.getMinutes());
-          if (cancelTime.getTime() < tripTime.getTime()) {
+          if (cancelTime.getTime() <= tripTime.getTime()) {
             return TripStatus.cancel;
           } else {
             return TripStatus.normal;
@@ -1376,7 +1400,7 @@ app.config(['$translateProvider', function ($translateProvider) {
     'NORMAL_SERVICE' : '通常運航',
     'FULLY_CANCELLED' : '全便欠航',
     'PARTIALLY_CANCELLED' : '下記の便より欠航',
-    'KURI_SKIPPED' : '下記の便より臨時ダイヤ(来居港抜港)に変更',
+    'CHANGED' : '変更あり',
     'KURI_CANCELLED' : '来居(知夫村)行きの下記の便を欠航',
     'SERVICE_RESUMED' : '下記の便より運航再開',
     'REASON' : '理由',
@@ -1457,7 +1481,7 @@ app.config(['$translateProvider', function ($translateProvider) {
     'NORMAL_SERVICE' : 'Normal service.',
     'FULLY_CANCELLED' : 'Fully cancelled.',
     'PARTIALLY_CANCELLED' : 'Canceled from the following trip.',
-    'KURI_SKIPPED' : 'A special timetable applied from the following trip.',
+    'CHANGED' : 'Changed.',
     'KURI_CANCELLED' : 'The following trip is cancelled.',
     'SERVICE_RESUMED' : 'Normal service will be resumed from the following trip.',
     'REASON' : 'Reason',
