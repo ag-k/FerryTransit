@@ -371,7 +371,7 @@
                       </dl>
                       <dl>
                         <dt>{{'COMMENT' | translate}}</dt>
-                        <dd>{{ statusFerry.ferryComment }}</dd>
+                        <dd>{{ statusFerry.ferryComment }} <a ng-if="language() === 'en'" href="https://translate.google.co.jp/?hl=ja#view=home&op=translate&sl=ja&tl=en&text={{ statusFerry.ferryComment }}"><i class="glyphicon glyphicon-transfer"></i> English</a></dd>
                       </dl>
                     </div>
                     <div ng-if="!statusFerry.hasAlert" ng-cloak>
@@ -394,7 +394,7 @@
                       </dl>
                       <dl>
                         <dt>{{'COMMENT' | translate}}</dt>
-                        <dd>{{ statusFerry.fastFerryComment }}</dd>
+                        <dd>{{ statusFerry.fastFerryComment }} <a ng-if="language() === 'en'" href="https://translate.google.co.jp/?hl=ja#view=home&op=translate&sl=ja&tl=en&text={{ statusFerry.fastFerryComment }}"><i class="glyphicon glyphicon-transfer"></i> English</a></dd>
                       </dl>
                     </div>
                     <div ng-if="!statusFerry.hasAlert" ng-cloak>
@@ -473,7 +473,7 @@
                       </dl>
                       <dl ng-if="(1 <= statusIsokaze.status) && (statusIsokaze.status <= 2)" >
                         <dt>{{'REASON' | translate}}</dt>
-                        <dd>{{ statusIsokaze.reason | translate }}</dd>
+                        <dd>{{ statusIsokaze.reason | translate }} <a ng-if="language() === 'en'" href="https://translate.google.co.jp/?hl=ja#view=home&op=translate&sl=ja&tl=en&text={{ statusIsokaze.reason }}"><i class="glyphicon glyphicon-transfer"></i> English</a></dd>
                       </dl>
                       <dl ng-if="statusIsokaze.extraShips.length > 0">
                         <dt>{{'EXTRA_SHIPS' | translate}}</dt>
@@ -503,7 +503,11 @@
                               <tr ng-repeat="trip in statusIsokaze.lastShips">
                                 <td>{{trip.departure | translate}}</td>
                                 <td>{{trip.departure_time | date:'H:mm'}}</td>
-                                <td><span ng-if="trip.via !== null">{{trip.via | translate}}経由 </span>{{trip.arrival | translate}}</td>
+                                <td>
+                                  <span ng-if="(trip.via !== null) && language()==='ja'">{{trip.via | translate}}{{'VIA' | translate}}</span>
+                                  {{trip.arrival | translate}}
+                                  <span ng-if="(trip.via !== null) && language()==='en'">{{'VIA' | translate}} {{trip.via | translate}}</span>
+                                </td>
                               </tr>
                             </tbody>
                           </table>
@@ -511,7 +515,7 @@
                       </dl>
                       <dl ng-if="statusIsokaze.comment">
                         <dt>{{'COMMENT' | translate}}</dt>
-                        <dd>{{ statusIsokaze.comment }}</dd>
+                        <dd>{{ statusIsokaze.comment }} <a ng-if="language() === 'en'" href="https://translate.google.co.jp/?hl=ja#view=home&op=translate&sl=ja&tl=en&text={{ statusIsokaze.comment }}"><i class="glyphicon glyphicon-transfer"></i> English</a></dd>
                       </dl>
                     </div>
                     <div ng-if="!statusIsokaze.hasAlert" ng-cloak>
@@ -566,7 +570,7 @@
                       </dl>
                       <dl ng-if="(1 <= statusDozen.status) && (statusDozen.status <= 3)" >
                         <dt>{{'REASON' | translate}}</dt>
-                        <dd>{{ statusDozen.reason | translate }}</dd>
+                        <dd>{{ statusDozen.reason | translate }} <a ng-if="language() === 'en'" href="https://translate.google.co.jp/?hl=ja#view=home&op=translate&sl=ja&tl=en&text={{ statusDozen.reason }}"><i class="glyphicon glyphicon-transfer"></i> English</a></dd>
                       </dl>
                       <dl ng-if="statusDozen.extraShips.length > 0">
                         <dt>{{'EXTRA_SHIPS' | translate}}</dt>
@@ -604,7 +608,7 @@
                       </dl>
                       <dl ng-if="statusDozen.comment">
                         <dt>{{'COMMENT' | translate}}</dt>
-                        <dd>{{ statusDozen.comment }}</dd>
+                        <dd>{{ statusDozen.comment }} <a ng-if="language() === 'en'" href="https://translate.google.co.jp/?hl=ja#view=home&op=translate&sl=ja&tl=en&text={{ statusDozen.comment }}"><i class="glyphicon glyphicon-transfer"></i> English</a></dd>
                       </dl>
                     </div>
                     <div ng-if="!statusDozen.hasAlert">

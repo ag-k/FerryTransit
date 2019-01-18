@@ -9,6 +9,13 @@ function mainCtrl($scope, $uibModal, $http, SharedStateService, $filter, $locati
     extra : 4
   };
 
+  $scope.language = function() {
+    var lang = (window.navigator['userLanguage']
+            || window.navigator['language']
+            || window.navigator['browserLanguage']).substr(0,2) == "ja" ? "ja" : "en";
+    return lang;
+  };
+
   $scope.portMaps = { "HONDO": '<iframe src="https://www.google.com/maps/d/embed?mid=10LYdFfHjM-C6lq36egqxMuDIiMg" width="640" height="480"></iframe>' ,
                       "HONDO_SAKAIMINATO": '<iframe src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d2292.317150965745!2d133.22227226073633!3d35.54509842041033!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x355655ad5deb0d71%3A0x177b9c28785fc8a3!2z6Zqg5bKQ5rG96Ii5IOWig-a4ryDjg5Xjgqfjg6rjg7zjgr_jg7zjg5_jg4rjg6s!5e0!3m2!1sja!2sjp!4v1508490999479" width="600" height="450" frameborder="0" style="border:0" allowfullscreen></iframe>',
                       "HONDO_SHICHIRUI": '<iframe src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3245.2782127375426!2d133.22755195027142!3d35.57152434349223!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x3556547244a8948d%3A0xd6870c7a99239d6c!2z5LiD6aGe5riv!5e0!3m2!1sja!2sjp!4v1508490937348" width="600" height="450" frameborder="0" style="border:0" allowfullscreen></iframe>',
@@ -1352,6 +1359,7 @@ app.config(['$translateProvider', function ($translateProvider) {
     'FROM_': 'から',
     '_TO': '',
     'TO_': 'へ',
+    'VIA': '経由',
     'SHIP': '船名',
     'DO_NOT_USE_FAST_FERRY': '高速船を利用しない',
     'VIA_CAR': '車で乗船する',
@@ -1433,6 +1441,7 @@ app.config(['$translateProvider', function ($translateProvider) {
     'FROM_': '',
     '_TO': 'To:',
     'TO_': '',
+    'VIA': 'via',
     'SHIP': 'Ship',
     'DO_NOT_USE_FAST_FERRY': 'Except Fast Ferry',
     'VIA_CAR': 'Via car',
@@ -1494,9 +1503,10 @@ app.config(['$translateProvider', function ($translateProvider) {
     '機関故障' : 'Engine trouble',
     '台風接近' : 'Typhoon approaching',
     //隠岐汽船ステータス
-    '正常運航' : 'in Operation',
+    '定期運航' : 'in Operation',
     '欠航' : 'Canceled',
     '運航に変更あり' : 'Changed',
+    '休航' : 'Canceled',
     //Errors
     'OFFLINE_TIMETABLE_ERROR': 'Failed to get timetable. It may not be the latest information because the timetable data that was last acquired is displayed.',
     'LOAD_TIMETABLE_ERROR': 'Failed to get timetable. Please check the network connection status.',
