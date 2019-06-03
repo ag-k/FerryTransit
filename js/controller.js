@@ -14,6 +14,10 @@ function mainCtrl($scope, $uibModal, $http, SharedStateService, $filter, $locati
             || window.navigator['browserLanguage']).substr(0, 2) == "ja" ? "ja" : "en";
         return lang;
     };
+    $scope.omitMinutesFilter = function (time) {
+        console.log(time);
+        return time.replace(/:\d{2}$/, "");
+    };
     $scope.portMaps = { "HONDO": '<iframe src="https://www.google.com/maps/d/embed?mid=10LYdFfHjM-C6lq36egqxMuDIiMg" width="640" height="480"></iframe>',
         "HONDO_SAKAIMINATO": '<iframe src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d2292.317150965745!2d133.22227226073633!3d35.54509842041033!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x355655ad5deb0d71%3A0x177b9c28785fc8a3!2z6Zqg5bKQ5rG96Ii5IOWig-a4ryDjg5Xjgqfjg6rjg7zjgr_jg7zjg5_jg4rjg6s!5e0!3m2!1sja!2sjp!4v1508490999479" width="600" height="450" frameborder="0" style="border:0" allowfullscreen></iframe>',
         "HONDO_SHICHIRUI": '<iframe src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3245.2782127375426!2d133.22755195027142!3d35.57152434349223!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x3556547244a8948d%3A0xd6870c7a99239d6c!2z5LiD6aGe5riv!5e0!3m2!1sja!2sjp!4v1508490937348" width="600" height="450" frameborder="0" style="border:0" allowfullscreen></iframe>',
@@ -77,6 +81,11 @@ function mainCtrl($scope, $uibModal, $http, SharedStateService, $filter, $locati
     $scope.statusFerry = {};
     $scope.statusFerry.hasAlert = false;
     $scope.statusFerry.date = null;
+    $scope.statusKunigaKankou = {};
+    $scope.statusKunigaKankou.hasAlert = false;
+    $scope.statusKunigaKankou.courseA = null;
+    $scope.statusKunigaKankou.courseB = null;
+    $scope.statusKunigaKankou.success = null;
     $scope.statusSuccess = false;
     //時刻入力
     $scope.hstep = 1;
@@ -238,6 +247,31 @@ function mainCtrl($scope, $uibModal, $http, SharedStateService, $filter, $locati
         }
         restoreDateObjects();
         $scope.updateTimetable();
+    });
+    $http.get('https://ship.nkk-oki.com/api/status-kankou').then(function (res) {
+        var status = res.data[0];
+        var courseA = res.data[1];
+        var courseB = res.data[2];
+        $scope.statusKunigaKankou.success = true;
+        if (status === null) {
+            $scope.statusKunigaKankou.hasAlert = false;
+        }
+        else {
+            $scope.statusKunigaKankou.hasAlert = true;
+            angular.forEach(courseA, function (trip, index) {
+                trip.departure_time = trip.departure_time.replace(/:\d{2}$/, "");
+            });
+            angular.forEach(courseB, function (trip, index) {
+                trip.departure_time = trip.departure_time.replace(/:\d{2}$/, "");
+            });
+            status.updated_at = status.updated_at.replace(/:\d{2}$/, "");
+            $scope.statusKunigaKankou.courseA = courseA;
+            $scope.statusKunigaKankou.courseB = courseB;
+            $scope.statusKunigaKankou.lastUpdate = status.updated_at;
+        }
+    }, function (res) {
+        $scope.warningAlerts.push({ msg: $filter('translate')('LOAD_STATUS_ERROR') });
+        $scope.statusKunigaKankou.success = false;
     });
     $scope.ismeridian = false;
     $scope.toggleMode = function () {
@@ -1386,6 +1420,7 @@ app.config(['$translateProvider', function ($translateProvider) {
             'OKI_KISEN': '隠岐汽船',
             'OKI_KISEN_STATUS_URL': 'http://www.oki-kisen.co.jp/situation/',
             'OKI_KANKO': '隠岐観光',
+            'BEPPU_OFFICE': '別府営業所',
             'CONTACT': 'お問い合わせ',
             'COMPANY': '(株)',
             'KUNIGA_SIGHTSEEING_BOAT': '国賀めぐり定期観光船',
@@ -1399,6 +1434,7 @@ app.config(['$translateProvider', function ($translateProvider) {
             'LAST_SHIPS': '最終便',
             'EXTRA_SHIPS': '臨時便',
             'NORMAL_SERVICE': '通常運航',
+            'CANCELLED': '欠航',
             'FULLY_CANCELLED': '全便欠航',
             'PARTIALLY_CANCELLED': '下記の便より欠航',
             'CHANGED': '変更あり',
@@ -1407,6 +1443,12 @@ app.config(['$translateProvider', function ($translateProvider) {
             'REASON': '理由',
             'NO_STATUS': '運航状況が取得できません。',
             'WAVEINFO': '隠岐の海況波高',
+            'NEWS': 'お知らせ',
+            'KUNIGA_COURSE_A': '浦郷発Aコース',
+            'KUNIGA_COURSE_B': '別府発Bコース',
+            'CAPTAINS_CHOICE': '船長おまかせコースに変更',
+            'UNDECIDED': '未定',
+            'SKIP_EAST_KUNIGA': '東国賀なしに変更',
             //エラー
             'OFFLINE_TIMETABLE_ERROR': '時刻表の取得に失敗しました。最後に取得した時刻表データを表示しているため、最新の情報ではない可能性があります。',
             'LOAD_TIMETABLE_ERROR': '時刻表の取得に失敗しました。ネットワークの接続状況を確認してください。',
@@ -1487,6 +1529,12 @@ app.config(['$translateProvider', function ($translateProvider) {
             'REASON': 'Reason',
             'NO_STATUS': 'Failed to get ships status.',
             'WAVEINFO': 'Wave Height',
+            'NEWS': 'News',
+            'KUNIGA_COURSE_A': 'Course A (from Uragō Port)',
+            'KUNIGA_COURSE_B': 'Course B (from Beppu Port)',
+            'CAPTAINS_CHOICE': "Changed to Captain's choice course",
+            'UNDECIDED': 'Undecided',
+            'SKIP_EAST_KUNIGA': 'Omit the East Kuniga Coast',
             //欠航理由
             '海上時化': 'Rough seas',
             '悪天候': 'Bad weather',

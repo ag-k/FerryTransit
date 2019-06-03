@@ -34,6 +34,16 @@
         <div class="page-header">
           <h2 ng-cloak>{{ 'TITLE' | translate }}</h2>
         </div>
+        <!--
+        <div class="panel panel-default" id="news">
+          <div class="panel-heading">
+            <h2 class="panel-title" ng-cloak>{{ 'NEWS' | translate }}</h2>
+          </div>
+          <div class="panel-body">
+
+          </div>
+        </div>
+        -->
         <uib-alert ng-repeat="alert in warningAlerts" type="{{alert.type}}" close="closeWarningAlert($index)" ng-cloak>
           <div ng-if="warningAlerts.length > 0" class="alert alert-warning alert-dismissible" role="alert">
           	<button type="button" class="close" data-dismiss="alert" aria-label="閉じる"><span aria-hidden="true">×</span></button>
@@ -524,14 +534,14 @@
                     </div>
                   </div>
                 </div>
-                <div ng-if="!statusSuccess" class="panel">
+                <div ng-if="!statusSuccess" class="panel panel-default">
                   <div class="panel-heading">
                     <h2 class="panel-title" ng-cloak><a href="" ng-click="showShip('ISOKAZE')">{{'ISOKAZE' | translate}}</a></h2>
                   </div>
                   <div class="panel-body">
                     {{'NO_STATUS' | translate}}
                     <address ng-cloak>
-                      {{'CONTACT' | translate}}: {{'OKI_KANKO' | translate}}{{'COMPANY' | translate}} <a href="tel:0851478412">08514-7-8412</a>
+                      {{'CONTACT' | translate}}: {{'OKI_KANKO' | translate}}{{'COMPANY' | translate}} {{'BEPPU_OFFICE' | translate}}<a href="tel:0851478412">08514-7-8412</a>
                     </address>
                   </div>
                 </div>
@@ -617,23 +627,77 @@
                     </div>
                   </div>
                 </div>
-                <div ng-if="!statusSuccess" class="panel">
+                <div ng-if="!statusSuccess" class="panel panel-default">
                   <div class="panel-heading">
-                    <h2 class="panel-title" ng-cloak><a href="" ng-click="showShip('ISOKAZE')">{{'ISOKAZE' | translate}}</a></h2>
+                    <h2 class="panel-title" ng-cloak><a href="" ng-click="showShip('FERRY_DOZEN')">{{'FERRY_DOZEN' | translate}}</a></h2>
                   </div>
                   <div class="panel-body">
                     {{'NO_STATUS' | translate}}
-                    <address ng-cloak>
-                      {{'CONTACT' | translate}}: {{'OKI_KANKO' | translate}}{{'COMPANY' | translate}} <a href="tel:0851478412">08514-7-8412</a>
-                    </address>
                   </div>
                 </div>
                 <div class="panel panel-default">
                   <div class="panel-heading">
                     <h2 class="panel-title"><a href="" ng-click="showShip('KUNIGA_SIGHTSEEING_BOAT')">{{'KUNIGA_SIGHTSEEING_BOAT' | translate}}({{'NISHINOSHIMA_CHO' | translate}})</a></h2>
                   </div>
-                  <div class="panel-body">
-                    <a class="twitter-timeline" href="https://twitter.com/teikikankousen?ref_src=twsrc%5Etfw"  data-tweet-limit=1>Tweets by teikikankousen</a> <script async src="https://platform.twitter.com/widgets.js" charset="utf-8"></script>
+                  <div class="panel-body" ng-if="statusKunigaKankou.success && statusKunigaKankou.hasAlert">
+                    <dl>
+                      <dt>{{'UPDATE_TIME' | translate}}</dt>
+                      <dd>{{ statusKunigaKankou.lastUpdate }}</dd>
+                    </dl>
+                    <div class="panel panel-default">
+                      <div class="panel-heading">
+                        <h2 class="panel-title" ng-cloak>{{'KUNIGA_COURSE_A' | translate}}</h2>
+                      </div>
+                      <div class="panel-body">
+                        <table class="table">
+                          <thead>
+                            <tr><th>{{'DEPARTURE_TIME' | translate }}</th><th>{{'SHIP_STATUS' | translate }}</th><th>{{'COMMENT' | translate }}</th></tr>
+                          </thead>
+                          <tbody>
+                            <tr ng-repeat="trip in statusKunigaKankou.courseA">
+                              <td>{{trip.departure_time}}</td>
+                              <td ng-if="trip.sightseeing_status === 0">{{'NORMAL_SERVICE' | translate}}</td>
+                              <td ng-if="trip.sightseeing_status === 1">{{'CANCELLED' | translate}}</td>
+                              <td ng-if="trip.sightseeing_status === 2">{{'CAPTAINS_CHOICE' | translate}}</td>
+                              <td ng-if="trip.sightseeing_status === 3">{{'UNDECIDED' | translate}}</td>
+                              <td ng-if="trip.sightseeing_status === 4">{{'CHANGED' | translate}}</td>
+                              <td ng-if="trip.sightseeing_status === 5">{{'SKIP_EAST_KUNIGA' | translate}}</td>
+                              <td>{{trip.comment}}</td>
+                            </tr>
+                          </tbody>
+                        </table>
+                      </div>
+                    </div>
+                    <div class="panel panel-default">
+                      <div class="panel-heading">
+                        <h2 class="panel-title" ng-cloak>{{'KUNIGA_COURSE_B' | translate}}</h2>
+                      </div>
+                      <div class="panel-body">
+                        <table class="table">
+                          <thead>
+                            <tr><th>{{'DEPARTURE_TIME' | translate }}</th><th>{{'SHIP_STATUS' | translate }}</th><th>{{'COMMENT' | translate }}</th></tr>
+                          </thead>
+                          <tbody>
+                            <tr ng-repeat="trip in statusKunigaKankou.courseB">
+                              <td>{{trip.departure_time}}</td>
+                              <td ng-if="trip.sightseeing_status === 0">{{'NORMAL_SERVICE' | translate}}</td>
+                              <td ng-if="trip.sightseeing_status === 1">{{'CANCELLED' | translate}}</td>
+                              <td ng-if="trip.sightseeing_status === 2">{{'CAPTAINS_CHOICE' | translate}}</td>
+                              <td ng-if="trip.sightseeing_status === 3">{{'UNDECIDED' | translate}}</td>
+                              <td ng-if="trip.sightseeing_status === 4">{{'CHANGED' | translate}}</td>
+                              <td ng-if="trip.sightseeing_status === 5">{{'SKIP_EAST_KUNIGA' | translate}}</td>
+                              <td>{{trip.comment}}</td>
+                            </tr>
+                          </tbody>
+                        </table>
+                      </div>
+                    </div>
+                  </div>
+                  <div class="panel-body" ng-if="statusKunigaKankou.success && !statusKunigaKankou.hasAlert">
+                    {{'NO_ALERT' | translate}}
+                  </div>
+                  <div class="panel-body" ng-if="!statusKunigaKankou.success">
+                    {{'NO_STATUS' | translate}}
                   </div>
                 </div>
                 <address ng-cloak>
@@ -647,7 +711,7 @@
     </div>
     <footer class="footer">
       <div class="container">
-        <p class="text-muted">Powered by <a href="http://naturebot-lab.com/">naturebot.lab</a></p>
+        <p class="text-muted">Powered by <a href="https://oki-digilab.com/">隠岐デジタルラボ</a></p>
       </div>
     </footer>
     <script type="text/javascript">
