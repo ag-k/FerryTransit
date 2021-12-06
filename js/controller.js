@@ -18,7 +18,8 @@ function mainCtrl($scope, $uibModal, $http, SharedStateService, $filter, $locati
         console.log(time);
         return time.replace(/:\d{2}$/, "");
     };
-    $scope.portMaps = { "HONDO": '<iframe src="https://www.google.com/maps/d/embed?mid=10LYdFfHjM-C6lq36egqxMuDIiMg" width="640" height="480"></iframe>',
+    $scope.portMaps = {
+        "HONDO": '<iframe src="https://www.google.com/maps/d/embed?mid=10LYdFfHjM-C6lq36egqxMuDIiMg" width="640" height="480"></iframe>',
         "HONDO_SAKAIMINATO": '<iframe src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d2292.317150965745!2d133.22227226073633!3d35.54509842041033!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x355655ad5deb0d71%3A0x177b9c28785fc8a3!2z6Zqg5bKQ5rG96Ii5IOWig-a4ryDjg5Xjgqfjg6rjg7zjgr_jg7zjg5_jg4rjg6s!5e0!3m2!1sja!2sjp!4v1508490999479" width="600" height="450" frameborder="0" style="border:0" allowfullscreen></iframe>',
         "HONDO_SHICHIRUI": '<iframe src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3245.2782127375426!2d133.22755195027142!3d35.57152434349223!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x3556547244a8948d%3A0xd6870c7a99239d6c!2z5LiD6aGe5riv!5e0!3m2!1sja!2sjp!4v1508490937348" width="600" height="450" frameborder="0" style="border:0" allowfullscreen></iframe>',
         "KURI": '<iframe src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3226.807196887792!2d133.03717155028508!3d36.0250013185523!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x3557d02204625465%3A0x79e1cdd47cbe20cd!2z5p2l5bGF5riv44OV44Kn44Oq44O844K_44O844Of44OK44Or!5e0!3m2!1sja!2sjp!4v1508491503665" width="600" height="450" frameborder="0" style="border:0" allowfullscreen></iframe>',
@@ -1051,7 +1052,6 @@ function mainCtrl($scope, $uibModal, $http, SharedStateService, $filter, $locati
             results = $filter('orderBy')(results, "departureTime", true);
         }
         var getPrice = function (name, departure, arrival, date) {
-            var newPriceDate = new Date(2019, 0, 1);
             var isDogo = function (port) {
                 return (port == 'SAIGO');
             };
@@ -1061,161 +1061,82 @@ function mainCtrl($scope, $uibModal, $http, SharedStateService, $filter, $locati
             var isMainland = function (port) {
                 return ((port == 'HONDO_SAKAIMINATO') || (port == 'HONDO_SHICHIRUI'));
             };
-            //2019-01-01〜の新料金
+            //2019-10-01〜の新料金
             if ((name == 'FERRY_OKI') || (name == 'FERRY_SHIRASHIMA') || (name == 'FERRY_KUNIGA')) {
-                if (date.getTime() >= newPriceDate.getTime()) {
-                    if (isDozen(departure)) {
-                        if (isDozen(arrival)) {
-                            if ((departure == 'KURI') || (arrival == 'KURI')) {
-                                return 710;
-                            }
-                            else {
-                                return 360;
-                            }
-                        }
-                        else if (isDogo(arrival)) {
-                            return 1470;
-                        }
-                        else if (isMainland(arrival)) {
-                            return 3240;
+                if (isDozen(departure)) {
+                    if (isDozen(arrival)) {
+                        if ((departure == 'KURI') || (arrival == 'KURI')) {
+                            return 720;
                         }
                         else {
-                            console.error("Invalid 'arrival'");
+                            return 370;
                         }
                     }
-                    else if (isDogo(departure)) {
-                        if (isDozen(arrival)) {
-                            return 1470;
-                        }
-                        else if (isMainland(arrival)) {
-                            return 3240;
-                        }
-                        else {
-                            console.error("Invalid 'arrival'");
-                        }
+                    else if (isDogo(arrival)) {
+                        return 1490;
                     }
-                    else if (isMainland(departure)) {
-                        if ((isDozen(arrival)) || (isDogo(arrival))) {
-                            return 3240;
-                        }
-                        else {
-                            console.error("Invalid 'arrival'");
-                        }
+                    else if (isMainland(arrival)) {
+                        return 3300;
                     }
                     else {
-                        console.error("Invalid 'departure'");
+                        console.error("Invalid 'arrival'");
+                    }
+                }
+                else if (isDogo(departure)) {
+                    if (isDozen(arrival)) {
+                        return 1490;
+                    }
+                    else if (isMainland(arrival)) {
+                        return 3300;
+                    }
+                    else {
+                        console.error("Invalid 'arrival'");
+                    }
+                }
+                else if (isMainland(departure)) {
+                    if ((isDozen(arrival)) || (isDogo(arrival))) {
+                        return 3300;
+                    }
+                    else {
+                        console.error("Invalid 'arrival'");
                     }
                 }
                 else {
-                    if (isDozen(departure)) {
-                        if (isDozen(arrival)) {
-                            if ((departure == 'KURI') || (arrival == 'KURI')) {
-                                return 640;
-                            }
-                            else {
-                                return 340;
-                            }
-                        }
-                        else if (isDogo(arrival)) {
-                            return 1330;
-                        }
-                        else if (isMainland(arrival)) {
-                            return 2920;
-                        }
-                        else {
-                            console.error("Invalid 'arrival'");
-                        }
-                    }
-                    else if (isDogo(departure)) {
-                        if (isDozen(arrival)) {
-                            return 1330;
-                        }
-                        else if (isMainland(arrival)) {
-                            return 2920;
-                        }
-                        else {
-                            console.error("Invalid 'arrival'");
-                        }
-                    }
-                    else if (isMainland(departure)) {
-                        if ((isDozen(arrival)) || (isDogo(arrival))) {
-                            return 2920;
-                        }
-                        else {
-                            console.error("Invalid 'arrival'");
-                        }
-                    }
-                    else {
-                        console.error("Invalid 'departure'");
-                    }
+                    console.error("Invalid 'departure'");
                 }
+
             }
             else if (name == 'RAINBOWJET') {
-                if (date.getTime() >= newPriceDate.getTime()) {
-                    if (isDozen(departure)) {
-                        if (isDozen(arrival)) {
-                            return 360;
-                        }
-                        else if (isDogo(arrival)) {
-                            return 2800;
-                        }
-                        else if (isMainland(arrival)) {
-                            return 6170;
-                        }
-                        else {
-                            console.error("Invalid 'arrival'");
-                        }
+                if (isDozen(departure)) {
+                    if (isDozen(arrival)) {
+                        return 370;
                     }
-                    else if (isDogo(departure)) {
-                        if (isDozen(arrival)) {
-                            return 2800;
-                        }
-                        else if (isMainland(arrival)) {
-                            return 6170;
-                        }
-                        else {
-                            console.error("Invalid 'arrival'");
-                        }
+                    else if (isDogo(arrival)) {
+                        return 2840;
                     }
-                    else if (isMainland(departure)) {
-                        return 6170;
+                    else if (isMainland(arrival)) {
+                        return 6280;
                     }
                     else {
-                        console.error("Invalid 'departure'");
+                        console.error("Invalid 'arrival'");
                     }
                 }
-                else {
-                    if (isDozen(departure)) {
-                        if (isDozen(arrival)) {
-                            return 340;
-                        }
-                        else if (isDogo(arrival)) {
-                            return 2630;
-                        }
-                        else if (isMainland(arrival)) {
-                            return 5760;
-                        }
-                        else {
-                            console.error("Invalid 'arrival'");
-                        }
+                else if (isDogo(departure)) {
+                    if (isDozen(arrival)) {
+                        return 2840;
                     }
-                    else if (isDogo(departure)) {
-                        if (isDozen(arrival)) {
-                            return 2630;
-                        }
-                        else if (isMainland(arrival)) {
-                            return 5760;
-                        }
-                        else {
-                            console.error("Invalid 'arrival'");
-                        }
-                    }
-                    else if (isMainland(departure)) {
-                        return 5760;
+                    else if (isMainland(arrival)) {
+                        return 6280;
                     }
                     else {
-                        console.error("Invalid 'departure'");
+                        console.error("Invalid 'arrival'");
                     }
+                }
+                else if (isMainland(departure)) {
+                    return 6280;
+                }
+                else {
+                    console.error("Invalid 'departure'");
                 }
             }
             else if ((name == 'ISOKAZE') || (name == 'ISOKAZE_EX') || (name == 'FERRY_DOZEN')) {
@@ -1367,197 +1288,197 @@ app.factory("SharedStateService", function () {
 app.controller('mainCtrl', mainCtrl);
 app.controller('datePickerCtrl', datePickerCtrl);
 app.config(['$translateProvider', function ($translateProvider) {
-        $translateProvider.translations('ja', {
-            'TITLE': '隠岐航路案内',
-            'CURRENCY_UNIT': '円',
-            'HOURS': '時間',
-            'MINUTES': '分',
-            'ROUTE': '経路',
-            'TIME': '時刻',
-            'FARE': '運賃',
-            'DEPARTURE': '出発地',
-            'ARRIVAL': '目的地',
-            'DEPARTURE_TIME': '出発時刻',
-            'ARRIVAL_TIME': '到着時刻',
-            'TIMETABLE': '時刻表',
-            'TRANSIT': '乗換案内',
-            'DATE': '日時',
-            '_FROM': '',
-            'FROM_': 'から',
-            '_TO': '',
-            'TO_': 'へ',
-            'VIA': '経由',
-            'SHIP': '船名',
-            'DO_NOT_USE_FAST_FERRY': '高速船を利用しない',
-            'VIA_CAR': '車で乗船する',
-            'ADD_CONDITIONS': '条件を追加',
-            'SEARCH_ROUTE': '経路検索',
-            'TODAY': '本日',
-            'TOMORROW': '明日',
-            'CLEAR': '削除',
-            'CLOSE': '閉じる',
-            'HONDO': '七類(松江市)または境港(境港市)',
-            'HONDO_SHICHIRUI': '七類(松江市)',
-            'HONDO_SAKAIMINATO': '境港(境港市)',
-            'KURI': '来居(知夫村)',
-            'BEPPU': '別府(西ノ島町)',
-            'HISHIURA': '菱浦(海士町)',
-            'SAIGO': '西郷(隠岐の島町)',
-            'MAINLAND': '本土',
-            'DOZEN': '島前',
-            'DOGO': '島後',
-            'FERRY_OKI': 'フェリーおき',
-            'FERRY_SHIRASHIMA': 'フェリーしらしま',
-            'FERRY_KUNIGA': 'フェリーくにが',
-            'FERRY_DOZEN': 'フェリーどうぜん(内航船)',
-            'ISOKAZE': 'いそかぜ(内航船)',
-            'ISOKAZE_EX': 'いそかぜ(内航船)',
-            'RAINBOWJET': 'レインボージェット',
-            'TIMETABLE_SUP_SHICHIRUI': '(七類)',
-            'TIMETABLE_SUP_SAKAIMINATO': '(境港)',
-            'MORE_BUTTON': 'もっと見る',
-            'SHIP_STATUS': '運航状況',
-            'OKI_KISEN': '隠岐汽船',
-            'OKI_KISEN_STATUS_URL': 'http://www.oki-kisen.co.jp/situation/',
-            'OKI_KANKO': '隠岐観光',
-            'BEPPU_OFFICE': '別府営業所',
-            'CONTACT': 'お問い合わせ',
-            'COMPANY': '(株)',
-            'KUNIGA_SIGHTSEEING_BOAT': '国賀めぐり定期観光船',
-            'NISHINOSHIMA_CHO': '西ノ島町',
-            'AMA_CHO': '海士町',
-            'CHIBU_MURA': '知夫村',
-            'OKINOSHIMA_CHO': '隠岐の島町',
-            'NO_ALERT': '通知はありません。',
-            'UPDATE_TIME': '更新日時',
-            'COMMENT': '備考',
-            'LAST_SHIPS': '最終便',
-            'EXTRA_SHIPS': '臨時便',
-            'NORMAL_SERVICE': '通常運航',
-            'CANCELLED': '欠航',
-            'FULLY_CANCELLED': '全便欠航',
-            'PARTIALLY_CANCELLED': '下記の便より欠航',
-            'CHANGED': '変更あり',
-            'KURI_CANCELLED': '来居(知夫村)行きの下記の便を欠航',
-            'SERVICE_RESUMED': '下記の便より運航再開',
-            'REASON': '理由',
-            'NO_STATUS': '運航状況が取得できません。',
-            'WAVEINFO': '隠岐の海況波高',
-            'NEWS': 'お知らせ',
-            'KUNIGA_COURSE_A': '浦郷発Aコース',
-            'KUNIGA_COURSE_B': '別府発Bコース',
-            'CAPTAINS_CHOICE': '船長おまかせコースに変更',
-            'UNDECIDED': '未定',
-            'SKIP_EAST_KUNIGA': '東国賀なしに変更',
-            //エラー
-            'OFFLINE_TIMETABLE_ERROR': '時刻表の取得に失敗しました。最後に取得した時刻表データを表示しているため、最新の情報ではない可能性があります。',
-            'LOAD_TIMETABLE_ERROR': '時刻表の取得に失敗しました。ネットワークの接続状況を確認してください。',
-            'LOAD_STATUS_ERROR': '運航状況の取得に失敗しました。ネットワークの接続状況を確認してください。',
-            'NO_RESULT_ERROR': '条件に一致する経路がありません。',
-        });
-        $translateProvider.translations('en', {
-            'TITLE': 'Oki Islands Sea Line Information',
-            'CURRENCY_UNIT': 'yen',
-            'HOURS': 'hours',
-            'MINUTES': 'mins',
-            'ROUTE': 'Route',
-            'TIME': 'Time',
-            'FARE': 'Fare',
-            'DEPARTURE': 'Departure',
-            'ARRIVAL': 'Arrival',
-            'DEPARTURE_TIME': 'Depart at',
-            'ARRIVAL_TIME': 'Arrive by',
-            'TIMETABLE': 'Timetable',
-            'TRANSIT': 'Transit',
-            'DATE': 'Date',
-            '_FROM': 'From:',
-            'FROM_': '',
-            '_TO': 'To:',
-            'TO_': '',
-            'VIA': 'via',
-            'SHIP': 'Ship',
-            'DO_NOT_USE_FAST_FERRY': 'Except Fast Ferry',
-            'VIA_CAR': 'Via car',
-            'ADD_CONDITIONS': 'Add conditions',
-            'SEARCH_ROUTE': 'Search Route',
-            'TODAY': 'Today',
-            'TOMORROW': 'Tomorrow',
-            'CLEAR': 'Clear',
-            'CLOSE': 'Close',
-            'HONDO': 'Shichirui or Sakaiminato',
-            'HONDO_SHICHIRUI': 'Shichirui',
-            'HONDO_SAKAIMINATO': 'Sakaiminato',
-            'KURI': 'Kurī (Chibu)',
-            'BEPPU': 'Beppu (Nishinoshima)',
-            'HISHIURA': 'Hishiura (Ama)',
-            'SAIGO': 'Saigō (Okinoshima)',
-            'MAINLAND': 'Mainland',
-            'DOZEN': 'Dōzen',
-            'DOGO': 'Dōgo',
-            'FERRY_OKI': 'Ferry Oki',
-            'FERRY_SHIRASHIMA': 'Ferry Shirashima',
-            'FERRY_KUNIGA': 'Ferry Kuniga',
-            'FERRY_DOZEN': 'Ferry Dōzen (Inter-Island Ferry)',
-            'ISOKAZE': 'Isokaze (Inter-Island Ferry)',
-            'ISOKAZE_EX': 'Isokaze (Inter-Island Ferry)',
-            'RAINBOWJET': 'Rainbow Jet (Fast Ferry)',
-            'TIMETABLE_SUP_SHICHIRUI': '(Shichirui)',
-            'TIMETABLE_SUP_SAKAIMINATO': '(Sakaiminato)',
-            'MORE_BUTTON': 'See more',
-            'SHIP_STATUS': 'Service Status',
-            'OKI_KISEN': 'Oki Kisen ',
-            'OKI_KISEN_STATUS_URL': 'http://www.oki-kisen.co.jp/m/m_situation/',
-            'OKI_KANKO': 'Oki Kankō ',
-            'CONTACT': 'Contact',
-            'COMPANY': 'Co., Ltd.',
-            'KUNIGA_SIGHTSEEING_BOAT': 'Kuniga Coast Sightseeing Boat',
-            'NISHINOSHIMA_CHO': 'Nishinoshima',
-            'AMA_CHO': 'Ama',
-            'CHIBU_MURA': 'Chibu',
-            'OKINOSHIMA_CHO': 'Okinoshima',
-            'NO_ALERT': 'No alerts.',
-            'UPDATE_TIME': 'Updated At',
-            'COMMENT': 'Comment',
-            'LAST_SHIPS': 'Last Ships',
-            'EXTRA_SHIPS': 'Extra Ships',
-            'NORMAL_SERVICE': 'Normal service.',
-            'FULLY_CANCELLED': 'Fully cancelled.',
-            'PARTIALLY_CANCELLED': 'Canceled from the following trip.',
-            'CHANGED': 'Changed.',
-            'KURI_CANCELLED': 'The following trip is cancelled.',
-            'SERVICE_RESUMED': 'Normal service will be resumed from the following trip.',
-            'REASON': 'Reason',
-            'NO_STATUS': 'Failed to get ships status.',
-            'WAVEINFO': 'Wave Height',
-            'NEWS': 'News',
-            'KUNIGA_COURSE_A': 'Course A (from Uragō Port)',
-            'KUNIGA_COURSE_B': 'Course B (from Beppu Port)',
-            'CAPTAINS_CHOICE': "Changed to Captain's choice course",
-            'UNDECIDED': 'Undecided',
-            'SKIP_EAST_KUNIGA': 'Omit the East Kuniga Coast',
-            //欠航理由
-            '海上時化': 'Rough seas',
-            '悪天候': 'Bad weather',
-            '機関故障': 'Engine trouble',
-            '台風接近': 'Typhoon approaching',
-            //隠岐汽船ステータス
-            '定期運航': 'in Operation',
-            '欠航': 'Canceled',
-            '運航に変更あり': 'Changed',
-            '休航': 'Canceled',
-            //Errors
-            'OFFLINE_TIMETABLE_ERROR': 'Failed to get timetable. It may not be the latest information because the timetable data that was last acquired is displayed.',
-            'LOAD_TIMETABLE_ERROR': 'Failed to get timetable. Please check the network connection status.',
-            'LOAD_STATUS_ERROR': 'Failed to get ships status. Please check the network connection status.',
-            'NO_RESULT_ERROR': 'No Routes have been found.',
-        });
-        $translateProvider.determinePreferredLanguage(function () {
-            // define a function to determine the language
-            // and return a language key
-            var lang = (window.navigator['userLanguage']
-                || window.navigator['language']
-                || window.navigator['browserLanguage']).substr(0, 2) == "ja" ? "ja" : "en";
-            return lang;
-        });
-        $translateProvider.useSanitizeValueStrategy('escape');
-    }]);
+    $translateProvider.translations('ja', {
+        'TITLE': '隠岐航路案内',
+        'CURRENCY_UNIT': '円',
+        'HOURS': '時間',
+        'MINUTES': '分',
+        'ROUTE': '経路',
+        'TIME': '時刻',
+        'FARE': '運賃',
+        'DEPARTURE': '出発地',
+        'ARRIVAL': '目的地',
+        'DEPARTURE_TIME': '出発時刻',
+        'ARRIVAL_TIME': '到着時刻',
+        'TIMETABLE': '時刻表',
+        'TRANSIT': '乗換案内',
+        'DATE': '日時',
+        '_FROM': '',
+        'FROM_': 'から',
+        '_TO': '',
+        'TO_': 'へ',
+        'VIA': '経由',
+        'SHIP': '船名',
+        'DO_NOT_USE_FAST_FERRY': '高速船を利用しない',
+        'VIA_CAR': '車で乗船する',
+        'ADD_CONDITIONS': '条件を追加',
+        'SEARCH_ROUTE': '経路検索',
+        'TODAY': '本日',
+        'TOMORROW': '明日',
+        'CLEAR': '削除',
+        'CLOSE': '閉じる',
+        'HONDO': '七類(松江市)または境港(境港市)',
+        'HONDO_SHICHIRUI': '七類(松江市)',
+        'HONDO_SAKAIMINATO': '境港(境港市)',
+        'KURI': '来居(知夫村)',
+        'BEPPU': '別府(西ノ島町)',
+        'HISHIURA': '菱浦(海士町)',
+        'SAIGO': '西郷(隠岐の島町)',
+        'MAINLAND': '本土',
+        'DOZEN': '島前',
+        'DOGO': '島後',
+        'FERRY_OKI': 'フェリーおき',
+        'FERRY_SHIRASHIMA': 'フェリーしらしま',
+        'FERRY_KUNIGA': 'フェリーくにが',
+        'FERRY_DOZEN': 'フェリーどうぜん(内航船)',
+        'ISOKAZE': 'いそかぜ(内航船)',
+        'ISOKAZE_EX': 'いそかぜ(内航船)',
+        'RAINBOWJET': 'レインボージェット',
+        'TIMETABLE_SUP_SHICHIRUI': '(七類)',
+        'TIMETABLE_SUP_SAKAIMINATO': '(境港)',
+        'MORE_BUTTON': 'もっと見る',
+        'SHIP_STATUS': '運航状況',
+        'OKI_KISEN': '隠岐汽船',
+        'OKI_KISEN_STATUS_URL': 'http://www.oki-kisen.co.jp/situation/',
+        'OKI_KANKO': '隠岐観光',
+        'BEPPU_OFFICE': '別府営業所',
+        'CONTACT': 'お問い合わせ',
+        'COMPANY': '(株)',
+        'KUNIGA_SIGHTSEEING_BOAT': '国賀めぐり定期観光船',
+        'NISHINOSHIMA_CHO': '西ノ島町',
+        'AMA_CHO': '海士町',
+        'CHIBU_MURA': '知夫村',
+        'OKINOSHIMA_CHO': '隠岐の島町',
+        'NO_ALERT': '通知はありません。',
+        'UPDATE_TIME': '更新日時',
+        'COMMENT': '備考',
+        'LAST_SHIPS': '最終便',
+        'EXTRA_SHIPS': '臨時便',
+        'NORMAL_SERVICE': '通常運航',
+        'CANCELLED': '欠航',
+        'FULLY_CANCELLED': '全便欠航',
+        'PARTIALLY_CANCELLED': '下記の便より欠航',
+        'CHANGED': '変更あり',
+        'KURI_CANCELLED': '来居(知夫村)行きの下記の便を欠航',
+        'SERVICE_RESUMED': '下記の便より運航再開',
+        'REASON': '理由',
+        'NO_STATUS': '運航状況が取得できません。',
+        'WAVEINFO': '隠岐の海況波高',
+        'NEWS': 'お知らせ',
+        'KUNIGA_COURSE_A': '浦郷発Aコース',
+        'KUNIGA_COURSE_B': '別府発Bコース',
+        'CAPTAINS_CHOICE': '船長おまかせコースに変更',
+        'UNDECIDED': '未定',
+        'SKIP_EAST_KUNIGA': '東国賀なしに変更',
+        //エラー
+        'OFFLINE_TIMETABLE_ERROR': '時刻表の取得に失敗しました。最後に取得した時刻表データを表示しているため、最新の情報ではない可能性があります。',
+        'LOAD_TIMETABLE_ERROR': '時刻表の取得に失敗しました。ネットワークの接続状況を確認してください。',
+        'LOAD_STATUS_ERROR': '運航状況の取得に失敗しました。ネットワークの接続状況を確認してください。',
+        'NO_RESULT_ERROR': '条件に一致する経路がありません。',
+    });
+    $translateProvider.translations('en', {
+        'TITLE': 'Oki Islands Sea Line Information',
+        'CURRENCY_UNIT': 'yen',
+        'HOURS': 'hours',
+        'MINUTES': 'mins',
+        'ROUTE': 'Route',
+        'TIME': 'Time',
+        'FARE': 'Fare',
+        'DEPARTURE': 'Departure',
+        'ARRIVAL': 'Arrival',
+        'DEPARTURE_TIME': 'Depart at',
+        'ARRIVAL_TIME': 'Arrive by',
+        'TIMETABLE': 'Timetable',
+        'TRANSIT': 'Transit',
+        'DATE': 'Date',
+        '_FROM': 'From:',
+        'FROM_': '',
+        '_TO': 'To:',
+        'TO_': '',
+        'VIA': 'via',
+        'SHIP': 'Ship',
+        'DO_NOT_USE_FAST_FERRY': 'Except Fast Ferry',
+        'VIA_CAR': 'Via car',
+        'ADD_CONDITIONS': 'Add conditions',
+        'SEARCH_ROUTE': 'Search Route',
+        'TODAY': 'Today',
+        'TOMORROW': 'Tomorrow',
+        'CLEAR': 'Clear',
+        'CLOSE': 'Close',
+        'HONDO': 'Shichirui or Sakaiminato',
+        'HONDO_SHICHIRUI': 'Shichirui',
+        'HONDO_SAKAIMINATO': 'Sakaiminato',
+        'KURI': 'Kurī (Chibu)',
+        'BEPPU': 'Beppu (Nishinoshima)',
+        'HISHIURA': 'Hishiura (Ama)',
+        'SAIGO': 'Saigō (Okinoshima)',
+        'MAINLAND': 'Mainland',
+        'DOZEN': 'Dōzen',
+        'DOGO': 'Dōgo',
+        'FERRY_OKI': 'Ferry Oki',
+        'FERRY_SHIRASHIMA': 'Ferry Shirashima',
+        'FERRY_KUNIGA': 'Ferry Kuniga',
+        'FERRY_DOZEN': 'Ferry Dōzen (Inter-Island Ferry)',
+        'ISOKAZE': 'Isokaze (Inter-Island Ferry)',
+        'ISOKAZE_EX': 'Isokaze (Inter-Island Ferry)',
+        'RAINBOWJET': 'Rainbow Jet (Fast Ferry)',
+        'TIMETABLE_SUP_SHICHIRUI': '(Shichirui)',
+        'TIMETABLE_SUP_SAKAIMINATO': '(Sakaiminato)',
+        'MORE_BUTTON': 'See more',
+        'SHIP_STATUS': 'Service Status',
+        'OKI_KISEN': 'Oki Kisen ',
+        'OKI_KISEN_STATUS_URL': 'http://www.oki-kisen.co.jp/m/m_situation/',
+        'OKI_KANKO': 'Oki Kankō ',
+        'CONTACT': 'Contact',
+        'COMPANY': 'Co., Ltd.',
+        'KUNIGA_SIGHTSEEING_BOAT': 'Kuniga Coast Sightseeing Boat',
+        'NISHINOSHIMA_CHO': 'Nishinoshima',
+        'AMA_CHO': 'Ama',
+        'CHIBU_MURA': 'Chibu',
+        'OKINOSHIMA_CHO': 'Okinoshima',
+        'NO_ALERT': 'No alerts.',
+        'UPDATE_TIME': 'Updated At',
+        'COMMENT': 'Comment',
+        'LAST_SHIPS': 'Last Ships',
+        'EXTRA_SHIPS': 'Extra Ships',
+        'NORMAL_SERVICE': 'Normal service.',
+        'FULLY_CANCELLED': 'Fully cancelled.',
+        'PARTIALLY_CANCELLED': 'Canceled from the following trip.',
+        'CHANGED': 'Changed.',
+        'KURI_CANCELLED': 'The following trip is cancelled.',
+        'SERVICE_RESUMED': 'Normal service will be resumed from the following trip.',
+        'REASON': 'Reason',
+        'NO_STATUS': 'Failed to get ships status.',
+        'WAVEINFO': 'Wave Height',
+        'NEWS': 'News',
+        'KUNIGA_COURSE_A': 'Course A (from Uragō Port)',
+        'KUNIGA_COURSE_B': 'Course B (from Beppu Port)',
+        'CAPTAINS_CHOICE': "Changed to Captain's choice course",
+        'UNDECIDED': 'Undecided',
+        'SKIP_EAST_KUNIGA': 'Omit the East Kuniga Coast',
+        //欠航理由
+        '海上時化': 'Rough seas',
+        '悪天候': 'Bad weather',
+        '機関故障': 'Engine trouble',
+        '台風接近': 'Typhoon approaching',
+        //隠岐汽船ステータス
+        '定期運航': 'in Operation',
+        '欠航': 'Canceled',
+        '運航に変更あり': 'Changed',
+        '休航': 'Canceled',
+        //Errors
+        'OFFLINE_TIMETABLE_ERROR': 'Failed to get timetable. It may not be the latest information because the timetable data that was last acquired is displayed.',
+        'LOAD_TIMETABLE_ERROR': 'Failed to get timetable. Please check the network connection status.',
+        'LOAD_STATUS_ERROR': 'Failed to get ships status. Please check the network connection status.',
+        'NO_RESULT_ERROR': 'No Routes have been found.',
+    });
+    $translateProvider.determinePreferredLanguage(function () {
+        // define a function to determine the language
+        // and return a language key
+        var lang = (window.navigator['userLanguage']
+            || window.navigator['language']
+            || window.navigator['browserLanguage']).substr(0, 2) == "ja" ? "ja" : "en";
+        return lang;
+    });
+    $translateProvider.useSanitizeValueStrategy('escape');
+}]);
