@@ -1,9 +1,12 @@
 <?php
-try {
-    $db = new PDO('sqlite:timetable.sqlite');
-    $db->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
-    header('Access-Control-Allow-Origin: *');
-    echo json_encode($db->query('SELECT * FROM timetable')->fetchAll(PDO::FETCH_ASSOC));
-} catch (PDOException $e) {
-    die ('Connection failed : '.$e->getMessage());
+$jsonUrl = "timetable.json";
+if (file_exists($jsonUrl)) {
+    if ($json = @file_get_contents($jsonUrl)) {
+        header('Access-Control-Allow-Origin: *');
+        echo $json;
+    } else {
+        echo "Error: Timetable file not found.";
+    }
+} else {
+    echo "Error: Timetable file not found.";
 }
