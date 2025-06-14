@@ -1,73 +1,73 @@
 # CLAUDE.md
 
-This file provides guidance to Claude Code (claude.ai/code) when working with code in this repository.
+このファイルは、このリポジトリでコードを扱う際のClaude Code (claude.ai/code)への指針を提供します。
 
-## Project Overview
+## プロジェクト概要
 
-FerryTransit is a ferry timetable and route information system for the Oki Islands (隠岐諸島) in Shimane Prefecture, Japan. The application displays ferry schedules between various ports and supports both Japanese and English languages.
+FerryTransitは、島根県隠岐諸島のフェリー時刻表と航路情報システムです。このアプリケーションは各港間のフェリースケジュールを表示し、日本語と英語の両方をサポートしています。
 
-## Technology Stack
+## 技術スタック
 
-- **Frontend**: AngularJS 1.7.9 (legacy version)
-- **Language**: TypeScript (compiles to ES5)
+- **フロントエンド**: AngularJS 1.7.9 (レガシーバージョン)
+- **言語**: TypeScript (ES5にコンパイル)
 - **UI**: Bootstrap 3.4.1 with Angular UI Bootstrap
-- **Data Storage**: SQLite database exported to JSON
-- **Server**: PHP for serving JSON with CORS headers
+- **データストレージ**: SQLiteデータベースからJSONにエクスポート
+- **サーバー**: CORSヘッダー付きでJSONを提供するPHP
 
-## Development Commands
+## 開発コマンド
 
-Since there are no npm scripts defined, development follows manual processes:
+npmスクリプトが定義されていないため、開発は手動プロセスに従います：
 
-### TypeScript Compilation
-TypeScript files are configured to compile on save. The project uses:
+### TypeScriptコンパイル
+TypeScriptファイルは保存時にコンパイルするよう設定されています。プロジェクトで使用：
 - `js/controller.ts` → `js/controller.js`
 - `js/timepicker-ctrl.ts` → `js/timepicker-ctrl.js`
 
-### Data Updates
-To update ferry timetable data:
+### データ更新
+フェリー時刻表データを更新するには：
 ```bash
-# Edit SQL commands in update_timetable.sql
-# Run the update script
+# update_timetable.sqlでSQLコマンドを編集
+# 更新スクリプトを実行
 ./update_timetable.sh
 ```
 
-The update process:
-1. Imports CSV data into SQLite database
-2. Exports data to `timetable.json`
-3. The PHP endpoint serves this JSON file
+更新プロセス：
+1. CSVデータをSQLiteデータベースにインポート
+2. データを`timetable.json`にエクスポート
+3. PHPエンドポイントがこのJSONファイルを提供
 
-## Architecture Overview
+## アーキテクチャ概要
 
-### Data Flow
-1. **Source Data**: Ferry schedule information stored in `timetable.sqlite`
-2. **Data Export**: SQLite → JSON via `update_timetable.sh`
-3. **API**: `timetable.php` serves JSON with CORS headers
-4. **Frontend**: AngularJS controller fetches and displays data
+### データフロー
+1. **ソースデータ**: `timetable.sqlite`に保存されたフェリースケジュール情報
+2. **データエクスポート**: `update_timetable.sh`経由でSQLite → JSON
+3. **API**: `timetable.php`がCORSヘッダー付きでJSONを提供
+4. **フロントエンド**: AngularJSコントローラーがデータを取得して表示
 
-### Core Components
+### コアコンポーネント
 
-**Main Controller (`js/controller.ts`)**
-- Manages ferry schedule display
-- Handles language switching (ja/en)
-- Implements date-based filtering
-- Controls modal dialogs for port/ship information
+**メインコントローラー (`js/controller.ts`)**
+- フェリースケジュール表示を管理
+- 言語切り替え（ja/en）を処理
+- 日付ベースのフィルタリングを実装
+- 港/船情報のモーダルダイアログを制御
 
-**Data Structure**
-The timetable data includes:
-- Port connections (SAIGO, HISHIURA, BEPPU, KURI, HONDO_SHICHIRUI, HONDO_SAKAIMINATO)
-- Ferry services (FERRY_OKI, FERRY_SHIRASHIMA, FERRY_KUNIGA, FERRY_DOZEN)
-- Schedule information with dates and times
-- Service alerts and exceptions
+**データ構造**
+時刻表データには以下が含まれます：
+- 港の接続（西郷、菱浦、別府、来居、本土七類、本土境港）
+- フェリーサービス（フェリーおき、フェリーしらしま、フェリーくにが、フェリーどうぜん）
+- 日時付きスケジュール情報
+- サービスアラートと例外
 
-### Key Features Implementation
-- **Multi-language**: Uses Angular Translate with language files in the controller
-- **Date Filtering**: Custom date picker implementation for schedule filtering
-- **Map Integration**: Google Maps API for displaying port locations
-- **Responsive Design**: Bootstrap-based layout for mobile compatibility
+### 主要機能の実装
+- **多言語対応**: コントローラー内の言語ファイルでAngular Translateを使用
+- **日付フィルタリング**: スケジュールフィルタリング用のカスタム日付ピッカー実装
+- **地図統合**: 港の場所を表示するGoogle Maps API
+- **レスポンシブデザイン**: モバイル互換性のためのBootstrapベースのレイアウト
 
-## Important Considerations
+## 重要な考慮事項
 
-1. **Legacy Framework**: This uses AngularJS 1.x which is no longer actively maintained
-2. **Manual Data Updates**: Schedule updates require manual SQL editing and script execution
-3. **CORS Configuration**: The PHP endpoint includes CORS headers for cross-origin requests
-4. **Date Handling**: Japanese calendar considerations and timezone handling are important
+1. **レガシーフレームワーク**: アクティブにメンテナンスされていないAngularJS 1.xを使用
+2. **手動データ更新**: スケジュール更新には手動のSQL編集とスクリプト実行が必要
+3. **CORS設定**: PHPエンドポイントにはクロスオリジンリクエスト用のCORSヘッダーが含まれる
+4. **日付処理**: 日本のカレンダーの考慮事項とタイムゾーン処理が重要
