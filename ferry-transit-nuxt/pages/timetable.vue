@@ -166,10 +166,10 @@
                 </a>
               </td>
               <td>
-                {{ formatTime(trip.departureTime) }} {{ $t(trip.departure) }}
+                {{ formatTime(trip.departureTime) }}
               </td>
               <td>
-                {{ formatTime(trip.arrivalTime) }} {{ $t(trip.arrival) }}
+                {{ formatTime(trip.arrivalTime) }}
               </td>
             </tr>
           </tbody>
