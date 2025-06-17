@@ -13,7 +13,7 @@
             :value="departure"
             @change="ferryStore.setDeparture($event.target.value)"
           >
-            <option value="DEPARTURE" disabled>{{ $t('DEPARTURE') }}</option>
+            <option value="" disabled selected>{{ $t('DEPARTURE') }}</option>
             <optgroup :label="$t('MAINLAND')">
               <option v-for="port in hondoPorts" :key="port" :value="port">
                 {{ $t(port) }}
@@ -37,7 +37,7 @@
             :value="arrival"
             @change="ferryStore.setArrival($event.target.value)"
           >
-            <option value="ARRIVAL" disabled>{{ $t('ARRIVAL') }}</option>
+            <option value="" disabled selected>{{ $t('ARRIVAL') }}</option>
             <optgroup :label="$t('MAINLAND')">
               <option v-for="port in hondoPorts" :key="port" :value="port">
                 {{ $t(port) }}
@@ -81,7 +81,7 @@
             :value="departure"
             @change="ferryStore.setDeparture($event.target.value)"
           >
-            <option value="DEPARTURE" disabled>{{ $t('DEPARTURE') }}</option>
+            <option value="" disabled selected>{{ $t('DEPARTURE') }}</option>
             <optgroup :label="$t('MAINLAND')">
               <option v-for="port in hondoPorts" :key="port" :value="port">
                 {{ $t(port) }}
@@ -120,7 +120,7 @@
             :value="arrival"
             @change="ferryStore.setArrival($event.target.value)"
           >
-            <option value="ARRIVAL" disabled>{{ $t('ARRIVAL') }}</option>
+            <option value="" disabled selected>{{ $t('ARRIVAL') }}</option>
             <optgroup :label="$t('MAINLAND')">
               <option v-for="port in hondoPorts" :key="port" :value="port">
                 {{ $t(port) }}
@@ -172,7 +172,7 @@
         </div>
         
         <div v-else-if="filteredTimetable.length === 0" class="text-center py-3 text-muted">
-          <small v-if="departure === 'DEPARTURE' || arrival === 'ARRIVAL'">
+          <small v-if="!departure || !arrival">
             {{ $t('_FROM') }}と{{ $t('_TO') }}を選択してください
           </small>
           <small v-else>
