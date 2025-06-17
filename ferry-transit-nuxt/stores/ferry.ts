@@ -28,7 +28,7 @@ export const useFerryStore = defineStore('ferry', () => {
   const lastFetchTime = ref<Date | null>(null)
 
   // Port definitions
-  const hondoPorts = ['HONDO_SHICHIRUI', 'HONDO_SAKAIMINATO']
+  const hondoPorts = ['HONDO', 'HONDO_SHICHIRUI', 'HONDO_SAKAIMINATO']
   const dozenPorts = ['BEPPU', 'HISHIURA', 'KURI']
   const dogoPorts = ['SAIGO']
 
@@ -54,7 +54,7 @@ export const useFerryStore = defineStore('ferry', () => {
   })
 
   const filteredTimetable = computed(() => {
-    if (departure.value === 'DEPARTURE' || arrival.value === 'ARRIVAL') {
+    if (!departure.value || !arrival.value) {
       return []
     }
 
@@ -72,7 +72,16 @@ export const useFerryStore = defineStore('ferry', () => {
       }
 
       // 出発地・到着地フィルタリング
-      return trip.departure === departure.value && trip.arrival === arrival.value
+      // HONDOの場合は七類と境港の両方を含む
+      const matchesDeparture = departure.value === 'HONDO' 
+        ? (trip.departure === 'HONDO_SHICHIRUI' || trip.departure === 'HONDO_SAKAIMINATO')
+        : trip.departure === departure.value
+        
+      const matchesArrival = arrival.value === 'HONDO'
+        ? (trip.arrival === 'HONDO_SHICHIRUI' || trip.arrival === 'HONDO_SAKAIMINATO')
+        : trip.arrival === arrival.value
+        
+      return matchesDeparture && matchesArrival
     })
   })
 

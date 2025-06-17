@@ -172,8 +172,14 @@
         </div>
         
         <div v-else-if="filteredTimetable.length === 0" class="text-center py-3 text-muted">
-          <small v-if="!departure || !arrival">
-            {{ $t('_FROM') }}と{{ $t('_TO') }}を選択してください
+          <small v-if="!departure && !arrival">
+            出発地と目的地を選択してください
+          </small>
+          <small v-else-if="!departure">
+            出発地を選択してください
+          </small>
+          <small v-else-if="!arrival">
+            目的地を選択してください
           </small>
           <small v-else>
             該当する便はありません
@@ -224,9 +230,15 @@
               </td>
               <td>
                 {{ formatTime(trip.departureTime) }}
+                <span v-if="departure === 'HONDO'" class="text-muted small">
+                  ({{ $t(trip.departure) }})
+                </span>
               </td>
               <td>
                 {{ formatTime(trip.arrivalTime) }}
+                <span v-if="arrival === 'HONDO'" class="text-muted small">
+                  ({{ $t(trip.arrival) }})
+                </span>
               </td>
             </tr>
           </tbody>
