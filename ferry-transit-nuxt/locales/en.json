@@ -1,5 +1,7 @@
 {
   "TITLE": "Oki Islands Sea Line Information",
+  "HOME": "Home",
+  "STATUS": "Service Status",
   "CURRENCY_UNIT": "yen",
   "HOURS": "hours",
   "MINUTES": "mins",

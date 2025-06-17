@@ -147,3 +147,35 @@ export type ShipId = typeof SHIPS[keyof typeof SHIPS]
 
 // Utility types
 export type Locale = 'ja' | 'en'
+
+// Timetable interface  
+export interface Timetable {
+  tripId: string
+  name: string
+  departure: string
+  arrival: string
+  departureTime: Date | string
+  arrivalTime: Date | string
+  status?: number
+  next_id?: string
+}
+
+// Transit route types
+export interface TransitSegment {
+  tripId: string
+  ship: string
+  departure: string
+  arrival: string
+  departureTime: Date
+  arrivalTime: Date
+  status: number
+  fare: number
+}
+
+export interface TransitRoute {
+  segments: TransitSegment[]
+  departureTime: Date
+  arrivalTime: Date
+  totalFare: number
+  transferCount: number
+}

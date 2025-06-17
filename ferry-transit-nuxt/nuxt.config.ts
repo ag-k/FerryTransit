@@ -3,6 +3,17 @@ export default defineNuxtConfig({
   compatibilityDate: '2025-05-15',
   devtools: { enabled: true },
   
+  experimental: {
+    componentIslands: false,
+    treeshakeClientOnly: false
+  },
+  
+  vite: {
+    optimizeDeps: {
+      exclude: ['oxc-parser']
+    }
+  },
+  
   modules: [
     '@nuxtjs/i18n',
     '@nuxtjs/google-fonts',
@@ -85,5 +96,9 @@ export default defineNuxtConfig({
   
   experimental: {
     payloadExtraction: false
+  },
+  
+  devServer: {
+    port: 3030
   }
 })
