@@ -3,137 +3,194 @@
     <h2 class="mb-4">{{ $t('TIMETABLE') }}</h2>
     
     <!-- 出発地・到着地選択 -->
-    <div class="card mb-3">
-      <div class="card-header">
-        <h3 class="card-title h5 mb-0">{{ $t('DEPARTURE') }}/{{ $t('ARRIVAL') }}</h3>
+    <!-- スマホ：出発地/目的地を縦並びで右にボタン -->
+    <div class="d-md-none mb-3">
+      <div class="d-flex align-items-start gap-2">
+        <div class="flex-grow-1">
+          <label class="form-label fw-bold small mb-1">{{ $t('_FROM') }}</label>
+          <select 
+            class="form-select form-select-sm mb-2"
+            :value="departure"
+            @change="ferryStore.setDeparture($event.target.value)"
+          >
+            <option value="DEPARTURE" disabled>{{ $t('DEPARTURE') }}</option>
+            <optgroup :label="$t('MAINLAND')">
+              <option v-for="port in hondoPorts" :key="port" :value="port">
+                {{ $t(port) }}
+              </option>
+            </optgroup>
+            <optgroup :label="$t('DOZEN')">
+              <option v-for="port in dozenPorts" :key="port" :value="port">
+                {{ $t(port) }}
+              </option>
+            </optgroup>
+            <optgroup :label="$t('DOGO')">
+              <option v-for="port in dogoPorts" :key="port" :value="port">
+                {{ $t(port) }}
+              </option>
+            </optgroup>
+          </select>
+          
+          <label class="form-label fw-bold small mb-1">{{ $t('_TO') }}</label>
+          <select 
+            class="form-select form-select-sm"
+            :value="arrival"
+            @change="ferryStore.setArrival($event.target.value)"
+          >
+            <option value="ARRIVAL" disabled>{{ $t('ARRIVAL') }}</option>
+            <optgroup :label="$t('MAINLAND')">
+              <option v-for="port in hondoPorts" :key="port" :value="port">
+                {{ $t(port) }}
+              </option>
+            </optgroup>
+            <optgroup :label="$t('DOZEN')">
+              <option v-for="port in dozenPorts" :key="port" :value="port">
+                {{ $t(port) }}
+              </option>
+            </optgroup>
+            <optgroup :label="$t('DOGO')">
+              <option v-for="port in dogoPorts" :key="port" :value="port">
+                {{ $t(port) }}
+              </option>
+            </optgroup>
+          </select>
+        </div>
+        
+        <div class="d-flex align-items-center" style="height: 100px;">
+          <button 
+            type="button" 
+            class="btn btn-sm btn-outline-primary"
+            @click="reverseRoute"
+            title="出発地と到着地を入れ替え"
+          >
+            <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" fill="currentColor" class="bi bi-arrow-down-up" viewBox="0 0 16 16">
+              <path fill-rule="evenodd" d="M11.5 15a.5.5 0 0 0 .5-.5V2.707l3.146 3.147a.5.5 0 0 0 .708-.708l-4-4a.5.5 0 0 0-.708 0l-4 4a.5.5 0 1 0 .708.708L11 2.707V14.5a.5.5 0 0 0 .5.5zm-7-14a.5.5 0 0 1 .5.5v11.793l3.146-3.147a.5.5 0 0 1 .708.708l-4 4a.5.5 0 0 1-.708 0l-4-4a.5.5 0 0 1 .708-.708L4 13.293V1.5a.5.5 0 0 1 .5-.5z"/>
+            </svg>
+          </button>
+        </div>
       </div>
-      <div class="card-body">
-        <div class="row align-items-center">
-          <div class="col-md-5">
-            <label class="form-label">{{ $t('_FROM') }}</label>
-            <select 
-              class="form-select"
-              :value="departure"
-              @change="ferryStore.setDeparture($event.target.value)"
-            >
-              <option value="DEPARTURE" disabled>{{ $t('DEPARTURE') }}</option>
-              <optgroup :label="$t('MAINLAND')">
-                <option v-for="port in hondoPorts" :key="port" :value="port">
-                  {{ $t(port) }}
-                </option>
-              </optgroup>
-              <optgroup :label="$t('DOZEN')">
-                <option v-for="port in dozenPorts" :key="port" :value="port">
-                  {{ $t(port) }}
-                </option>
-              </optgroup>
-              <optgroup :label="$t('DOGO')">
-                <option v-for="port in dogoPorts" :key="port" :value="port">
-                  {{ $t(port) }}
-                </option>
-              </optgroup>
-            </select>
-            <small class="text-muted">{{ $t('FROM_') }}</small>
-          </div>
-          
-          <div class="col-md-2 text-center my-3 my-md-0">
-            <button 
-              type="button" 
-              class="btn btn-primary"
-              @click="reverseRoute"
-            >
-              <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-arrow-left-right" viewBox="0 0 16 16">
-                <path fill-rule="evenodd" d="M1 11.5a.5.5 0 0 0 .5.5h11.793l-3.147 3.146a.5.5 0 0 0 .708.708l4-4a.5.5 0 0 0 0-.708l-4-4a.5.5 0 0 0-.708.708L13.293 11H1.5a.5.5 0 0 0-.5.5zm14-7a.5.5 0 0 1-.5.5H2.707l3.147 3.146a.5.5 0 1 1-.708.708l-4-4a.5.5 0 0 1 0-.708l4-4a.5.5 0 1 1 .708.708L2.707 4H14.5a.5.5 0 0 1 .5.5z"/>
-              </svg>
-            </button>
-          </div>
-          
-          <div class="col-md-5">
-            <label class="form-label">{{ $t('_TO') }}</label>
-            <select 
-              class="form-select"
-              :value="arrival"
-              @change="ferryStore.setArrival($event.target.value)"
-            >
-              <option value="ARRIVAL" disabled>{{ $t('ARRIVAL') }}</option>
-              <optgroup :label="$t('MAINLAND')">
-                <option v-for="port in hondoPorts" :key="port" :value="port">
-                  {{ $t(port) }}
-                </option>
-              </optgroup>
-              <optgroup :label="$t('DOZEN')">
-                <option v-for="port in dozenPorts" :key="port" :value="port">
-                  {{ $t(port) }}
-                </option>
-              </optgroup>
-              <optgroup :label="$t('DOGO')">
-                <option v-for="port in dogoPorts" :key="port" :value="port">
-                  {{ $t(port) }}
-                </option>
-              </optgroup>
-            </select>
-            <small class="text-muted">{{ $t('TO_') }}</small>
-          </div>
+    </div>
+    
+    <!-- PC：横並び -->
+    <div class="d-none d-md-block mb-3">
+      <div class="row align-items-end">
+        <div class="col-md-5">
+          <label class="form-label fw-bold small mb-1">{{ $t('_FROM') }}</label>
+          <select 
+            class="form-select form-select-sm"
+            :value="departure"
+            @change="ferryStore.setDeparture($event.target.value)"
+          >
+            <option value="DEPARTURE" disabled>{{ $t('DEPARTURE') }}</option>
+            <optgroup :label="$t('MAINLAND')">
+              <option v-for="port in hondoPorts" :key="port" :value="port">
+                {{ $t(port) }}
+              </option>
+            </optgroup>
+            <optgroup :label="$t('DOZEN')">
+              <option v-for="port in dozenPorts" :key="port" :value="port">
+                {{ $t(port) }}
+              </option>
+            </optgroup>
+            <optgroup :label="$t('DOGO')">
+              <option v-for="port in dogoPorts" :key="port" :value="port">
+                {{ $t(port) }}
+              </option>
+            </optgroup>
+          </select>
+        </div>
+        
+        <div class="col-md-2 text-center">
+          <button 
+            type="button" 
+            class="btn btn-sm btn-outline-primary"
+            @click="reverseRoute"
+            title="出発地と到着地を入れ替え"
+          >
+            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-arrow-left-right" viewBox="0 0 16 16">
+              <path fill-rule="evenodd" d="M1 11.5a.5.5 0 0 0 .5.5h11.793l-3.147 3.146a.5.5 0 0 0 .708.708l4-4a.5.5 0 0 0 0-.708l-4-4a.5.5 0 0 0-.708.708L13.293 11H1.5a.5.5 0 0 0-.5.5zm14-7a.5.5 0 0 1-.5.5H2.707l3.147 3.146a.5.5 0 1 1-.708.708l-4-4a.5.5 0 0 1 0-.708l4-4a.5.5 0 1 1 .708.708L2.707 4H14.5a.5.5 0 0 1 .5.5z"/>
+            </svg>
+          </button>
+        </div>
+        
+        <div class="col-md-5">
+          <label class="form-label fw-bold small mb-1">{{ $t('_TO') }}</label>
+          <select 
+            class="form-select form-select-sm"
+            :value="arrival"
+            @change="ferryStore.setArrival($event.target.value)"
+          >
+            <option value="ARRIVAL" disabled>{{ $t('ARRIVAL') }}</option>
+            <optgroup :label="$t('MAINLAND')">
+              <option v-for="port in hondoPorts" :key="port" :value="port">
+                {{ $t(port) }}
+              </option>
+            </optgroup>
+            <optgroup :label="$t('DOZEN')">
+              <option v-for="port in dozenPorts" :key="port" :value="port">
+                {{ $t(port) }}
+              </option>
+            </optgroup>
+            <optgroup :label="$t('DOGO')">
+              <option v-for="port in dogoPorts" :key="port" :value="port">
+                {{ $t(port) }}
+              </option>
+            </optgroup>
+          </select>
         </div>
       </div>
     </div>
     
     <!-- 日付選択 -->
-    <div class="card mb-3">
-      <div class="card-header">
-        <h3 class="card-title h5 mb-0">{{ $t('DATE') }}</h3>
-      </div>
-      <div class="card-body">
-        <div class="row">
-          <div class="col-md-4">
-            <input 
-              type="date" 
-              class="form-control"
-              :value="selectedDateString"
-              :min="todayString"
-              @change="handleDateChange"
-            >
-          </div>
-        </div>
+    <div class="row mb-3">
+      <div class="col-12 col-md-4">
+        <label class="form-label fw-bold small mb-1">{{ $t('DATE') }}</label>
+        <input 
+          type="date" 
+          class="form-control form-control-sm"
+          :value="selectedDateString"
+          :min="todayString"
+          @change="handleDateChange"
+        >
       </div>
     </div>
     
     <!-- 時刻表 -->
     <div class="card">
-      <div class="card-header bg-primary text-white">
-        <h3 class="card-title h5 mb-0">{{ $t('TIMETABLE') }}</h3>
+      <div class="card-header bg-primary text-white py-2">
+        <h3 class="card-title h6 mb-0">{{ $t('TIMETABLE') }}</h3>
       </div>
-      <div class="card-body">
-        <div v-if="isLoading" class="text-center py-4">
-          <div class="spinner-border text-primary" role="status">
+      <div class="card-body p-0">
+        <div v-if="isLoading" class="text-center py-3">
+          <div class="spinner-border spinner-border-sm text-primary" role="status">
             <span class="visually-hidden">Loading...</span>
           </div>
         </div>
         
-        <div v-else-if="error" class="alert alert-danger" role="alert">
+        <div v-else-if="error" class="alert alert-danger alert-sm m-3" role="alert">
           {{ $t(error) }}
         </div>
         
-        <div v-else-if="filteredTimetable.length === 0" class="text-center py-4 text-muted">
-          <p v-if="departure === 'DEPARTURE' || arrival === 'ARRIVAL'">
+        <div v-else-if="filteredTimetable.length === 0" class="text-center py-3 text-muted">
+          <small v-if="departure === 'DEPARTURE' || arrival === 'ARRIVAL'">
             {{ $t('_FROM') }}と{{ $t('_TO') }}を選択してください
-          </p>
-          <p v-else>
+          </small>
+          <small v-else>
             該当する便はありません
-          </p>
+          </small>
         </div>
         
-        <table v-else class="table table-hover">
-          <thead>
+        <table v-else class="table table-hover table-sm mb-0">
+          <thead class="table-light">
             <tr>
-              <th>{{ $t('SHIP') }}</th>
-              <th>
-                <a href="#" @click.prevent="showPortInfo(departure)">
+              <th class="py-2">{{ $t('SHIP') }}</th>
+              <th class="py-2">
+                <a href="#" @click.prevent="showPortInfo(departure)" class="text-decoration-none">
                   {{ $t(departure) }}
                 </a>
               </th>
-              <th>
-                <a href="#" @click.prevent="showPortInfo(arrival)">
+              <th class="py-2">
+                <a href="#" @click.prevent="showPortInfo(arrival)" class="text-decoration-none">
                   {{ $t(arrival) }}
                 </a>
               </th>
