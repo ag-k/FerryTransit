@@ -21,8 +21,8 @@ export const useFerryStore = defineStore('ferry', () => {
     kunigaKankou: null as SightseeingStatus | null
   })
   const selectedDate = ref(new Date())
-  const departure = ref<string>('DEPARTURE')
-  const arrival = ref<string>('ARRIVAL')
+  const departure = ref<string>('')
+  const arrival = ref<string>('')
   const isLoading = ref(false)
   const error = ref<string | null>(null)
   const lastFetchTime = ref<Date | null>(null)
