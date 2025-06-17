@@ -1,0 +1,309 @@
+import { useFerryStore } from '@/stores/ferry'
+import { useFerryData } from '@/composables/useFerryData'
+import type { Trip, TransitRoute, TransitSegment } from '@/types'
+
+export const useRouteSearch = () => {
+  const ferryStore = useFerryStore()
+  const { getTripStatus } = useFerryData()
+  
+  // Search for routes between ports
+  const searchRoutes = (
+    departure: string,
+    arrival: string,
+    searchDate: Date,
+    searchTime: string,
+    isArrivalMode: boolean = false
+  ): TransitRoute[] => {
+    const routes: TransitRoute[] = []
+    const searchDateTime = new Date(`${searchDate.toISOString().split('T')[0]} ${searchTime}:00`)
+    
+    // Get filtered timetable for the date
+    const dayTimetable = ferryStore.timetableData.filter(trip => {
+      const tripDate = new Date(trip.departureTime as string)
+      return tripDate.toDateString() === searchDate.toDateString()
+    })
+    
+    // Find direct routes
+    const directRoutes = findDirectRoutes(
+      dayTimetable,
+      departure,
+      arrival,
+      searchDateTime,
+      isArrivalMode
+    )
+    
+    routes.push(...directRoutes)
+    
+    // Find transfer routes if direct routes are limited
+    if (directRoutes.length < 5) {
+      const transferRoutes = findTransferRoutes(
+        dayTimetable,
+        departure,
+        arrival,
+        searchDateTime,
+        isArrivalMode
+      )
+      routes.push(...transferRoutes)
+    }
+    
+    // Sort routes
+    if (isArrivalMode) {
+      routes.sort((a, b) => b.arrivalTime.getTime() - a.arrivalTime.getTime())
+    } else {
+      routes.sort((a, b) => a.departureTime.getTime() - b.departureTime.getTime())
+    }
+    
+    return routes
+  }
+  
+  // Find direct routes
+  const findDirectRoutes = (
+    timetable: Trip[],
+    departure: string,
+    arrival: string,
+    searchTime: Date,
+    isArrivalMode: boolean
+  ): TransitRoute[] => {
+    const routes: TransitRoute[] = []
+    
+    // Handle special HONDO port mapping
+    const departurePorts = departure === 'HONDO' 
+      ? ['HONDO_SHICHIRUI', 'HONDO_SAKAIMINATO'] 
+      : [departure]
+    const arrivalPorts = arrival === 'HONDO' 
+      ? ['HONDO_SHICHIRUI', 'HONDO_SAKAIMINATO'] 
+      : [arrival]
+    
+    for (const trip of timetable) {
+      if (departurePorts.includes(trip.departure) && arrivalPorts.includes(trip.arrival)) {
+        const departureTime = new Date(trip.departureTime)
+        const arrivalTime = new Date(trip.arrivalTime)
+        
+        // Check time constraints
+        if (isArrivalMode) {
+          if (arrivalTime > searchTime) continue
+        } else {
+          if (departureTime < searchTime) continue
+        }
+        
+        // Check if trip is cancelled
+        const status = getTripStatus(trip)
+        if (status === 2) continue // Skip cancelled trips
+        
+        const segment: TransitSegment = {
+          tripId: String(trip.tripId),
+          ship: trip.name,
+          departure: trip.departure,
+          arrival: trip.arrival,
+          departureTime,
+          arrivalTime,
+          status,
+          fare: calculateFare(trip.name, trip.departure, trip.arrival)
+        }
+        
+        routes.push({
+          segments: [segment],
+          departureTime,
+          arrivalTime,
+          totalFare: segment.fare,
+          transferCount: 0
+        })
+      }
+    }
+    
+    return routes
+  }
+  
+  // Find transfer routes
+  const findTransferRoutes = (
+    timetable: Trip[],
+    departure: string,
+    arrival: string,
+    searchTime: Date,
+    isArrivalMode: boolean
+  ): TransitRoute[] => {
+    const routes: TransitRoute[] = []
+    const processedRoutes = new Set<string>()
+    
+    // Handle special HONDO port mapping
+    const departurePorts = departure === 'HONDO' 
+      ? ['HONDO_SHICHIRUI', 'HONDO_SAKAIMINATO'] 
+      : [departure]
+    const arrivalPorts = arrival === 'HONDO' 
+      ? ['HONDO_SHICHIRUI', 'HONDO_SAKAIMINATO'] 
+      : [arrival]
+    
+    // First leg trips
+    for (const firstTrip of timetable) {
+      if (!departurePorts.includes(firstTrip.departure)) continue
+      
+      const firstDepartureTime = new Date(firstTrip.departureTime)
+      const firstArrivalTime = new Date(firstTrip.arrivalTime)
+      
+      // Check time constraint for first leg
+      if (!isArrivalMode && firstDepartureTime < searchTime) continue
+      
+      // Skip if first trip is cancelled
+      const firstStatus = getTripStatus(firstTrip)
+      if (firstStatus === 2) continue
+      
+      // Skip if first trip arrives at final destination (already covered in direct routes)
+      if (arrivalPorts.includes(firstTrip.arrival)) continue
+      
+      // Second leg trips
+      for (const secondTrip of timetable) {
+        if (secondTrip.departure !== firstTrip.arrival) continue
+        if (!arrivalPorts.includes(secondTrip.arrival)) continue
+        
+        const secondDepartureTime = new Date(secondTrip.departureTime)
+        const secondArrivalTime = new Date(secondTrip.arrivalTime)
+        
+        // Check transfer is possible (enough time between arrival and departure)
+        if (secondDepartureTime <= firstArrivalTime) continue
+        
+        // Check time constraint for arrival mode
+        if (isArrivalMode && secondArrivalTime > searchTime) continue
+        
+        // Skip if second trip is cancelled
+        const secondStatus = getTripStatus(secondTrip)
+        if (secondStatus === 2) continue
+        
+        // Prevent mainland-to-mainland transfers when departing from mainland
+        if (isMainlandPort(departure) && isMainlandPort(firstTrip.arrival) && isMainlandPort(arrival)) {
+          continue
+        }
+        
+        // Create route key to check for duplicates
+        const routeKey = `${firstTrip.tripId}-${secondTrip.tripId}`
+        if (processedRoutes.has(routeKey)) continue
+        processedRoutes.add(routeKey)
+        
+        // Check if trips should be normalized (connected trips on same ship)
+        if (shouldNormalizeTrips(firstTrip, secondTrip)) {
+          // Create normalized single-segment route
+          const segment: TransitSegment = {
+            tripId: String(firstTrip.tripId),
+            ship: firstTrip.name,
+            departure: firstTrip.departure,
+            arrival: secondTrip.arrival,
+            departureTime: firstDepartureTime,
+            arrivalTime: secondArrivalTime,
+            status: Math.max(firstStatus, secondStatus),
+            fare: calculateFare(firstTrip.name, firstTrip.departure, secondTrip.arrival)
+          }
+          
+          routes.push({
+            segments: [segment],
+            departureTime: firstDepartureTime,
+            arrivalTime: secondArrivalTime,
+            totalFare: segment.fare,
+            transferCount: 0
+          })
+        } else {
+          // Create two-segment route with transfer
+          const segment1: TransitSegment = {
+            tripId: String(firstTrip.tripId),
+            ship: firstTrip.name,
+            departure: firstTrip.departure,
+            arrival: firstTrip.arrival,
+            departureTime: firstDepartureTime,
+            arrivalTime: firstArrivalTime,
+            status: firstStatus,
+            fare: calculateFare(firstTrip.name, firstTrip.departure, firstTrip.arrival)
+          }
+          
+          const segment2: TransitSegment = {
+            tripId: String(secondTrip.tripId),
+            ship: secondTrip.name,
+            departure: secondTrip.departure,
+            arrival: secondTrip.arrival,
+            departureTime: secondDepartureTime,
+            arrivalTime: secondArrivalTime,
+            status: secondStatus,
+            fare: calculateFare(secondTrip.name, secondTrip.departure, secondTrip.arrival)
+          }
+          
+          routes.push({
+            segments: [segment1, segment2],
+            departureTime: firstDepartureTime,
+            arrivalTime: secondArrivalTime,
+            totalFare: segment1.fare + segment2.fare,
+            transferCount: 1
+          })
+        }
+      }
+    }
+    
+    return routes
+  }
+  
+  // Check if two trips should be normalized (same ship, connected)
+  const shouldNormalizeTrips = (trip1: Trip, trip2: Trip): boolean => {
+    return trip1.name === trip2.name && trip1.nextId === trip2.tripId
+  }
+  
+  // Check if port is on mainland
+  const isMainlandPort = (port: string): boolean => {
+    return ferryStore.hondoPorts.includes(port) || port === 'HONDO'
+  }
+  
+  // Calculate fare for a trip
+  const calculateFare = (ship: string, departure: string, arrival: string): number => {
+    // This is a simplified fare calculation
+    // In production, this would use a proper fare matrix
+    const isHighSpeed = ship === 'RAINBOWJET'
+    const isInterIsland = 
+      (ferryStore.dozenPorts.includes(departure) && ferryStore.dogoPorts.includes(arrival)) ||
+      (ferryStore.dogoPorts.includes(departure) && ferryStore.dozenPorts.includes(arrival))
+    
+    if (isHighSpeed) {
+      if (isInterIsland) return 3380
+      if (isMainlandPort(departure) || isMainlandPort(arrival)) return 6750
+      return 4500
+    } else {
+      if (isInterIsland) return 1680
+      if (isMainlandPort(departure) || isMainlandPort(arrival)) return 3360
+      return 2240
+    }
+  }
+  
+  // Format time for display
+  const formatTime = (date: Date): string => {
+    return date.toLocaleTimeString('ja-JP', {
+      hour: '2-digit',
+      minute: '2-digit',
+      hour12: false
+    })
+  }
+  
+  // Calculate duration between two times
+  const calculateDuration = (start: Date, end: Date): string => {
+    const diff = end.getTime() - start.getTime()
+    const hours = Math.floor(diff / (1000 * 60 * 60))
+    const minutes = Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60))
+    
+    if (hours > 0) {
+      return `${hours}時間${minutes}分`
+    }
+    return `${minutes}分`
+  }
+  
+  // Get display name for HONDO ports
+  const getPortDisplayName = (port: string): string => {
+    const { $i18n } = useNuxtApp()
+    
+    if (port === 'HONDO_SHICHIRUI') {
+      return `${$i18n.t('HONDO')} (${$i18n.t('SHICHIRUI')})`
+    } else if (port === 'HONDO_SAKAIMINATO') {
+      return `${$i18n.t('HONDO')} (${$i18n.t('SAKAIMINATO')})`
+    }
+    return $i18n.t(port)
+  }
+  
+  return {
+    searchRoutes,
+    formatTime,
+    calculateDuration,
+    getPortDisplayName
+  }
+}

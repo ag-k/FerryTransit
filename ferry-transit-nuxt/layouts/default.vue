@@ -1,24 +1,19 @@
 <template>
   <div class="app-layout">
-    <header class="app-header">
-      <nav class="navbar navbar-expand-lg navbar-light bg-light">
-        <div class="container">
-          <NuxtLink class="navbar-brand" to="/">
-            {{ $t('TITLE') }}
-          </NuxtLink>
-          <div class="ms-auto">
-            <select 
-              class="form-select form-select-sm"
-              :value="$i18n.locale"
-              @change="$i18n.setLocale($event.target.value)"
-            >
-              <option value="ja">日本語</option>
-              <option value="en">English</option>
-            </select>
-          </div>
-        </div>
-      </nav>
-    </header>
+    <AppNavigation />
+    
+    <!-- Alerts -->
+    <div v-if="alerts.length > 0" class="container mt-3">
+      <AlertComponent
+        v-for="alert in alerts"
+        :key="alert.id"
+        :visible="true"
+        :type="alert.type"
+        :message="alert.message"
+        :auto-close="true"
+        @close="uiStore.removeAlert(alert.id)"
+      />
+    </div>
     
     <main class="app-main">
       <slot />
@@ -35,7 +30,10 @@
 </template>
 
 <script setup lang="ts">
-// Default layout component
+import { useUIStore } from '@/stores/ui'
+
+const uiStore = useUIStore()
+const alerts = computed(() => uiStore.alerts)
 </script>
 
 <style scoped>

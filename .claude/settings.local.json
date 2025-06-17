@@ -1,0 +1,32 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(grep:*)",
+      "Bash(git checkout:*)",
+      "Bash(git add:*)",
+      "Bash(git commit:*)",
+      "Bash(node:*)",
+      "Bash(npm --version)",
+      "Bash(npx nuxi:*)",
+      "Bash(ls:*)",
+      "Bash(npm install)",
+      "Bash(npm install:*)",
+      "Bash(mkdir:*)",
+      "Bash(cp:*)",
+      "Bash(rm:*)",
+      "Bash(npm run dev:*)",
+      "Bash(curl:*)",
+      "Bash(pkill:*)",
+      "Bash(true)",
+      "Bash(npm run build:*)",
+      "Bash(ln:*)",
+      "Bash(git init:*)",
+      "Bash(git rm:*)",
+      "Bash(npm cache clean:*)",
+      "Bash(npm view:*)",
+      "Bash(find:*)",
+      "Bash(npm test:*)"
+    ],
+    "deny": []
+  }
+}
