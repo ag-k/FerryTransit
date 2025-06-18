@@ -20,7 +20,14 @@ export const useFerryStore = defineStore('ferry', () => {
     ferry: null as FerryStatus | null,
     kunigaKankou: null as SightseeingStatus | null
   })
-  const selectedDate = ref(new Date())
+  // 固定の初期日付を使用（ハイドレーションエラー対策）
+  const getInitialDate = () => {
+    const date = new Date()
+    date.setHours(0, 0, 0, 0)
+    return date
+  }
+  const selectedDate = ref(getInitialDate())
+  // SSR/CSRで同じ初期値を保証
   const departure = ref<string>('')
   const arrival = ref<string>('')
   const isLoading = ref(false)
@@ -262,9 +269,22 @@ export const useFerryStore = defineStore('ferry', () => {
   }
 
   // Initialize from localStorage
-  const initializeFromStorage = () => {
+  const initializeFromStorage = async () => {
+    // SSR時はスキップ
     if (!process.client) return
 
+    // ハイドレーション完了後に実行
+    await new Promise(resolve => {
+      if (document.readyState === 'complete') {
+        resolve(true)
+      } else {
+        window.addEventListener('load', () => resolve(true))
+      }
+    })
+    
+    // さらにnextTickで遅延
+    await nextTick()
+    
     try {
       const savedDeparture = localStorage.getItem('departure')
       const savedArrival = localStorage.getItem('arrival')
