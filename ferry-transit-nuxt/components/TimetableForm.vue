@@ -4,56 +4,60 @@
     <div class="d-md-none mb-3">
       <div class="d-flex align-items-start gap-2">
         <div class="flex-grow-1">
-          <label class="form-label fw-bold small mb-1">{{ $t('_FROM') }}</label>
-          <select 
-            class="form-select form-select-sm mb-2"
-            :value="departure"
-            @change="$emit('update:departure', $event.target.value)"
-          >
-            <option value="" disabled>{{ $t('DEPARTURE') }}</option>
-            <optgroup :label="$t('MAINLAND')">
-              <option v-for="port in hondoPorts" :key="port" :value="port">
-                {{ $t(port) }}
-              </option>
-            </optgroup>
-            <optgroup :label="$t('DOZEN')">
-              <option v-for="port in dozenPorts" :key="port" :value="port">
-                {{ $t(port) }}
-              </option>
-            </optgroup>
-            <optgroup :label="$t('DOGO')">
-              <option v-for="port in dogoPorts" :key="port" :value="port">
-                {{ $t(port) }}
-              </option>
-            </optgroup>
-          </select>
+          <div class="d-flex align-items-center mb-2">
+            <label class="form-label fw-bold small mb-0 me-2" style="min-width: 60px;">{{ $t('_FROM') }}</label>
+            <select 
+              class="form-select form-select-sm"
+              :value="departure"
+              @change="$emit('update:departure', $event.target.value)"
+            >
+              <option value="" disabled>{{ $t('DEPARTURE') }}</option>
+              <optgroup :label="$t('MAINLAND')">
+                <option v-for="port in hondoPorts" :key="port" :value="port">
+                  {{ $t(port) }}
+                </option>
+              </optgroup>
+              <optgroup :label="$t('DOZEN')">
+                <option v-for="port in dozenPorts" :key="port" :value="port">
+                  {{ $t(port) }}
+                </option>
+              </optgroup>
+              <optgroup :label="$t('DOGO')">
+                <option v-for="port in dogoPorts" :key="port" :value="port">
+                  {{ $t(port) }}
+                </option>
+              </optgroup>
+            </select>
+          </div>
           
-          <label class="form-label fw-bold small mb-1">{{ $t('_TO') }}</label>
-          <select 
-            class="form-select form-select-sm"
-            :value="arrival"
-            @change="$emit('update:arrival', $event.target.value)"
-          >
-            <option value="" disabled>{{ $t('ARRIVAL') }}</option>
-            <optgroup :label="$t('MAINLAND')">
-              <option v-for="port in hondoPorts" :key="port" :value="port">
-                {{ $t(port) }}
-              </option>
-            </optgroup>
-            <optgroup :label="$t('DOZEN')">
-              <option v-for="port in dozenPorts" :key="port" :value="port">
-                {{ $t(port) }}
-              </option>
-            </optgroup>
-            <optgroup :label="$t('DOGO')">
-              <option v-for="port in dogoPorts" :key="port" :value="port">
-                {{ $t(port) }}
-              </option>
-            </optgroup>
-          </select>
+          <div class="d-flex align-items-center">
+            <label class="form-label fw-bold small mb-0 me-2" style="min-width: 60px;">{{ $t('_TO') }}</label>
+            <select 
+              class="form-select form-select-sm"
+              :value="arrival"
+              @change="$emit('update:arrival', $event.target.value)"
+            >
+              <option value="" disabled>{{ $t('ARRIVAL') }}</option>
+              <optgroup :label="$t('MAINLAND')">
+                <option v-for="port in hondoPorts" :key="port" :value="port">
+                  {{ $t(port) }}
+                </option>
+              </optgroup>
+              <optgroup :label="$t('DOZEN')">
+                <option v-for="port in dozenPorts" :key="port" :value="port">
+                  {{ $t(port) }}
+                </option>
+              </optgroup>
+              <optgroup :label="$t('DOGO')">
+                <option v-for="port in dogoPorts" :key="port" :value="port">
+                  {{ $t(port) }}
+                </option>
+              </optgroup>
+            </select>
+          </div>
         </div>
         
-        <div class="d-flex align-items-center" style="height: 100px;">
+        <div class="d-flex align-items-center justify-content-center" style="padding-top: 20px;">
           <button 
             type="button" 
             class="btn btn-sm btn-outline-primary"
