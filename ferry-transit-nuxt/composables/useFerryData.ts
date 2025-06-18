@@ -11,8 +11,8 @@ export const useFerryData = () => {
     uiStore.setLoading(true)
     
     try {
-      // LocalStorageから初期化
-      ferryStore.initializeFromStorage()
+      // LocalStorageから初期化（クライアントサイドでのみ）
+      await ferryStore.initializeFromStorage()
       
       // 時刻表データと運航状況を並行で取得
       await Promise.all([

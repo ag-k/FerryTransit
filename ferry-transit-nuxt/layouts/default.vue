@@ -4,7 +4,7 @@
     
     <!-- Alerts -->
     <div v-if="alerts.length > 0" class="container mt-3">
-      <AlertComponent
+      <CommonAlertComponent
         v-for="alert in alerts"
         :key="alert.id"
         :visible="true"
