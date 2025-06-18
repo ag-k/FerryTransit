@@ -46,25 +46,55 @@
     <ClientOnly>
       <div class="row mb-3">
         <div class="col-12 col-md-4">
-          <label class="form-label fw-bold small mb-1">{{ $t('DATE') }}</label>
-          <input 
-            type="date" 
-            class="form-control form-control-sm"
-            :value="selectedDateString"
-            :min="todayString"
-            @change="handleDateChange"
-          >
+          <!-- スマホ：ラベルを左側に配置 -->
+          <div class="d-md-none">
+            <div class="d-flex align-items-center">
+              <label class="form-label fw-bold small mb-0 me-2" style="min-width: 60px;">{{ $t('DATE') }}</label>
+              <input 
+                type="date" 
+                class="form-control form-control-sm"
+                :value="selectedDateString"
+                :min="todayString"
+                @change="handleDateChange"
+              >
+            </div>
+          </div>
+          <!-- PC：ラベルを上に配置 -->
+          <div class="d-none d-md-block">
+            <label class="form-label fw-bold small mb-1">{{ $t('DATE') }}</label>
+            <input 
+              type="date" 
+              class="form-control form-control-sm"
+              :value="selectedDateString"
+              :min="todayString"
+              @change="handleDateChange"
+            >
+          </div>
         </div>
       </div>
       <template #fallback>
         <div class="row mb-3">
           <div class="col-12 col-md-4">
-            <label class="form-label fw-bold small mb-1">{{ $t('DATE') }}</label>
-            <input 
-              type="date" 
-              class="form-control form-control-sm"
-              disabled
-            >
+            <!-- スマホ：ラベルを左側に配置 -->
+            <div class="d-md-none">
+              <div class="d-flex align-items-center">
+                <label class="form-label fw-bold small mb-0 me-2" style="min-width: 60px;">{{ $t('DATE') }}</label>
+                <input 
+                  type="date" 
+                  class="form-control form-control-sm"
+                  disabled
+                >
+              </div>
+            </div>
+            <!-- PC：ラベルを上に配置 -->
+            <div class="d-none d-md-block">
+              <label class="form-label fw-bold small mb-1">{{ $t('DATE') }}</label>
+              <input 
+                type="date" 
+                class="form-control form-control-sm"
+                disabled
+              >
+            </div>
           </div>
         </div>
       </template>
