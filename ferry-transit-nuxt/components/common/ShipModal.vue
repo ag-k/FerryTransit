@@ -6,7 +6,7 @@
       tabindex="-1"
       @click.self="handleClose"
     >
-      <div class="modal-dialog modal-lg" @click.stop>
+      <div class="modal-dialog modal-lg modal-dialog-centered modal-fullscreen-sm-down" @click.stop>
         <div class="modal-content">
           <div class="modal-header">
             <h5 class="modal-title">{{ title }}</h5>
@@ -29,7 +29,7 @@
             </div>
             
             <!-- Port map -->
-            <div v-else-if="type === 'port' && content" v-html="content"></div>
+            <div v-else-if="type === 'port' && content" class="map-container" v-html="content"></div>
             
             <!-- Custom content slot -->
             <slot v-else></slot>
@@ -109,6 +109,13 @@ onUnmounted(() => {
 <style scoped>
 .modal {
   overflow-y: auto;
+  display: flex !important;
+  align-items: center;
+  min-height: 100vh;
+}
+
+.modal-dialog {
+  margin: auto;
 }
 
 .ship-image {
@@ -123,5 +130,47 @@ onUnmounted(() => {
 
 .modal {
   z-index: 1050;
+}
+
+/* Map container responsive styles */
+.map-container {
+  position: relative;
+  width: 100%;
+  height: 0;
+  padding-bottom: 75%; /* 4:3 aspect ratio */
+  overflow: hidden;
+}
+
+.map-container :deep(iframe) {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  border: 0;
+}
+
+/* Small screens adjustments */
+@media (max-width: 576px) {
+  .modal-dialog.modal-fullscreen-sm-down .modal-content {
+    height: 100vh;
+    border: 0;
+    border-radius: 0;
+  }
+  
+  .modal-dialog.modal-fullscreen-sm-down .modal-body {
+    padding: 0.5rem;
+  }
+  
+  .map-container {
+    padding-bottom: 80%; /* Slightly taller for mobile */
+  }
+}
+
+/* Medium screens */
+@media (min-width: 577px) and (max-width: 768px) {
+  .map-container {
+    padding-bottom: 70%;
+  }
 }
 </style>
