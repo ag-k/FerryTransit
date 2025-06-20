@@ -16,7 +16,9 @@
         class="fixed inset-0 z-50 flex items-center justify-center p-4 overflow-y-auto"
         @click.self="handleClose"
       >
-        <div class="bg-white rounded-lg shadow-xl w-full max-w-4xl sm:max-h-[90vh] sm:h-auto h-full" @click.stop>
+        <div class="bg-white rounded-lg shadow-xl w-full sm:max-h-[90vh] sm:h-auto h-full" 
+             :class="type === 'port' ? 'max-w-5xl' : 'max-w-4xl'" 
+             @click.stop>
           <!-- Header -->
           <div class="flex items-center justify-between p-4 border-b">
             <h3 class="text-lg font-semibold">{{ title }}</h3>
@@ -45,7 +47,7 @@
             </div>
             
             <!-- Port map -->
-            <div v-else-if="type === 'port' && content" class="aspect-w-4 aspect-h-3" v-html="content"></div>
+            <div v-else-if="type === 'port' && content" class="map-container" v-html="content"></div>
             
             <!-- Custom content slot -->
             <slot v-else></slot>
@@ -125,20 +127,17 @@ onUnmounted(() => {
 
 <style scoped>
 /* Map container responsive styles */
-.aspect-w-4 {
+.map-container {
   position: relative;
-  padding-bottom: 75%; /* 4:3 aspect ratio */
-}
-
-.aspect-h-3 {
-  position: absolute;
-  top: 0;
-  left: 0;
   width: 100%;
-  height: 100%;
+  height: 0;
+  padding-bottom: 56.25%; /* 16:9 aspect ratio */
+  overflow: hidden;
+  background-color: #f3f4f6;
+  border-radius: 0.5rem;
 }
 
-.aspect-w-4 :deep(iframe) {
+.map-container :deep(iframe) {
   position: absolute;
   top: 0;
   left: 0;
@@ -175,8 +174,8 @@ onUnmounted(() => {
 
 /* Mobile fullscreen adjustments */
 @media (max-width: 640px) {
-  .aspect-w-4 {
-    padding-bottom: 80%; /* Slightly taller for mobile */
+  .map-container {
+    padding-bottom: 75%; /* 4:3 aspect ratio for mobile */
   }
 }
 </style>
