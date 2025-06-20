@@ -1,5 +1,5 @@
 <template>
-  <div class="container mx-auto px-4 py-8">
+  <div class="container max-w-[1000px] mx-auto px-4 py-8">
     <!-- Hero section -->
     <div class="text-center mb-8">
       <h1 class="text-4xl md:text-5xl font-light mb-4">{{ $t('TITLE') }}</h1>

@@ -1,5 +1,5 @@
 <template>
-  <div class="container mx-auto px-4 py-8">
+  <div class="container mx-auto px-4 py-8 max-w-[1000px]">
     <h2 class="text-2xl font-semibold mb-6">{{ $t('TIMETABLE') }}</h2>
     
     <!-- 出発地・到着地選択 -->
