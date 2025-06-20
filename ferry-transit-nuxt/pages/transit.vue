@@ -1,5 +1,5 @@
 <template>
-  <div class="container mx-auto px-4 py-8">
+  <div class="container max-w-[1000px] mx-auto px-4 py-8">
     <h2 class="text-2xl font-semibold mb-6">{{ $t('TRANSIT') }}</h2>
     
     <!-- Search Form -->
