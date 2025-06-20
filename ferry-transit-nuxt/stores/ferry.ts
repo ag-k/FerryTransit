@@ -60,6 +60,48 @@ export const useFerryStore = defineStore('ferry', () => {
     return diffMinutes > 15 // 15分以上経過したらstale
   })
 
+  // Alerts computed from ship status
+  const alerts = computed(() => {
+    const alertList: Array<{
+      date: string
+      shipName: string
+      departureTime: string
+      status: number
+    }> = []
+    
+    // status値の意味:
+    // 0: 通常運航
+    // 1: 一部欠航
+    // 2: 全便欠航
+    // 3: 時間変更
+    // 4: 臨時便
+    
+    // lastShipsから欠航情報を取得
+    if (shipStatus.value.isokaze?.lastShips && shipStatus.value.isokaze.status !== 0) {
+      shipStatus.value.isokaze.lastShips.forEach((trip: any) => {
+        alertList.push({
+          date: selectedDate.value.toISOString().split('T')[0],
+          shipName: 'ISOKAZE',
+          departureTime: trip.departure_time || trip.departureTime,
+          status: shipStatus.value.isokaze?.status || 2
+        })
+      })
+    }
+    
+    if (shipStatus.value.dozen?.lastShips && shipStatus.value.dozen.status !== 0) {
+      shipStatus.value.dozen.lastShips.forEach((trip: any) => {
+        alertList.push({
+          date: selectedDate.value.toISOString().split('T')[0],
+          shipName: 'FERRY_DOZEN',
+          departureTime: trip.departure_time || trip.departureTime,
+          status: shipStatus.value.dozen?.status || 2
+        })
+      })
+    }
+    
+    return alertList
+  })
+
   const filteredTimetable = computed(() => {
     if (!departure.value || !arrival.value) {
       return []
@@ -162,9 +204,36 @@ export const useFerryStore = defineStore('ferry', () => {
       ])
 
       if (Array.isArray(statusData)) {
-        shipStatus.value.isokaze = statusData[0] || null
-        shipStatus.value.dozen = statusData[1] || null
-        shipStatus.value.ferry = statusData[2] || null
+        // APIレスポンスをマッピング
+        const [isokazeData, dozenData, ferryData] = statusData
+        
+        if (isokazeData) {
+          shipStatus.value.isokaze = {
+            ...isokazeData,
+            hasAlert: isokazeData.status !== 0
+          }
+        }
+        
+        if (dozenData) {
+          shipStatus.value.dozen = {
+            ...dozenData,
+            hasAlert: dozenData.status !== 0
+          }
+        }
+        
+        if (ferryData) {
+          // フェリーデータはスネークケースからキャメルケースに変換
+          shipStatus.value.ferry = {
+            ...ferryData,
+            hasAlert: ferryData.ferry_state !== '定期運航' || ferryData.fast_ferry_state !== '( in Operation )',
+            ferryState: ferryData.ferry_state || ferryData.ferryState,
+            ferryComment: ferryData.ferry_comment || ferryData.ferryComment,
+            fastFerryState: ferryData.fast_ferry_state || ferryData.fastFerryState,
+            fastFerryComment: ferryData.fast_ferry_comment || ferryData.fastFerryComment,
+            todayWave: ferryData.today_wave || ferryData.todayWave,
+            tomorrowWave: ferryData.tomorrow_wave || ferryData.tomorrowWave
+          }
+        }
       }
 
       if (kankouData && Array.isArray(kankouData)) {
@@ -322,6 +391,7 @@ export const useFerryStore = defineStore('ferry', () => {
     // Getters
     isDataStale,
     filteredTimetable,
+    alerts,
     
     // Actions
     fetchTimetable,

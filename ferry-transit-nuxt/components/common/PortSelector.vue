@@ -1,46 +1,49 @@
 <template>
-  <div class="port-selector">
-    <label v-if="label" :for="selectId" class="form-label">{{ label }}</label>
+  <div class="mb-4">
+    <label v-if="label" :for="selectId" class="block text-sm font-medium text-gray-700 mb-2">{{ label }}</label>
     <select 
       :id="selectId"
-      class="form-select"
+      class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 disabled:bg-gray-100 disabled:text-gray-500 disabled:cursor-not-allowed"
       :value="modelValue"
       :disabled="disabled"
       @change="handleChange"
     >
       <option v-if="placeholder" value="" disabled>{{ placeholder }}</option>
-      <optgroup :label="$t('MAINLAND')">
+      <optgroup :label="$t('MAINLAND')" class="font-medium">
         <option 
           v-for="port in hondoPorts" 
           :key="port" 
           :value="port"
           :disabled="disabledPorts?.includes(port)"
+          class="pl-2"
         >
           {{ $t(port) }}
         </option>
       </optgroup>
-      <optgroup :label="$t('DOZEN')">
+      <optgroup :label="$t('DOZEN')" class="font-medium">
         <option 
           v-for="port in dozenPorts" 
           :key="port" 
           :value="port"
           :disabled="disabledPorts?.includes(port)"
+          class="pl-2"
         >
           {{ $t(port) }}
         </option>
       </optgroup>
-      <optgroup :label="$t('DOGO')">
+      <optgroup :label="$t('DOGO')" class="font-medium">
         <option 
           v-for="port in dogoPorts" 
           :key="port" 
           :value="port"
           :disabled="disabledPorts?.includes(port)"
+          class="pl-2"
         >
           {{ $t(port) }}
         </option>
       </optgroup>
     </select>
-    <small v-if="hint" class="text-muted">{{ hint }}</small>
+    <small v-if="hint" class="text-gray-500 text-sm mt-1 block">{{ hint }}</small>
   </div>
 </template>
 
@@ -77,9 +80,3 @@ const handleChange = (event: Event) => {
   emit('change', target.value)
 }
 </script>
-
-<style scoped>
-.port-selector {
-  margin-bottom: 1rem;
-}
-</style>

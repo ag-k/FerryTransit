@@ -18,11 +18,10 @@ export default defineNuxtConfig({
     '@nuxtjs/i18n',
     '@nuxtjs/google-fonts',
     '@pinia/nuxt',
-    '@bootstrap-vue-next/nuxt'
+    '@nuxtjs/tailwindcss'
   ],
 
   css: [
-    'bootstrap/dist/css/bootstrap.css',
     '@/assets/css/main.scss'
   ],
 
