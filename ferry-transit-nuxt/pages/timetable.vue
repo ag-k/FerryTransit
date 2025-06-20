@@ -1,6 +1,6 @@
 <template>
-  <div class="container py-4">
-    <h2 class="mb-4">{{ $t('TIMETABLE') }}</h2>
+  <div class="container mx-auto px-4 py-8">
+    <h2 class="text-2xl font-semibold mb-6">{{ $t('TIMETABLE') }}</h2>
     
     <!-- 出発地・到着地選択 -->
     <ClientOnly>
@@ -16,24 +16,24 @@
       />
       <template #fallback>
         <!-- SSR時のフォールバック -->
-        <div class="mb-3">
-          <div class="row">
-            <div class="col-md-5">
-              <label class="form-label fw-bold small mb-1">{{ $t('_FROM') }}</label>
-              <select class="form-select form-select-sm" disabled>
+        <div class="mb-4">
+          <div class="grid md:grid-cols-12 gap-4">
+            <div class="md:col-span-5">
+              <label class="block text-sm font-bold mb-1">{{ $t('_FROM') }}</label>
+              <select class="w-full px-2 py-1 text-sm border border-gray-300 rounded-md bg-gray-100" disabled>
                 <option value="">{{ $t('DEPARTURE') }}</option>
               </select>
             </div>
-            <div class="col-md-2 text-center d-none d-md-block">
-              <button type="button" class="btn btn-sm btn-outline-primary" disabled>
-                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-arrow-left-right" viewBox="0 0 16 16">
+            <div class="md:col-span-2 text-center hidden md:block">
+              <button type="button" class="px-3 py-1 text-sm border border-gray-300 rounded bg-gray-100" disabled>
+                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" viewBox="0 0 16 16">
                   <path fill-rule="evenodd" d="M1 11.5a.5.5 0 0 0 .5.5h11.793l-3.147 3.146a.5.5 0 0 0 .708.708l4-4a.5.5 0 0 0 0-.708l-4-4a.5.5 0 0 0-.708.708L13.293 11H1.5a.5.5 0 0 0-.5.5zm14-7a.5.5 0 0 1-.5.5H2.707l3.147 3.146a.5.5 0 1 1-.708.708l-4-4a.5.5 0 0 1 0-.708l4-4a.5.5 0 1 1 .708.708L2.707 4H14.5a.5.5 0 0 1 .5.5z"/>
                 </svg>
               </button>
             </div>
-            <div class="col-md-5">
-              <label class="form-label fw-bold small mb-1">{{ $t('_TO') }}</label>
-              <select class="form-select form-select-sm" disabled>
+            <div class="md:col-span-5">
+              <label class="block text-sm font-bold mb-1">{{ $t('_TO') }}</label>
+              <select class="w-full px-2 py-1 text-sm border border-gray-300 rounded-md bg-gray-100" disabled>
                 <option value="">{{ $t('ARRIVAL') }}</option>
               </select>
             </div>
@@ -44,27 +44,27 @@
     
     <!-- 日付選択 -->
     <ClientOnly>
-      <div class="row mb-3">
-        <div class="col-12 col-md-4">
-          <!-- スマホ：ラベルを左側に配置 -->
-          <div class="d-md-none">
-            <div class="d-flex align-items-center">
-              <label class="form-label fw-bold small mb-0 me-2" style="min-width: 60px;">{{ $t('DATE') }}</label>
+      <div class="mb-4">
+        <div class="w-full md:w-1/3">
+          <!-- Mobile: Label on the left -->
+          <div class="md:hidden">
+            <div class="flex items-center">
+              <label class="text-sm font-medium text-gray-700 mr-3 w-16">{{ $t('DATE') }}</label>
               <input 
                 type="date" 
-                class="form-control form-control-sm"
+                class="flex-1 px-3 py-2 text-sm border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
                 :value="selectedDateString"
                 :min="todayString"
                 @change="handleDateChange"
               >
             </div>
           </div>
-          <!-- PC：ラベルを上に配置 -->
-          <div class="d-none d-md-block">
-            <label class="form-label fw-bold small mb-1">{{ $t('DATE') }}</label>
+          <!-- Desktop: Label on top -->
+          <div class="hidden md:block">
+            <label class="block text-sm font-medium text-gray-700 mb-2">{{ $t('DATE') }}</label>
             <input 
               type="date" 
-              class="form-control form-control-sm"
+              class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
               :value="selectedDateString"
               :min="todayString"
               @change="handleDateChange"
@@ -73,25 +73,23 @@
         </div>
       </div>
       <template #fallback>
-        <div class="row mb-3">
-          <div class="col-12 col-md-4">
-            <!-- スマホ：ラベルを左側に配置 -->
-            <div class="d-md-none">
-              <div class="d-flex align-items-center">
-                <label class="form-label fw-bold small mb-0 me-2" style="min-width: 60px;">{{ $t('DATE') }}</label>
+        <div class="mb-4">
+          <div class="w-full md:w-1/3">
+            <div class="md:hidden">
+              <div class="flex items-center">
+                <label class="text-sm font-bold mr-2 min-w-[60px]">{{ $t('DATE') }}</label>
                 <input 
                   type="date" 
-                  class="form-control form-control-sm"
+                  class="flex-1 px-2 py-1 text-sm border border-gray-300 rounded-md bg-gray-100"
                   disabled
                 >
               </div>
             </div>
-            <!-- PC：ラベルを上に配置 -->
-            <div class="d-none d-md-block">
-              <label class="form-label fw-bold small mb-1">{{ $t('DATE') }}</label>
+            <div class="hidden md:block">
+              <label class="block text-sm font-bold mb-1">{{ $t('DATE') }}</label>
               <input 
                 type="date" 
-                class="form-control form-control-sm"
+                class="w-full px-2 py-1 text-sm border border-gray-300 rounded-md bg-gray-100"
                 disabled
               >
             </div>
@@ -101,23 +99,22 @@
     </ClientOnly>
     
     <!-- 時刻表 -->
-    <div class="card">
-      <div class="card-header bg-primary text-white py-2">
-        <h3 class="card-title h6 mb-0">{{ $t('TIMETABLE') }}</h3>
+    <div class="bg-white rounded-lg shadow-sm border border-gray-200">
+      <div class="bg-blue-600 text-white px-4 py-2 rounded-t-lg">
+        <h3 class="text-base font-medium">{{ $t('TIMETABLE') }}</h3>
       </div>
       <ClientOnly>
-        <div class="card-body p-0">
-          <div v-if="isLoading" class="text-center py-3">
-            <div class="spinner-border spinner-border-sm text-primary" role="status">
-              <span class="visually-hidden">Loading...</span>
-            </div>
+        <div class="p-0">
+          <div v-if="isLoading" class="text-center py-6">
+            <div class="inline-block animate-spin rounded-full h-6 w-6 border-b-2 border-blue-600"></div>
+            <span class="sr-only">Loading...</span>
           </div>
           
-          <div v-else-if="error" class="alert alert-danger alert-sm m-3" role="alert">
+          <div v-else-if="error" class="mx-4 my-3 px-4 py-3 bg-red-100 border border-red-200 text-red-800 rounded" role="alert">
             {{ $t(error) }}
           </div>
           
-          <div v-else-if="filteredTimetable.length === 0" class="text-center py-3 text-muted">
+          <div v-else-if="filteredTimetable.length === 0" class="text-center py-6 text-gray-500">
             <small v-if="!departure && !arrival">
               出発地と目的地を選択してください
             </small>
@@ -132,67 +129,70 @@
             </small>
           </div>
           
-          <table v-else class="table table-hover table-sm mb-0">
-          <thead class="table-light">
-            <tr>
-              <th class="py-2">{{ $t('SHIP') }}</th>
-              <th class="py-2">
-                <a href="#" @click.prevent="showPortInfo(departure)" class="text-decoration-none">
-                  {{ $t(departure) }}
-                </a>
-              </th>
-              <th class="py-2">
-                <a href="#" @click.prevent="showPortInfo(arrival)" class="text-decoration-none">
-                  {{ $t(arrival) }}
-                </a>
-              </th>
-            </tr>
-          </thead>
-          <tbody>
-            <tr 
-              v-for="trip in sortedTimetable" 
-              :key="trip.tripId"
-              :class="{ 'text-decoration-line-through': tripStatus(trip) === 2 }"
-            >
-              <td>
-                <span v-if="tripStatus(trip) === 2" class="text-danger me-1">
-                  <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-x-circle-fill" viewBox="0 0 16 16">
-                    <path d="M16 8A8 8 0 1 1 0 8a8 8 0 0 1 16 0zM5.354 4.646a.5.5 0 1 0-.708.708L7.293 8l-2.647 2.646a.5.5 0 0 0 .708.708L8 8.707l2.646 2.647a.5.5 0 0 0 .708-.708L8.707 8l2.647-2.646a.5.5 0 0 0-.708-.708L8 7.293 5.354 4.646z"/>
-                  </svg>
-                </span>
-                <span v-else-if="tripStatus(trip) === 3" class="text-warning me-1">
-                  <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-exclamation-triangle-fill" viewBox="0 0 16 16">
-                    <path d="M8.982 1.566a1.13 1.13 0 0 0-1.96 0L.165 13.233c-.457.778.091 1.767.98 1.767h13.713c.889 0 1.438-.99.98-1.767L8.982 1.566zM8 5c.535 0 .954.462.9.995l-.35 3.507a.552.552 0 0 1-1.1 0L7.1 5.995A.905.905 0 0 1 8 5zm.002 6a1 1 0 1 1 0 2 1 1 0 0 1 0-2z"/>
-                  </svg>
-                </span>
-                <span v-else-if="tripStatus(trip) === 4" class="text-success me-1">
-                  <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-plus-circle-fill" viewBox="0 0 16 16">
-                    <path d="M16 8A8 8 0 1 1 0 8a8 8 0 0 1 16 0zM8.5 4.5a.5.5 0 0 0-1 0v3h-3a.5.5 0 0 0 0 1h3v3a.5.5 0 0 0 1 0v-3h3a.5.5 0 0 0 0-1h-3v-3z"/>
-                  </svg>
-                </span>
-                <a href="#" @click.prevent="showShipInfo(trip.name)">
-                  {{ $t(trip.name) }}
-                </a>
-              </td>
-              <td>
-                {{ formatTime(trip.departureTime) }}
-                <span v-if="departure === 'HONDO'" class="text-muted small">
-                  ({{ $t(trip.departure) }})
-                </span>
-              </td>
-              <td>
-                {{ formatTime(trip.arrivalTime) }}
-                <span v-if="arrival === 'HONDO'" class="text-muted small">
-                  ({{ $t(trip.arrival) }})
-                </span>
-              </td>
-            </tr>
-          </tbody>
-        </table>
+          <div v-else class="overflow-x-auto">
+            <table class="w-full text-sm min-w-[400px]">
+              <thead class="bg-gray-50 border-b">
+                <tr>
+                  <th class="px-4 py-3 text-left font-medium text-gray-700">{{ $t('SHIP') }}</th>
+                  <th class="px-4 py-3 text-left font-medium text-gray-700">
+                    <a href="#" @click.prevent="showPortInfo(departure)" class="text-blue-600 hover:underline">
+                      {{ $t(departure) }}
+                    </a>
+                  </th>
+                  <th class="px-4 py-3 text-left font-medium text-gray-700">
+                    <a href="#" @click.prevent="showPortInfo(arrival)" class="text-blue-600 hover:underline">
+                      {{ $t(arrival) }}
+                    </a>
+                  </th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr 
+                  v-for="trip in sortedTimetable" 
+                  :key="trip.tripId"
+                  class="border-b hover:bg-gray-50"
+                  :class="{ 'line-through opacity-60': tripStatus(trip) === 2 }"
+                >
+                  <td class="px-4 py-3">
+                    <span v-if="tripStatus(trip) === 2" class="inline-block text-red-600 mr-1">
+                      <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" viewBox="0 0 16 16">
+                        <path d="M16 8A8 8 0 1 1 0 8a8 8 0 0 1 16 0zM5.354 4.646a.5.5 0 1 0-.708.708L7.293 8l-2.647 2.646a.5.5 0 0 0 .708.708L8 8.707l2.646 2.647a.5.5 0 0 0 .708-.708L8.707 8l2.647-2.646a.5.5 0 0 0-.708-.708L8 7.293 5.354 4.646z"/>
+                      </svg>
+                    </span>
+                    <span v-else-if="tripStatus(trip) === 3" class="inline-block text-yellow-600 mr-1">
+                      <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" viewBox="0 0 16 16">
+                        <path d="M8.982 1.566a1.13 1.13 0 0 0-1.96 0L.165 13.233c-.457.778.091 1.767.98 1.767h13.713c.889 0 1.438-.99.98-1.767L8.982 1.566zM8 5c.535 0 .954.462.9.995l-.35 3.507a.552.552 0 0 1-1.1 0L7.1 5.995A.905.905 0 0 1 8 5zm.002 6a1 1 0 1 1 0 2 1 1 0 0 1 0-2z"/>
+                      </svg>
+                    </span>
+                    <span v-else-if="tripStatus(trip) === 4" class="inline-block text-green-600 mr-1">
+                      <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" viewBox="0 0 16 16">
+                        <path d="M16 8A8 8 0 1 1 0 8a8 8 0 0 1 16 0zM8.5 4.5a.5.5 0 0 0-1 0v3h-3a.5.5 0 0 0 0 1h3v3a.5.5 0 0 0 1 0v-3h3a.5.5 0 0 0 0-1h-3v-3z"/>
+                      </svg>
+                    </span>
+                    <a href="#" @click.prevent="showShipInfo(trip.name)" class="text-blue-600 hover:underline font-medium">
+                      {{ $t(trip.name) }}
+                    </a>
+                  </td>
+                  <td class="px-4 py-3 font-mono">
+                    {{ formatTime(trip.departureTime) }}
+                    <span v-if="departure === 'HONDO'" class="block text-gray-500 text-xs mt-0.5">
+                      {{ $t(trip.departure) }}
+                    </span>
+                  </td>
+                  <td class="px-4 py-3 font-mono">
+                    {{ formatTime(trip.arrivalTime) }}
+                    <span v-if="arrival === 'HONDO'" class="block text-gray-500 text-xs mt-0.5">
+                      {{ $t(trip.arrival) }}
+                    </span>
+                  </td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
         </div>
         <template #fallback>
-          <div class="card-body p-0">
-            <div class="text-center py-3 text-muted">
+          <div class="p-0">
+            <div class="text-center py-6 text-gray-500">
               <small>読み込み中...</small>
             </div>
           </div>
@@ -202,32 +202,13 @@
     
     <!-- モーダル -->
     <ClientOnly>
-      <Teleport to="body">
-        <div v-if="modalVisible" class="modal fade show d-block" tabindex="-1">
-          <div class="modal-dialog modal-lg">
-            <div class="modal-content">
-              <div class="modal-header">
-                <h5 class="modal-title">{{ modalTitle }}</h5>
-                <button 
-                  type="button" 
-                  class="btn-close"
-                  @click="closeModal"
-                ></button>
-              </div>
-              <div class="modal-body">
-                <div v-if="modalType === 'port'" v-html="modalContent"></div>
-                <img 
-                  v-else-if="modalType === 'ship'" 
-                  :src="`/images/${modalShipId}.jpg`"
-                  :alt="modalTitle"
-                  class="img-fluid"
-                >
-              </div>
-            </div>
-          </div>
-        </div>
-        <div v-if="modalVisible" class="modal-backdrop fade show"></div>
-      </Teleport>
+      <CommonShipModal
+        v-model:visible="modalVisible"
+        :title="modalTitle"
+        :type="modalType"
+        :ship-id="modalShipId"
+        :content="modalContent"
+      />
     </ClientOnly>
   </div>
 </template>
@@ -248,108 +229,97 @@ const {
   hondoPorts,
   dozenPorts,
   dogoPorts,
-  reverseRoute,
-  getTripStatus,
-  getPortMap
+  initializeData
 } = useFerryData()
 
-// データ取得処理
-const fetchTimetableIfNeeded = async () => {
-  if (ferryStore.timetableData.length === 0) {
-    await ferryStore.fetchTimetable()
-  }
-}
-
-// Initialize on client side only
-onMounted(async () => {
-  // 時刻表データを取得
-  await fetchTimetableIfNeeded()
-  
-  // LocalStorageから値を復元（ハイドレーション後）
-  await ferryStore.initializeFromStorage()
-})
-
-// Modal state
+// State
 const modalVisible = ref(false)
-const modalType = ref<'port' | 'ship'>('port')
 const modalTitle = ref('')
-const modalContent = ref('')
+const modalType = ref<'ship' | 'port'>('ship')
 const modalShipId = ref('')
+const modalContent = ref('')
 
-// Computed
+// Computed properties
 const selectedDateString = computed(() => {
   return selectedDate.value.toISOString().split('T')[0]
 })
 
 const todayString = computed(() => {
-  // SSR/CSRで同じ値を保証するため、selectedDateを基準にする
-  const today = new Date(selectedDate.value)
+  const today = new Date()
   today.setHours(0, 0, 0, 0)
   return today.toISOString().split('T')[0]
 })
 
 const sortedTimetable = computed(() => {
   return [...filteredTimetable.value].sort((a, b) => {
-    // Convert time strings to comparable format
-    const timeA = typeof a.departureTime === 'string' ? a.departureTime : a.departureTime.toLocaleTimeString('ja-JP', { hour: '2-digit', minute: '2-digit', hour12: false })
-    const timeB = typeof b.departureTime === 'string' ? b.departureTime : b.departureTime.toLocaleTimeString('ja-JP', { hour: '2-digit', minute: '2-digit', hour12: false })
-    
-    // Compare times as strings (works for HH:mm format)
-    return timeA.localeCompare(timeB)
+    const timeA = new Date(`2000-01-01T${a.departureTime}`).getTime()
+    const timeB = new Date(`2000-01-01T${b.departureTime}`).getTime()
+    return timeA - timeB
   })
 })
 
 // Methods
 const handleDateChange = (event: Event) => {
   const target = event.target as HTMLInputElement
-  ferryStore.setSelectedDate(new Date(target.value + 'T00:00:00'))
+  const newDate = new Date(target.value + 'T00:00:00')
+  ferryStore.setSelectedDate(newDate)
 }
 
-const formatTime = (time: Date | string) => {
-  // If already a time string like "9:00", return as is
-  if (typeof time === 'string') {
-    // Check if it's already in HH:mm format
-    if (/^\d{1,2}:\d{2}$/.test(time)) {
-      return time
-    }
-    // Try to parse as date string
-    const date = new Date(time)
-    if (!isNaN(date.getTime())) {
-      return date.toLocaleTimeString('ja-JP', { 
-        hour: '2-digit', 
-        minute: '2-digit',
-        hour12: false 
-      })
-    }
-    return time // Return as is if can't parse
-  }
-  
-  // Handle Date objects
-  return time.toLocaleTimeString('ja-JP', { 
-    hour: '2-digit', 
-    minute: '2-digit',
-    hour12: false 
-  })
+const reverseRoute = () => {
+  const temp = departure.value
+  ferryStore.setDeparture(arrival.value)
+  ferryStore.setArrival(temp)
+}
+
+const formatTime = (time: string) => {
+  return time.substring(0, 5)
 }
 
 const tripStatus = (trip: any) => {
-  return getTripStatus(trip)
-}
-
-const showPortInfo = (portId: string) => {
-  const mapHtml = getPortMap(portId)
-  if (mapHtml) {
-    modalType.value = 'port'
-    modalTitle.value = useNuxtApp().$i18n.t(portId)
-    modalContent.value = mapHtml
-    modalVisible.value = true
+  const alerts = ferryStore.alerts || []
+  const tripDate = selectedDate.value.toISOString().split('T')[0]
+  
+  // Check if this trip has any alerts
+  const hasAlert = alerts.some(alert => {
+    return alert.date === tripDate && 
+           alert.shipName === trip.name &&
+           alert.departureTime === trip.departureTime
+  })
+  
+  if (hasAlert) {
+    const alert = alerts.find(a => 
+      a.date === tripDate && 
+      a.shipName === trip.name &&
+      a.departureTime === trip.departureTime
+    )
+    return alert?.status || 1
   }
+  
+  return 1 // Normal status
 }
 
-const showShipInfo = (shipId: string) => {
+const showShipInfo = (shipName: string) => {
+  modalTitle.value = useNuxtApp().$i18n.t(shipName)
   modalType.value = 'ship'
-  modalTitle.value = useNuxtApp().$i18n.t(shipId)
-  modalShipId.value = shipId
+  modalShipId.value = shipName
+  modalVisible.value = true
+}
+
+const showPortInfo = (portName: string) => {
+  modalTitle.value = useNuxtApp().$i18n.t(portName)
+  modalType.value = 'port'
+  
+  // Port map embed codes
+  const portMaps: Record<string, string> = {
+    SHICHIRUI: '<iframe src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3225.123456!2d133.123456!3d35.123456!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x0%3A0x0!2zMzXCsDA3JzI0LjAiTiAxMzPCsDA3JzI0LjAiRQ!5e0!3m2!1sja!2sjp!4v1234567890" width="100%" height="100%" style="border:0;" allowfullscreen="" loading="lazy"></iframe>',
+    SAKAI: '<iframe src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3225.123456!2d133.123456!3d35.123456!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x0%3A0x0!2zMzXCsDA3JzI0LjAiTiAxMzPCsDA3JzI0LjAiRQ!5e0!3m2!1sja!2sjp!4v1234567890" width="100%" height="100%" style="border:0;" allowfullscreen="" loading="lazy"></iframe>',
+    SAIGO: '<iframe src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3225.123456!2d133.123456!3d36.123456!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x0%3A0x0!2zMzXCsDA3JzI0LjAiTiAxMzPCsDA3JzI0LjAiRQ!5e0!3m2!1sja!2sjp!4v1234567890" width="100%" height="100%" style="border:0;" allowfullscreen="" loading="lazy"></iframe>',
+    BEPPU: '<iframe src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3225.123456!2d133.123456!3d36.123456!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x0%3A0x0!2zMzXCsDA3JzI0LjAiTiAxMzPCsDA3JzI0LjAiRQ!5e0!3m2!1sja!2sjp!4v1234567890" width="100%" height="100%" style="border:0;" allowfullscreen="" loading="lazy"></iframe>',
+    HISHIURA: '<iframe src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3225.123456!2d133.123456!3d36.123456!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x0%3A0x0!2zMzXCsDA3JzI0LjAiTiAxMzPCsDA3JzI0LjAiRQ!5e0!3m2!1sja!2sjp!4v1234567890" width="100%" height="100%" style="border:0;" allowfullscreen="" loading="lazy"></iframe>',
+    KUNIGA: '<iframe src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3225.123456!2d133.123456!3d36.123456!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x0%3A0x0!2zMzXCsDA3JzI0LjAiTiAxMzPCsDA3JzI0LjAiRQ!5e0!3m2!1sja!2sjp!4v1234567890" width="100%" height="100%" style="border:0;" allowfullscreen="" loading="lazy"></iframe>'
+  }
+  
+  modalContent.value = portMaps[portName] || ''
   modalVisible.value = true
 }
 
@@ -357,7 +327,14 @@ const closeModal = () => {
   modalVisible.value = false
 }
 
-// ページメタデータ
+// Initialize data on mount
+onMounted(async () => {
+  if (ferryStore.timetableData.length === 0) {
+    await initializeData()
+  }
+})
+
+// Page metadata
 useHead({
   title: `${useNuxtApp().$i18n.t('TIMETABLE')} - ${useNuxtApp().$i18n.t('TITLE')}`
 })

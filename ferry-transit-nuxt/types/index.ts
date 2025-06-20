@@ -49,29 +49,48 @@ export interface Trip {
 
 // Ship status interfaces
 export interface ShipStatus {
+  id?: number
+  ship_id?: number
   hasAlert: boolean
   status: number
   date: string | null
   updated: string | null
+  updated_at?: string
+  created_at?: string
   summary: string | null
   comment: string | null
   reason?: string
+  reason_id?: number | null
   departure?: string
   arrival?: string
   startTime?: string
-  lastShips?: Trip[]
-  extraShips?: Trip[]
+  start_time?: string | null
+  last_departure_port_id?: number | null
+  last_arrival_port_id?: number | null
+  lastShips?: any[]
+  extraShips?: any[]
+  ship_name?: string
+  prev_status?: number
 }
 
 export interface FerryStatus {
+  id?: number
   hasAlert: boolean
   date: string | null
-  ferryState: string
-  ferryComment: string
-  fastFerryState: string
-  fastFerryComment: string
-  todayWave: string
-  tomorrowWave: string
+  ferry_state?: string
+  ferryState?: string
+  ferry_comment?: string
+  ferryComment?: string
+  fast_ferry_state?: string
+  fastFerryState?: string
+  fast_ferry_comment?: string
+  fastFerryComment?: string
+  today_wave?: string
+  todayWave?: string
+  tomorrow_wave?: string
+  tomorrowWave?: string
+  created_at?: string
+  updated_at?: string
 }
 
 export interface SightseeingStatus {

@@ -1,9 +1,9 @@
 <template>
-  <div class="app-layout">
+  <div class="min-h-screen flex flex-col">
     <AppNavigation />
     
     <!-- Alerts -->
-    <div v-if="alerts.length > 0" class="container mt-3">
+    <div v-if="alerts.length > 0" class="container mx-auto px-4 mt-3">
       <CommonAlertComponent
         v-for="alert in alerts"
         :key="alert.id"
@@ -15,14 +15,14 @@
       />
     </div>
     
-    <main class="app-main">
+    <main class="flex-1">
       <slot />
     </main>
     
-    <footer class="app-footer mt-auto py-3 bg-light">
-      <div class="container">
-        <p class="text-muted text-center mb-0">
-          Powered by <a href="https://oki-digilab.com/" target="_blank">隠岐デジタルラボ</a>
+    <footer class="mt-auto py-3 bg-gray-100">
+      <div class="container mx-auto px-4">
+        <p class="text-gray-600 text-center mb-0">
+          Powered by <a href="https://oki-digilab.com/" target="_blank" class="text-blue-600 hover:text-blue-800">隠岐デジタルラボ</a>
         </p>
       </div>
     </footer>
@@ -36,18 +36,3 @@ const uiStore = useUIStore()
 const alerts = computed(() => uiStore.alerts)
 </script>
 
-<style scoped>
-.app-layout {
-  min-height: 100vh;
-  display: flex;
-  flex-direction: column;
-}
-
-.app-main {
-  flex: 1;
-}
-
-.app-footer {
-  margin-top: auto;
-}
-</style>
