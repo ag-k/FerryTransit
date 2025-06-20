@@ -22,9 +22,12 @@ export const useFerryStore = defineStore('ferry', () => {
   })
   // 固定の初期日付を使用（ハイドレーションエラー対策）
   const getInitialDate = () => {
-    const date = new Date()
-    date.setHours(0, 0, 0, 0)
-    return date
+    // JSTで本日の日付を取得
+    const now = new Date()
+    const jstOffset = 9 * 60 // JST is UTC+9
+    const jstTime = new Date(now.getTime() + (jstOffset - now.getTimezoneOffset()) * 60 * 1000)
+    jstTime.setHours(0, 0, 0, 0)
+    return jstTime
   }
   const selectedDate = ref(getInitialDate())
   // SSR/CSRで同じ初期値を保証
