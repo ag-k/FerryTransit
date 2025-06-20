@@ -134,12 +134,12 @@
               <thead class="bg-gray-50 border-b">
                 <tr>
                   <th class="px-4 py-3 text-left font-medium text-gray-700">{{ $t('SHIP') }}</th>
-                  <th class="px-4 py-3 text-left font-medium text-gray-700">
+                  <th class="px-4 py-3 text-right font-medium text-gray-700">
                     <a href="#" @click.prevent="showPortInfo(departure)" class="text-blue-600 hover:underline">
                       {{ $t(departure) }}
                     </a>
                   </th>
-                  <th class="px-4 py-3 text-left font-medium text-gray-700">
+                  <th class="px-4 py-3 text-right font-medium text-gray-700">
                     <a href="#" @click.prevent="showPortInfo(arrival)" class="text-blue-600 hover:underline">
                       {{ $t(arrival) }}
                     </a>
@@ -173,13 +173,13 @@
                       {{ $t(trip.name) }}
                     </a>
                   </td>
-                  <td class="px-4 py-3 font-mono">
+                  <td class="px-4 py-3 font-mono text-right">
                     {{ formatTime(trip.departureTime) }}
                     <span v-if="departure === 'HONDO'" class="block text-gray-500 text-xs mt-0.5">
                       {{ $t(trip.departure) }}
                     </span>
                   </td>
-                  <td class="px-4 py-3 font-mono">
+                  <td class="px-4 py-3 font-mono text-right">
                     {{ formatTime(trip.arrivalTime) }}
                     <span v-if="arrival === 'HONDO'" class="block text-gray-500 text-xs mt-0.5">
                       {{ $t(trip.arrival) }}
@@ -245,15 +245,24 @@ const selectedDateString = computed(() => {
 })
 
 const todayString = computed(() => {
-  const today = new Date()
-  today.setHours(0, 0, 0, 0)
-  return today.toISOString().split('T')[0]
+  // JSTで本日の日付を取得
+  const now = new Date()
+  const jstOffset = 9 * 60 // JST is UTC+9
+  const jstTime = new Date(now.getTime() + (jstOffset - now.getTimezoneOffset()) * 60 * 1000)
+  jstTime.setHours(0, 0, 0, 0)
+  return jstTime.toISOString().split('T')[0]
 })
 
 const sortedTimetable = computed(() => {
   return [...filteredTimetable.value].sort((a, b) => {
-    const timeA = new Date(`2000-01-01T${a.departureTime}`).getTime()
-    const timeB = new Date(`2000-01-01T${b.departureTime}`).getTime()
+    // 時刻を "H:mm" から "HH:mm" 形式に正規化
+    const normalizeTime = (time: string): string => {
+      const [hours, minutes] = time.split(':')
+      return `${hours.padStart(2, '0')}:${minutes}`
+    }
+    
+    const timeA = new Date(`2000-01-01T${normalizeTime(a.departureTime)}`).getTime()
+    const timeB = new Date(`2000-01-01T${normalizeTime(b.departureTime)}`).getTime()
     return timeA - timeB
   })
 })

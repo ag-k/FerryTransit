@@ -6,6 +6,20 @@ export const useFerryData = () => {
   const uiStore = useUIStore()
   const { $i18n } = useNuxtApp()
 
+  // 時刻文字列の比較関数
+  const compareTimeStrings = (time1: string, time2: string): number => {
+    // "HH:mm" 形式の時刻を分単位に変換
+    const toMinutes = (time: string): number => {
+      const [hours, minutes] = time.split(':').map(Number)
+      return hours * 60 + minutes
+    }
+    
+    const minutes1 = toMinutes(time1)
+    const minutes2 = toMinutes(time2)
+    
+    return minutes1 - minutes2
+  }
+
   // 初期データ読み込み
   const initializeData = async () => {
     uiStore.setLoading(true)
@@ -64,9 +78,9 @@ export const useFerryData = () => {
         case 2: {
           // 一部欠航
           if (!isokaze.startTime) return 0
-          // Compare times as strings (HH:mm format)
+          // Compare times as time values, not strings
           const tripTime = typeof trip.departureTime === 'string' ? trip.departureTime : trip.departureTime.toLocaleTimeString('ja-JP', { hour: '2-digit', minute: '2-digit', hour12: false })
-          return tripTime >= isokaze.startTime ? 2 : 0
+          return compareTimeStrings(tripTime, isokaze.startTime) >= 0 ? 2 : 0
         }
         case 3: return 3 // Change
         case 4: return 4 // Extra
@@ -81,16 +95,16 @@ export const useFerryData = () => {
         case 2: {
           // 一部欠航
           if (!dozen.startTime) return 0
-          // Compare times as strings (HH:mm format)
+          // Compare times as time values, not strings
           const tripTime = typeof trip.departureTime === 'string' ? trip.departureTime : trip.departureTime.toLocaleTimeString('ja-JP', { hour: '2-digit', minute: '2-digit', hour12: false })
-          return tripTime >= dozen.startTime ? 2 : 0
+          return compareTimeStrings(tripTime, dozen.startTime) >= 0 ? 2 : 0
         }
         case 3: {
           // 来居便欠航
           if (!dozen.startTime) return 0
-          // Compare times as strings (HH:mm format)
+          // Compare times as time values, not strings
           const tripTime = typeof trip.departureTime === 'string' ? trip.departureTime : trip.departureTime.toLocaleTimeString('ja-JP', { hour: '2-digit', minute: '2-digit', hour12: false })
-          return tripTime === dozen.startTime ? 2 : 0
+          return compareTimeStrings(tripTime, dozen.startTime) === 0 ? 2 : 0
         }
         default: return 0
       }
