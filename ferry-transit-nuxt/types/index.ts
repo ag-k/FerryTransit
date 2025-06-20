@@ -45,6 +45,8 @@ export interface Trip {
   status: TripStatus
   price?: number
   via?: string
+  departureLabel?: string
+  arrivalLabel?: string
 }
 
 // Ship status interfaces

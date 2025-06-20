@@ -111,30 +111,130 @@ export const useFerryStore = defineStore('ferry', () => {
     }
 
     const dateStr = selectedDate.value.toISOString().split('T')[0]
+    const MAX_NEXT_CHAIN = 5
     
-    return timetableData.value.filter(trip => {
-      // 日付フィルタリング
+    // 期間でフィルタリング
+    const validTimetable = timetableData.value.filter(trip => {
       const startDate = new Date(trip.startDate)
       const endDate = new Date(trip.endDate)
       endDate.setDate(endDate.getDate() + 1) // 終了日の翌日まで含める
       const currentDate = new Date(dateStr)
       
-      if (currentDate < startDate || currentDate > endDate) {
-        return false
-      }
-
-      // 出発地・到着地フィルタリング
-      // HONDOの場合は七類と境港の両方を含む
-      const matchesDeparture = departure.value === 'HONDO' 
+      return currentDate >= startDate && currentDate <= endDate
+    })
+    
+    // 出発地でフィルタリング
+    const departureTimetable = validTimetable.filter(trip => {
+      return departure.value === 'HONDO' 
         ? (trip.departure === 'HONDO_SHICHIRUI' || trip.departure === 'HONDO_SAKAIMINATO')
         : trip.departure === departure.value
-        
-      const matchesArrival = arrival.value === 'HONDO'
+    })
+    
+    // 直行便を抽出
+    const directTrips = departureTimetable.filter(trip => {
+      return arrival.value === 'HONDO'
         ? (trip.arrival === 'HONDO_SHICHIRUI' || trip.arrival === 'HONDO_SAKAIMINATO')
         : trip.arrival === arrival.value
-        
-      return matchesDeparture && matchesArrival
     })
+    
+    const resultTimetable: Trip[] = []
+    
+    // 直行便を結果に追加
+    if ((departure.value === 'HONDO') || (arrival.value === 'HONDO')) {
+      directTrips.forEach(trip => {
+        let departureLabel = ''
+        let arrivalLabel = ''
+        
+        if (trip.departure === 'HONDO_SHICHIRUI') {
+          departureLabel = 'TIMETABLE_SUP_SHICHIRUI'
+        } else if (trip.departure === 'HONDO_SAKAIMINATO') {
+          departureLabel = 'TIMETABLE_SUP_SAKAIMINATO'
+        }
+        
+        if (trip.arrival === 'HONDO_SHICHIRUI') {
+          arrivalLabel = 'TIMETABLE_SUP_SHICHIRUI'
+        } else if (trip.arrival === 'HONDO_SAKAIMINATO') {
+          arrivalLabel = 'TIMETABLE_SUP_SAKAIMINATO'
+        }
+        
+        resultTimetable.push({
+          ...trip,
+          departure: trip.departure,
+          arrival: trip.arrival,
+          departureLabel,
+          arrivalLabel
+        })
+      })
+    } else {
+      resultTimetable.push(...directTrips)
+    }
+    
+    // 既に抽出済みのトリップIDを記録
+    const extractedTripIds = new Set(directTrips.map(t => t.tripId))
+    
+    // 乗り継ぎルートを探索
+    const remainingTrips = departureTimetable.filter(trip => !extractedTripIds.has(trip.tripId))
+    
+    remainingTrips.forEach(trip => {
+      if (trip.nextId) {
+        let currentTrip = trip
+        let nextId = trip.nextId
+        
+        for (let i = 0; i < MAX_NEXT_CHAIN; i++) {
+          const nextTrip = validTimetable.find(t => t.tripId === nextId)
+          if (!nextTrip) break
+          
+          // 出発地を経由するパスは省く
+          if (nextTrip.departure === trip.departure) break
+          
+          // 本土経由ルートは省く
+          if ((nextTrip.arrival === 'HONDO_SHICHIRUI' || nextTrip.arrival === 'HONDO_SAKAIMINATO') &&
+              (trip.departure === 'HONDO_SHICHIRUI' || trip.departure === 'HONDO_SAKAIMINATO')) {
+            break
+          }
+          
+          // 目的地に到達した場合
+          const reachesDestination = arrival.value === 'HONDO'
+            ? (nextTrip.arrival === 'HONDO_SHICHIRUI' || nextTrip.arrival === 'HONDO_SAKAIMINATO')
+            : nextTrip.arrival === arrival.value
+            
+          if (reachesDestination) {
+            let departureLabel = ''
+            let arrivalLabel = ''
+            
+            if (departure.value === 'HONDO') {
+              if (trip.departure === 'HONDO_SHICHIRUI') {
+                departureLabel = 'TIMETABLE_SUP_SHICHIRUI'
+              } else if (trip.departure === 'HONDO_SAKAIMINATO') {
+                departureLabel = 'TIMETABLE_SUP_SAKAIMINATO'
+              }
+            }
+            
+            if (arrival.value === 'HONDO') {
+              if (nextTrip.arrival === 'HONDO_SHICHIRUI') {
+                arrivalLabel = 'TIMETABLE_SUP_SHICHIRUI'
+              } else if (nextTrip.arrival === 'HONDO_SAKAIMINATO') {
+                arrivalLabel = 'TIMETABLE_SUP_SAKAIMINATO'
+              }
+            }
+            
+            resultTimetable.push({
+              ...trip,
+              arrival: nextTrip.arrival,
+              arrivalTime: nextTrip.arrivalTime,
+              departureLabel,
+              arrivalLabel
+            })
+            break
+          }
+          
+          if (!nextTrip.nextId) break
+          nextId = nextTrip.nextId
+        }
+      }
+    })
+    
+    return resultTimetable
   })
 
   // Actions
