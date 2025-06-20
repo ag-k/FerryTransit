@@ -175,14 +175,14 @@
                   </td>
                   <td class="px-4 py-3 font-mono text-right">
                     {{ formatTime(trip.departureTime) }}
-                    <span v-if="departure === 'HONDO'" class="block text-gray-500 text-xs mt-0.5">
-                      {{ $t(trip.departure) }}
+                    <span v-if="trip.departureLabel" class="block text-gray-500 text-xs mt-0.5">
+                      {{ $t(trip.departureLabel) }}
                     </span>
                   </td>
                   <td class="px-4 py-3 font-mono text-right">
                     {{ formatTime(trip.arrivalTime) }}
-                    <span v-if="arrival === 'HONDO'" class="block text-gray-500 text-xs mt-0.5">
-                      {{ $t(trip.arrival) }}
+                    <span v-if="trip.arrivalLabel" class="block text-gray-500 text-xs mt-0.5">
+                      {{ $t(trip.arrivalLabel) }}
                     </span>
                   </td>
                 </tr>
