@@ -15,9 +15,12 @@
       />
     </div>
     
-    <main class="flex-1">
+    <main class="flex-1 pb-16 lg:pb-0">
       <slot />
     </main>
+    
+    <!-- Bottom Navigation (Mobile Only) -->
+    <AppBottomNavigation />
     
     <footer class="mt-auto py-3 bg-gray-100">
       <div class="container mx-auto px-4">

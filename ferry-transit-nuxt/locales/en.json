@@ -164,5 +164,14 @@
   "FAVORITE_ORDER_UPDATED": "Order updated",
   "FAVORITE_REORDER_ERROR": "An error occurred while reordering",
   "FAVORITE_CLEAR_CONFIRM": "Are you sure you want to delete all favorites? This action cannot be undone.",
-  "FAVORITE_ALL_CLEARED": "All favorites deleted"
+  "FAVORITE_ALL_CLEARED": "All favorites deleted",
+  "SETTINGS": "Settings",
+  "LANGUAGE": "Language",
+  "APP_INFO": "App Information",
+  "VERSION": "Version",
+  "FRAMEWORK": "Framework",
+  "LAST_UPDATED": "Last Updated",
+  "LINKS": "Links",
+  "DEVELOPER_SITE": "Developer Site",
+  "ABOUT_APP": "About This App"
 }
