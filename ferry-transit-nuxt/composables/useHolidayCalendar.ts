@@ -1,5 +1,6 @@
 import { readonly } from 'vue'
 import type { Holiday, PeakSeason, SpecialOperation, HolidayMaster } from '@/types/holiday'
+import { useOfflineStore } from '@/stores/offline'
 
 export const useHolidayCalendar = () => {
   const { locale } = useI18n()

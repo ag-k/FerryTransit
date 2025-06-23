@@ -238,7 +238,12 @@ const getRouteDisplayName = (route: any) => {
 // Group fares by ship type
 const groupFaresByShipType = (fares: any[]) => {
   // Define routes for each ship type
-  const okiKisenRoutes = ['hondo-saigo', 'saigo-hondo']
+  const okiKisenRoutes = [
+    'hondo-saigo', 'saigo-hondo',
+    'hondo-beppu', 'beppu-hondo',
+    'hondo-hishiura', 'hishiura-hondo',
+    'hondo-kuri', 'kuri-hondo'
+  ]
   const naikoSenRoutes = [
     'saigo-beppu', 'beppu-saigo', 
     'saigo-hishiura', 'hishiura-saigo',

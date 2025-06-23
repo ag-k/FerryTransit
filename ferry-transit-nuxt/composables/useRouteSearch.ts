@@ -407,22 +407,15 @@ export const useRouteSearch = () => {
       return baseFare;
     }
 
-    // Fallback to old calculation if route not found
+    // Fallback for routes not found in fare master
+    console.warn(`Fare not found for route: ${fareDeparture} -> ${fareArrival}`);
+    
+    // Use default values based on ship type
     const isHighSpeed = ship === "RAINBOWJET";
-    const isInterIsland =
-      (ferryStore.dozenPorts.includes(departure) &&
-        ferryStore.dogoPorts.includes(arrival)) ||
-      (ferryStore.dogoPorts.includes(departure) &&
-        ferryStore.dozenPorts.includes(arrival));
-
     if (isHighSpeed) {
-      if (isInterIsland) return 3380;
-      if (isMainlandPort(departure) || isMainlandPort(arrival)) return 6750;
-      return 4500;
+      return 7040; // Default high-speed ferry fare (3520 * 2)
     } else {
-      if (isInterIsland) return 1680;
-      if (isMainlandPort(departure) || isMainlandPort(arrival)) return 3360;
-      return 2240;
+      return 3520; // Default ferry fare
     }
   };
 

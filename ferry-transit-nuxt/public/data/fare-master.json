@@ -191,6 +191,102 @@
           "over6m": 4400
         }
       }
+    },
+    {
+      "id": "hondo-beppu",
+      "departure": "HONDO",
+      "arrival": "BEPPU",
+      "fares": {
+        "adult": 3520,
+        "child": 1760,
+        "vehicle": {
+          "under3m": 8800,
+          "under4m": 11000,
+          "under5m": 13200,
+          "under6m": 15400,
+          "over6m": 17600
+        }
+      }
+    },
+    {
+      "id": "beppu-hondo",
+      "departure": "BEPPU",
+      "arrival": "HONDO",
+      "fares": {
+        "adult": 3520,
+        "child": 1760,
+        "vehicle": {
+          "under3m": 8800,
+          "under4m": 11000,
+          "under5m": 13200,
+          "under6m": 15400,
+          "over6m": 17600
+        }
+      }
+    },
+    {
+      "id": "hondo-hishiura",
+      "departure": "HONDO",
+      "arrival": "HISHIURA",
+      "fares": {
+        "adult": 3520,
+        "child": 1760,
+        "vehicle": {
+          "under3m": 8800,
+          "under4m": 11000,
+          "under5m": 13200,
+          "under6m": 15400,
+          "over6m": 17600
+        }
+      }
+    },
+    {
+      "id": "hishiura-hondo",
+      "departure": "HISHIURA",
+      "arrival": "HONDO",
+      "fares": {
+        "adult": 3520,
+        "child": 1760,
+        "vehicle": {
+          "under3m": 8800,
+          "under4m": 11000,
+          "under5m": 13200,
+          "under6m": 15400,
+          "over6m": 17600
+        }
+      }
+    },
+    {
+      "id": "hondo-kuri",
+      "departure": "HONDO",
+      "arrival": "KURI",
+      "fares": {
+        "adult": 3520,
+        "child": 1760,
+        "vehicle": {
+          "under3m": 8800,
+          "under4m": 11000,
+          "under5m": 13200,
+          "under6m": 15400,
+          "over6m": 17600
+        }
+      }
+    },
+    {
+      "id": "kuri-hondo",
+      "departure": "KURI",
+      "arrival": "HONDO",
+      "fares": {
+        "adult": 3520,
+        "child": 1760,
+        "vehicle": {
+          "under3m": 8800,
+          "under4m": 11000,
+          "under5m": 13200,
+          "under6m": 15400,
+          "over6m": 17600
+        }
+      }
     }
   ],
   "discounts": {
