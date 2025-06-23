@@ -388,10 +388,11 @@ export const useRouteSearch = () => {
     if (route) {
       let baseFare = route.fares.adult;
 
-      // For high-speed ferry, use a multiplier (example: 2x normal fare)
+      // For high-speed ferry (Rainbow Jet), use the actual fare
       const isHighSpeed = ship === "RAINBOWJET";
       if (isHighSpeed) {
-        baseFare = baseFare * 2;
+        // Rainbow Jet fare is 6,680 yen (according to official website)
+        baseFare = 6680;
       }
 
       // Apply peak season surcharge if applicable
@@ -413,9 +414,9 @@ export const useRouteSearch = () => {
     // Use default values based on ship type
     const isHighSpeed = ship === "RAINBOWJET";
     if (isHighSpeed) {
-      return 7040; // Default high-speed ferry fare (3520 * 2)
+      return 6680; // Default high-speed ferry fare
     } else {
-      return 3520; // Default ferry fare
+      return 3510; // Default ferry fare
     }
   };
 

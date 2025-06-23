@@ -158,10 +158,10 @@
                   {{ getRouteDisplayName(route) }}
                 </td>
                 <td class="border border-gray-300 px-4 py-3 text-right font-mono">
-                  {{ formatCurrency(route.fares.adult * 2) }}
+                  {{ formatCurrency(6680) }}
                 </td>
                 <td class="border border-gray-300 px-4 py-3 text-right font-mono">
-                  {{ formatCurrency(route.fares.child * 2) }}
+                  {{ formatCurrency(3340) }}
                 </td>
               </tr>
             </tbody>
