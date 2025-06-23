@@ -5,9 +5,9 @@
       <div class="flex items-start gap-2">
         <div class="flex-grow space-y-4">
           <div>
-            <label class="block text-sm font-medium text-gray-700 mb-1">{{ $t('_FROM') }}</label>
+            <label class="block text-base font-medium text-gray-700 mb-2">{{ $t('_FROM') }}</label>
             <select
-              class="w-full px-3 py-2 text-sm border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+              class="w-full px-3 py-3 text-base border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 touch-manipulation"
               :value="departure" @change="$emit('update:departure', $event.target.value)">
               <option value="" disabled>{{ $t('DEPARTURE') }}</option>
               <optgroup :label="$t('MAINLAND')" class="font-medium">
@@ -29,9 +29,9 @@
           </div>
 
           <div>
-            <label class="block text-sm font-medium text-gray-700 mb-1">{{ $t('_TO') }}</label>
+            <label class="block text-base font-medium text-gray-700 mb-2">{{ $t('_TO') }}</label>
             <select
-              class="w-full px-3 py-2 text-sm border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+              class="w-full px-3 py-3 text-base border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 touch-manipulation"
               :value="arrival" @change="$emit('update:arrival', $event.target.value)">
               <option value="" disabled>{{ $t('ARRIVAL') }}</option>
               <optgroup :label="$t('MAINLAND')" class="font-medium">
@@ -53,11 +53,11 @@
           </div>
         </div>
 
-        <div class="flex items-center" style="padding-top: 76px;">
+        <div class="flex items-center self-center">
           <button type="button"
-            class="p-2 text-sm border border-blue-600 text-blue-600 rounded-md hover:bg-blue-50 transition-colors flex-shrink-0"
+            class="p-3 text-base border border-blue-600 text-blue-600 rounded-md hover:bg-blue-50 transition-colors flex-shrink-0 touch-manipulation"
             @click="$emit('reverse')" title="出発地と到着地を入れ替え">
-            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" viewBox="0 0 16 16">
+            <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" fill="currentColor" viewBox="0 0 16 16">
               <path fill-rule="evenodd"
                 d="M11.5 15a.5.5 0 0 0 .5-.5V2.707l3.146 3.147a.5.5 0 0 0 .708-.708l-4-4a.5.5 0 0 0-.708 0l-4 4a.5.5 0 1 0 .708.708L11 2.707V14.5a.5.5 0 0 0 .5.5zm-7-14a.5.5 0 0 1 .5.5v11.793l3.146-3.147a.5.5 0 0 1 .708.708l-4 4a.5.5 0 0 1-.708 0l-4-4a.5.5 0 0 1 .708-.708L4 13.293V1.5a.5.5 0 0 1 .5-.5z" />
             </svg>

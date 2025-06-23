@@ -90,59 +90,91 @@
     </div>
     
     <!-- Search Results -->
-    <div v-if="searchResults.length > 0" class="bg-white rounded-lg shadow-sm border border-gray-200">
-      <div class="bg-gray-50 px-4 py-3 border-b">
-        <h3 class="text-lg font-medium">{{ $t('SEARCH_RESULTS') }}</h3>
+    <div v-if="searchResults.length > 0">
+      <!-- Route Panels -->
+      <div v-for="(route, index) in displayedResults" :key="index" class="mb-4">
+        <div class="bg-white rounded-lg shadow-sm border border-blue-600">
+          <div class="bg-blue-600 text-white px-4 py-2">
+            <h3 class="font-medium">{{ $t('ROUTE') }}{{ index + 1 }}</h3>
+          </div>
+          <div class="p-4">
+            <table class="w-full text-sm">
+              <thead>
+                <tr>
+                  <th class="text-left pb-2 font-medium w-1/4">{{ $t('TIME') }}</th>
+                  <th class="text-left pb-2 font-medium">{{ $t('ROUTE') }}</th>
+                  <th class="text-left pb-2 font-medium w-1/4">{{ $t('FARE') }}</th>
+                </tr>
+              </thead>
+              <tbody>
+                <!-- Departure -->
+                <tr style="background-color: #D8ECF3;">
+                  <td class="py-2 text-right pr-4">{{ formatTime(route.departureTime) }}</td>
+                  <td class="py-2 pl-4">
+                    <a href="#" @click.prevent="showPortInfo(route.segments[0].departure)" class="text-blue-600 hover:underline">
+                      {{ getPortDisplayName(route.segments[0].departure) }}
+                    </a>
+                  </td>
+                  <td class="py-2"></td>
+                </tr>
+                
+                <!-- Segments -->
+                <template v-for="(segment, segIndex) in route.segments" :key="'seg-' + segIndex">
+                  <!-- Ship Row -->
+                  <tr class="bg-white">
+                    <td class="py-2 text-right pr-4">↓</td>
+                    <td class="py-2 pl-4" :style="getShipBorderStyle(segment.ship)">
+                      <div class="flex items-center">
+                        <span v-if="segment.status === 2" class="mr-2 text-red-600">×</span>
+                        <span v-else-if="segment.status === 3" class="mr-2 text-yellow-600">⚠</span>
+                        <span v-else-if="segment.status === 4" class="mr-2 text-green-600">+</span>
+                        <a href="#" @click.prevent="showShipInfo(segment.ship)" class="text-blue-600 hover:underline">
+                          {{ $t(segment.ship) }}
+                        </a>
+                      </div>
+                    </td>
+                    <td class="py-2">¥{{ segment.fare.toLocaleString() }}</td>
+                  </tr>
+                  
+                  <!-- Transfer Port (if not last segment) -->
+                  <tr v-if="segIndex < route.segments.length - 1" style="background-color: #D8ECF3;">
+                    <td class="py-2 text-right pr-4">{{ formatTime(segment.arrivalTime) }}</td>
+                    <td class="py-2 pl-4">
+                      <a href="#" @click.prevent="showPortInfo(segment.arrival)" class="text-blue-600 hover:underline">
+                        {{ getPortDisplayName(segment.arrival) }}
+                      </a>
+                      <span class="text-xs text-gray-600 ml-2">({{ $t('TRANSFER') }})</span>
+                    </td>
+                    <td class="py-2"></td>
+                  </tr>
+                </template>
+                
+                <!-- Arrival -->
+                <tr style="background-color: #D8ECF3;">
+                  <td class="py-2 text-right pr-4">{{ formatTime(route.arrivalTime) }}</td>
+                  <td class="py-2 pl-4">
+                    <a href="#" @click.prevent="showPortInfo(route.segments[route.segments.length - 1].arrival)" class="text-blue-600 hover:underline">
+                      {{ getPortDisplayName(route.segments[route.segments.length - 1].arrival) }}
+                    </a>
+                  </td>
+                  <td class="py-2 font-medium">
+                    {{ $t('TOTAL') }}: ¥{{ route.totalFare.toLocaleString() }}
+                  </td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
       </div>
-      <div class="p-4">
-        <div class="overflow-x-auto">
-          <table class="w-full text-sm">
-            <thead class="bg-gray-50">
-              <tr>
-                <th class="px-4 py-2 text-left">{{ $t('DEPARTURE') }}</th>
-                <th class="px-4 py-2 text-left">{{ $t('ROUTE') }}</th>
-                <th class="px-4 py-2 text-left">{{ $t('ARRIVAL') }}</th>
-                <th class="px-4 py-2 text-left">{{ $t('DURATION') }}</th>
-                <th class="px-4 py-2 text-left">{{ $t('FARE') }}</th>
-              </tr>
-            </thead>
-            <tbody>
-              <tr 
-                v-for="(result, index) in displayedResults" 
-                :key="index"
-                @click="showRouteDetails(result)"
-                class="border-b hover:bg-gray-50 cursor-pointer"
-              >
-                <td class="px-4 py-3">{{ formatTime(result.departureTime) }}</td>
-                <td class="px-4 py-3">
-                  <div v-for="(segment, idx) in result.segments" :key="idx">
-                    <span v-if="idx > 0" class="text-gray-500">↓ </span>
-                    <span :class="{ 'line-through': segment.status === 2 }">
-                      {{ $t(segment.ship) }}
-                    </span>
-                    <span v-if="segment.status === 2" class="text-red-600 ml-1">
-                      <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" viewBox="0 0 16 16">
-                        <path d="M16 8A8 8 0 1 1 0 8a8 8 0 0 1 16 0zM5.354 4.646a.5.5 0 1 0-.708.708L7.293 8l-2.647 2.646a.5.5 0 0 0 .708.708L8 8.707l2.646 2.647a.5.5 0 0 0 .708-.708L8.707 8l2.647-2.646a.5.5 0 0 0-.708-.708L8 7.293 5.354 4.646z"/>
-                      </svg>
-                    </span>
-                  </div>
-                </td>
-                <td class="px-4 py-3">{{ formatTime(result.arrivalTime) }}</td>
-                <td class="px-4 py-3">{{ calculateDuration(result.departureTime, result.arrivalTime) }}</td>
-                <td class="px-4 py-3">¥{{ result.totalFare.toLocaleString() }}</td>
-              </tr>
-            </tbody>
-          </table>
-        </div>
-        
-        <div v-if="searchResults.length > displayLimit" class="text-center mt-4">
-          <button 
-            class="px-4 py-2 border border-blue-600 text-blue-600 rounded hover:bg-blue-50 transition-colors"
-            @click="showMore"
-          >
-            {{ $t('SHOW_MORE') }}
-          </button>
-        </div>
+      
+      <!-- Show More Button -->
+      <div v-if="searchResults.length > displayLimit" class="mt-4">
+        <button 
+          @click="showMore"
+          class="w-full py-3 bg-blue-600 hover:bg-blue-700 text-white font-medium rounded-lg transition-colors"
+        >
+          {{ $t('MORE_BUTTON') }}
+        </button>
       </div>
     </div>
     
@@ -201,6 +233,22 @@
         </div>
       </div>
     </CommonShipModal>
+    
+    <!-- Ship Info Modal -->
+    <CommonShipModal
+      v-model:visible="showShipModal"
+      :title="$t(modalShipId)"
+      type="ship"
+      :ship-id="modalShipId"
+    />
+    
+    <!-- Port Info Modal -->
+    <CommonShipModal
+      v-model:visible="showPortModal"
+      :title="getPortDisplayName(modalPortId)"
+      type="port"
+      :port-id="modalPortId"
+    />
   </div>
 </template>
 
@@ -259,6 +307,34 @@ function reverseRoute() {
   const temp = searchParams.departure
   searchParams.departure = searchParams.arrival
   searchParams.arrival = temp
+}
+
+function getShipBorderStyle(ship: string): string {
+  const borderStyles: Record<string, string> = {
+    'FERRY_OKI': 'border-left: double 10px #DA6272',
+    'FERRY_SHIRASHIMA': 'border-left: double 10px #DA6272',
+    'FERRY_KUNIGA': 'border-left: double 10px #DA6272',
+    'FERRY_DOZEN': 'border-left: double 10px #F3C759',
+    'ISOKAZE': 'border-left: double 10px #45A1CF',
+    'RAINBOWJET': 'border-left: double 10px #40BFB0'
+  }
+  return borderStyles[ship] || 'border-left: double 10px #888888'
+}
+
+// Modal state
+const showShipModal = ref(false)
+const showPortModal = ref(false)
+const modalShipId = ref('')
+const modalPortId = ref('')
+
+function showShipInfo(shipName: string) {
+  modalShipId.value = shipName
+  showShipModal.value = true
+}
+
+function showPortInfo(portName: string) {
+  modalPortId.value = portName
+  showPortModal.value = true
 }
 
 async function handleSearch() {

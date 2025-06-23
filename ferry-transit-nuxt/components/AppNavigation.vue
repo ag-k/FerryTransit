@@ -8,13 +8,13 @@
     ></div>
     
     <div class="container mx-auto px-4">
-      <div class="flex flex-wrap items-center justify-between py-4">
-        <NuxtLink class="text-xl font-medium hover:opacity-80 transition-opacity" to="/">
+      <div class="flex flex-wrap items-center justify-between py-3 sm:py-4">
+        <NuxtLink class="text-lg sm:text-xl font-medium hover:opacity-80 transition-opacity py-2" to="/">
           {{ $t('TITLE') }}
         </NuxtLink>
         
         <button 
-          class="lg:hidden p-2 rounded hover:bg-blue-700 transition-colors z-50" 
+          class="lg:hidden p-3 -mr-3 rounded hover:bg-blue-700 transition-colors z-50 touch-manipulation" 
           type="button" 
           aria-controls="navbarNav" 
           :aria-expanded="menuOpen" 
@@ -30,14 +30,14 @@
         </button>
         
         <div 
-          class="fixed lg:static inset-x-0 top-[73px] lg:top-auto bg-blue-600 lg:bg-transparent w-full lg:w-auto lg:flex lg:items-center px-4 lg:px-0 pb-4 lg:pb-0 shadow-lg lg:shadow-none z-50 lg:z-auto" 
+          class="fixed lg:static inset-x-0 top-[68px] sm:top-[73px] lg:top-auto bg-blue-600 lg:bg-transparent w-full lg:w-auto lg:flex lg:items-center px-4 lg:px-0 pb-4 lg:pb-0 shadow-lg lg:shadow-none z-50 lg:z-auto" 
           :class="{ 'hidden': !menuOpen }" 
           id="navbarNav"
         >
-          <ul class="lg:flex lg:items-center lg:space-x-1 space-y-1 lg:space-y-0">
+          <ul class="lg:flex lg:items-center lg:space-x-1 space-y-2 lg:space-y-0">
             <li>
               <NuxtLink 
-                class="block px-4 py-3 lg:py-2 rounded hover:bg-blue-700 transition-colors" 
+                class="block px-4 py-4 lg:py-2 rounded hover:bg-blue-700 transition-colors text-base lg:text-sm touch-manipulation" 
                 :class="{ 'bg-blue-700 font-medium': $route.path === '/' }"
                 to="/"
                 @click="closeMenu"
@@ -47,7 +47,7 @@
             </li>
             <li>
               <NuxtLink 
-                class="block px-4 py-3 lg:py-2 rounded hover:bg-blue-700 transition-colors" 
+                class="block px-4 py-4 lg:py-2 rounded hover:bg-blue-700 transition-colors text-base lg:text-sm touch-manipulation" 
                 :class="{ 'bg-blue-700 font-medium': $route.path === '/timetable' }"
                 to="/timetable"
                 @click="closeMenu"
@@ -57,7 +57,7 @@
             </li>
             <li>
               <NuxtLink 
-                class="block px-4 py-3 lg:py-2 rounded hover:bg-blue-700 transition-colors" 
+                class="block px-4 py-4 lg:py-2 rounded hover:bg-blue-700 transition-colors text-base lg:text-sm touch-manipulation" 
                 :class="{ 'bg-blue-700 font-medium': $route.path === '/transit' }"
                 to="/transit"
                 @click="closeMenu"
@@ -67,7 +67,7 @@
             </li>
             <li>
               <NuxtLink 
-                class="block px-4 py-3 lg:py-2 rounded hover:bg-blue-700 transition-colors" 
+                class="block px-4 py-4 lg:py-2 rounded hover:bg-blue-700 transition-colors text-base lg:text-sm touch-manipulation" 
                 :class="{ 'bg-blue-700 font-medium': $route.path === '/status' }"
                 to="/status"
                 @click="closeMenu"
@@ -75,18 +75,38 @@
                 {{ $t('STATUS') }}
               </NuxtLink>
             </li>
+            <li>
+              <NuxtLink 
+                class="block px-4 py-4 lg:py-2 rounded hover:bg-blue-700 transition-colors text-base lg:text-sm touch-manipulation" 
+                :class="{ 'bg-blue-700 font-medium': $route.path === '/fare' }"
+                to="/fare"
+                @click="closeMenu"
+              >
+                {{ $t('FARE_TABLE') }}
+              </NuxtLink>
+            </li>
+            <li>
+              <NuxtLink 
+                class="block px-4 py-4 lg:py-2 rounded hover:bg-blue-700 transition-colors text-base lg:text-sm touch-manipulation" 
+                :class="{ 'bg-blue-700 font-medium': $route.path === '/calendar' }"
+                to="/calendar"
+                @click="closeMenu"
+              >
+                {{ $t('CALENDAR') }}
+              </NuxtLink>
+            </li>
           </ul>
           
           <!-- Language switcher -->
-          <div class="lg:ml-6 mt-3 lg:mt-0 relative">
+          <div class="lg:ml-6 mt-4 lg:mt-0 relative">
             <button 
-              class="flex items-center px-4 py-3 lg:py-2 rounded hover:bg-blue-700 transition-colors w-full lg:w-auto justify-between"
+              class="flex items-center px-4 py-4 lg:py-2 rounded hover:bg-blue-700 transition-colors w-full lg:w-auto justify-between text-base lg:text-sm touch-manipulation"
               type="button"
               :aria-expanded="langMenuOpen"
               @click="toggleLangMenu"
             >
               <span>{{ currentLocaleName }}</span>
-              <svg class="w-4 h-4 ml-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <svg class="w-5 h-5 ml-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path>
               </svg>
             </button>
@@ -96,7 +116,7 @@
             >
               <li v-for="locale in availableLocales" :key="locale.code">
                 <button 
-                  class="block w-full text-left px-4 py-2 hover:bg-gray-100 transition-colors"
+                  class="block w-full text-left px-4 py-3 hover:bg-gray-100 transition-colors text-base touch-manipulation"
                   :class="{ 'bg-gray-100 font-medium': locale.code === $i18n.locale }"
                   @click="switchLocale(locale.code)"
                 >
