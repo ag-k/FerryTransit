@@ -58,7 +58,10 @@
 
       <!-- Calendar grid -->
       <div class="border rounded-lg overflow-hidden">
-        <table class="w-full">
+        <table class="w-full table-fixed">
+          <colgroup>
+            <col v-for="i in 7" :key="i" class="w-full" style="width: 14.285714%;">
+          </colgroup>
           <thead>
             <tr class="bg-gray-100">
               <th v-for="day in weekDays" :key="day" 
@@ -73,21 +76,21 @@
               <td v-for="(day, dayIndex) in week" :key="dayIndex"
                   class="border border-gray-300 p-0 h-24 align-top relative"
                   :class="getCellClass(day)">
-                <div v-if="day" class="p-2">
+                <div v-if="day" class="p-2 h-full overflow-hidden">
                   <div class="font-medium mb-1">{{ day.day }}</div>
                   
                   <!-- Holiday name -->
-                  <div v-if="day.holiday" class="text-xs text-red-600 mb-1">
+                  <div v-if="day.holiday" class="text-xs text-red-600 mb-1 leading-tight">
                     {{ $t(day.holiday.nameKey) }}
                   </div>
                   
                   <!-- Peak season indicator -->
-                  <div v-if="day.isPeakSeason" class="text-xs text-yellow-700 mb-1">
+                  <div v-if="day.isPeakSeason" class="text-xs text-yellow-700 mb-1 leading-tight">
                     {{ $t(day.peakSeason.nameKey) }}
                   </div>
                   
                   <!-- Special operation -->
-                  <div v-if="day.specialOperation" class="text-xs text-blue-700">
+                  <div v-if="day.specialOperation" class="text-xs text-blue-700 leading-tight">
                     <span v-if="day.specialOperation.operationType === 'reduced'">
                       {{ $t('REDUCED_OPERATION') }}
                     </span>
