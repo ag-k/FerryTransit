@@ -259,17 +259,44 @@
 <script setup lang="ts">
 import { useRouteSearch } from '@/composables/useRouteSearch'
 import { useHistoryStore } from '@/stores/history'
+import { useFerryStore } from '@/stores/ferry'
 import PortSelector from '@/components/common/PortSelector.vue'
 import DatePicker from '@/components/common/DatePicker.vue'
 import type { TransitRoute } from '@/types'
 
+// Stores
+const ferryStore = useFerryStore()
+const historyStore = useHistoryStore()
+
 // Search parameters
 const searchParams = reactive({
-  departure: '',
-  arrival: '',
+  departure: ferryStore.departure,
+  arrival: ferryStore.arrival,
   date: new Date(),
   time: getCurrentTimeString(),
   isArrivalMode: false
+})
+
+// Watch for changes in searchParams and update ferryStore
+watch(() => searchParams.departure, (newVal) => {
+  ferryStore.setDeparture(newVal)
+})
+
+watch(() => searchParams.arrival, (newVal) => {
+  ferryStore.setArrival(newVal)
+})
+
+// Watch for changes in ferryStore and update searchParams
+watch(() => ferryStore.departure, (newVal) => {
+  if (searchParams.departure !== newVal) {
+    searchParams.departure = newVal
+  }
+})
+
+watch(() => ferryStore.arrival, (newVal) => {
+  if (searchParams.arrival !== newVal) {
+    searchParams.arrival = newVal
+  }
 })
 
 // State
@@ -282,7 +309,6 @@ const selectedRoute = ref<TransitRoute | null>(null)
 
 // Composables
 const { searchRoutes, formatTime, calculateDuration, getPortDisplayName } = useRouteSearch()
-const historyStore = useHistoryStore()
 
 // Constants
 const today = new Date()
@@ -311,6 +337,7 @@ function reverseRoute() {
   const temp = searchParams.departure
   searchParams.departure = searchParams.arrival
   searchParams.arrival = temp
+  // ferryStore will be updated via the watch handlers
 }
 
 function getShipBorderStyle(ship: string): string {
