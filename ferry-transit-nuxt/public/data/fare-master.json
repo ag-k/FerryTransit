@@ -37,14 +37,14 @@
       "departure": "SAIGO",
       "arrival": "BEPPU",
       "fares": {
-        "adult": 1540,
-        "child": 770,
+        "adult": 300,
+        "child": 100,
         "vehicle": {
-          "under3m": 4400,
-          "under4m": 5500,
-          "under5m": 6600,
-          "under6m": 7700,
-          "over6m": 8800
+          "under3m": 1000,
+          "under4m": 1000,
+          "under5m": 1000,
+          "under6m": 2000,
+          "over6m": 2000
         }
       }
     },
@@ -53,14 +53,14 @@
       "departure": "BEPPU",
       "arrival": "SAIGO",
       "fares": {
-        "adult": 1540,
-        "child": 770,
+        "adult": 300,
+        "child": 100,
         "vehicle": {
-          "under3m": 4400,
-          "under4m": 5500,
-          "under5m": 6600,
-          "under6m": 7700,
-          "over6m": 8800
+          "under3m": 1000,
+          "under4m": 1000,
+          "under5m": 1000,
+          "under6m": 2000,
+          "over6m": 2000
         }
       }
     },
@@ -69,14 +69,14 @@
       "departure": "SAIGO",
       "arrival": "HISHIURA",
       "fares": {
-        "adult": 1540,
-        "child": 770,
+        "adult": 300,
+        "child": 100,
         "vehicle": {
-          "under3m": 4400,
-          "under4m": 5500,
-          "under5m": 6600,
-          "under6m": 7700,
-          "over6m": 8800
+          "under3m": 1000,
+          "under4m": 1000,
+          "under5m": 1000,
+          "under6m": 2000,
+          "over6m": 2000
         }
       }
     },
@@ -85,14 +85,14 @@
       "departure": "HISHIURA",
       "arrival": "SAIGO",
       "fares": {
-        "adult": 1540,
-        "child": 770,
+        "adult": 300,
+        "child": 100,
         "vehicle": {
-          "under3m": 4400,
-          "under4m": 5500,
-          "under5m": 6600,
-          "under6m": 7700,
-          "over6m": 8800
+          "under3m": 1000,
+          "under4m": 1000,
+          "under5m": 1000,
+          "under6m": 2000,
+          "over6m": 2000
         }
       }
     },
@@ -101,14 +101,14 @@
       "departure": "BEPPU",
       "arrival": "HISHIURA",
       "fares": {
-        "adult": 590,
-        "child": 300,
+        "adult": 300,
+        "child": 100,
         "vehicle": {
-          "under3m": 2200,
-          "under4m": 2750,
-          "under5m": 3300,
-          "under6m": 3850,
-          "over6m": 4400
+          "under3m": 1000,
+          "under4m": 1000,
+          "under5m": 1000,
+          "under6m": 2000,
+          "over6m": 2000
         }
       }
     },
@@ -117,14 +117,14 @@
       "departure": "HISHIURA",
       "arrival": "BEPPU",
       "fares": {
-        "adult": 590,
-        "child": 300,
+        "adult": 300,
+        "child": 100,
         "vehicle": {
-          "under3m": 2200,
-          "under4m": 2750,
-          "under5m": 3300,
-          "under6m": 3850,
-          "over6m": 4400
+          "under3m": 1000,
+          "under4m": 1000,
+          "under5m": 1000,
+          "under6m": 2000,
+          "over6m": 2000
         }
       }
     },
@@ -133,14 +133,14 @@
       "departure": "BEPPU",
       "arrival": "KURI",
       "fares": {
-        "adult": 590,
-        "child": 300,
+        "adult": 300,
+        "child": 100,
         "vehicle": {
-          "under3m": 2200,
-          "under4m": 2750,
-          "under5m": 3300,
-          "under6m": 3850,
-          "over6m": 4400
+          "under3m": 1000,
+          "under4m": 1000,
+          "under5m": 1000,
+          "under6m": 2000,
+          "over6m": 2000
         }
       }
     },
@@ -149,14 +149,14 @@
       "departure": "KURI",
       "arrival": "BEPPU",
       "fares": {
-        "adult": 590,
-        "child": 300,
+        "adult": 300,
+        "child": 100,
         "vehicle": {
-          "under3m": 2200,
-          "under4m": 2750,
-          "under5m": 3300,
-          "under6m": 3850,
-          "over6m": 4400
+          "under3m": 1000,
+          "under4m": 1000,
+          "under5m": 1000,
+          "under6m": 2000,
+          "over6m": 2000
         }
       }
     },
@@ -165,14 +165,14 @@
       "departure": "HISHIURA",
       "arrival": "KURI",
       "fares": {
-        "adult": 590,
-        "child": 300,
+        "adult": 300,
+        "child": 100,
         "vehicle": {
-          "under3m": 2200,
-          "under4m": 2750,
-          "under5m": 3300,
-          "under6m": 3850,
-          "over6m": 4400
+          "under3m": 1000,
+          "under4m": 1000,
+          "under5m": 1000,
+          "under6m": 2000,
+          "over6m": 2000
         }
       }
     },
@@ -181,14 +181,14 @@
       "departure": "KURI",
       "arrival": "HISHIURA",
       "fares": {
-        "adult": 590,
-        "child": 300,
+        "adult": 300,
+        "child": 100,
         "vehicle": {
-          "under3m": 2200,
-          "under4m": 2750,
-          "under5m": 3300,
-          "under6m": 3850,
-          "over6m": 4400
+          "under3m": 1000,
+          "under4m": 1000,
+          "under5m": 1000,
+          "under6m": 2000,
+          "over6m": 2000
         }
       }
     },

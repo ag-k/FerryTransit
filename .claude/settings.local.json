@@ -42,7 +42,8 @@
       "Bash(cat:*)",
       "Bash(rg:*)",
       "Bash(npx tsc:*)",
-      "WebFetch(domain:www.oki-kisen.co.jp)"
+      "WebFetch(domain:www.oki-kisen.co.jp)",
+      "WebFetch(domain:www.okikankou.com)"
     ],
     "deny": []
   }
