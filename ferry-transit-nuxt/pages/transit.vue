@@ -265,7 +265,7 @@ async function handleSearch() {
   displayLimit.value = 5
   
   try {
-    searchResults.value = searchRoutes(
+    searchResults.value = await searchRoutes(
       searchParams.departure,
       searchParams.arrival,
       searchParams.date,

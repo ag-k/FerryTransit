@@ -1,19 +1,28 @@
 import { useFerryStore } from '@/stores/ferry'
+import { useFareStore } from '@/stores/fare'
 import { useFerryData } from '@/composables/useFerryData'
 import type { Trip, TransitRoute, TransitSegment } from '@/types'
 
 export const useRouteSearch = () => {
   const ferryStore = useFerryStore()
+  const fareStore = useFareStore()
   const { getTripStatus } = useFerryData()
   
+  // Initialize fare data
+  onMounted(async () => {
+    await fareStore.loadFareMaster()
+  })
+  
   // Search for routes between ports
-  const searchRoutes = (
+  const searchRoutes = async (
     departure: string,
     arrival: string,
     searchDate: Date,
     searchTime: string,
     isArrivalMode: boolean = false
-  ): TransitRoute[] => {
+  ): Promise<TransitRoute[]> => {
+    // Ensure fare data is loaded
+    await fareStore.loadFareMaster()
     const routes: TransitRoute[] = []
     const searchDateTime = new Date(`${searchDate.toISOString().split('T')[0]} ${searchTime}:00`)
     
@@ -98,7 +107,7 @@ export const useRouteSearch = () => {
           departureTime,
           arrivalTime,
           status,
-          fare: calculateFare(trip.name, trip.departure, trip.arrival)
+          fare: calculateFare(trip.name, trip.departure, trip.arrival, departureTime)
         }
         
         routes.push({
@@ -189,7 +198,7 @@ export const useRouteSearch = () => {
             departureTime: firstDepartureTime,
             arrivalTime: secondArrivalTime,
             status: Math.max(firstStatus, secondStatus),
-            fare: calculateFare(firstTrip.name, firstTrip.departure, secondTrip.arrival)
+            fare: calculateFare(firstTrip.name, firstTrip.departure, secondTrip.arrival, firstDepartureTime)
           }
           
           routes.push({
@@ -209,7 +218,7 @@ export const useRouteSearch = () => {
             departureTime: firstDepartureTime,
             arrivalTime: firstArrivalTime,
             status: firstStatus,
-            fare: calculateFare(firstTrip.name, firstTrip.departure, firstTrip.arrival)
+            fare: calculateFare(firstTrip.name, firstTrip.departure, firstTrip.arrival, firstDepartureTime)
           }
           
           const segment2: TransitSegment = {
@@ -220,7 +229,7 @@ export const useRouteSearch = () => {
             departureTime: secondDepartureTime,
             arrivalTime: secondArrivalTime,
             status: secondStatus,
-            fare: calculateFare(secondTrip.name, secondTrip.departure, secondTrip.arrival)
+            fare: calculateFare(secondTrip.name, secondTrip.departure, secondTrip.arrival, secondDepartureTime)
           }
           
           routes.push({
@@ -247,10 +256,52 @@ export const useRouteSearch = () => {
     return ferryStore.hondoPorts.includes(port) || port === 'HONDO'
   }
   
-  // Calculate fare for a trip
-  const calculateFare = (ship: string, departure: string, arrival: string): number => {
-    // This is a simplified fare calculation
-    // In production, this would use a proper fare matrix
+  // Calculate fare for a trip with date consideration
+  const calculateFare = (ship: string, departure: string, arrival: string, date?: Date): number => {
+    // Ensure fare data is loaded
+    if (!fareStore.fareMaster) {
+      fareStore.loadFareMaster()
+    }
+    
+    // Map HONDO ports to their actual port names for fare lookup
+    let fareDeparture = departure
+    let fareArrival = arrival
+    
+    // For fare calculation, treat HONDO_SHICHIRUI and HONDO_SAKAIMINATO as HONDO
+    if (departure === 'HONDO_SHICHIRUI' || departure === 'HONDO_SAKAIMINATO') {
+      fareDeparture = 'HONDO'
+    }
+    if (arrival === 'HONDO_SHICHIRUI' || arrival === 'HONDO_SAKAIMINATO') {
+      fareArrival = 'HONDO'
+    }
+    
+    // Get fare from master data
+    const route = fareStore.getFareByRoute(fareDeparture, fareArrival)
+    
+    if (route) {
+      let baseFare = route.fares.adult
+      
+      // For high-speed ferry, use a multiplier (example: 2x normal fare)
+      const isHighSpeed = ship === 'RAINBOWJET'
+      if (isHighSpeed) {
+        baseFare = baseFare * 2
+      }
+      
+      // Apply peak season surcharge if applicable
+      if (date) {
+        const { isPeakSeason, getPeakSeason } = useHolidayCalendar()
+        if (isPeakSeason(date)) {
+          const peakSeason = getPeakSeason(date)
+          if (peakSeason && peakSeason.surchargeRate) {
+            baseFare = Math.round(baseFare * peakSeason.surchargeRate)
+          }
+        }
+      }
+      
+      return baseFare
+    }
+    
+    // Fallback to old calculation if route not found
     const isHighSpeed = ship === 'RAINBOWJET'
     const isInterIsland = 
       (ferryStore.dozenPorts.includes(departure) && ferryStore.dogoPorts.includes(arrival)) ||
