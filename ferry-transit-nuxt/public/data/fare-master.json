@@ -5,14 +5,14 @@
       "departure": "HONDO",
       "arrival": "SAIGO",
       "fares": {
-        "adult": 3520,
-        "child": 1760,
+        "adult": 3510,
+        "child": 1755,
         "vehicle": {
-          "under3m": 8800,
-          "under4m": 11000,
-          "under5m": 13200,
-          "under6m": 15400,
-          "over6m": 17600
+          "under3m": 13750,
+          "under4m": 18260,
+          "under5m": 22870,
+          "under6m": 27390,
+          "over6m": 35530
         }
       }
     },
@@ -21,14 +21,14 @@
       "departure": "SAIGO",
       "arrival": "HONDO",
       "fares": {
-        "adult": 3520,
-        "child": 1760,
+        "adult": 3510,
+        "child": 1755,
         "vehicle": {
-          "under3m": 8800,
-          "under4m": 11000,
-          "under5m": 13200,
-          "under6m": 15400,
-          "over6m": 17600
+          "under3m": 13750,
+          "under4m": 18260,
+          "under5m": 22870,
+          "under6m": 27390,
+          "over6m": 35530
         }
       }
     },
@@ -197,14 +197,14 @@
       "departure": "HONDO",
       "arrival": "BEPPU",
       "fares": {
-        "adult": 3520,
-        "child": 1760,
+        "adult": 3510,
+        "child": 1755,
         "vehicle": {
-          "under3m": 8800,
-          "under4m": 11000,
-          "under5m": 13200,
-          "under6m": 15400,
-          "over6m": 17600
+          "under3m": 13750,
+          "under4m": 18260,
+          "under5m": 22870,
+          "under6m": 27390,
+          "over6m": 35530
         }
       }
     },
@@ -213,14 +213,14 @@
       "departure": "BEPPU",
       "arrival": "HONDO",
       "fares": {
-        "adult": 3520,
-        "child": 1760,
+        "adult": 3510,
+        "child": 1755,
         "vehicle": {
-          "under3m": 8800,
-          "under4m": 11000,
-          "under5m": 13200,
-          "under6m": 15400,
-          "over6m": 17600
+          "under3m": 13750,
+          "under4m": 18260,
+          "under5m": 22870,
+          "under6m": 27390,
+          "over6m": 35530
         }
       }
     },
@@ -229,14 +229,14 @@
       "departure": "HONDO",
       "arrival": "HISHIURA",
       "fares": {
-        "adult": 3520,
-        "child": 1760,
+        "adult": 3510,
+        "child": 1755,
         "vehicle": {
-          "under3m": 8800,
-          "under4m": 11000,
-          "under5m": 13200,
-          "under6m": 15400,
-          "over6m": 17600
+          "under3m": 13750,
+          "under4m": 18260,
+          "under5m": 22870,
+          "under6m": 27390,
+          "over6m": 35530
         }
       }
     },
@@ -245,14 +245,14 @@
       "departure": "HISHIURA",
       "arrival": "HONDO",
       "fares": {
-        "adult": 3520,
-        "child": 1760,
+        "adult": 3510,
+        "child": 1755,
         "vehicle": {
-          "under3m": 8800,
-          "under4m": 11000,
-          "under5m": 13200,
-          "under6m": 15400,
-          "over6m": 17600
+          "under3m": 13750,
+          "under4m": 18260,
+          "under5m": 22870,
+          "under6m": 27390,
+          "over6m": 35530
         }
       }
     },
@@ -261,14 +261,14 @@
       "departure": "HONDO",
       "arrival": "KURI",
       "fares": {
-        "adult": 3520,
-        "child": 1760,
+        "adult": 3510,
+        "child": 1755,
         "vehicle": {
-          "under3m": 8800,
-          "under4m": 11000,
-          "under5m": 13200,
-          "under6m": 15400,
-          "over6m": 17600
+          "under3m": 13750,
+          "under4m": 18260,
+          "under5m": 22870,
+          "under6m": 27390,
+          "over6m": 35530
         }
       }
     },
@@ -277,14 +277,14 @@
       "departure": "KURI",
       "arrival": "HONDO",
       "fares": {
-        "adult": 3520,
-        "child": 1760,
+        "adult": 3510,
+        "child": 1755,
         "vehicle": {
-          "under3m": 8800,
-          "under4m": 11000,
-          "under5m": 13200,
-          "under6m": 15400,
-          "over6m": 17600
+          "under3m": 13750,
+          "under4m": 18260,
+          "under5m": 22870,
+          "under6m": 27390,
+          "over6m": 35530
         }
       }
     }
