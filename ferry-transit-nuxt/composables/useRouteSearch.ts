@@ -6,7 +6,7 @@ import type { Trip, TransitRoute, TransitSegment } from '@/types'
 export const useRouteSearch = () => {
   const ferryStore = useFerryStore()
   const fareStore = useFareStore()
-  const { getTripStatus } = useFerryData()
+  const { getTripStatus, initializeData } = useFerryData()
   
   // Initialize fare data
   onMounted(async () => {
@@ -21,16 +21,38 @@ export const useRouteSearch = () => {
     searchTime: string,
     isArrivalMode: boolean = false
   ): Promise<TransitRoute[]> => {
-    // Ensure fare data is loaded
+    // Ensure data is loaded
+    if (ferryStore.timetableData.length === 0) {
+      await initializeData()
+    }
     await fareStore.loadFareMaster()
-    const routes: TransitRoute[] = []
-    const searchDateTime = new Date(`${searchDate.toISOString().split('T')[0]} ${searchTime}:00`)
     
-    // Get filtered timetable for the date
+    const routes: TransitRoute[] = []
+    const searchDateTime = new Date(searchDate)
+    const [hours, minutes] = searchTime.split(':').map(Number)
+    searchDateTime.setHours(hours, minutes, 0, 0)
+    
+    // Debug logging
+    console.log('Search params:', { departure, arrival, searchDate, searchTime, isArrivalMode })
+    console.log('Total timetable data:', ferryStore.timetableData.length)
+    
+    // Get filtered timetable for the date based on start_date and end_date
+    // Format date as YYYY-MM-DD in JST
+    const year = searchDate.getFullYear()
+    const month = String(searchDate.getMonth() + 1).padStart(2, '0')
+    const day = String(searchDate.getDate()).padStart(2, '0')
+    const searchDateStr = `${year}-${month}-${day}`
+    
     const dayTimetable = ferryStore.timetableData.filter(trip => {
-      const tripDate = new Date(trip.departureTime as string)
-      return tripDate.toDateString() === searchDate.toDateString()
+      // Parse start and end dates
+      const startDate = trip.startDate.replace(/\//g, '-')
+      const endDate = trip.endDate.replace(/\//g, '-')
+      
+      // Check if search date is within the trip's valid period
+      return searchDateStr >= startDate && searchDateStr <= endDate
     })
+    
+    console.log('Filtered timetable for date range:', dayTimetable.length, 'searchDate:', searchDateStr)
     
     // Find direct routes
     const directRoutes = findDirectRoutes(
@@ -83,10 +105,20 @@ export const useRouteSearch = () => {
       ? ['HONDO_SHICHIRUI', 'HONDO_SAKAIMINATO'] 
       : [arrival]
     
+    console.log('Direct route search:', { departurePorts, arrivalPorts })
+    
     for (const trip of timetable) {
       if (departurePorts.includes(trip.departure) && arrivalPorts.includes(trip.arrival)) {
-        const departureTime = new Date(trip.departureTime)
-        const arrivalTime = new Date(trip.arrivalTime)
+        console.log('Found matching trip:', trip)
+        // Create date objects using the search date and trip times
+        const [depHours, depMinutes] = trip.departureTime.split(':').map(Number)
+        const [arrHours, arrMinutes] = trip.arrivalTime.split(':').map(Number)
+        
+        const departureTime = new Date(searchTime)
+        departureTime.setHours(depHours, depMinutes, 0, 0)
+        
+        const arrivalTime = new Date(searchTime)
+        arrivalTime.setHours(arrHours, arrMinutes, 0, 0)
         
         // Check time constraints
         if (isArrivalMode) {
@@ -146,8 +178,15 @@ export const useRouteSearch = () => {
     for (const firstTrip of timetable) {
       if (!departurePorts.includes(firstTrip.departure)) continue
       
-      const firstDepartureTime = new Date(firstTrip.departureTime)
-      const firstArrivalTime = new Date(firstTrip.arrivalTime)
+      // Create date objects using the search date and trip times
+      const [firstDepHours, firstDepMinutes] = firstTrip.departureTime.split(':').map(Number)
+      const [firstArrHours, firstArrMinutes] = firstTrip.arrivalTime.split(':').map(Number)
+      
+      const firstDepartureTime = new Date(searchTime)
+      firstDepartureTime.setHours(firstDepHours, firstDepMinutes, 0, 0)
+      
+      const firstArrivalTime = new Date(searchTime)
+      firstArrivalTime.setHours(firstArrHours, firstArrMinutes, 0, 0)
       
       // Check time constraint for first leg
       if (!isArrivalMode && firstDepartureTime < searchTime) continue
@@ -164,8 +203,15 @@ export const useRouteSearch = () => {
         if (secondTrip.departure !== firstTrip.arrival) continue
         if (!arrivalPorts.includes(secondTrip.arrival)) continue
         
-        const secondDepartureTime = new Date(secondTrip.departureTime)
-        const secondArrivalTime = new Date(secondTrip.arrivalTime)
+        // Create date objects using the first arrival time as base
+        const [secondDepHours, secondDepMinutes] = secondTrip.departureTime.split(':').map(Number)
+        const [secondArrHours, secondArrMinutes] = secondTrip.arrivalTime.split(':').map(Number)
+        
+        const secondDepartureTime = new Date(firstArrivalTime)
+        secondDepartureTime.setHours(secondDepHours, secondDepMinutes, 0, 0)
+        
+        const secondArrivalTime = new Date(secondDepartureTime)
+        secondArrivalTime.setHours(secondArrHours, secondArrMinutes, 0, 0)
         
         // Check transfer is possible (enough time between arrival and departure)
         if (secondDepartureTime <= firstArrivalTime) continue
