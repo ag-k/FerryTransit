@@ -10,8 +10,8 @@
         :hondo-ports="hondoPorts"
         :dozen-ports="dozenPorts"
         :dogo-ports="dogoPorts"
-        @update:departure="ferryStore.setDeparture"
-        @update:arrival="ferryStore.setArrival"
+        @update:departure="handleDepartureChange"
+        @update:arrival="handleArrivalChange"
         @reverse="reverseRoute"
       />
       <template #fallback>
@@ -100,8 +100,8 @@
     
     <!-- 時刻表 -->
     <div class="bg-white rounded-lg shadow-sm border border-gray-200">
-      <div class="bg-blue-600 text-white px-4 py-2 rounded-t-lg">
-        <h3 class="text-base font-medium">{{ $t('TIMETABLE') }}</h3>
+      <div class="bg-blue-600 text-white px-4 py-3 rounded-t-lg">
+        <h3 class="text-lg font-medium">{{ $t('TIMETABLE') }}</h3>
       </div>
       <ClientOnly>
         <div class="p-0">
@@ -130,17 +130,17 @@
           </div>
           
           <div v-else class="overflow-x-auto">
-            <table class="w-full text-sm min-w-[400px]">
+            <table class="w-full text-base sm:text-sm min-w-[360px]">
               <thead class="bg-gray-50 border-b">
                 <tr>
-                  <th class="px-4 py-3 text-left font-medium text-gray-700">{{ $t('SHIP') }}</th>
-                  <th class="px-4 py-3 text-right font-medium text-gray-700">
-                    <a href="#" @click.prevent="showPortInfo(departure)" class="text-blue-600 hover:underline">
+                  <th class="px-3 sm:px-4 py-3 text-left font-medium text-gray-700">{{ $t('SHIP') }}</th>
+                  <th class="px-3 sm:px-4 py-3 text-right font-medium text-gray-700">
+                    <a href="#" @click.prevent="showPortInfo(departure)" class="text-blue-600 hover:underline inline-block py-1 -my-1 px-2 -mx-2 touch-manipulation">
                       {{ $t(departure) }}
                     </a>
                   </th>
-                  <th class="px-4 py-3 text-right font-medium text-gray-700">
-                    <a href="#" @click.prevent="showPortInfo(arrival)" class="text-blue-600 hover:underline">
+                  <th class="px-3 sm:px-4 py-3 text-right font-medium text-gray-700">
+                    <a href="#" @click.prevent="showPortInfo(arrival)" class="text-blue-600 hover:underline inline-block py-1 -my-1 px-2 -mx-2 touch-manipulation">
                       {{ $t(arrival) }}
                     </a>
                   </th>
@@ -153,35 +153,35 @@
                   class="border-b hover:bg-gray-50"
                   :class="{ 'line-through opacity-60': tripStatus(trip) === 2 }"
                 >
-                  <td class="px-4 py-3">
+                  <td class="px-3 sm:px-4 py-4 sm:py-3">
                     <span v-if="tripStatus(trip) === 2" class="inline-block text-red-600 mr-1">
-                      <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" viewBox="0 0 16 16">
+                      <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" fill="currentColor" viewBox="0 0 16 16">
                         <path d="M16 8A8 8 0 1 1 0 8a8 8 0 0 1 16 0zM5.354 4.646a.5.5 0 1 0-.708.708L7.293 8l-2.647 2.646a.5.5 0 0 0 .708.708L8 8.707l2.646 2.647a.5.5 0 0 0 .708-.708L8.707 8l2.647-2.646a.5.5 0 0 0-.708-.708L8 7.293 5.354 4.646z"/>
                       </svg>
                     </span>
                     <span v-else-if="tripStatus(trip) === 3" class="inline-block text-yellow-600 mr-1">
-                      <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" viewBox="0 0 16 16">
+                      <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" fill="currentColor" viewBox="0 0 16 16">
                         <path d="M8.982 1.566a1.13 1.13 0 0 0-1.96 0L.165 13.233c-.457.778.091 1.767.98 1.767h13.713c.889 0 1.438-.99.98-1.767L8.982 1.566zM8 5c.535 0 .954.462.9.995l-.35 3.507a.552.552 0 0 1-1.1 0L7.1 5.995A.905.905 0 0 1 8 5zm.002 6a1 1 0 1 1 0 2 1 1 0 0 1 0-2z"/>
                       </svg>
                     </span>
                     <span v-else-if="tripStatus(trip) === 4" class="inline-block text-green-600 mr-1">
-                      <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" viewBox="0 0 16 16">
+                      <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" fill="currentColor" viewBox="0 0 16 16">
                         <path d="M16 8A8 8 0 1 1 0 8a8 8 0 0 1 16 0zM8.5 4.5a.5.5 0 0 0-1 0v3h-3a.5.5 0 0 0 0 1h3v3a.5.5 0 0 0 1 0v-3h3a.5.5 0 0 0 0-1h-3v-3z"/>
                       </svg>
                     </span>
-                    <a href="#" @click.prevent="showShipInfo(trip.name)" class="text-blue-600 hover:underline font-medium">
+                    <a href="#" @click.prevent="showShipInfo(trip.name)" class="text-blue-600 hover:underline font-medium inline-block py-1 -my-1 px-2 -mx-2 touch-manipulation">
                       {{ $t(trip.name) }}
                     </a>
                   </td>
-                  <td class="px-4 py-3 font-mono text-right">
+                  <td class="px-3 sm:px-4 py-4 sm:py-3 font-mono text-right">
                     {{ formatTime(trip.departureTime) }}
-                    <span v-if="trip.departureLabel" class="block text-gray-500 text-xs mt-0.5">
+                    <span v-if="trip.departureLabel" class="block text-gray-500 text-xs sm:text-xs mt-0.5">
                       {{ $t(trip.departureLabel) }}
                     </span>
                   </td>
-                  <td class="px-4 py-3 font-mono text-right">
+                  <td class="px-3 sm:px-4 py-4 sm:py-3 font-mono text-right">
                     {{ formatTime(trip.arrivalTime) }}
-                    <span v-if="trip.arrivalLabel" class="block text-gray-500 text-xs mt-0.5">
+                    <span v-if="trip.arrivalLabel" class="block text-gray-500 text-xs sm:text-xs mt-0.5">
                       {{ $t(trip.arrivalLabel) }}
                     </span>
                   </td>
@@ -215,10 +215,12 @@
 
 <script setup lang="ts">
 import { useFerryStore } from '@/stores/ferry'
+import { useHistoryStore } from '@/stores/history'
 import { useFerryData } from '@/composables/useFerryData'
 
 // Store and composables
 const ferryStore = useFerryStore()
+const historyStore = useHistoryStore()
 const { 
   filteredTimetable,
   selectedDate,
@@ -272,12 +274,60 @@ const handleDateChange = (event: Event) => {
   const target = event.target as HTMLInputElement
   const newDate = new Date(target.value + 'T00:00:00')
   ferryStore.setSelectedDate(newDate)
+  
+  // Add to search history if route is selected
+  if (departure.value && arrival.value) {
+    historyStore.addSearchHistory({
+      type: 'timetable',
+      departure: departure.value,
+      arrival: arrival.value,
+      date: newDate
+    })
+  }
+}
+
+const handleDepartureChange = (value: string) => {
+  ferryStore.setDeparture(value)
+  
+  // Add to search history if both ports are selected
+  if (value && arrival.value) {
+    historyStore.addSearchHistory({
+      type: 'timetable',
+      departure: value,
+      arrival: arrival.value,
+      date: selectedDate.value
+    })
+  }
+}
+
+const handleArrivalChange = (value: string) => {
+  ferryStore.setArrival(value)
+  
+  // Add to search history if both ports are selected
+  if (departure.value && value) {
+    historyStore.addSearchHistory({
+      type: 'timetable',
+      departure: departure.value,
+      arrival: value,
+      date: selectedDate.value
+    })
+  }
 }
 
 const reverseRoute = () => {
   const temp = departure.value
   ferryStore.setDeparture(arrival.value)
   ferryStore.setArrival(temp)
+  
+  // Add to search history after reversing
+  if (departure.value && arrival.value) {
+    historyStore.addSearchHistory({
+      type: 'timetable',
+      departure: arrival.value,
+      arrival: departure.value,
+      date: selectedDate.value
+    })
+  }
 }
 
 const formatTime = (time: string) => {

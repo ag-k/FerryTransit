@@ -1,0 +1,157 @@
+{
+  "holidays": [
+    {
+      "date": "2025-01-01",
+      "nameKey": "HOLIDAY_NEW_YEAR",
+      "type": "national"
+    },
+    {
+      "date": "2025-01-02",
+      "nameKey": "HOLIDAY_NEW_YEAR_BANK",
+      "type": "bank"
+    },
+    {
+      "date": "2025-01-03",
+      "nameKey": "HOLIDAY_NEW_YEAR_BANK",
+      "type": "bank"
+    },
+    {
+      "date": "2025-01-13",
+      "nameKey": "HOLIDAY_COMING_OF_AGE",
+      "type": "national"
+    },
+    {
+      "date": "2025-02-11",
+      "nameKey": "HOLIDAY_FOUNDATION_DAY",
+      "type": "national"
+    },
+    {
+      "date": "2025-02-23",
+      "nameKey": "HOLIDAY_EMPERORS_BIRTHDAY",
+      "type": "national"
+    },
+    {
+      "date": "2025-02-24",
+      "nameKey": "HOLIDAY_SUBSTITUTE",
+      "type": "national"
+    },
+    {
+      "date": "2025-03-20",
+      "nameKey": "HOLIDAY_VERNAL_EQUINOX",
+      "type": "national"
+    },
+    {
+      "date": "2025-04-29",
+      "nameKey": "HOLIDAY_SHOWA_DAY",
+      "type": "national"
+    },
+    {
+      "date": "2025-05-03",
+      "nameKey": "HOLIDAY_CONSTITUTION_DAY",
+      "type": "national"
+    },
+    {
+      "date": "2025-05-04",
+      "nameKey": "HOLIDAY_GREENERY_DAY",
+      "type": "national"
+    },
+    {
+      "date": "2025-05-05",
+      "nameKey": "HOLIDAY_CHILDRENS_DAY",
+      "type": "national"
+    },
+    {
+      "date": "2025-05-06",
+      "nameKey": "HOLIDAY_SUBSTITUTE",
+      "type": "national"
+    },
+    {
+      "date": "2025-07-21",
+      "nameKey": "HOLIDAY_MARINE_DAY",
+      "type": "national"
+    },
+    {
+      "date": "2025-08-11",
+      "nameKey": "HOLIDAY_MOUNTAIN_DAY",
+      "type": "national"
+    },
+    {
+      "date": "2025-09-15",
+      "nameKey": "HOLIDAY_RESPECT_FOR_AGED",
+      "type": "national"
+    },
+    {
+      "date": "2025-09-23",
+      "nameKey": "HOLIDAY_AUTUMNAL_EQUINOX",
+      "type": "national"
+    },
+    {
+      "date": "2025-10-13",
+      "nameKey": "HOLIDAY_SPORTS_DAY",
+      "type": "national"
+    },
+    {
+      "date": "2025-11-03",
+      "nameKey": "HOLIDAY_CULTURE_DAY",
+      "type": "national"
+    },
+    {
+      "date": "2025-11-23",
+      "nameKey": "HOLIDAY_LABOR_THANKSGIVING",
+      "type": "national"
+    },
+    {
+      "date": "2025-11-24",
+      "nameKey": "HOLIDAY_SUBSTITUTE",
+      "type": "national"
+    }
+  ],
+  "peakSeasons": [
+    {
+      "startDate": "2024-12-28",
+      "endDate": "2025-01-05",
+      "nameKey": "PEAK_NEW_YEAR",
+      "surchargeRate": 1.2
+    },
+    {
+      "startDate": "2025-04-26",
+      "endDate": "2025-05-06",
+      "nameKey": "PEAK_GOLDEN_WEEK",
+      "surchargeRate": 1.2
+    },
+    {
+      "startDate": "2025-08-09",
+      "endDate": "2025-08-17",
+      "nameKey": "PEAK_OBON",
+      "surchargeRate": 1.2
+    },
+    {
+      "startDate": "2025-12-27",
+      "endDate": "2026-01-04",
+      "nameKey": "PEAK_NEW_YEAR",
+      "surchargeRate": 1.2
+    }
+  ],
+  "specialOperations": [
+    {
+      "date": "2025-01-01",
+      "operationType": "reduced",
+      "descriptionKey": "OPERATION_NEW_YEAR"
+    },
+    {
+      "date": "2025-08-13",
+      "operationType": "extra",
+      "descriptionKey": "OPERATION_OBON_EXTRA"
+    },
+    {
+      "date": "2025-08-14",
+      "operationType": "extra",
+      "descriptionKey": "OPERATION_OBON_EXTRA"
+    },
+    {
+      "date": "2025-08-15",
+      "operationType": "extra",
+      "descriptionKey": "OPERATION_OBON_EXTRA"
+    }
+  ]
+}

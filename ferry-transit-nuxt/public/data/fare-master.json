@@ -1,0 +1,222 @@
+{
+  "routes": [
+    {
+      "id": "hondo-saigo",
+      "departure": "HONDO",
+      "arrival": "SAIGO",
+      "fares": {
+        "adult": 3520,
+        "child": 1760,
+        "vehicle": {
+          "under3m": 8800,
+          "under4m": 11000,
+          "under5m": 13200,
+          "under6m": 15400,
+          "over6m": 17600
+        }
+      }
+    },
+    {
+      "id": "saigo-hondo",
+      "departure": "SAIGO",
+      "arrival": "HONDO",
+      "fares": {
+        "adult": 3520,
+        "child": 1760,
+        "vehicle": {
+          "under3m": 8800,
+          "under4m": 11000,
+          "under5m": 13200,
+          "under6m": 15400,
+          "over6m": 17600
+        }
+      }
+    },
+    {
+      "id": "saigo-beppu",
+      "departure": "SAIGO",
+      "arrival": "BEPPU",
+      "fares": {
+        "adult": 1540,
+        "child": 770,
+        "vehicle": {
+          "under3m": 4400,
+          "under4m": 5500,
+          "under5m": 6600,
+          "under6m": 7700,
+          "over6m": 8800
+        }
+      }
+    },
+    {
+      "id": "beppu-saigo",
+      "departure": "BEPPU",
+      "arrival": "SAIGO",
+      "fares": {
+        "adult": 1540,
+        "child": 770,
+        "vehicle": {
+          "under3m": 4400,
+          "under4m": 5500,
+          "under5m": 6600,
+          "under6m": 7700,
+          "over6m": 8800
+        }
+      }
+    },
+    {
+      "id": "saigo-hishiura",
+      "departure": "SAIGO",
+      "arrival": "HISHIURA",
+      "fares": {
+        "adult": 1540,
+        "child": 770,
+        "vehicle": {
+          "under3m": 4400,
+          "under4m": 5500,
+          "under5m": 6600,
+          "under6m": 7700,
+          "over6m": 8800
+        }
+      }
+    },
+    {
+      "id": "hishiura-saigo",
+      "departure": "HISHIURA",
+      "arrival": "SAIGO",
+      "fares": {
+        "adult": 1540,
+        "child": 770,
+        "vehicle": {
+          "under3m": 4400,
+          "under4m": 5500,
+          "under5m": 6600,
+          "under6m": 7700,
+          "over6m": 8800
+        }
+      }
+    },
+    {
+      "id": "beppu-hishiura",
+      "departure": "BEPPU",
+      "arrival": "HISHIURA",
+      "fares": {
+        "adult": 590,
+        "child": 300,
+        "vehicle": {
+          "under3m": 2200,
+          "under4m": 2750,
+          "under5m": 3300,
+          "under6m": 3850,
+          "over6m": 4400
+        }
+      }
+    },
+    {
+      "id": "hishiura-beppu",
+      "departure": "HISHIURA",
+      "arrival": "BEPPU",
+      "fares": {
+        "adult": 590,
+        "child": 300,
+        "vehicle": {
+          "under3m": 2200,
+          "under4m": 2750,
+          "under5m": 3300,
+          "under6m": 3850,
+          "over6m": 4400
+        }
+      }
+    },
+    {
+      "id": "beppu-kuri",
+      "departure": "BEPPU",
+      "arrival": "KURI",
+      "fares": {
+        "adult": 590,
+        "child": 300,
+        "vehicle": {
+          "under3m": 2200,
+          "under4m": 2750,
+          "under5m": 3300,
+          "under6m": 3850,
+          "over6m": 4400
+        }
+      }
+    },
+    {
+      "id": "kuri-beppu",
+      "departure": "KURI",
+      "arrival": "BEPPU",
+      "fares": {
+        "adult": 590,
+        "child": 300,
+        "vehicle": {
+          "under3m": 2200,
+          "under4m": 2750,
+          "under5m": 3300,
+          "under6m": 3850,
+          "over6m": 4400
+        }
+      }
+    },
+    {
+      "id": "hishiura-kuri",
+      "departure": "HISHIURA",
+      "arrival": "KURI",
+      "fares": {
+        "adult": 590,
+        "child": 300,
+        "vehicle": {
+          "under3m": 2200,
+          "under4m": 2750,
+          "under5m": 3300,
+          "under6m": 3850,
+          "over6m": 4400
+        }
+      }
+    },
+    {
+      "id": "kuri-hishiura",
+      "departure": "KURI",
+      "arrival": "HISHIURA",
+      "fares": {
+        "adult": 590,
+        "child": 300,
+        "vehicle": {
+          "under3m": 2200,
+          "under4m": 2750,
+          "under5m": 3300,
+          "under6m": 3850,
+          "over6m": 4400
+        }
+      }
+    }
+  ],
+  "discounts": {
+    "roundTrip": {
+      "nameKey": "DISCOUNT_ROUND_TRIP",
+      "rate": 0.9,
+      "descriptionKey": "DISCOUNT_ROUND_TRIP_DESC"
+    },
+    "group": {
+      "nameKey": "DISCOUNT_GROUP",
+      "rate": 0.85,
+      "minPeople": 15,
+      "descriptionKey": "DISCOUNT_GROUP_DESC"
+    },
+    "disability": {
+      "nameKey": "DISCOUNT_DISABILITY",
+      "rate": 0.5,
+      "descriptionKey": "DISCOUNT_DISABILITY_DESC"
+    },
+    "student": {
+      "nameKey": "DISCOUNT_STUDENT",
+      "rate": 0.8,
+      "descriptionKey": "DISCOUNT_STUDENT_DESC"
+    }
+  },
+  "notes": [
+    "NOTE_SEASONAL_SURCHARGE"
+  ]
+}

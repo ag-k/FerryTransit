@@ -206,6 +206,9 @@
 
 <script setup lang="ts">
 import { useRouteSearch } from '@/composables/useRouteSearch'
+import { useHistoryStore } from '@/stores/history'
+import PortSelector from '@/components/common/PortSelector.vue'
+import DatePicker from '@/components/common/DatePicker.vue'
 import type { TransitRoute } from '@/types'
 
 // Search parameters
@@ -227,6 +230,7 @@ const selectedRoute = ref<TransitRoute | null>(null)
 
 // Composables
 const { searchRoutes, formatTime, calculateDuration, getPortDisplayName } = useRouteSearch()
+const historyStore = useHistoryStore()
 
 // Constants
 const today = new Date()
@@ -272,6 +276,16 @@ async function handleSearch() {
       searchParams.time,
       searchParams.isArrivalMode
     )
+    
+    // Add to search history
+    historyStore.addSearchHistory({
+      type: 'route',
+      departure: searchParams.departure,
+      arrival: searchParams.arrival,
+      date: searchParams.date,
+      time: searchParams.time,
+      isArrivalMode: searchParams.isArrivalMode
+    })
   } catch (error) {
     console.error('Search error:', error)
     searchResults.value = []
