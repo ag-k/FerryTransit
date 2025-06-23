@@ -25,7 +25,23 @@
       "Bash(npm cache clean:*)",
       "Bash(npm view:*)",
       "Bash(find:*)",
-      "Bash(npm test:*)"
+      "Bash(npm test:*)",
+      "Bash(npm run typecheck:*)",
+      "Bash(npx tailwindcss:*)",
+      "Bash(npm uninstall:*)",
+      "Bash(npm run test:unit:*)",
+      "Bash(npm run:*)",
+      "Bash(PORT=3030 npm run dev)",
+      "Bash(open http://localhost:3001/timetable)",
+      "Bash(screencapture:*)",
+      "Bash(open http://localhost:3031/sort-test)",
+      "Bash(osascript:*)",
+      "Bash(open:*)",
+      "WebFetch(domain:localhost)",
+      "Bash(jq:*)",
+      "Bash(cat:*)",
+      "Bash(rg:*)",
+      "Bash(npx tsc:*)"
     ],
     "deny": []
   }

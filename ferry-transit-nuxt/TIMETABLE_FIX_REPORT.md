@@ -13,6 +13,11 @@
 3. **翻訳キーの不足**
    - `HOME`と`STATUS`などの翻訳キーが日本語・英語の両方で不足していた
 
+4. **時刻の文字列比較問題**
+   - 時刻が文字列形式（"7:50", "21:05"）で保存されていた
+   - 文字列比較では "7:50" > "21:05" となってしまう（"7" > "2"のため）
+   - 運航状況判定で誤った結果を返していた
+
 ## 実施した修正
 
 ### 1. stores/ferry.ts の修正
@@ -23,19 +28,18 @@ const response = await $fetch<Trip[]>(`${config.public.apiBase}/timetable.php`)
 // 修正後
 const response = await $fetch<any[]>('/api/timetable')
 
-// データマッピングの追加
+// データマッピングの修正（時刻を文字列として保持）
 const mappedData = response.map(trip => ({
-  tripId: trip.trip_id,
+  tripId: parseInt(trip.trip_id),
   startDate: trip.start_date,
   endDate: trip.end_date,
   name: trip.name,
   departure: trip.departure,
-  departureTime: new Date(trip.departure_time),
+  departureTime: trip.departure_time, // 文字列のまま保持
   arrival: trip.arrival,  
-  arrivalTime: new Date(trip.arrival_time),
-  nextId: trip.next_id,
-  status: trip.status || 0,
-  price: trip.price
+  arrivalTime: trip.arrival_time, // 文字列のまま保持
+  nextId: trip.next_id ? parseInt(trip.next_id) : undefined,
+  status: parseInt(trip.status) || 0
 }))
 ```
 
@@ -43,12 +47,36 @@ const mappedData = response.map(trip => ({
 - locales/ja.json と locales/en.json に不足していたキーを追加
 - HOME、STATUS、その他のUI関連の翻訳を追加
 
+### 3. composables/useFerryData.ts の修正
+```typescript
+// 時刻文字列の比較関数を追加
+const compareTimeStrings = (time1: string, time2: string): number => {
+  const toMinutes = (time: string): number => {
+    const [hours, minutes] = time.split(':').map(Number)
+    return hours * 60 + minutes
+  }
+  
+  const minutes1 = toMinutes(time1)
+  const minutes2 = toMinutes(time2)
+  
+  return minutes1 - minutes2
+}
+
+// 修正前（文字列比較）
+return tripTime >= isokaze.startTime ? 2 : 0
+
+// 修正後（時刻として比較）
+return compareTimeStrings(tripTime, isokaze.startTime) >= 0 ? 2 : 0
+```
+
 ## 現在の状態
 
 - ✅ 時刻表データは正常に取得される（535件）
 - ✅ データは正しくマッピングされる
 - ✅ 翻訳エラーは解消された
 - ✅ ページは正常に表示される
+- ✅ 時刻の比較が正しく動作する（7:50 < 21:05）
+- ✅ 運航状況の判定が正確になった
 
 ## 使用方法
 

@@ -13,35 +13,35 @@
     <Transition name="modal-slide">
       <div 
         v-if="visible" 
-        class="fixed inset-0 z-50 flex items-center justify-center p-4 overflow-y-auto"
+        class="fixed inset-0 z-50 flex items-end sm:items-center justify-center sm:p-4 overflow-y-auto"
         @click.self="handleClose"
       >
-        <div class="bg-white rounded-lg shadow-xl w-full sm:max-h-[90vh] sm:h-auto h-full" 
+        <div class="bg-white rounded-t-2xl sm:rounded-lg shadow-xl w-full max-h-[90vh] sm:max-h-[90vh] sm:h-auto h-full" 
              :class="type === 'port' ? 'max-w-5xl' : 'max-w-4xl'" 
              @click.stop>
           <!-- Header -->
-          <div class="flex items-center justify-between p-4 border-b">
-            <h3 class="text-lg font-semibold">{{ title }}</h3>
+          <div class="flex items-center justify-between p-4 sm:p-4 border-b">
+            <h3 class="text-lg sm:text-xl font-semibold">{{ title }}</h3>
             <button 
               type="button" 
-              class="p-1 hover:bg-gray-100 rounded-lg transition-colors"
+              class="p-3 -m-3 sm:p-2 sm:-m-2 hover:bg-gray-100 rounded-lg transition-colors touch-manipulation"
               aria-label="Close"
               @click="handleClose"
             >
-              <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
+              <svg class="w-6 h-6" fill="currentColor" viewBox="0 0 20 20">
                 <path fill-rule="evenodd" d="M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 01-1.414-1.414L8.586 10 4.293 5.707a1 1 0 010-1.414z" clip-rule="evenodd"/>
               </svg>
             </button>
           </div>
           
           <!-- Body -->
-          <div class="p-4 sm:max-h-[calc(90vh-8rem)] overflow-y-auto">
+          <div class="p-4 sm:p-6 max-h-[calc(90vh-8rem)] sm:max-h-[calc(90vh-8rem)] overflow-y-auto">
             <!-- Ship image -->
             <div v-if="type === 'ship' && shipId" class="text-center mb-4">
               <img 
                 :src="`/images/${shipId}.jpg`"
                 :alt="title"
-                class="max-w-full h-auto max-h-96 rounded-lg shadow-lg mx-auto"
+                class="max-w-full h-auto max-h-72 sm:max-h-96 rounded-lg shadow-lg mx-auto"
                 @error="handleImageError"
               >
             </div>
