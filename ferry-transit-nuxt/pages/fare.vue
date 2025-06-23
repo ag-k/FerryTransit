@@ -15,10 +15,33 @@
 
     <!-- Fare tables -->
     <div v-else>
-      <!-- Passenger fares -->
-      <div class="mb-12">
-        <h3 class="text-xl font-medium mb-4">{{ $t('PASSENGER_FARE') }}</h3>
-        <div class="overflow-x-auto">
+      <!-- Tab navigation -->
+      <div class="mb-6 border-b border-gray-200">
+        <nav class="-mb-px flex space-x-8" aria-label="Tabs">
+          <button
+            v-for="tab in tabs"
+            :key="tab.id"
+            @click="activeTab = tab.id"
+            :class="[
+              activeTab === tab.id
+                ? 'border-blue-500 text-blue-600'
+                : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300',
+              'whitespace-nowrap py-4 px-1 border-b-2 font-medium text-sm transition-colors'
+            ]"
+          >
+            {{ $t(tab.nameKey) }}
+          </button>
+        </nav>
+      </div>
+
+      <!-- Oki Kisen Ferry -->
+      <div v-show="activeTab === 'okiKisen'" class="mb-12">
+        <h3 class="text-xl font-medium mb-4">{{ $t('OKI_KISEN_FERRY') }}</h3>
+        <p class="text-sm text-gray-600 mb-4">{{ $t('FERRY_OKI') }}, {{ $t('FERRY_SHIRASHIMA') }}, {{ $t('FERRY_KUNIGA') }}</p>
+        
+        <!-- Passenger fares -->
+        <h4 class="text-lg font-medium mb-3">{{ $t('PASSENGER_FARE') }}</h4>
+        <div class="overflow-x-auto mb-8">
           <table class="w-full text-base sm:text-sm border-collapse">
             <thead>
               <tr class="bg-gray-100">
@@ -28,9 +51,74 @@
               </tr>
             </thead>
             <tbody>
-              <tr v-for="route in passengerFares" :key="route.id" class="hover:bg-gray-50">
+              <tr v-for="route in okiKisenFares" :key="route.id" class="hover:bg-gray-50">
                 <td class="border border-gray-300 px-4 py-3">
-                  {{ $t(route.departure) }} → {{ $t(route.arrival) }}
+                  {{ getRouteDisplayName(route) }}
+                </td>
+                <td class="border border-gray-300 px-4 py-3 text-right font-mono">
+                  {{ formatCurrency(route.fares.adult) }}
+                </td>
+                <td class="border border-gray-300 px-4 py-3 text-right font-mono">
+                  {{ formatCurrency(route.fares.child) }}
+                </td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+
+        <!-- Vehicle fares -->
+        <h4 class="text-lg font-medium mb-3">{{ $t('VEHICLE_FARE') }}</h4>
+        <div class="overflow-x-auto">
+          <table class="w-full text-base sm:text-sm border-collapse">
+            <thead>
+              <tr class="bg-gray-100">
+                <th class="border border-gray-300 px-4 py-3 text-left">{{ $t('ROUTE') }}</th>
+                <th v-for="size in vehicleSizes" :key="size" 
+                    class="border border-gray-300 px-3 sm:px-4 py-3 text-right text-xs sm:text-sm">
+                  {{ getVehicleSizeName(size) }}
+                </th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr v-for="route in okiKisenFares" :key="route.id" class="hover:bg-gray-50">
+                <td class="border border-gray-300 px-4 py-3">
+                  {{ getRouteDisplayName(route) }}
+                </td>
+                <td v-for="size in vehicleSizes" :key="size" 
+                    class="border border-gray-300 px-3 sm:px-4 py-3 text-right font-mono text-sm">
+                  {{ formatCurrency(route.fares.vehicle[size]) }}
+                </td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+        <div class="mt-2 text-sm text-gray-600">
+          <p>{{ $t('CHILD_AGE_NOTE') }}</p>
+          <p>{{ $t('INFANT_AGE_NOTE') }}</p>
+          <p>{{ $t('VEHICLE_LENGTH_NOTE') }}</p>
+        </div>
+      </div>
+
+      <!-- Naiko Sen (Ferry Dozen / Isokaze) -->
+      <div v-show="activeTab === 'naikoSen'" class="mb-12">
+        <h3 class="text-xl font-medium mb-4">{{ $t('NAIKO_SEN') }}</h3>
+        <p class="text-sm text-gray-600 mb-4">{{ $t('FERRY_DOZEN') }}, {{ $t('ISOKAZE') }}</p>
+        
+        <!-- Passenger fares -->
+        <h4 class="text-lg font-medium mb-3">{{ $t('PASSENGER_FARE') }}</h4>
+        <div class="overflow-x-auto mb-8">
+          <table class="w-full text-base sm:text-sm border-collapse">
+            <thead>
+              <tr class="bg-gray-100">
+                <th class="border border-gray-300 px-4 py-3 text-left">{{ $t('ROUTE') }}</th>
+                <th class="border border-gray-300 px-4 py-3 text-right">{{ $t('ADULT') }}</th>
+                <th class="border border-gray-300 px-4 py-3 text-right">{{ $t('CHILD') }}</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr v-for="route in naikoSenFares" :key="route.id" class="hover:bg-gray-50">
+                <td class="border border-gray-300 px-4 py-3">
+                  {{ getRouteDisplayName(route) }}
                 </td>
                 <td class="border border-gray-300 px-4 py-3 text-right font-mono">
                   {{ formatCurrency(route.fares.adult) }}
@@ -48,35 +136,41 @@
         </div>
       </div>
 
-      <!-- Vehicle fares -->
-      <div class="mb-12">
-        <h3 class="text-xl font-medium mb-4">{{ $t('VEHICLE_FARE') }}</h3>
-        <div class="overflow-x-auto">
+      <!-- Rainbow Jet -->
+      <div v-show="activeTab === 'rainbowJet'" class="mb-12">
+        <h3 class="text-xl font-medium mb-4">{{ $t('RAINBOWJET') }}</h3>
+        <p class="text-sm text-gray-600 mb-4">{{ $t('HIGH_SPEED_FERRY') }}</p>
+        
+        <!-- Passenger fares -->
+        <h4 class="text-lg font-medium mb-3">{{ $t('PASSENGER_FARE') }}</h4>
+        <div class="overflow-x-auto mb-8">
           <table class="w-full text-base sm:text-sm border-collapse">
             <thead>
               <tr class="bg-gray-100">
                 <th class="border border-gray-300 px-4 py-3 text-left">{{ $t('ROUTE') }}</th>
-                <th v-for="size in vehicleSizes" :key="size" 
-                    class="border border-gray-300 px-3 sm:px-4 py-3 text-right text-xs sm:text-sm">
-                  {{ getVehicleSizeName(size) }}
-                </th>
+                <th class="border border-gray-300 px-4 py-3 text-right">{{ $t('ADULT') }}</th>
+                <th class="border border-gray-300 px-4 py-3 text-right">{{ $t('CHILD') }}</th>
               </tr>
             </thead>
             <tbody>
-              <tr v-for="route in vehicleFares" :key="route.id" class="hover:bg-gray-50">
+              <tr v-for="route in rainbowJetFares" :key="route.id" class="hover:bg-gray-50">
                 <td class="border border-gray-300 px-4 py-3">
-                  {{ $t(route.departure) }} → {{ $t(route.arrival) }}
+                  {{ getRouteDisplayName(route) }}
                 </td>
-                <td v-for="size in vehicleSizes" :key="size" 
-                    class="border border-gray-300 px-3 sm:px-4 py-3 text-right font-mono text-sm">
-                  {{ formatCurrency(route.fares.vehicle[size]) }}
+                <td class="border border-gray-300 px-4 py-3 text-right font-mono">
+                  {{ formatCurrency(route.fares.adult * 2) }}
+                </td>
+                <td class="border border-gray-300 px-4 py-3 text-right font-mono">
+                  {{ formatCurrency(route.fares.child * 2) }}
                 </td>
               </tr>
             </tbody>
           </table>
         </div>
         <div class="mt-2 text-sm text-gray-600">
-          <p>{{ $t('VEHICLE_LENGTH_NOTE') }}</p>
+          <p>{{ $t('CHILD_AGE_NOTE') }}</p>
+          <p>{{ $t('INFANT_AGE_NOTE') }}</p>
+          <p class="text-red-600">{{ $t('RAINBOW_JET_NO_VEHICLE') }}</p>
         </div>
       </div>
 
@@ -114,10 +208,19 @@ const { formatCurrency, getVehicleSizeName, getAllFares } = useFareDisplay()
 const fareStore = useFareStore()
 
 // State
-const passengerFares = ref<any[]>([])
-const vehicleFares = ref<any[]>([])
+const activeTab = ref('okiKisen')
+const okiKisenFares = ref<any[]>([])
+const naikoSenFares = ref<any[]>([])
+const rainbowJetFares = ref<any[]>([])
 const discounts = ref<any>({})
 const notes = ref<string[]>([])
+
+// Tab definitions
+const tabs = [
+  { id: 'okiKisen', nameKey: 'OKI_KISEN_FERRY' },
+  { id: 'naikoSen', nameKey: 'NAIKO_SEN' },
+  { id: 'rainbowJet', nameKey: 'RAINBOWJET' }
+]
 
 // Vehicle sizes
 const vehicleSizes: (keyof VehicleFare)[] = ['under3m', 'under4m', 'under5m', 'under6m', 'over6m']
@@ -126,39 +229,56 @@ const vehicleSizes: (keyof VehicleFare)[] = ['under3m', 'under4m', 'under5m', 'u
 const isLoading = computed(() => fareStore.isLoading)
 const error = computed(() => fareStore.error)
 
-// Group fares by route type
-const groupFares = (fares: any[]) => {
-  const mainlandToDogoRoutes = ['hondo-saigo', 'saigo-hondo']
-  const dogoToDozenRoutes = ['saigo-beppu', 'beppu-saigo', 'saigo-hishiura', 'hishiura-saigo']
-  const dozenInternalRoutes = ['beppu-hishiura', 'hishiura-beppu', 'beppu-kuri', 'kuri-beppu', 'hishiura-kuri', 'kuri-hishiura']
+// Get route display name
+const getRouteDisplayName = (route: any) => {
+  const { $i18n } = useNuxtApp()
+  return `${$i18n.t(route.departure)} → ${$i18n.t(route.arrival)}`
+}
 
-  const grouped: any[] = []
+// Group fares by ship type
+const groupFaresByShipType = (fares: any[]) => {
+  // Define routes for each ship type
+  const okiKisenRoutes = ['hondo-saigo', 'saigo-hondo']
+  const naikoSenRoutes = [
+    'saigo-beppu', 'beppu-saigo', 
+    'saigo-hishiura', 'hishiura-saigo',
+    'beppu-hishiura', 'hishiura-beppu', 
+    'beppu-kuri', 'kuri-beppu', 
+    'hishiura-kuri', 'kuri-hishiura'
+  ]
+  const rainbowJetRoutes = ['hondo-saigo', 'saigo-hondo']
   
-  // Add routes in specific order
-  mainlandToDogoRoutes.forEach(id => {
+  const okiKisen: any[] = []
+  const naikoSen: any[] = []
+  const rainbowJet: any[] = []
+  
+  // Group by ship type
+  okiKisenRoutes.forEach(id => {
     const route = fares.find(f => f.id === id)
-    if (route) grouped.push(route)
+    if (route) okiKisen.push(route)
   })
   
-  dogoToDozenRoutes.forEach(id => {
+  naikoSenRoutes.forEach(id => {
     const route = fares.find(f => f.id === id)
-    if (route) grouped.push(route)
+    if (route) naikoSen.push(route)
   })
   
-  dozenInternalRoutes.forEach(id => {
+  rainbowJetRoutes.forEach(id => {
     const route = fares.find(f => f.id === id)
-    if (route) grouped.push(route)
+    if (route) rainbowJet.push(route)
   })
   
-  return grouped
+  return { okiKisen, naikoSen, rainbowJet }
 }
 
 // Load fare data
 onMounted(async () => {
   const fares = await getAllFares()
-  const grouped = groupFares(fares)
-  passengerFares.value = grouped
-  vehicleFares.value = grouped
+  const grouped = groupFaresByShipType(fares)
+  
+  okiKisenFares.value = grouped.okiKisen
+  naikoSenFares.value = grouped.naikoSen
+  rainbowJetFares.value = grouped.rainbowJet
   
   if (fareStore.fareMaster) {
     discounts.value = fareStore.fareMaster.discounts
