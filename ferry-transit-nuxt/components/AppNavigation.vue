@@ -8,29 +8,31 @@
     ></div>
     
     <div class="container mx-auto px-4">
-      <div class="flex flex-wrap items-center justify-between py-3 sm:py-4">
-        <NuxtLink class="text-lg sm:text-xl font-medium hover:opacity-80 transition-opacity py-2" to="/">
+      <div class="flex items-center justify-between py-3 sm:py-4">
+        <NuxtLink class="text-lg sm:text-xl font-medium hover:opacity-80 transition-opacity py-2 flex-1 lg:flex-none" to="/">
           {{ $t('TITLE') }}
         </NuxtLink>
         
         <button 
-          class="lg:hidden p-3 -mr-3 rounded hover:bg-blue-700 transition-colors z-50 touch-manipulation" 
+          class="lg:hidden relative min-w-[44px] min-h-[44px] p-2 rounded hover:bg-blue-700 transition-colors z-50 touch-manipulation flex items-center justify-center" 
           type="button" 
           aria-controls="navbarNav" 
           :aria-expanded="menuOpen" 
           aria-label="Toggle navigation"
-          @click="toggleMenu"
+          style="user-select: none; -webkit-user-select: none; -webkit-touch-callout: none;"
+          @click.stop="toggleMenu"
+          @touchstart.passive="() => {}"
         >
-          <svg v-if="!menuOpen" class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <svg v-if="!menuOpen" class="w-6 h-6 pointer-events-none" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"></path>
           </svg>
-          <svg v-else class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <svg v-else class="w-6 h-6 pointer-events-none" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
           </svg>
         </button>
         
         <div 
-          class="fixed lg:static inset-x-0 top-[68px] sm:top-[73px] lg:top-auto bg-blue-600 lg:bg-transparent w-full lg:w-auto lg:flex lg:items-center px-4 lg:px-0 pb-4 lg:pb-0 shadow-lg lg:shadow-none z-50 lg:z-auto" 
+          class="fixed lg:static inset-x-0 top-[68px] sm:top-[73px] lg:top-auto bg-blue-600 lg:bg-transparent w-full lg:w-auto lg:flex lg:items-center px-4 lg:px-0 pb-4 lg:pb-0 shadow-lg lg:shadow-none z-40 lg:z-auto" 
           :class="{ 'hidden': !menuOpen }" 
           id="navbarNav"
         >
@@ -152,7 +154,12 @@ const availableLocales = computed(() => {
 })
 
 // Toggle menu
-const toggleMenu = () => {
+const toggleMenu = (event?: Event) => {
+  if (event) {
+    event.preventDefault()
+    event.stopPropagation()
+  }
+  
   menuOpen.value = !menuOpen.value
   langMenuOpen.value = false
   
@@ -191,17 +198,24 @@ watch(route, () => {
 
 // Close menus on click outside
 onMounted(() => {
-  const handleClickOutside = (event: MouseEvent) => {
+  const handleClickOutside = (event: MouseEvent | TouchEvent) => {
     const target = event.target as HTMLElement
-    if (!target.closest('nav')) {
+    const nav = target.closest('nav')
+    const hamburger = target.closest('button[aria-controls="navbarNav"]')
+    
+    // Don't close if clicking on the hamburger button or inside nav
+    if (!nav && !hamburger) {
       closeMenu()
     }
   }
   
+  // Add both click and touch event listeners
   document.addEventListener('click', handleClickOutside)
+  document.addEventListener('touchstart', handleClickOutside, { passive: true })
   
   onUnmounted(() => {
     document.removeEventListener('click', handleClickOutside)
+    document.removeEventListener('touchstart', handleClickOutside)
     // Ensure body scroll is restored
     document.body.style.overflow = ''
   })
