@@ -1,12 +1,14 @@
 import { useFerryStore } from '@/stores/ferry'
 import { useFareStore } from '@/stores/fare'
 import { useFerryData } from '@/composables/useFerryData'
+import { useHolidayCalendar } from '@/composables/useHolidayCalendar'
 import type { Trip, TransitRoute, TransitSegment } from '@/types'
 
 export const useRouteSearch = () => {
   const ferryStore = useFerryStore()
   const fareStore = useFareStore()
   const { getTripStatus, initializeData } = useFerryData()
+  const { isPeakSeason, getPeakSeason } = useHolidayCalendar()
   
   // Initialize fare data
   onMounted(async () => {
@@ -335,7 +337,6 @@ export const useRouteSearch = () => {
       
       // Apply peak season surcharge if applicable
       if (date) {
-        const { isPeakSeason, getPeakSeason } = useHolidayCalendar()
         if (isPeakSeason(date)) {
           const peakSeason = getPeakSeason(date)
           if (peakSeason && peakSeason.surchargeRate) {
