@@ -204,5 +204,14 @@
   "FAVORITE_ORDER_UPDATED": "並び順を更新しました",
   "FAVORITE_REORDER_ERROR": "並び替え中にエラーが発生しました",
   "FAVORITE_CLEAR_CONFIRM": "すべてのお気に入りを削除しますか？この操作は取り消せません。",
-  "FAVORITE_ALL_CLEARED": "すべてのお気に入りを削除しました"
+  "FAVORITE_ALL_CLEARED": "すべてのお気に入りを削除しました",
+  "SETTINGS": "設定",
+  "LANGUAGE": "言語",
+  "APP_INFO": "アプリ情報",
+  "VERSION": "バージョン",
+  "FRAMEWORK": "フレームワーク",
+  "LAST_UPDATED": "最終更新",
+  "LINKS": "リンク",
+  "DEVELOPER_SITE": "開発者サイト",
+  "ABOUT_APP": "このアプリについて"
 }

@@ -2,8 +2,8 @@
   <div class="container max-w-[1000px] mx-auto px-4 py-8">
     <!-- Hero section -->
     <div class="text-center mb-8">
-      <h1 class="text-4xl md:text-5xl font-light mb-4">{{ $t('TITLE') }}</h1>
-      <p class="text-xl text-gray-600">{{ $t('SUBTITLE') }}</p>
+      <h1 class="text-4xl md:text-5xl font-light mb-4">{{ $t('ABOUT_APP') }}</h1>
+      <p class="text-xl text-gray-600">{{ $t('TITLE') }}</p>
     </div>
     
     <!-- Quick action cards -->
