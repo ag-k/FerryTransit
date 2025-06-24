@@ -1,49 +1,66 @@
 <template>
-  <div class="container mx-auto px-4 py-6 pb-20 lg:pb-6">
+  <div class="container mx-auto px-4 py-8 max-w-2xl">
     <h1 class="text-2xl font-bold mb-6">{{ $t('SETTINGS') }}</h1>
-    
+
     <div class="space-y-6">
-      <!-- Language Setting -->
-      <div class="bg-white rounded-lg shadow p-4">
-        <h2 class="text-lg font-semibold mb-3">{{ $t('LANGUAGE') }}</h2>
-        <div class="space-y-2">
-          <label 
-            v-for="locale in availableLocales" 
-            :key="locale.code"
-            class="flex items-center p-3 rounded border hover:bg-gray-50 cursor-pointer touch-manipulation"
-          >
-            <input 
-              type="radio" 
-              :value="locale.code" 
-              :checked="$i18n.locale === locale.code"
-              @change="switchLocale(locale.code)"
-              class="mr-3"
-            >
-            <span>{{ locale.name }}</span>
-          </label>
-        </div>
+      <!-- Language Settings -->
+      <div class="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
+        <LanguageSelector />
       </div>
-      
+
+      <!-- Theme Settings -->
+      <div class="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
+        <ThemeSelector />
+      </div>
+
+      <!-- Data Management -->
+      <div class="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
+        <DataManagement />
+      </div>
+
       <!-- App Information -->
-      <div class="bg-white rounded-lg shadow p-4">
-        <h2 class="text-lg font-semibold mb-3">{{ $t('APP_INFO') }}</h2>
-        <div class="space-y-2 text-sm text-gray-600">
-          <p><strong>{{ $t('VERSION') }}:</strong> 1.0.0</p>
-          <p><strong>{{ $t('FRAMEWORK') }}:</strong> Nuxt 3</p>
-          <p><strong>{{ $t('LAST_UPDATED') }}:</strong> 2025-06-23</p>
-        </div>
+      <div class="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
+        <h3 class="text-lg font-medium mb-4">{{ $t('APP_INFO') }}</h3>
+        <dl class="space-y-3">
+          <div>
+            <dt class="text-sm text-gray-600">{{ $t('VERSION') }}</dt>
+            <dd class="text-base font-medium">1.0.0</dd>
+          </div>
+          <div>
+            <dt class="text-sm text-gray-600">{{ $t('FRAMEWORK') }}</dt>
+            <dd class="text-base font-medium">Nuxt 3 + Vue 3</dd>
+          </div>
+          <div>
+            <dt class="text-sm text-gray-600">{{ $t('LAST_UPDATED') }}</dt>
+            <dd class="text-base font-medium">{{ new Date().toLocaleDateString() }}</dd>
+          </div>
+        </dl>
       </div>
-      
+
       <!-- Links -->
-      <div class="bg-white rounded-lg shadow p-4">
-        <h2 class="text-lg font-semibold mb-3">{{ $t('LINKS') }}</h2>
-        <div class="space-y-2">
-          <a 
-            href="https://oki-digilab.com/" 
+      <div class="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
+        <h3 class="text-lg font-medium mb-4">{{ $t('LINKS') }}</h3>
+        <div class="space-y-3">
+          <a
+            href="https://github.com/yourusername/ferry-transit"
             target="_blank"
-            class="block p-3 rounded border hover:bg-gray-50 transition-colors text-blue-600 hover:text-blue-800 touch-manipulation"
+            rel="noopener noreferrer"
+            class="flex items-center justify-between px-4 py-3 bg-gray-50 rounded-lg hover:bg-gray-100 transition-colors duration-200"
           >
-            {{ $t('DEVELOPER_SITE') }} ↗
+            <span class="text-blue-600">{{ $t('DEVELOPER_SITE') }}</span>
+            <svg
+              class="w-5 h-5 text-gray-400"
+              fill="none"
+              stroke="currentColor"
+              viewBox="0 0 24 24"
+            >
+              <path
+                stroke-linecap="round"
+                stroke-linejoin="round"
+                stroke-width="2"
+                d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14"
+              />
+            </svg>
           </a>
         </div>
       </div>
@@ -52,20 +69,10 @@
 </template>
 
 <script setup lang="ts">
-const { locale, locales } = useI18n()
-const switchLocalePath = useSwitchLocalePath()
+import LanguageSelector from '~/components/settings/LanguageSelector.vue'
+import ThemeSelector from '~/components/settings/ThemeSelector.vue'
+import DataManagement from '~/components/settings/DataManagement.vue'
 
-// Available locales
-const availableLocales = computed(() => {
-  return locales.value
-})
-
-// Switch locale
-const switchLocale = (code: string) => {
-  navigateTo(switchLocalePath(code))
-}
-
-// Set page meta
 definePageMeta({
   title: 'SETTINGS'
 })

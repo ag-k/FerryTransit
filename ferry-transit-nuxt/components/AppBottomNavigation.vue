@@ -1,21 +1,20 @@
 <template>
-  <nav class="lg:hidden fixed bottom-0 left-0 right-0 bg-white border-t border-gray-200 z-30">
+  <nav class="lg:hidden fixed bottom-0 left-0 right-0 bg-white border-t border-gray-200 z-30 safe-area-bottom">
     <div class="flex justify-around">
       <NuxtLink 
         v-for="item in navItems" 
         :key="item.path"
         :to="item.path"
-        class="flex flex-col items-center py-2 px-3 min-w-0 flex-1 text-xs touch-manipulation"
+        class="flex flex-col items-center py-2 px-2 min-w-0 flex-1 text-xs touch-manipulation transition-colors duration-200"
         :class="[
           isActive(item.path) 
             ? 'text-blue-600' 
-            : 'text-gray-600 hover:text-blue-600'
+            : 'text-gray-600'
         ]"
-        @click="$emit('navigate', item.path)"
       >
         <svg 
           class="w-6 h-6 mb-1 flex-shrink-0" 
-          fill="none" 
+          fill="none"
           stroke="currentColor" 
           viewBox="0 0 24 24"
         >
@@ -26,7 +25,7 @@
             :d="item.icon"
           />
         </svg>
-        <span class="truncate w-full text-center">{{ $t(item.label) }}</span>
+        <span class="truncate w-full text-center font-medium">{{ $t(item.label) }}</span>
       </NuxtLink>
     </div>
   </nav>
@@ -45,7 +44,7 @@ const navItems = [
   {
     path: '/transit',
     label: 'TRANSIT',
-    icon: 'M8 7h12m0 0l-4-4m4 4l-4 4m0 6H4m0 0l4 4m-4-4l4-4'
+    icon: 'M13 7h8m0 0v8m0-8l-8 8-4-4-6 6'
   },
   {
     path: '/status',
@@ -63,9 +62,4 @@ const navItems = [
 const isActive = (path: string) => {
   return route.path === path
 }
-
-// Emit navigate event
-defineEmits<{
-  navigate: [path: string]
-}>()
 </script>

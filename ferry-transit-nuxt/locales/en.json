@@ -173,5 +173,61 @@
   "LAST_UPDATED": "Last Updated",
   "LINKS": "Links",
   "DEVELOPER_SITE": "Developer Site",
-  "ABOUT_APP": "About This App"
+  "ABOUT_APP": "About This App",
+  "favorites": {
+    "title": "Favorites",
+    "route": "Route",
+    "port": "Port",
+    "favoriteRoutes": "Favorite Routes",
+    "favoritePorts": "Favorite Ports",
+    "addToFavorites": "Add to favorites",
+    "removeFromFavorites": "Remove from favorites",
+    "lastSearched": "Last searched",
+    "searchAgain": "Search again",
+    "viewTimetable": "View timetable",
+    "nextDepartures": "Next departures",
+    "remove": "Remove",
+    "edit": "Edit",
+    "done": "Done",
+    "noFavorites": "No favorites",
+    "addFavoritesHint": "Add routes or ports to favorites and they will appear here",
+    "hint": "Hint: Drag to reorder in edit mode"
+  },
+  "history": {
+    "title": "Search History",
+    "noHistory": "No search history",
+    "noHistoryHint": "Search for routes and your history will appear here",
+    "searchAgain": "Search again",
+    "delete": "Delete",
+    "clearAll": "Clear all",
+    "clearConfirmTitle": "Clear all history",
+    "clearConfirmMessage": "Are you sure you want to delete all search history? This action cannot be undone.",
+    "clearConfirm": "Delete",
+    "resultCount": "{count} results"
+  },
+  "settings": {
+    "theme": "Theme",
+    "themeLight": "Light",
+    "themeDark": "Dark",
+    "themeSystem": "System default",
+    "dataManagement": "Data Management",
+    "clearCache": "Clear cache",
+    "clearCacheDesc": "Remove saved offline data",
+    "exportFavorites": "Export favorites",
+    "exportFavoritesDesc": "Save favorite data as JSON file",
+    "clearAllData": "Clear all data",
+    "clearAllDataDesc": "Delete all favorites, history, and cache",
+    "clearDataConfirmTitle": "Clear all data",
+    "clearDataConfirmMessage": "This will delete all data including favorites, search history, and cache. This action cannot be undone.",
+    "clearConfirm": "Delete"
+  },
+  "error": {
+    "pageNotFound": "Page not found",
+    "pageNotFoundDesc": "The page you're looking for may have been moved or deleted.",
+    "somethingWentWrong": "Something went wrong",
+    "somethingWentWrongDesc": "We're sorry, an unexpected error has occurred.",
+    "backToHome": "Back to home",
+    "tryAgain": "Try again",
+    "technicalDetails": "Technical details"
+  }
 }
