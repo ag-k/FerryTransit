@@ -213,5 +213,61 @@
   "LAST_UPDATED": "最終更新",
   "LINKS": "リンク",
   "DEVELOPER_SITE": "開発者サイト",
-  "ABOUT_APP": "このアプリについて"
+  "ABOUT_APP": "このアプリについて",
+  "favorites": {
+    "title": "お気に入り",
+    "route": "航路",
+    "port": "港",
+    "favoriteRoutes": "お気に入りの航路",
+    "favoritePorts": "お気に入りの港",
+    "addToFavorites": "お気に入りに追加",
+    "removeFromFavorites": "お気に入りから削除",
+    "lastSearched": "最後に検索した日時",
+    "searchAgain": "再検索",
+    "viewTimetable": "時刻表を見る",
+    "nextDepartures": "次の出発便",
+    "remove": "削除",
+    "edit": "編集",
+    "done": "完了",
+    "noFavorites": "お気に入りがありません",
+    "addFavoritesHint": "航路や港をお気に入りに追加すると、ここに表示されます",
+    "hint": "ヒント: 編集モードでドラッグして並び替えることができます"
+  },
+  "history": {
+    "title": "検索履歴",
+    "noHistory": "検索履歴がありません",
+    "noHistoryHint": "乗換案内で検索すると、履歴がここに表示されます",
+    "searchAgain": "再検索",
+    "delete": "削除",
+    "clearAll": "すべて削除",
+    "clearConfirmTitle": "履歴をすべて削除",
+    "clearConfirmMessage": "すべての検索履歴を削除してもよろしいですか？この操作は取り消せません。",
+    "clearConfirm": "削除する",
+    "resultCount": "{count}件の結果"
+  },
+  "settings": {
+    "theme": "テーマ",
+    "themeLight": "ライト",
+    "themeDark": "ダーク",
+    "themeSystem": "システム設定に従う",
+    "dataManagement": "データ管理",
+    "clearCache": "キャッシュをクリア",
+    "clearCacheDesc": "保存されたオフラインデータを削除します",
+    "exportFavorites": "お気に入りをエクスポート",
+    "exportFavoritesDesc": "お気に入りデータをJSONファイルで保存",
+    "clearAllData": "すべてのデータを削除",
+    "clearAllDataDesc": "お気に入り、履歴、キャッシュをすべて削除",
+    "clearDataConfirmTitle": "すべてのデータを削除",
+    "clearDataConfirmMessage": "お気に入り、検索履歴、キャッシュを含むすべてのデータを削除します。この操作は取り消せません。",
+    "clearConfirm": "削除する"
+  },
+  "error": {
+    "pageNotFound": "ページが見つかりません",
+    "pageNotFoundDesc": "お探しのページは移動または削除された可能性があります。",
+    "somethingWentWrong": "エラーが発生しました",
+    "somethingWentWrongDesc": "申し訳ございません。予期しないエラーが発生しました。",
+    "backToHome": "ホームに戻る",
+    "tryAgain": "もう一度試す",
+    "technicalDetails": "技術的な詳細"
+  }
 }

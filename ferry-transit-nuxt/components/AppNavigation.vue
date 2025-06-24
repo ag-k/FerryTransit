@@ -97,6 +97,36 @@
                 {{ $t('CALENDAR') }}
               </NuxtLink>
             </li>
+            <li>
+              <NuxtLink 
+                class="block px-4 py-4 lg:py-2 rounded hover:bg-blue-700 transition-colors text-base lg:text-sm touch-manipulation" 
+                :class="{ 'bg-blue-700 font-medium': $route.path === '/favorites' }"
+                to="/favorites"
+                @click="closeMenu"
+              >
+                {{ $t('favorites.title') }}
+              </NuxtLink>
+            </li>
+            <li>
+              <NuxtLink 
+                class="block px-4 py-4 lg:py-2 rounded hover:bg-blue-700 transition-colors text-base lg:text-sm touch-manipulation" 
+                :class="{ 'bg-blue-700 font-medium': $route.path === '/history' }"
+                to="/history"
+                @click="closeMenu"
+              >
+                {{ $t('history.title') }}
+              </NuxtLink>
+            </li>
+            <li>
+              <NuxtLink 
+                class="block px-4 py-4 lg:py-2 rounded hover:bg-blue-700 transition-colors text-base lg:text-sm touch-manipulation" 
+                :class="{ 'bg-blue-700 font-medium': $route.path === '/settings' }"
+                to="/settings"
+                @click="closeMenu"
+              >
+                {{ $t('SETTINGS') }}
+              </NuxtLink>
+            </li>
           </ul>
           
           <!-- Language switcher -->

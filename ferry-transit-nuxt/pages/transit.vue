@@ -11,12 +11,22 @@
         <!-- Port Selection -->
         <div class="grid md:grid-cols-12 gap-4 mb-4">
           <div class="md:col-span-5">
-            <PortSelector
-              v-model="searchParams.departure"
-              :label="$t('_FROM')"
-              :placeholder="$t('DEPARTURE')"
-              :disabled-ports="[searchParams.arrival]"
-            />
+            <div class="flex items-start gap-2">
+              <div class="flex-1">
+                <PortSelector
+                  v-model="searchParams.departure"
+                  :label="$t('_FROM')"
+                  :placeholder="$t('DEPARTURE')"
+                  :disabled-ports="[searchParams.arrival]"
+                />
+              </div>
+              <FavoriteButton
+                v-if="searchParams.departure"
+                :type="'port'"
+                :port="searchParams.departure"
+                class="mt-8"
+              />
+            </div>
           </div>
           
           <div class="md:col-span-2 flex items-end justify-center mb-4">
@@ -33,12 +43,22 @@
           </div>
           
           <div class="md:col-span-5">
-            <PortSelector
-              v-model="searchParams.arrival"
-              :label="$t('_TO')"
-              :placeholder="$t('ARRIVAL')"
-              :disabled-ports="[searchParams.departure]"
-            />
+            <div class="flex items-start gap-2">
+              <div class="flex-1">
+                <PortSelector
+                  v-model="searchParams.arrival"
+                  :label="$t('_TO')"
+                  :placeholder="$t('ARRIVAL')"
+                  :disabled-ports="[searchParams.departure]"
+                />
+              </div>
+              <FavoriteButton
+                v-if="searchParams.arrival"
+                :type="'port'"
+                :port="searchParams.arrival"
+                class="mt-8"
+              />
+            </div>
           </div>
         </div>
         
@@ -98,8 +118,13 @@
       <!-- Route Panels -->
       <div v-for="(route, index) in displayedResults" :key="index" class="mb-4">
         <div class="bg-white rounded-lg shadow-sm border border-blue-600">
-          <div class="bg-blue-600 text-white px-4 py-2">
+          <div class="bg-blue-600 text-white px-4 py-2 flex items-center justify-between">
             <h3 class="font-medium">{{ $t('ROUTE') }}{{ index + 1 }}</h3>
+            <FavoriteButton
+              :type="'route'"
+              :route="{ departure: searchParams.departure, arrival: searchParams.arrival }"
+              class="text-white hover:text-yellow-300"
+            />
           </div>
           <div class="p-4">
             <table class="w-full text-sm">
@@ -262,6 +287,8 @@ import { useHistoryStore } from '@/stores/history'
 import { useFerryStore } from '@/stores/ferry'
 import PortSelector from '@/components/common/PortSelector.vue'
 import DatePicker from '@/components/common/DatePicker.vue'
+import CommonShipModal from '@/components/common/ShipModal.vue'
+import FavoriteButton from '@/components/favorites/FavoriteButton.vue'
 import type { TransitRoute } from '@/types'
 
 // Stores
