@@ -100,7 +100,7 @@ describe('PortSelector', () => {
       }
     })
 
-    expect(wrapper.find('small.text-muted').text()).toBe('Select departure port')
+    expect(wrapper.find('small.text-gray-500').text()).toBe('Select departure port')
   })
 
   it('disables select when disabled prop is true', () => {

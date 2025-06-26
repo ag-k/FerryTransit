@@ -25,7 +25,8 @@ export default defineConfig({
     alias: {
       '@': resolve(__dirname, './'),
       '~': resolve(__dirname, './'),
-      '#app': resolve(__dirname, './test/mocks/nuxt.ts')
+      '#app': resolve(__dirname, './test/mocks/nuxt.ts'),
+      '@/composables/useHolidayCalendar': resolve(__dirname, './test/mocks/nuxt.ts')
     }
   }
 })

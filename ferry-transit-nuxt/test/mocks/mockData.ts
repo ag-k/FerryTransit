@@ -7,9 +7,9 @@ export const mockTrips: Trip[] = [
     endDate: '2024-12-31',
     name: 'FERRY_OKI',
     departure: 'HONDO_SHICHIRUI',
-    departureTime: new Date('2024-01-15T09:00:00'),
+    departureTime: '09:00:00' as any,
     arrival: 'SAIGO',
-    arrivalTime: new Date('2024-01-15T11:25:00'),
+    arrivalTime: '11:25:00' as any,
     status: 0,
     price: 3360
   },
@@ -19,9 +19,9 @@ export const mockTrips: Trip[] = [
     endDate: '2024-12-31',
     name: 'RAINBOWJET',
     departure: 'SAIGO',
-    departureTime: new Date('2024-01-15T14:00:00'),
+    departureTime: '14:00:00' as any,
     arrival: 'HONDO_SHICHIRUI',
-    arrivalTime: new Date('2024-01-15T15:10:00'),
+    arrivalTime: '15:10:00' as any,
     status: 0,
     price: 6750
   },
@@ -31,9 +31,9 @@ export const mockTrips: Trip[] = [
     endDate: '2024-12-31',
     name: 'FERRY_DOZEN',
     departure: 'BEPPU',
-    departureTime: new Date('2024-01-15T10:00:00'),
+    departureTime: '10:00:00' as any,
     arrival: 'SAIGO',
-    arrivalTime: new Date('2024-01-15T11:30:00'),
+    arrivalTime: '11:30:00' as any,
     status: 0,
     price: 1680
   }

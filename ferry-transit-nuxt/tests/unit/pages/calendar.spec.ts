@@ -1,80 +1,87 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest'
 import { mount } from '@vue/test-utils'
+import { ref } from 'vue'
 import Calendar from '@/pages/calendar.vue'
-import type { HolidayMaster } from '@/types/holiday'
 
 // Mock i18n
 const mockT = vi.fn((key: string) => key)
-const mockI18n = {
-  t: mockT,
-  locale: { value: 'ja' }
-}
-
-// Mock holiday data
-const mockHolidayMaster: HolidayMaster = {
-  holidays: [
-    {
-      date: '2025-01-01',
-      nameKey: 'HOLIDAY_NEW_YEAR',
-      type: 'national'
-    },
-    {
-      date: '2025-01-13',
-      nameKey: 'HOLIDAY_COMING_OF_AGE',
-      type: 'national'
-    }
-  ],
-  peakSeasons: [
-    {
-      startDate: '2024-12-28',
-      endDate: '2025-01-05',
-      nameKey: 'PEAK_NEW_YEAR',
-      surchargeRate: 1.2
-    }
-  ],
-  specialOperations: [
-    {
-      date: '2025-01-01',
-      operationType: 'reduced',
-      descriptionKey: 'OPERATION_NEW_YEAR'
-    }
-  ]
-}
-
-// Mock useHolidayCalendar composable
-const mockCalendarData = [
-  [null, null, null, { day: 1, date: '2025-01-01', isHoliday: true, holiday: mockHolidayMaster.holidays[0], isPeakSeason: true, peakSeason: mockHolidayMaster.peakSeasons[0], specialOperation: mockHolidayMaster.specialOperations[0], dayOfWeek: '水' }, { day: 2, date: '2025-01-02', isHoliday: false, holiday: null, isPeakSeason: true, peakSeason: mockHolidayMaster.peakSeasons[0], specialOperation: null, dayOfWeek: '木' }, { day: 3, date: '2025-01-03', isHoliday: false, holiday: null, isPeakSeason: true, peakSeason: mockHolidayMaster.peakSeasons[0], specialOperation: null, dayOfWeek: '金' }, { day: 4, date: '2025-01-04', isHoliday: false, holiday: null, isPeakSeason: true, peakSeason: mockHolidayMaster.peakSeasons[0], specialOperation: null, dayOfWeek: '土' }]
-]
-
-vi.stubGlobal('useHolidayCalendar', vi.fn(() => ({
-  loadHolidayData: vi.fn().mockResolvedValue(undefined),
-  generateCalendarData: vi.fn().mockReturnValue(mockCalendarData),
-  getHolidaysByMonth: vi.fn().mockReturnValue(mockHolidayMaster.holidays),
-  formatDate: vi.fn((date: string, format: string) => {
-    if (format === 'long') {
-      return '2025年1月1日 水曜日'
-    }
-    return '1月1日'
-  }),
-  isLoading: ref(false),
-  error: ref(null),
-  holidayMaster: ref(mockHolidayMaster)
-})))
-
-// Mock useI18n
-vi.stubGlobal('useI18n', vi.fn(() => ({
-  locale: ref('ja')
-})))
-
-// Mock useHead and useNuxtApp
-vi.stubGlobal('useHead', vi.fn())
-vi.stubGlobal('useNuxtApp', vi.fn(() => ({
-  $i18n: mockI18n
-})))
 
 describe('calendar.vue', () => {
   beforeEach(() => {
     vi.clearAllMocks()
+  })
+  
+  afterEach(() => {
+    // Restore original mock after each test
+    global.useHolidayCalendar = () => {
+      const mockHolidayMaster = {
+        holidays: [
+          {
+            date: '2025-01-01',
+            nameKey: 'HOLIDAY_NEW_YEAR',
+            type: 'national'
+          },
+          {
+            date: '2025-01-13',
+            nameKey: 'HOLIDAY_COMING_OF_AGE',
+            type: 'national'
+          }
+        ],
+        peakSeasons: [
+          {
+            startDate: '2024-12-28',
+            endDate: '2025-01-05',
+            nameKey: 'PEAK_NEW_YEAR',
+            surchargeRate: 1.2
+          }
+        ],
+        specialOperations: [
+          {
+            date: '2025-01-01',
+            operationType: 'reduced',
+            descriptionKey: 'OPERATION_NEW_YEAR'
+          }
+        ]
+      }
+      
+      const mockCalendarData = [
+        [null, null, null, { day: 1, date: '2025-01-01', isHoliday: true, holiday: mockHolidayMaster.holidays[0], isPeakSeason: true, peakSeason: mockHolidayMaster.peakSeasons[0], specialOperation: mockHolidayMaster.specialOperations[0], dayOfWeek: '水' }, { day: 2, date: '2025-01-02', isHoliday: false, holiday: null, isPeakSeason: true, peakSeason: mockHolidayMaster.peakSeasons[0], specialOperation: null, dayOfWeek: '木' }, { day: 3, date: '2025-01-03', isHoliday: false, holiday: null, isPeakSeason: true, peakSeason: mockHolidayMaster.peakSeasons[0], specialOperation: null, dayOfWeek: '金' }, { day: 4, date: '2025-01-04', isHoliday: false, holiday: null, isPeakSeason: true, peakSeason: mockHolidayMaster.peakSeasons[0], specialOperation: null, dayOfWeek: '土' }]
+      ]
+      
+      return {
+        loadHolidayData: vi.fn().mockResolvedValue(undefined),
+        generateCalendarData: vi.fn().mockReturnValue(mockCalendarData),
+        getHolidaysByMonth: vi.fn().mockReturnValue(mockHolidayMaster.holidays),
+        formatDate: vi.fn((date: string, format: string) => {
+          if (format === 'long') {
+            return '2025年1月1日 水曜日'
+          }
+          return '1月1日'
+        }),
+        isHoliday: vi.fn((date: string) => {
+          return mockHolidayMaster.holidays.some(h => h.date === date)
+        }),
+        getHoliday: vi.fn((date: string) => {
+          return mockHolidayMaster.holidays.find(h => h.date === date)
+        }),
+        isPeakSeason: vi.fn((date: string) => {
+          return mockHolidayMaster.peakSeasons.some(p => 
+            date >= p.startDate && date <= p.endDate
+          )
+        }),
+        getPeakSeason: vi.fn((date: string) => {
+          return mockHolidayMaster.peakSeasons.find(p => 
+            date >= p.startDate && date <= p.endDate
+          )
+        }),
+        getSpecialOperations: vi.fn((date: string) => {
+          return mockHolidayMaster.specialOperations.filter(o => o.date === date)
+        }),
+        isLoading: ref(false),
+        error: ref(null),
+        holidayMaster: ref(mockHolidayMaster)
+      }
+    }
   })
 
   it('renders calendar page', async () => {
@@ -113,17 +120,21 @@ describe('calendar.vue', () => {
   })
 
   it('shows loading state', async () => {
-    const mockUseHolidayCalendar = vi.fn(() => ({
-      loadHolidayData: vi.fn(),
-      generateCalendarData: vi.fn(),
-      getHolidaysByMonth: vi.fn(),
-      formatDate: vi.fn(),
+    // Create a custom mock for this test
+    global.useHolidayCalendar = vi.fn(() => ({
+      loadHolidayData: vi.fn().mockResolvedValue(undefined),
+      generateCalendarData: vi.fn().mockReturnValue([]),
+      getHolidaysByMonth: vi.fn().mockReturnValue([]),
+      formatDate: vi.fn((date: string) => '2025年1月1日 水曜日'),
+      isHoliday: vi.fn().mockReturnValue(false),
+      getHoliday: vi.fn().mockReturnValue(null),
+      isPeakSeason: vi.fn().mockReturnValue(false),
+      getPeakSeason: vi.fn().mockReturnValue(null),
+      getSpecialOperations: vi.fn().mockReturnValue([]),
       isLoading: ref(true),
       error: ref(null),
       holidayMaster: ref(null)
     }))
-    
-    vi.stubGlobal('useHolidayCalendar', mockUseHolidayCalendar)
 
     const wrapper = mount(Calendar, {
       global: {
@@ -138,17 +149,21 @@ describe('calendar.vue', () => {
   })
 
   it('shows error state', async () => {
-    const mockUseHolidayCalendar = vi.fn(() => ({
-      loadHolidayData: vi.fn(),
-      generateCalendarData: vi.fn(),
-      getHolidaysByMonth: vi.fn(),
-      formatDate: vi.fn(),
+    // Create a custom mock for this test
+    global.useHolidayCalendar = vi.fn(() => ({
+      loadHolidayData: vi.fn().mockResolvedValue(undefined),
+      generateCalendarData: vi.fn().mockReturnValue([]),
+      getHolidaysByMonth: vi.fn().mockReturnValue([]),
+      formatDate: vi.fn((date: string) => '2025年1月1日 水曜日'),
+      isHoliday: vi.fn().mockReturnValue(false),
+      getHoliday: vi.fn().mockReturnValue(null),
+      isPeakSeason: vi.fn().mockReturnValue(false),
+      getPeakSeason: vi.fn().mockReturnValue(null),
+      getSpecialOperations: vi.fn().mockReturnValue([]),
       isLoading: ref(false),
       error: ref('HOLIDAY_LOAD_ERROR'),
       holidayMaster: ref(null)
     }))
-    
-    vi.stubGlobal('useHolidayCalendar', mockUseHolidayCalendar)
 
     const wrapper = mount(Calendar, {
       global: {
@@ -222,6 +237,38 @@ describe('calendar.vue', () => {
   })
 
   it('displays monthly summaries', async () => {
+    // Create a custom mock with special operations for current month
+    const currentDate = new Date()
+    const currentYear = currentDate.getFullYear()
+    const currentMonth = (currentDate.getMonth() + 1).toString().padStart(2, '0')
+    
+    global.useHolidayCalendar = vi.fn(() => ({
+      loadHolidayData: vi.fn().mockResolvedValue(undefined),
+      generateCalendarData: vi.fn().mockReturnValue([
+        [null, null, null, { day: 1, date: `${currentYear}-${currentMonth}-01`, isHoliday: true, holiday: { date: `${currentYear}-${currentMonth}-01`, nameKey: 'HOLIDAY_NEW_YEAR', type: 'national' }, isPeakSeason: false, peakSeason: null, specialOperation: null, dayOfWeek: '水' }]
+      ]),
+      getHolidaysByMonth: vi.fn().mockReturnValue([
+        { date: `${currentYear}-${currentMonth}-01`, nameKey: 'HOLIDAY_NEW_YEAR', type: 'national' }
+      ]),
+      formatDate: vi.fn((date: string) => '2025年1月1日 水曜日'),
+      isHoliday: vi.fn().mockReturnValue(false),
+      getHoliday: vi.fn().mockReturnValue(null),
+      isPeakSeason: vi.fn().mockReturnValue(false),
+      getPeakSeason: vi.fn().mockReturnValue(null),
+      getSpecialOperations: vi.fn().mockReturnValue([]),
+      isLoading: ref(false),
+      error: ref(null),
+      holidayMaster: ref({
+        holidays: [
+          { date: `${currentYear}-${currentMonth}-01`, nameKey: 'HOLIDAY_NEW_YEAR', type: 'national' }
+        ],
+        peakSeasons: [],
+        specialOperations: [
+          { date: `${currentYear}-${currentMonth}-01`, operationType: 'reduced', descriptionKey: 'OPERATION_NEW_YEAR' }
+        ]
+      })
+    }))
+
     const wrapper = mount(Calendar, {
       global: {
         mocks: {
@@ -241,6 +288,32 @@ describe('calendar.vue', () => {
   })
 
   it('navigates between months', async () => {
+    // Create a spy for generateCalendarData
+    const mockGenerateCalendarData = vi.fn().mockReturnValue([
+      [null, null, null, { day: 1, date: '2025-01-01', isHoliday: true, holiday: { date: '2025-01-01', nameKey: 'HOLIDAY_NEW_YEAR', type: 'national' }, isPeakSeason: true, peakSeason: { startDate: '2024-12-28', endDate: '2025-01-05', nameKey: 'PEAK_NEW_YEAR', surchargeRate: 1.2 }, specialOperation: { date: '2025-01-01', operationType: 'reduced', descriptionKey: 'OPERATION_NEW_YEAR' }, dayOfWeek: '水' }]
+    ])
+    
+    const mockLoadHolidayData = vi.fn().mockResolvedValue(undefined)
+    
+    global.useHolidayCalendar = vi.fn(() => ({
+      loadHolidayData: mockLoadHolidayData,
+      generateCalendarData: mockGenerateCalendarData,
+      getHolidaysByMonth: vi.fn().mockReturnValue([]),
+      formatDate: vi.fn((date: string) => '2025年1月1日 水曜日'),
+      isHoliday: vi.fn().mockReturnValue(false),
+      getHoliday: vi.fn().mockReturnValue(null),
+      isPeakSeason: vi.fn().mockReturnValue(false),
+      getPeakSeason: vi.fn().mockReturnValue(null),
+      getSpecialOperations: vi.fn().mockReturnValue([]),
+      isLoading: ref(false),
+      error: ref(null),
+      holidayMaster: ref({
+        holidays: [],
+        peakSeasons: [],
+        specialOperations: []
+      })
+    }))
+
     const wrapper = mount(Calendar, {
       global: {
         mocks: {
@@ -255,14 +328,27 @@ describe('calendar.vue', () => {
     const prevButton = buttons[0]
     const nextButton = buttons[1]
     
+    // Clear initial calls
+    mockGenerateCalendarData.mockClear()
+    mockLoadHolidayData.mockClear()
+    
     // Test navigation
     await prevButton.trigger('click')
     await wrapper.vm.$nextTick()
     
+    // Verify that calendar update was triggered
+    expect(mockLoadHolidayData).toHaveBeenCalled()
+    expect(mockGenerateCalendarData).toHaveBeenCalled()
+    
+    // Clear calls again
+    mockGenerateCalendarData.mockClear()
+    mockLoadHolidayData.mockClear()
+    
     await nextButton.trigger('click')
     await wrapper.vm.$nextTick()
     
-    // Verify that calendar updates were called
-    expect(useHolidayCalendar().generateCalendarData).toHaveBeenCalled()
+    // Verify that calendar update was triggered again
+    expect(mockLoadHolidayData).toHaveBeenCalled()
+    expect(mockGenerateCalendarData).toHaveBeenCalled()
   })
 })

@@ -2,6 +2,13 @@ import { describe, it, expect, vi } from "vitest";
 import { mount } from "@vue/test-utils";
 import ShipModal from "@/components/common/ShipModal.vue";
 
+// Stub Teleport component
+const stubs = {
+  Teleport: {
+    template: '<div><slot /></div>'
+  }
+}
+
 describe("ShipModal", () => {
   const defaultProps = {
     visible: true,
@@ -11,11 +18,12 @@ describe("ShipModal", () => {
   it("renders when visible is true", () => {
     const wrapper = mount(ShipModal, {
       props: defaultProps,
+      global: { stubs }
     });
 
-    expect(wrapper.find(".modal").exists()).toBe(true);
-    expect(wrapper.find(".modal-backdrop").exists()).toBe(true);
-    expect(wrapper.find(".modal-title").text()).toBe("Test Modal");
+    expect(wrapper.find(".fixed").exists()).toBe(true);
+    expect(wrapper.find(".bg-black").exists()).toBe(true);
+    expect(wrapper.find("h3").text()).toBe("Test Modal");
   });
 
   it("does not render when visible is false", () => {
@@ -24,10 +32,11 @@ describe("ShipModal", () => {
         ...defaultProps,
         visible: false,
       },
+      global: { stubs }
     });
 
-    expect(wrapper.find(".modal").exists()).toBe(false);
-    expect(wrapper.find(".modal-backdrop").exists()).toBe(false);
+    expect(wrapper.find(".fixed").exists()).toBe(false);
+    expect(wrapper.find(".bg-black").exists()).toBe(false);
   });
 
   it("renders ship image for ship type", () => {
@@ -37,6 +46,7 @@ describe("ShipModal", () => {
         type: "ship",
         shipId: "FERRY_OKI",
       },
+      global: { stubs }
     });
 
     const img = wrapper.find("img");
@@ -52,9 +62,10 @@ describe("ShipModal", () => {
         type: "port",
         content: '<iframe src="map.html"></iframe>',
       },
+      global: { stubs }
     });
 
-    expect(wrapper.find(".modal-body").html()).toContain(
+    expect(wrapper.find(".map-container").html()).toContain(
       '<iframe src="map.html"></iframe>'
     );
   });
@@ -68,6 +79,7 @@ describe("ShipModal", () => {
       slots: {
         default: '<div class="custom-content">Custom content</div>',
       },
+      global: { stubs }
     });
 
     expect(wrapper.find(".custom-content").exists()).toBe(true);
@@ -77,9 +89,10 @@ describe("ShipModal", () => {
   it("emits close event when close button is clicked", async () => {
     const wrapper = mount(ShipModal, {
       props: defaultProps,
+      global: { stubs }
     });
 
-    await wrapper.find(".btn-close").trigger("click");
+    await wrapper.find("button[aria-label='Close']").trigger("click");
 
     expect(wrapper.emitted("update:visible")).toBeTruthy();
     expect(wrapper.emitted("update:visible")[0][0]).toBe(false);
@@ -92,9 +105,10 @@ describe("ShipModal", () => {
         ...defaultProps,
         closeOnBackdrop: true,
       },
+      global: { stubs }
     });
 
-    await wrapper.find(".modal").trigger("click.self");
+    await wrapper.find(".bg-black").trigger("click");
 
     expect(wrapper.emitted("update:visible")).toBeTruthy();
     expect(wrapper.emitted("close")).toBeTruthy();
@@ -106,9 +120,10 @@ describe("ShipModal", () => {
         ...defaultProps,
         closeOnBackdrop: false,
       },
+      global: { stubs }
     });
 
-    await wrapper.find(".modal").trigger("click.self");
+    await wrapper.find(".bg-black").trigger("click");
 
     expect(wrapper.emitted("update:visible")).toBeFalsy();
     expect(wrapper.emitted("close")).toBeFalsy();
@@ -121,6 +136,7 @@ describe("ShipModal", () => {
         type: "ship",
         shipId: "INVALID_SHIP",
       },
+      global: { stubs }
     });
 
     const img = wrapper.find("img");
@@ -135,10 +151,11 @@ describe("ShipModal", () => {
       slots: {
         footer: '<button class="btn btn-primary">Save</button>',
       },
+      global: { stubs }
     });
 
-    expect(wrapper.find(".modal-footer").exists()).toBe(true);
-    expect(wrapper.find(".modal-footer .btn-primary").text()).toBe("Save");
+    expect(wrapper.find(".btn-primary").exists()).toBe(true);
+    expect(wrapper.find(".btn-primary").text()).toBe("Save");
   });
 
   it("sets body overflow when modal is shown/hidden", async () => {
@@ -147,6 +164,7 @@ describe("ShipModal", () => {
         visible: false,
         title: "Test",
       },
+      global: { stubs }
     });
 
     // Initially should not affect body
@@ -164,6 +182,7 @@ describe("ShipModal", () => {
   it("cleans up body overflow on unmount", () => {
     const wrapper = mount(ShipModal, {
       props: defaultProps,
+      global: { stubs }
     });
 
     wrapper.unmount();
