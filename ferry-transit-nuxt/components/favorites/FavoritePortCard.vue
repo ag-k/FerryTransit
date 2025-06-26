@@ -79,7 +79,6 @@ interface Props {
 }
 
 const props = defineProps<Props>()
-const portCode = computed(() => props.portCode || props.portId)
 const emit = defineEmits<{
   remove: []
 }>()
@@ -87,6 +86,9 @@ const emit = defineEmits<{
 const router = useRouter()
 const ferryStore = useFerryStore()
 const { locale } = useI18n()
+
+// Use a simple value instead of computed for portCode
+const portCode = props.portCode || props.portId
 
 const portInfo = computed(() => {
   return ferryStore.ports.find(p => p.PORT_ID === props.portId)

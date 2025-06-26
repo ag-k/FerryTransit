@@ -13,7 +13,7 @@ describe('AlertComponent', () => {
       props: defaultProps
     })
 
-    expect(wrapper.find('.alert').exists()).toBe(true)
+    expect(wrapper.find('[role="alert"]').exists()).toBe(true)
     expect(wrapper.text()).toContain('Test alert message')
   })
 
@@ -25,21 +25,31 @@ describe('AlertComponent', () => {
       }
     })
 
-    expect(wrapper.find('.alert').exists()).toBe(false)
+    expect(wrapper.find('[role="alert"]').exists()).toBe(false)
   })
 
   it('applies correct alert type class', () => {
-    const types = ['success', 'danger', 'warning', 'info', 'primary', 'secondary', 'light', 'dark'] as const
+    const typeToClassMap = {
+      success: 'bg-green-100',
+      danger: 'bg-red-100',
+      warning: 'bg-yellow-100',
+      info: 'bg-blue-100',
+      primary: 'bg-blue-600',
+      secondary: 'bg-gray-600',
+      light: 'bg-gray-100',
+      dark: 'bg-gray-800'
+    }
     
-    types.forEach(type => {
+    Object.entries(typeToClassMap).forEach(([type, bgClass]) => {
       const wrapper = mount(AlertComponent, {
         props: {
           ...defaultProps,
-          type
+          type: type as any
         }
       })
       
-      expect(wrapper.find('.alert').classes()).toContain(`alert-${type}`)
+      const alert = wrapper.find('[role="alert"]')
+      expect(alert.classes()).toContain(bgClass)
     })
   })
 
@@ -62,7 +72,7 @@ describe('AlertComponent', () => {
       }
     })
 
-    expect(wrapper.find('.btn-close').exists()).toBe(true)
+    expect(wrapper.find('button[aria-label="Close"]').exists()).toBe(true)
   })
 
   it('hides close button when dismissible is false', () => {
@@ -73,7 +83,7 @@ describe('AlertComponent', () => {
       }
     })
 
-    expect(wrapper.find('.btn-close').exists()).toBe(false)
+    expect(wrapper.find('button[aria-label="Close"]').exists()).toBe(false)
   })
 
   it('emits close event when close button is clicked', async () => {
@@ -84,7 +94,7 @@ describe('AlertComponent', () => {
       }
     })
 
-    await wrapper.find('.btn-close').trigger('click')
+    await wrapper.find('button[aria-label="Close"]').trigger('click')
 
     expect(wrapper.emitted('update:visible')).toBeTruthy()
     expect(wrapper.emitted('update:visible')[0][0]).toBe(false)
@@ -96,12 +106,16 @@ describe('AlertComponent', () => {
     
     const wrapper = mount(AlertComponent, {
       props: {
-        ...defaultProps,
+        visible: false,
+        message: 'Test alert message',
         autoClose: true,
         autoCloseDelay: 1000
       }
     })
 
+    // Change visible to true to trigger the watch
+    await wrapper.setProps({ visible: true })
+    
     expect(wrapper.emitted('update:visible')).toBeFalsy()
 
     // Fast forward time
@@ -120,12 +134,17 @@ describe('AlertComponent', () => {
     
     const wrapper = mount(AlertComponent, {
       props: {
-        ...defaultProps,
+        visible: false,
+        message: 'Test alert message',
         autoClose: true,
         autoCloseDelay: 5000
       }
     })
 
+    // Change visible to true to trigger the watch and start the timer
+    await wrapper.setProps({ visible: true })
+    
+    // Now unmount while timer is active
     wrapper.unmount()
 
     expect(clearTimeoutSpy).toHaveBeenCalled()
@@ -141,9 +160,7 @@ describe('AlertComponent', () => {
       }
     })
 
-    const alert = wrapper.find('.alert')
-    expect(alert.classes()).toContain('alert-dismissible')
-    expect(alert.classes()).toContain('fade')
-    expect(alert.classes()).toContain('show')
+    // Check if the close button exists when dismissible
+    expect(wrapper.find('button[aria-label="Close"]').exists()).toBe(true)
   })
 })

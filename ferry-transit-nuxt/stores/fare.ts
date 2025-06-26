@@ -1,3 +1,6 @@
+import { defineStore } from 'pinia'
+import { ref, computed, readonly } from 'vue'
+import { useOfflineStore } from './offline'
 import type { FareMaster, FareRoute } from '@/types/fare'
 
 export const useFareStore = defineStore('fare', () => {

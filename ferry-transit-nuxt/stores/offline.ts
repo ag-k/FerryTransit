@@ -1,3 +1,6 @@
+import { defineStore } from 'pinia'
+import { ref, readonly } from 'vue'
+import { useOfflineStorage } from '@/composables/useOfflineStorage'
 import type { TimetableData } from '@/types/timetable'
 import type { FerryStatus } from '@/types/ferry'
 import type { FareMaster } from '@/types/fare'

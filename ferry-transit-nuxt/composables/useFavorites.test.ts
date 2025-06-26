@@ -4,6 +4,14 @@ import { useFavorites } from './useFavorites'
 import { useFavoriteStore } from '@/stores/favorite'
 import { useUIStore } from '@/stores/ui'
 import { useFerryStore } from '@/stores/ferry'
+import { useRouter } from 'vue-router'
+
+// Mock vue-router
+vi.mock('vue-router', () => ({
+  useRouter: vi.fn(() => ({
+    push: vi.fn()
+  }))
+}))
 
 // Mock Nuxt composables
 vi.mock('#app', () => ({
@@ -14,6 +22,14 @@ vi.mock('#app', () => ({
   }),
   useRouter: () => ({
     push: vi.fn()
+  }),
+  useI18n: () => ({
+    locale: { value: 'ja' },
+    locales: { value: [
+      { code: 'ja', name: '日本語' },
+      { code: 'en', name: 'English' }
+    ]},
+    t: (key: string) => key
   })
 }))
 
@@ -137,9 +153,11 @@ describe('useFavorites', () => {
 
   describe('searchFavoriteRoute', () => {
     it('should set ferry store values and navigate', async () => {
+      const mockPush = vi.fn()
+      vi.mocked(useRouter).mockReturnValue({ push: mockPush } as any)
+      
       const { searchFavoriteRoute } = useFavorites()
       const ferryStore = useFerryStore()
-      const router = useRouter()
       
       const route = {
         id: '1',
@@ -153,7 +171,7 @@ describe('useFavorites', () => {
       
       expect(ferryStore.departure).toBe('HONDO')
       expect(ferryStore.arrival).toBe('SAIGO')
-      expect(router.push).toHaveBeenCalledWith({
+      expect(mockPush).toHaveBeenCalledWith({
         path: '/transit',
         query: {
           from: 'HONDO',

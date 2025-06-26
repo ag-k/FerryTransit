@@ -12,8 +12,10 @@ describe('UI Store', () => {
       const store = useUIStore()
       
       expect(store.isLoading).toBe(false)
-      expect(store.activeTab).toBe('timetable')
+      expect(store.activeTab).toBe(0)
       expect(store.alerts).toEqual([])
+      expect(store.warningAlerts).toEqual([])
+      expect(store.dangerAlerts).toEqual([])
       expect(store.modalVisible).toBe(false)
       expect(store.modalContent).toBeNull()
     })
@@ -33,36 +35,34 @@ describe('UI Store', () => {
     it('should set active tab', () => {
       const store = useUIStore()
       
-      store.setActiveTab('transit')
-      expect(store.activeTab).toBe('transit')
+      store.setActiveTab(1)
+      expect(store.activeTab).toBe(1)
       
-      store.setActiveTab('status')
-      expect(store.activeTab).toBe('status')
+      store.setActiveTab(2)
+      expect(store.activeTab).toBe(2)
     })
 
     it('should add alerts with unique IDs', () => {
       const store = useUIStore()
       
-      store.addAlert('success', 'Success message')
+      store.addAlert('info', 'Info message')
       store.addAlert('danger', 'Error message')
       
-      expect(store.alerts).toHaveLength(2)
-      expect(store.alerts[0].type).toBe('success')
-      expect(store.alerts[0].message).toBe('Success message')
-      expect(store.alerts[1].type).toBe('danger')
-      expect(store.alerts[1].message).toBe('Error message')
-      
-      // Check unique IDs
-      expect(store.alerts[0].id).not.toBe(store.alerts[1].id)
+      expect(store.alerts).toHaveLength(1)
+      expect(store.dangerAlerts).toHaveLength(1)
+      expect(store.alerts[0].type).toBe('info')
+      expect(store.alerts[0].msg).toBe('Info message')
+      expect(store.dangerAlerts[0].type).toBe('danger')
+      expect(store.dangerAlerts[0].msg).toBe('Error message')
     })
 
     it('should remove alert by ID', () => {
       const store = useUIStore()
       
       store.addAlert('info', 'Info message')
-      const alertId = store.alerts[0].id
+      expect(store.alerts).toHaveLength(1)
       
-      store.removeAlert(alertId)
+      store.closeAlert(0, 'info')
       
       expect(store.alerts).toHaveLength(0)
     })
@@ -70,32 +70,34 @@ describe('UI Store', () => {
     it('should clear all alerts', () => {
       const store = useUIStore()
       
-      store.addAlert('success', 'Message 1')
+      store.addAlert('info', 'Message 1')
       store.addAlert('warning', 'Message 2')
       store.addAlert('danger', 'Message 3')
       
-      expect(store.alerts).toHaveLength(3)
+      expect(store.alerts).toHaveLength(1)
+      expect(store.warningAlerts).toHaveLength(1)
+      expect(store.dangerAlerts).toHaveLength(1)
       
-      store.clearAlerts()
+      store.clearAllAlerts()
       
       expect(store.alerts).toHaveLength(0)
+      expect(store.warningAlerts).toHaveLength(0)
+      expect(store.dangerAlerts).toHaveLength(0)
     })
 
     it('should show modal', () => {
       const store = useUIStore()
-      const content = { title: 'Test Modal', body: 'Modal content' }
       
-      store.showModal(content)
+      store.showModal('Test Modal', 'Modal content')
       
       expect(store.modalVisible).toBe(true)
-      expect(store.modalContent).toEqual(content)
+      expect(store.modalContent).toEqual({ title: 'Test Modal', content: 'Modal content' })
     })
 
     it('should hide modal', () => {
       const store = useUIStore()
-      const content = { title: 'Test Modal' }
       
-      store.showModal(content)
+      store.showModal('Test Modal', 'Content')
       store.hideModal()
       
       expect(store.modalVisible).toBe(false)
@@ -106,18 +108,19 @@ describe('UI Store', () => {
   describe('Alert Management', () => {
     it('should handle multiple alert types', () => {
       const store = useUIStore()
-      const alertTypes = ['success', 'danger', 'warning', 'info', 'primary', 'secondary', 'light', 'dark'] as const
+      const alertTypes = ['info', 'warning', 'danger'] as const
       
       alertTypes.forEach(type => {
         store.addAlert(type, `${type} message`)
       })
       
-      expect(store.alerts).toHaveLength(alertTypes.length)
+      expect(store.alerts).toHaveLength(1) // only info
+      expect(store.warningAlerts).toHaveLength(1)
+      expect(store.dangerAlerts).toHaveLength(1)
       
-      store.alerts.forEach((alert, index) => {
-        expect(alert.type).toBe(alertTypes[index])
-        expect(alert.message).toBe(`${alertTypes[index]} message`)
-      })
+      expect(store.alerts[0].msg).toBe('info message')
+      expect(store.warningAlerts[0].msg).toBe('warning message')
+      expect(store.dangerAlerts[0].msg).toBe('danger message')
     })
 
     it('should not remove non-existent alert', () => {
@@ -126,7 +129,8 @@ describe('UI Store', () => {
       store.addAlert('info', 'Test message')
       const initialLength = store.alerts.length
       
-      store.removeAlert('non-existent-id')
+      // Try to remove out of bounds index
+      store.closeAlert(10, 'info')
       
       expect(store.alerts).toHaveLength(initialLength)
     })

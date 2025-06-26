@@ -45,5 +45,78 @@ export const createError = vi.fn((error) => error)
 export const setHeaders = vi.fn()
 export const definePageMeta = vi.fn()
 
+export const $fetch = vi.fn()
+
+// Mock useHolidayCalendar
+export const useHolidayCalendar = vi.fn(() => {
+  const mockHolidayMaster = {
+    holidays: [
+      {
+        date: '2025-01-01',
+        nameKey: 'HOLIDAY_NEW_YEAR',
+        type: 'national'
+      },
+      {
+        date: '2025-01-13',
+        nameKey: 'HOLIDAY_COMING_OF_AGE',
+        type: 'national'
+      }
+    ],
+    peakSeasons: [
+      {
+        startDate: '2024-12-28',
+        endDate: '2025-01-05',
+        nameKey: 'PEAK_NEW_YEAR',
+        surchargeRate: 1.2
+      }
+    ],
+    specialOperations: [
+      {
+        date: '2025-01-01',
+        operationType: 'reduced',
+        descriptionKey: 'OPERATION_NEW_YEAR'
+      }
+    ]
+  }
+  
+  const mockCalendarData = [
+    [null, null, null, { day: 1, date: '2025-01-01', isHoliday: true, holiday: mockHolidayMaster.holidays[0], isPeakSeason: true, peakSeason: mockHolidayMaster.peakSeasons[0], specialOperation: mockHolidayMaster.specialOperations[0], dayOfWeek: '水' }, { day: 2, date: '2025-01-02', isHoliday: false, holiday: null, isPeakSeason: true, peakSeason: mockHolidayMaster.peakSeasons[0], specialOperation: null, dayOfWeek: '木' }, { day: 3, date: '2025-01-03', isHoliday: false, holiday: null, isPeakSeason: true, peakSeason: mockHolidayMaster.peakSeasons[0], specialOperation: null, dayOfWeek: '金' }, { day: 4, date: '2025-01-04', isHoliday: false, holiday: null, isPeakSeason: true, peakSeason: mockHolidayMaster.peakSeasons[0], specialOperation: null, dayOfWeek: '土' }]
+  ]
+  
+  return {
+    loadHolidayData: vi.fn().mockResolvedValue(undefined),
+    generateCalendarData: vi.fn().mockReturnValue(mockCalendarData),
+    getHolidaysByMonth: vi.fn().mockReturnValue(mockHolidayMaster.holidays),
+    formatDate: vi.fn((date: string, format: string) => {
+      if (format === 'long') {
+        return '2025年1月1日 水曜日'
+      }
+      return '1月1日'
+    }),
+    isHoliday: vi.fn((date: string) => {
+      return mockHolidayMaster.holidays.some(h => h.date === date)
+    }),
+    getHoliday: vi.fn((date: string) => {
+      return mockHolidayMaster.holidays.find(h => h.date === date)
+    }),
+    isPeakSeason: vi.fn((date: string) => {
+      return mockHolidayMaster.peakSeasons.some(p => 
+        date >= p.startDate && date <= p.endDate
+      )
+    }),
+    getPeakSeason: vi.fn((date: string) => {
+      return mockHolidayMaster.peakSeasons.find(p => 
+        date >= p.startDate && date <= p.endDate
+      )
+    }),
+    getSpecialOperations: vi.fn((date: string) => {
+      return mockHolidayMaster.specialOperations.filter(o => o.date === date)
+    }),
+    isLoading: ref(false),
+    error: ref(null as string | null),
+    holidayMaster: ref(mockHolidayMaster)
+  }
+})
+
 // Re-export Vue reactivity functions
 export { ref, computed, reactive, watch, watchEffect, onMounted, onUnmounted }

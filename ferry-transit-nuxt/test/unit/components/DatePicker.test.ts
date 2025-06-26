@@ -70,7 +70,7 @@ describe('DatePicker', () => {
       }
     })
 
-    expect(wrapper.find('small.text-muted').text()).toBe('Choose a date')
+    expect(wrapper.find('small.text-gray-500').text()).toBe('Choose a date')
   })
 
   it('disables input when disabled prop is true', () => {
