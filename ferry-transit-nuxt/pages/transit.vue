@@ -32,7 +32,7 @@
           <div class="md:col-span-2 flex items-end justify-center mb-4">
             <button 
               type="button" 
-              class="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700 active:bg-blue-800 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 transform active:scale-95 transition-all duration-150 shadow-sm hover:shadow-md"
+              class="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 transform active:scale-95 transition-all duration-150 shadow-sm hover:shadow-md"
               @click="reverseRoute"
               aria-label="Reverse route"
             >
@@ -99,7 +99,7 @@
         <div>
           <button 
             type="button"
-            class="px-6 py-2 bg-blue-600 text-white rounded hover:bg-blue-700 active:bg-blue-800 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 transform active:scale-95 transition-all duration-150 disabled:bg-gray-400 disabled:cursor-not-allowed disabled:transform-none flex items-center shadow-sm hover:shadow-md"
+            class="px-6 py-2 bg-blue-600 text-white rounded hover:bg-blue-700 active:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 transform active:scale-95 transition-all duration-150 disabled:bg-gray-400 disabled:cursor-not-allowed disabled:transform-none flex items-center shadow-sm hover:shadow-md"
             :disabled="!canSearch || isSearching"
             @click="handleSearch"
           >
@@ -200,7 +200,7 @@
       <div v-if="searchResults.length > displayLimit" class="mt-4">
         <button 
           @click="showMore"
-          class="w-full py-3 bg-blue-600 hover:bg-blue-700 active:bg-blue-800 text-white font-medium rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 transform active:scale-[0.98] transition-all duration-150 shadow-sm hover:shadow-md"
+          class="w-full py-3 bg-blue-600 hover:bg-blue-700 text-white font-medium rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 transform active:scale-[0.98] transition-all duration-150 shadow-sm hover:shadow-md"
         >
           {{ $t('MORE_BUTTON') }}
         </button>
@@ -396,20 +396,27 @@ function showPortInfo(portName: string) {
 }
 
 async function handleSearch() {
-  if (!canSearch.value) return
+  if (!canSearch.value) {
+    console.log('Cannot search - missing required fields')
+    return
+  }
   
+  console.log('Starting search with params:', searchParams)
   isSearching.value = true
   hasSearched.value = true
   displayLimit.value = 5
   
   try {
-    searchResults.value = await searchRoutes(
+    const results = await searchRoutes(
       searchParams.departure,
       searchParams.arrival,
       searchParams.date,
       searchParams.time,
       searchParams.isArrivalMode
     )
+    
+    console.log('Search results:', results)
+    searchResults.value = results
     
     // Add to search history
     historyStore.addSearchHistory({

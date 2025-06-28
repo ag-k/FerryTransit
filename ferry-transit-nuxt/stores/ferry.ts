@@ -377,7 +377,20 @@ export const useFerryStore = defineStore('ferry', () => {
         try {
           const cached = localStorage.getItem('rawTimetable')
           if (cached) {
-            timetableData.value = JSON.parse(cached)
+            const data = JSON.parse(cached)
+            // Map cached data to expected format
+            timetableData.value = data.map(trip => ({
+              tripId: parseInt(trip.trip_id), // Convert string IDs to numbers
+              startDate: trip.start_date,
+              endDate: trip.end_date,
+              name: trip.name,
+              departure: trip.departure,
+              departureTime: trip.departure_time, // Keep as string
+              arrival: trip.arrival,
+              arrivalTime: trip.arrival_time, // Keep as string
+              nextId: trip.next_id ? parseInt(trip.next_id) : undefined,
+              status: parseInt(trip.status) || 0
+            }))
             error.value = 'OFFLINE_TIMETABLE_ERROR'
           }
         } catch (e) {
