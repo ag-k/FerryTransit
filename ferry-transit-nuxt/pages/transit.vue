@@ -119,7 +119,11 @@
       <div v-for="(route, index) in displayedResults" :key="index" class="mb-4">
         <div class="bg-white rounded-lg shadow-sm border border-blue-600">
           <div class="bg-blue-600 text-white px-4 py-2 flex items-center justify-between">
-            <h3 class="font-medium">{{ $t('ROUTE') }}{{ index + 1 }}</h3>
+            <h3 class="font-medium">
+              {{ $t('ROUTE') }}{{ index + 1 }} - 
+              {{ calculateDuration(route.departureTime, route.arrivalTime) }} / 
+              ¥{{ route.totalFare.toLocaleString() }}
+            </h3>
             <FavoriteButton
               :type="'route'"
               :route="{ departure: searchParams.departure, arrival: searchParams.arrival }"
