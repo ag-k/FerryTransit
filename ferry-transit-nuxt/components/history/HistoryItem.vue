@@ -18,7 +18,7 @@
               d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"
             />
           </svg>
-          <span class="text-sm text-gray-600">{{ formatDateTime(history.createdAt) }}</span>
+          <span class="text-sm text-gray-600">{{ formatDateTime(history.searchedAt) }}</span>
         </div>
 
         <div class="flex items-center space-x-2 mb-2">
@@ -40,10 +40,10 @@
         </div>
 
         <div class="text-sm text-gray-600">
-          <span>{{ formatDate(history.searchDate) }}</span>
+          <span>{{ formatDate(history.date) }}</span>
           <span class="mx-2">·</span>
           <span>{{ history.isArrivalMode ? $t('ARRIVE_BY') : $t('DEPARTURE_AFTER') }}</span>
-          <span class="font-medium">{{ history.searchTime }}</span>
+          <span class="font-medium">{{ formatTime(history.time) }}</span>
         </div>
 
         <div v-if="history.resultCount !== undefined" class="text-sm text-gray-500 mt-1">
@@ -72,10 +72,10 @@
 <script setup lang="ts">
 import { useFerryStore } from '~/stores/ferry'
 import { useI18n } from 'vue-i18n'
-import type { SearchHistory } from '~/types/history'
+import type { SearchHistoryItem } from '~/types/history'
 
 interface Props {
-  history: SearchHistory
+  history: SearchHistoryItem
 }
 
 const props = defineProps<Props>()
@@ -87,29 +87,60 @@ const emit = defineEmits<{
 const ferryStore = useFerryStore()
 const { locale } = useI18n()
 
-const getPortName = (portId: string) => {
+const getPortName = (portId?: string) => {
+  if (!portId) return '-'
   const port = ferryStore.ports.find(p => p.PORT_ID === portId)
   return port ? (locale.value === 'ja' ? port.PLACE_NAME_JA : port.PLACE_NAME_EN) : portId
 }
 
-const formatDateTime = (dateString: string) => {
-  const date = new Date(dateString)
-  return new Intl.DateTimeFormat(locale.value, {
-    year: 'numeric',
-    month: 'short',
-    day: 'numeric',
-    hour: '2-digit',
-    minute: '2-digit'
-  }).format(date)
+const formatDateTime = (date: Date | string) => {
+  try {
+    const dateObj = date instanceof Date ? date : new Date(date)
+    if (isNaN(dateObj.getTime())) {
+      return '-'
+    }
+    return new Intl.DateTimeFormat(locale.value, {
+      year: 'numeric',
+      month: 'short',
+      day: 'numeric',
+      hour: '2-digit',
+      minute: '2-digit'
+    }).format(dateObj)
+  } catch (error) {
+    console.error('Error formatting datetime:', error)
+    return '-'
+  }
 }
 
-const formatDate = (dateString: string) => {
-  const date = new Date(dateString)
-  return new Intl.DateTimeFormat(locale.value, {
-    year: 'numeric',
-    month: 'short',
-    day: 'numeric',
-    weekday: 'short'
-  }).format(date)
+const formatDate = (date: Date | string) => {
+  try {
+    const dateObj = date instanceof Date ? date : new Date(date)
+    if (isNaN(dateObj.getTime())) {
+      return '-'
+    }
+    return new Intl.DateTimeFormat(locale.value, {
+      year: 'numeric',
+      month: 'short',
+      day: 'numeric',
+      weekday: 'short'
+    }).format(dateObj)
+  } catch (error) {
+    console.error('Error formatting date:', error)
+    return '-'
+  }
+}
+
+const formatTime = (time?: Date | string) => {
+  if (!time) return '-'
+  try {
+    const timeObj = time instanceof Date ? time : new Date(time)
+    if (isNaN(timeObj.getTime())) {
+      return '-'
+    }
+    return timeObj.toTimeString().slice(0, 5)
+  } catch (error) {
+    console.error('Error formatting time:', error)
+    return '-'
+  }
 }
 </script>

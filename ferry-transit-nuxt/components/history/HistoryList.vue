@@ -45,7 +45,7 @@ import { useRouter } from 'vue-router'
 import { useHistoryStore } from '~/stores/history'
 import { useI18n } from 'vue-i18n'
 import HistoryItem from './HistoryItem.vue'
-import type { SearchHistory } from '~/types/history'
+import type { SearchHistoryItem } from '~/types/history'
 
 const router = useRouter()
 const historyStore = useHistoryStore()
@@ -53,63 +53,98 @@ const { locale } = useI18n()
 
 // Group history by date
 const groupedHistory = computed(() => {
-  const groups: { date: string; displayDate: string; items: SearchHistory[] }[] = []
-  const groupMap = new Map<string, SearchHistory[]>()
+  const groups: { date: string; displayDate: string; items: SearchHistoryItem[] }[] = []
+  const groupMap = new Map<string, SearchHistoryItem[]>()
 
-  // Group by date
+  // Group by date string (YYYY-MM-DD format for consistent sorting)
   historyStore.history.forEach(item => {
-    const date = new Date(item.createdAt).toDateString()
-    if (!groupMap.has(date)) {
-      groupMap.set(date, [])
+    try {
+      // Use searchedAt instead of createdAt
+      const dateObj = new Date(item.searchedAt)
+      
+      // Validate date
+      if (isNaN(dateObj.getTime())) {
+        console.warn('Invalid date in search history:', item)
+        return
+      }
+      
+      const dateKey = dateObj.toISOString().split('T')[0] // YYYY-MM-DD format
+      if (!groupMap.has(dateKey)) {
+        groupMap.set(dateKey, [])
+      }
+      groupMap.get(dateKey)!.push(item)
+    } catch (error) {
+      console.error('Error processing history item:', error, item)
     }
-    groupMap.get(date)!.push(item)
   })
 
   // Convert to array with display dates
-  groupMap.forEach((items, date) => {
-    const dateObj = new Date(date)
-    const today = new Date()
-    const yesterday = new Date(today)
-    yesterday.setDate(yesterday.getDate() - 1)
+  groupMap.forEach((items, dateKey) => {
+    try {
+      // Take the first item's searchedAt to get the actual date
+      const firstItemDate = new Date(items[0].searchedAt)
+      
+      // Validate date
+      if (isNaN(firstItemDate.getTime())) {
+        console.warn('Invalid date for group:', dateKey)
+        return
+      }
+      
+      const today = new Date()
+      const yesterday = new Date(today)
+      yesterday.setDate(yesterday.getDate() - 1)
 
-    let displayDate: string
-    if (dateObj.toDateString() === today.toDateString()) {
-      displayDate = locale.value === 'ja' ? '今日' : 'Today'
-    } else if (dateObj.toDateString() === yesterday.toDateString()) {
-      displayDate = locale.value === 'ja' ? '昨日' : 'Yesterday'
-    } else {
-      displayDate = new Intl.DateTimeFormat(locale.value, {
-        month: 'long',
-        day: 'numeric',
-        weekday: 'long'
-      }).format(dateObj)
+      // Reset time parts for comparison
+      today.setHours(0, 0, 0, 0)
+      yesterday.setHours(0, 0, 0, 0)
+      const itemDate = new Date(firstItemDate)
+      itemDate.setHours(0, 0, 0, 0)
+
+      let displayDate: string
+      if (itemDate.getTime() === today.getTime()) {
+        displayDate = locale.value === 'ja' ? '今日' : 'Today'
+      } else if (itemDate.getTime() === yesterday.getTime()) {
+        displayDate = locale.value === 'ja' ? '昨日' : 'Yesterday'
+      } else {
+        displayDate = new Intl.DateTimeFormat(locale.value, {
+          month: 'long',
+          day: 'numeric',
+          weekday: 'long'
+        }).format(firstItemDate)
+      }
+
+      groups.push({
+        date: dateKey,
+        displayDate,
+        items: items.sort((a, b) => {
+          const aTime = new Date(b.searchedAt).getTime()
+          const bTime = new Date(a.searchedAt).getTime()
+          return isNaN(aTime) || isNaN(bTime) ? 0 : aTime - bTime
+        })
+      })
+    } catch (error) {
+      console.error('Error formatting group:', error, dateKey)
     }
-
-    groups.push({
-      date,
-      displayDate,
-      items: items.sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime())
-    })
   })
 
   // Sort groups by date (newest first)
-  return groups.sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime())
+  return groups.sort((a, b) => b.date.localeCompare(a.date))
 })
 
-const handleSearch = (history: SearchHistory) => {
+const handleSearch = (history: SearchHistoryItem) => {
   router.push({
     path: '/transit',
     query: {
       departure: history.departure,
       arrival: history.arrival,
-      date: history.searchDate,
-      time: history.searchTime,
+      date: history.date ? new Date(history.date).toISOString().split('T')[0] : undefined,
+      time: history.time ? new Date(history.time).toTimeString().slice(0, 5) : undefined,
       isArrivalMode: history.isArrivalMode ? '1' : '0'
     }
   })
 }
 
 const handleRemove = (id: string) => {
-  historyStore.removeHistory(id)
+  historyStore.removeHistoryItem(id)
 }
 </script>
