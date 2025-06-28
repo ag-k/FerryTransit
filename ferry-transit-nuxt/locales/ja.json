@@ -29,6 +29,7 @@
   "TOMORROW": "明日",
   "CLEAR": "削除",
   "CLOSE": "閉じる",
+  "CANCEL": "キャンセル",
   "HONDO": "七類(松江市)または境港(境港市)",
   "HONDO_SHICHIRUI": "七類(松江市)",
   "HONDO_SAKAIMINATO": "境港(境港市)",
@@ -231,7 +232,11 @@
     "done": "完了",
     "noFavorites": "お気に入りがありません",
     "addFavoritesHint": "航路や港をお気に入りに追加すると、ここに表示されます",
-    "hint": "ヒント: 編集モードでドラッグして並び替えることができます"
+    "hint": "ヒント: 編集モードでドラッグして並び替えることができます",
+    "deleteConfirmTitle": "お気に入りの削除",
+    "deleteRouteConfirmMessage": "このルートをお気に入りから削除してもよろしいですか？",
+    "deletePortConfirmMessage": "この港をお気に入りから削除してもよろしいですか？",
+    "delete": "削除"
   },
   "history": {
     "title": "検索履歴",

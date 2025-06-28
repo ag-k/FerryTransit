@@ -5,51 +5,71 @@
       <div class="flex items-start gap-2">
         <div class="flex-grow space-y-4">
           <div>
-            <label class="block text-base font-medium text-gray-700 mb-2">{{ $t('_FROM') }}</label>
-            <select
-              class="w-full px-3 py-3 text-base border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 touch-manipulation"
-              :value="departure" @change="$emit('update:departure', $event.target.value)">
-              <option value="" disabled>{{ $t('DEPARTURE') }}</option>
-              <optgroup :label="$t('MAINLAND')" class="font-medium">
-                <option v-for="port in hondoPorts" :key="port" :value="port" class="pl-2">
-                  {{ $t(port) }}
-                </option>
-              </optgroup>
-              <optgroup :label="$t('DOZEN')" class="font-medium">
-                <option v-for="port in dozenPorts" :key="port" :value="port" class="pl-2">
-                  {{ $t(port) }}
-                </option>
-              </optgroup>
-              <optgroup :label="$t('DOGO')" class="font-medium">
-                <option v-for="port in dogoPorts" :key="port" :value="port" class="pl-2">
-                  {{ $t(port) }}
-                </option>
-              </optgroup>
-            </select>
+            <div class="flex items-start gap-2">
+              <div class="flex-1">
+                <label class="block text-base font-medium text-gray-700 mb-2">{{ $t('_FROM') }}</label>
+                <select
+                  class="w-full px-3 py-3 text-base border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 touch-manipulation"
+                  :value="departure" @change="$emit('update:departure', $event.target.value)">
+                  <option value="" disabled>{{ $t('DEPARTURE') }}</option>
+                  <optgroup :label="$t('MAINLAND')" class="font-medium">
+                    <option v-for="port in hondoPorts" :key="port" :value="port" class="pl-2">
+                      {{ $t(port) }}
+                    </option>
+                  </optgroup>
+                  <optgroup :label="$t('DOZEN')" class="font-medium">
+                    <option v-for="port in dozenPorts" :key="port" :value="port" class="pl-2">
+                      {{ $t(port) }}
+                    </option>
+                  </optgroup>
+                  <optgroup :label="$t('DOGO')" class="font-medium">
+                    <option v-for="port in dogoPorts" :key="port" :value="port" class="pl-2">
+                      {{ $t(port) }}
+                    </option>
+                  </optgroup>
+                </select>
+              </div>
+              <FavoriteButton
+                v-if="departure"
+                :type="'port'"
+                :port="departure"
+                class="mt-8"
+              />
+            </div>
           </div>
 
           <div>
-            <label class="block text-base font-medium text-gray-700 mb-2">{{ $t('_TO') }}</label>
-            <select
-              class="w-full px-3 py-3 text-base border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 touch-manipulation"
-              :value="arrival" @change="$emit('update:arrival', $event.target.value)">
-              <option value="" disabled>{{ $t('ARRIVAL') }}</option>
-              <optgroup :label="$t('MAINLAND')" class="font-medium">
-                <option v-for="port in hondoPorts" :key="port" :value="port" class="pl-2">
-                  {{ $t(port) }}
-                </option>
-              </optgroup>
-              <optgroup :label="$t('DOZEN')" class="font-medium">
-                <option v-for="port in dozenPorts" :key="port" :value="port" class="pl-2">
-                  {{ $t(port) }}
-                </option>
-              </optgroup>
-              <optgroup :label="$t('DOGO')" class="font-medium">
-                <option v-for="port in dogoPorts" :key="port" :value="port" class="pl-2">
-                  {{ $t(port) }}
-                </option>
-              </optgroup>
-            </select>
+            <div class="flex items-start gap-2">
+              <div class="flex-1">
+                <label class="block text-base font-medium text-gray-700 mb-2">{{ $t('_TO') }}</label>
+                <select
+                  class="w-full px-3 py-3 text-base border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 touch-manipulation"
+                  :value="arrival" @change="$emit('update:arrival', $event.target.value)">
+                  <option value="" disabled>{{ $t('ARRIVAL') }}</option>
+                  <optgroup :label="$t('MAINLAND')" class="font-medium">
+                    <option v-for="port in hondoPorts" :key="port" :value="port" class="pl-2">
+                      {{ $t(port) }}
+                    </option>
+                  </optgroup>
+                  <optgroup :label="$t('DOZEN')" class="font-medium">
+                    <option v-for="port in dozenPorts" :key="port" :value="port" class="pl-2">
+                      {{ $t(port) }}
+                    </option>
+                  </optgroup>
+                  <optgroup :label="$t('DOGO')" class="font-medium">
+                    <option v-for="port in dogoPorts" :key="port" :value="port" class="pl-2">
+                      {{ $t(port) }}
+                    </option>
+                  </optgroup>
+                </select>
+              </div>
+              <FavoriteButton
+                v-if="arrival"
+                :type="'port'"
+                :port="arrival"
+                class="mt-8"
+              />
+            </div>
           </div>
         </div>
 
@@ -70,27 +90,37 @@
     <div class="hidden md:block mb-4">
       <div class="flex items-end gap-4">
         <div class="flex-1">
-          <label class="block text-sm font-medium text-gray-700 mb-1">{{ $t('_FROM') }}</label>
-          <select
-            class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-            :value="departure" @change="$emit('update:departure', $event.target.value)">
-            <option value="" disabled>{{ $t('DEPARTURE') }}</option>
-            <optgroup :label="$t('MAINLAND')" class="font-medium">
-              <option v-for="port in hondoPorts" :key="port" :value="port" class="pl-2">
-                {{ $t(port) }}
-              </option>
-            </optgroup>
-            <optgroup :label="$t('DOZEN')" class="font-medium">
-              <option v-for="port in dozenPorts" :key="port" :value="port" class="pl-2">
-                {{ $t(port) }}
-              </option>
-            </optgroup>
-            <optgroup :label="$t('DOGO')" class="font-medium">
-              <option v-for="port in dogoPorts" :key="port" :value="port" class="pl-2">
-                {{ $t(port) }}
-              </option>
-            </optgroup>
-          </select>
+          <div class="flex items-start gap-2">
+            <div class="flex-1">
+              <label class="block text-sm font-medium text-gray-700 mb-1">{{ $t('_FROM') }}</label>
+              <select
+                class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                :value="departure" @change="$emit('update:departure', $event.target.value)">
+                <option value="" disabled>{{ $t('DEPARTURE') }}</option>
+                <optgroup :label="$t('MAINLAND')" class="font-medium">
+                  <option v-for="port in hondoPorts" :key="port" :value="port" class="pl-2">
+                    {{ $t(port) }}
+                  </option>
+                </optgroup>
+                <optgroup :label="$t('DOZEN')" class="font-medium">
+                  <option v-for="port in dozenPorts" :key="port" :value="port" class="pl-2">
+                    {{ $t(port) }}
+                  </option>
+                </optgroup>
+                <optgroup :label="$t('DOGO')" class="font-medium">
+                  <option v-for="port in dogoPorts" :key="port" :value="port" class="pl-2">
+                    {{ $t(port) }}
+                  </option>
+                </optgroup>
+              </select>
+            </div>
+            <FavoriteButton
+              v-if="departure"
+              :type="'port'"
+              :port="departure"
+              class="mt-7"
+            />
+          </div>
         </div>
 
         <div class="px-2">
@@ -105,27 +135,37 @@
         </div>
 
         <div class="flex-1">
-          <label class="block text-sm font-medium text-gray-700 mb-1">{{ $t('_TO') }}</label>
-          <select
-            class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-            :value="arrival" @change="$emit('update:arrival', $event.target.value)">
-            <option value="" disabled>{{ $t('ARRIVAL') }}</option>
-            <optgroup :label="$t('MAINLAND')" class="font-medium">
-              <option v-for="port in hondoPorts" :key="port" :value="port" class="pl-2">
-                {{ $t(port) }}
-              </option>
-            </optgroup>
-            <optgroup :label="$t('DOZEN')" class="font-medium">
-              <option v-for="port in dozenPorts" :key="port" :value="port" class="pl-2">
-                {{ $t(port) }}
-              </option>
-            </optgroup>
-            <optgroup :label="$t('DOGO')" class="font-medium">
-              <option v-for="port in dogoPorts" :key="port" :value="port" class="pl-2">
-                {{ $t(port) }}
-              </option>
-            </optgroup>
-          </select>
+          <div class="flex items-start gap-2">
+            <div class="flex-1">
+              <label class="block text-sm font-medium text-gray-700 mb-1">{{ $t('_TO') }}</label>
+              <select
+                class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                :value="arrival" @change="$emit('update:arrival', $event.target.value)">
+                <option value="" disabled>{{ $t('ARRIVAL') }}</option>
+                <optgroup :label="$t('MAINLAND')" class="font-medium">
+                  <option v-for="port in hondoPorts" :key="port" :value="port" class="pl-2">
+                    {{ $t(port) }}
+                  </option>
+                </optgroup>
+                <optgroup :label="$t('DOZEN')" class="font-medium">
+                  <option v-for="port in dozenPorts" :key="port" :value="port" class="pl-2">
+                    {{ $t(port) }}
+                  </option>
+                </optgroup>
+                <optgroup :label="$t('DOGO')" class="font-medium">
+                  <option v-for="port in dogoPorts" :key="port" :value="port" class="pl-2">
+                    {{ $t(port) }}
+                  </option>
+                </optgroup>
+              </select>
+            </div>
+            <FavoriteButton
+              v-if="arrival"
+              :type="'port'"
+              :port="arrival"
+              class="mt-7"
+            />
+          </div>
         </div>
       </div>
     </div>
@@ -133,6 +173,8 @@
 </template>
 
 <script setup lang="ts">
+import FavoriteButton from '@/components/favorites/FavoriteButton.vue'
+
 defineProps<{
   departure: string
   arrival: string
