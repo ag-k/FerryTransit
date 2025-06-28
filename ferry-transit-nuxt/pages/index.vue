@@ -18,7 +18,7 @@
           </div>
           <h5 class="text-xl font-semibold mb-2">{{ $t('TIMETABLE') }}</h5>
           <p class="text-gray-600 mb-4">{{ $t('TIMETABLE_DESC') }}</p>
-          <NuxtLink to="/timetable" class="inline-block px-6 py-2 bg-blue-600 text-white rounded hover:bg-blue-700 transition-colors">
+          <NuxtLink :to="localePath('/timetable')" class="inline-block px-6 py-2 bg-blue-600 text-white rounded hover:bg-blue-700 transition-colors">
             {{ $t('VIEW_TIMETABLE') }}
           </NuxtLink>
         </div>
@@ -33,7 +33,7 @@
           </div>
           <h5 class="text-xl font-semibold mb-2">{{ $t('TRANSIT') }}</h5>
           <p class="text-gray-600 mb-4">{{ $t('TRANSIT_DESC') }}</p>
-          <NuxtLink to="/transit" class="inline-block px-6 py-2 bg-blue-600 text-white rounded hover:bg-blue-700 transition-colors">
+          <NuxtLink :to="localePath('/transit')" class="inline-block px-6 py-2 bg-blue-600 text-white rounded hover:bg-blue-700 transition-colors">
             {{ $t('SEARCH_ROUTES') }}
           </NuxtLink>
         </div>
@@ -49,7 +49,7 @@
           </div>
           <h5 class="text-xl font-semibold mb-2">{{ $t('STATUS') }}</h5>
           <p class="text-gray-600 mb-4">{{ $t('STATUS_DESC') }}</p>
-          <NuxtLink to="/status" class="inline-block px-6 py-2 bg-blue-600 text-white rounded hover:bg-blue-700 transition-colors">
+          <NuxtLink :to="localePath('/status')" class="inline-block px-6 py-2 bg-blue-600 text-white rounded hover:bg-blue-700 transition-colors">
             {{ $t('CHECK_STATUS') }}
           </NuxtLink>
         </div>
@@ -82,7 +82,7 @@
           </span>
         </div>
         <hr class="my-3 border-yellow-300">
-        <NuxtLink to="/status" class="inline-block px-4 py-1 text-sm bg-yellow-600 text-white rounded hover:bg-yellow-700 transition-colors">
+        <NuxtLink :to="localePath('/status')" class="inline-block px-4 py-1 text-sm bg-yellow-600 text-white rounded hover:bg-yellow-700 transition-colors">
           {{ $t('VIEW_DETAILS') }}
         </NuxtLink>
       </div>
@@ -135,6 +135,7 @@ import { useFerryStore } from '@/stores/ferry'
 import { useFerryData } from '@/composables/useFerryData'
 
 const ferryStore = useFerryStore()
+const localePath = useLocalePath()
 const { initializeData } = useFerryData()
 
 // Store data

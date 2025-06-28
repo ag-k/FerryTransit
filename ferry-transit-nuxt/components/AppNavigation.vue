@@ -9,7 +9,7 @@
     
     <div class="container mx-auto px-4">
       <div class="flex items-center justify-between py-3 sm:py-4">
-        <NuxtLink class="text-lg sm:text-xl font-medium hover:opacity-80 transition-opacity py-2 flex-1 lg:flex-none" to="/">
+        <NuxtLink class="text-lg sm:text-xl font-medium hover:opacity-80 transition-opacity py-2 flex-1 lg:flex-none" :to="localePath('/')">
           {{ $t('TITLE') }}
         </NuxtLink>
         
@@ -41,7 +41,7 @@
               <NuxtLink 
                 class="block px-4 py-4 lg:py-2 rounded hover:bg-blue-700 transition-colors text-base lg:text-sm touch-manipulation" 
                 :class="{ 'bg-blue-700 font-medium': $route.path === '/' }"
-                to="/"
+                :to="localePath('/')"
                 @click="closeMenu"
               >
                 {{ $t('HOME') }}
@@ -51,7 +51,7 @@
               <NuxtLink 
                 class="block px-4 py-4 lg:py-2 rounded hover:bg-blue-700 transition-colors text-base lg:text-sm touch-manipulation" 
                 :class="{ 'bg-blue-700 font-medium': $route.path === '/timetable' }"
-                to="/timetable"
+                :to="localePath('/timetable')"
                 @click="closeMenu"
               >
                 {{ $t('TIMETABLE') }}
@@ -61,7 +61,7 @@
               <NuxtLink 
                 class="block px-4 py-4 lg:py-2 rounded hover:bg-blue-700 transition-colors text-base lg:text-sm touch-manipulation" 
                 :class="{ 'bg-blue-700 font-medium': $route.path === '/transit' }"
-                to="/transit"
+                :to="localePath('/transit')"
                 @click="closeMenu"
               >
                 {{ $t('TRANSIT') }}
@@ -71,7 +71,7 @@
               <NuxtLink 
                 class="block px-4 py-4 lg:py-2 rounded hover:bg-blue-700 transition-colors text-base lg:text-sm touch-manipulation" 
                 :class="{ 'bg-blue-700 font-medium': $route.path === '/status' }"
-                to="/status"
+                :to="localePath('/status')"
                 @click="closeMenu"
               >
                 {{ $t('STATUS') }}
@@ -81,7 +81,7 @@
               <NuxtLink 
                 class="block px-4 py-4 lg:py-2 rounded hover:bg-blue-700 transition-colors text-base lg:text-sm touch-manipulation" 
                 :class="{ 'bg-blue-700 font-medium': $route.path === '/fare' }"
-                to="/fare"
+                :to="localePath('/fare')"
                 @click="closeMenu"
               >
                 {{ $t('FARE_TABLE') }}
@@ -91,7 +91,7 @@
               <NuxtLink 
                 class="block px-4 py-4 lg:py-2 rounded hover:bg-blue-700 transition-colors text-base lg:text-sm touch-manipulation" 
                 :class="{ 'bg-blue-700 font-medium': $route.path === '/calendar' }"
-                to="/calendar"
+                :to="localePath('/calendar')"
                 @click="closeMenu"
               >
                 {{ $t('CALENDAR') }}
@@ -101,7 +101,7 @@
               <NuxtLink 
                 class="block px-4 py-4 lg:py-2 rounded hover:bg-blue-700 transition-colors text-base lg:text-sm touch-manipulation" 
                 :class="{ 'bg-blue-700 font-medium': $route.path === '/favorites' }"
-                to="/favorites"
+                :to="localePath('/favorites')"
                 @click="closeMenu"
               >
                 {{ $t('favorites.title') }}
@@ -111,7 +111,7 @@
               <NuxtLink 
                 class="block px-4 py-4 lg:py-2 rounded hover:bg-blue-700 transition-colors text-base lg:text-sm touch-manipulation" 
                 :class="{ 'bg-blue-700 font-medium': $route.path === '/history' }"
-                to="/history"
+                :to="localePath('/history')"
                 @click="closeMenu"
               >
                 {{ $t('history.title') }}
@@ -121,7 +121,7 @@
               <NuxtLink 
                 class="block px-4 py-4 lg:py-2 rounded hover:bg-blue-700 transition-colors text-base lg:text-sm touch-manipulation" 
                 :class="{ 'bg-blue-700 font-medium': $route.path === '/settings' }"
-                to="/settings"
+                :to="localePath('/settings')"
                 @click="closeMenu"
               >
                 {{ $t('SETTINGS') }}
@@ -167,6 +167,7 @@
 const { locale, locales } = useI18n()
 const route = useRoute()
 const switchLocalePath = useSwitchLocalePath()
+const localePath = useLocalePath()
 
 // Menu states
 const menuOpen = ref(false)
