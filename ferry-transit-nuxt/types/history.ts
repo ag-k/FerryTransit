@@ -8,6 +8,7 @@ export interface SearchHistoryItem {
   time?: Date
   isArrivalMode?: boolean
   searchedAt: Date
+  resultCount?: number
 }
 
 // Search history store interface
