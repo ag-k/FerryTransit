@@ -437,6 +437,19 @@ function showRouteDetails(route: TransitRoute) {
   showDetailsModal.value = true
 }
 
+// Initialize from URL parameters
+onMounted(() => {
+  const route = useRoute()
+  
+  // URLパラメータから設定
+  if (route.query.departure) {
+    searchParams.departure = route.query.departure as string
+  }
+  if (route.query.arrival) {
+    searchParams.arrival = route.query.arrival as string
+  }
+})
+
 // Page metadata
 useHead({
   title: `${useNuxtApp().$i18n.t('TRANSIT')} - ${useNuxtApp().$i18n.t('TITLE')}`

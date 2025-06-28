@@ -29,6 +29,7 @@
   "TOMORROW": "Tomorrow",
   "CLEAR": "Clear",
   "CLOSE": "Close",
+  "CANCEL": "Cancel",
   "HONDO": "Shichirui or Sakaiminato",
   "HONDO_SHICHIRUI": "Shichirui",
   "HONDO_SAKAIMINATO": "Sakaiminato",
@@ -191,7 +192,11 @@
     "done": "Done",
     "noFavorites": "No favorites",
     "addFavoritesHint": "Add routes or ports to favorites and they will appear here",
-    "hint": "Hint: Drag to reorder in edit mode"
+    "hint": "Hint: Drag to reorder in edit mode",
+    "deleteConfirmTitle": "Remove from Favorites",
+    "deleteRouteConfirmMessage": "Are you sure you want to remove this route from favorites?",
+    "deletePortConfirmMessage": "Are you sure you want to remove this port from favorites?",
+    "delete": "Delete"
   },
   "history": {
     "title": "Search History",

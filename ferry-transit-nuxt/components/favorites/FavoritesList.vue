@@ -25,7 +25,6 @@
                 :departure="element.departure"
                 :arrival="element.arrival"
                 :last-search-date="element.lastSearchDate"
-                @remove="favoriteStore.removeFavoriteRoute(element.id)"
               />
             </div>
           </template>
@@ -37,11 +36,10 @@
       >
         <FavoriteRouteCard
           v-for="route in favoriteRoutes"
-          :key="`${route.departure}-${route.arrival}`"
+          :key="route.id"
           :departure="route.departure"
           :arrival="route.arrival"
           :last-search-date="route.lastSearchDate"
-          @remove="favoriteStore.removeFavoriteRoute(route.id)"
         />
       </div>
     </section>
@@ -70,7 +68,6 @@
               <FavoritePortCard
                 :port-id="element.portCode"
                 :port-code="element.portCode"
-                @remove="favoriteStore.removeFavoritePort(element.id)"
               />
             </div>
           </template>
@@ -85,7 +82,6 @@
           :key="port.id"
           :port-id="port.portCode"
           :port-code="port.portCode"
-          @remove="favoriteStore.removeFavoritePort(port.id)"
         />
       </div>
     </section>
@@ -135,8 +131,26 @@ const props = withDefaults(defineProps<Props>(), {
 
 const favoriteStore = useFavoriteStore()
 
-const favoriteRoutes = ref([...favoriteStore.routes])
-const favoritePorts = ref([...favoriteStore.ports])
+// リアクティブにストアの変更を反映
+const favoriteRoutes = computed({
+  get: () => props.editMode ? [...favoriteStore.routes] : favoriteStore.routes,
+  set: (value) => {
+    if (props.editMode) {
+      const ids = value.map(r => r.id)
+      favoriteStore.reorderFavoriteRoutes(ids)
+    }
+  }
+})
+
+const favoritePorts = computed({
+  get: () => props.editMode ? [...favoriteStore.ports] : favoriteStore.ports,
+  set: (value) => {
+    if (props.editMode) {
+      const ids = value.map(p => p.id)
+      favoriteStore.reorderFavoritePorts(ids)
+    }
+  }
+})
 
 const updateRouteOrder = () => {
   const ids = favoriteRoutes.value.map(r => r.id)

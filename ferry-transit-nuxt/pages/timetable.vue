@@ -100,8 +100,14 @@
     
     <!-- 時刻表 -->
     <div class="bg-white rounded-lg shadow-sm border border-gray-200">
-      <div class="bg-blue-600 text-white px-4 py-3 rounded-t-lg">
+      <div class="bg-blue-600 text-white px-4 py-3 rounded-t-lg flex items-center justify-between">
         <h3 class="text-lg font-medium">{{ $t('TIMETABLE') }}</h3>
+        <FavoriteButton
+          v-if="departure && arrival"
+          :type="'route'"
+          :route="{ departure, arrival }"
+          class="text-white hover:text-yellow-300"
+        />
       </div>
       <ClientOnly>
         <div class="p-0">
@@ -217,6 +223,7 @@
 import { useFerryStore } from '@/stores/ferry'
 import { useHistoryStore } from '@/stores/history'
 import { useFerryData } from '@/composables/useFerryData'
+import FavoriteButton from '@/components/favorites/FavoriteButton.vue'
 
 // Store and composables
 const ferryStore = useFerryStore()
@@ -379,6 +386,16 @@ const closeModal = () => {
 
 // Initialize data on mount
 onMounted(async () => {
+  const route = useRoute()
+  
+  // URLパラメータから設定
+  if (route.query.departure) {
+    ferryStore.setDeparture(route.query.departure as string)
+  }
+  if (route.query.arrival) {
+    ferryStore.setArrival(route.query.arrival as string)
+  }
+  
   if (ferryStore.timetableData.length === 0) {
     await initializeData()
   }

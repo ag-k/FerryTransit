@@ -5,11 +5,24 @@ import type {
   ShipStatus, 
   FerryStatus, 
   SightseeingStatus,
-  Port,
-  Ship,
   PORTS,
   SHIPS
 } from '@/types'
+
+// Port and Ship interfaces
+interface Port {
+  PORT_ID: string
+  PLACE_NAME_JA: string
+  PLACE_NAME_EN: string
+  island_ja: string
+  island_en: string
+}
+
+interface Ship {
+  SHIP_ID: string
+  SHIP_NAME_JA: string
+  SHIP_NAME_EN: string
+}
 
 export const useFerryStore = defineStore('ferry', () => {
   // State
@@ -44,6 +57,86 @@ export const useFerryStore = defineStore('ferry', () => {
 
   const allPorts = computed(() => [...hondoPorts, ...dozenPorts, ...dogoPorts])
 
+  // Port data
+  const ports = ref<Port[]>([
+    {
+      PORT_ID: 'HONDO_SHICHIRUI',
+      PLACE_NAME_JA: '七類港',
+      PLACE_NAME_EN: 'Shichirui Port',
+      island_ja: '本土',
+      island_en: 'Mainland'
+    },
+    {
+      PORT_ID: 'HONDO_SAKAIMINATO',
+      PLACE_NAME_JA: '境港',
+      PLACE_NAME_EN: 'Sakaiminato Port',
+      island_ja: '本土',
+      island_en: 'Mainland'
+    },
+    {
+      PORT_ID: 'SAIGO',
+      PLACE_NAME_JA: '西郷港',
+      PLACE_NAME_EN: 'Saigo Port',
+      island_ja: '隠岐の島町',
+      island_en: 'Okinoshima Town'
+    },
+    {
+      PORT_ID: 'BEPPU',
+      PLACE_NAME_JA: '別府港',
+      PLACE_NAME_EN: 'Beppu Port',
+      island_ja: '西ノ島',
+      island_en: 'Nishinoshima'
+    },
+    {
+      PORT_ID: 'HISHIURA',
+      PLACE_NAME_JA: '菱浦港',
+      PLACE_NAME_EN: 'Hishiura Port',
+      island_ja: '中ノ島',
+      island_en: 'Nakanoshima'
+    },
+    {
+      PORT_ID: 'KURI',
+      PLACE_NAME_JA: '来居港',
+      PLACE_NAME_EN: 'Kuri Port',
+      island_ja: '知夫里島',
+      island_en: 'Chiburijima'
+    }
+  ])
+
+  // Ship data
+  const ships = ref<Ship[]>([
+    {
+      SHIP_ID: 'FERRY_OKI',
+      SHIP_NAME_JA: 'フェリーおき',
+      SHIP_NAME_EN: 'Ferry Oki'
+    },
+    {
+      SHIP_ID: 'FERRY_SHIRASHIMA',
+      SHIP_NAME_JA: 'フェリーしらしま',
+      SHIP_NAME_EN: 'Ferry Shirashima'
+    },
+    {
+      SHIP_ID: 'FERRY_KUNIGA',
+      SHIP_NAME_JA: 'フェリーくにが',
+      SHIP_NAME_EN: 'Ferry Kuniga'
+    },
+    {
+      SHIP_ID: 'FERRY_DOZEN',
+      SHIP_NAME_JA: 'フェリーどうぜん',
+      SHIP_NAME_EN: 'Ferry Dozen'
+    },
+    {
+      SHIP_ID: 'ISOKAZE',
+      SHIP_NAME_JA: 'いそかぜ',
+      SHIP_NAME_EN: 'Isokaze'
+    },
+    {
+      SHIP_ID: 'RAINBOWJET',
+      SHIP_NAME_JA: 'レインボージェット',
+      SHIP_NAME_EN: 'Rainbow Jet'
+    }
+  ])
+
   // Port map data
   const portMaps: Record<string, string> = {
     'HONDO': '<iframe src="https://www.google.com/maps/d/embed?mid=10LYdFfHjM-C6lq36egqxMuDIiMg" width="100%" allowfullscreen loading="lazy"></iframe>',
@@ -52,7 +145,7 @@ export const useFerryStore = defineStore('ferry', () => {
     'KURI': '<iframe src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3226.807196887792!2d133.03717155028508!3d36.0250013185523!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x3557d02204625465%3A0x79e1cdd47cbe20cd!2z5p2l5bGF5riv44OV44Kn44Oq44O844K_44O844Of44OK44Or!5e0!3m2!1sja!2sjp!4v1508491503665" width="100%" allowfullscreen loading="lazy"></iframe>',
     'BEPPU': '<iframe src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3223.417639692854!2d133.03936811472514!3d36.107681714074126!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x3557d73e33b20b8f%3A0xaf30d22cfc266131!2z6KW_44OO5bO25Yil5bqc5riv44OV44Kn44Oq44O844K_44O844Of44OK44Or!5e0!3m2!1sja!2sjp!4v1508490887500" width="100%" allowfullscreen loading="lazy"></iframe>',
     'HISHIURA': '<iframe src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3223.532279545968!2d133.07474405028748!3d36.10488801413124!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x3557d6f346eb8e25%3A0x99246dba291fb735!2z6I-x5rWm5riv44OV44Kn44Oq44O844K_44O844Of44OK44Or!5e0!3m2!1sja!2sjp!4v1508491452795" width="100%" allowfullscreen loading="lazy"></iframe>',
-    'SAIGO': '<iframe src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3219.4725184532863!2d133.33284095029055!3d36.20370830865085!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x5ffd77b679a1e833%3A0x3375700953b9cf6e!2z6KW_6YO35riv44OV44Kn44Oq44O844K_44O844Of44OK44Or!5e0!3m2!1sja!2sjp!4v1508491478099" width="100%" allowfullscreen loading="lazy"></iframe>'
+    'SAIGO': '<iframe src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3219.4725184532863!2d133.33284095029055!3d36.20370830865085!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x5ffd77b679a1e833%3A0x3375700953b9cf6e!2z6KW_6YO95riv44OV44Kn44Oq44O844K_44O844Of44OK44Or!5e0!3m2!1sja!2sjp!4v1508491478099" width="100%" allowfullscreen loading="lazy"></iframe>'
   }
 
   // Getters
@@ -485,6 +578,8 @@ export const useFerryStore = defineStore('ferry', () => {
     lastFetchTime,
     
     // Port data
+    ports,
+    ships,
     hondoPorts,
     dozenPorts,
     dogoPorts,
