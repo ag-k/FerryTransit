@@ -14,16 +14,16 @@
             <div class="flex items-start gap-2">
               <div class="flex-1">
                 <PortSelector
-                  v-model="searchParams.departure"
+                  v-model="departure"
                   :label="$t('_FROM')"
                   :placeholder="$t('DEPARTURE')"
-                  :disabled-ports="[searchParams.arrival]"
+                  :disabled-ports="[arrival]"
                 />
               </div>
               <FavoriteButton
-                v-if="searchParams.departure"
+                v-if="departure"
                 :type="'port'"
-                :port="searchParams.departure"
+                :port="departure"
                 class="mt-8"
               />
             </div>
@@ -46,16 +46,16 @@
             <div class="flex items-start gap-2">
               <div class="flex-1">
                 <PortSelector
-                  v-model="searchParams.arrival"
+                  v-model="arrival"
                   :label="$t('_TO')"
                   :placeholder="$t('ARRIVAL')"
-                  :disabled-ports="[searchParams.departure]"
+                  :disabled-ports="[departure]"
                 />
               </div>
               <FavoriteButton
-                v-if="searchParams.arrival"
+                v-if="arrival"
                 :type="'port'"
-                :port="searchParams.arrival"
+                :port="arrival"
                 class="mt-8"
               />
             </div>
@@ -66,7 +66,7 @@
         <div class="grid md:grid-cols-2 gap-4 mb-4">
           <div>
             <DatePicker
-              v-model="searchParams.date"
+              v-model="date"
               :label="$t('DATE')"
               :min-date="today"
             />
@@ -79,7 +79,7 @@
             <label class="block text-sm font-medium text-gray-700 mb-1">{{ $t('TIME') }}</label>
             <div class="flex">
               <select 
-                v-model="searchParams.isArrivalMode"
+                v-model="isArrivalMode"
                 class="px-3 py-2 border border-gray-300 rounded-l-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
                 style="min-width: 140px"
               >
@@ -88,7 +88,7 @@
               </select>
               <input 
                 type="time"
-                v-model="searchParams.time"
+                v-model="time"
                 class="flex-1 px-3 py-2 border border-l-0 border-gray-300 rounded-r-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
               >
             </div>
@@ -126,7 +126,7 @@
             </h3>
             <FavoriteButton
               :type="'route'"
-              :route="{ departure: searchParams.departure, arrival: searchParams.arrival }"
+              :route="{ departure: departure, arrival: arrival }"
               class="text-white hover:text-yellow-300"
             />
           </div>
@@ -299,34 +299,42 @@ import type { TransitRoute } from '@/types'
 const ferryStore = useFerryStore()
 const historyStore = useHistoryStore()
 
-// Search parameters
-const searchParams = reactive({
-  departure: ferryStore.departure,
-  arrival: ferryStore.arrival,
-  date: new Date(),
-  time: getCurrentTimeString(),
-  isArrivalMode: false
-})
+// Search parameters - use refs for better reactivity
+const departure = ref(ferryStore.departure)
+const arrival = ref(ferryStore.arrival)
+const date = ref(new Date())
+const time = ref(getCurrentTimeString())
+const isArrivalMode = ref(false)
 
-// Watch for changes in searchParams and update ferryStore
-watch(() => searchParams.departure, (newVal) => {
+// Create searchParams as a computed object for better reactivity
+const searchParams = computed(() => ({
+  departure: departure.value,
+  arrival: arrival.value,
+  date: date.value,
+  time: time.value,
+  isArrivalMode: isArrivalMode.value
+}))
+
+
+// Watch for changes in departure/arrival and update ferryStore
+watch(departure, (newVal) => {
   ferryStore.setDeparture(newVal)
 })
 
-watch(() => searchParams.arrival, (newVal) => {
+watch(arrival, (newVal) => {
   ferryStore.setArrival(newVal)
 })
 
-// Watch for changes in ferryStore and update searchParams
+// Watch for changes in ferryStore and update local refs
 watch(() => ferryStore.departure, (newVal) => {
-  if (searchParams.departure !== newVal) {
-    searchParams.departure = newVal
+  if (departure.value !== newVal) {
+    departure.value = newVal
   }
 })
 
 watch(() => ferryStore.arrival, (newVal) => {
-  if (searchParams.arrival !== newVal) {
-    searchParams.arrival = newVal
+  if (arrival.value !== newVal) {
+    arrival.value = newVal
   }
 })
 
@@ -347,9 +355,9 @@ today.setHours(0, 0, 0, 0)
 
 // Computed
 const canSearch = computed(() => {
-  return searchParams.departure && 
-         searchParams.arrival && 
-         searchParams.departure !== searchParams.arrival
+  return departure.value && 
+         arrival.value && 
+         departure.value !== arrival.value
 })
 
 const displayedResults = computed(() => {
@@ -365,9 +373,9 @@ function getCurrentTimeString(): string {
 }
 
 function reverseRoute() {
-  const temp = searchParams.departure
-  searchParams.departure = searchParams.arrival
-  searchParams.arrival = temp
+  const temp = departure.value
+  departure.value = arrival.value
+  arrival.value = temp
   // ferryStore will be updated via the watch handlers
 }
 
@@ -405,18 +413,24 @@ async function handleSearch() {
     return
   }
   
-  console.log('Starting search with params:', searchParams)
+  console.log('Starting search with params:', {
+    departure: departure.value,
+    arrival: arrival.value,
+    date: date.value,
+    time: time.value,
+    isArrivalMode: isArrivalMode.value
+  })
   isSearching.value = true
   hasSearched.value = true
   displayLimit.value = 5
   
   try {
     const results = await searchRoutes(
-      searchParams.departure,
-      searchParams.arrival,
-      searchParams.date,
-      searchParams.time,
-      searchParams.isArrivalMode
+      departure.value,
+      arrival.value,
+      date.value,
+      time.value,
+      isArrivalMode.value
     )
     
     console.log('Search results:', results)
@@ -425,11 +439,11 @@ async function handleSearch() {
     // Add to search history
     historyStore.addSearchHistory({
       type: 'route',
-      departure: searchParams.departure,
-      arrival: searchParams.arrival,
-      date: searchParams.date,
-      time: searchParams.time,
-      isArrivalMode: searchParams.isArrivalMode
+      departure: departure.value,
+      arrival: arrival.value,
+      date: date.value,
+      time: time.value,
+      isArrivalMode: isArrivalMode.value
     })
   } catch (error) {
     console.error('Search error:', error)
@@ -454,10 +468,10 @@ onMounted(() => {
   
   // URLパラメータから設定
   if (route.query.departure) {
-    searchParams.departure = route.query.departure as string
+    departure.value = route.query.departure as string
   }
   if (route.query.arrival) {
-    searchParams.arrival = route.query.arrival as string
+    arrival.value = route.query.arrival as string
   }
 })
 

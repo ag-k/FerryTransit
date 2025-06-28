@@ -51,15 +51,26 @@ const inputId = `date-picker-${Math.random().toString(36).substr(2, 9)}`
 
 // Computed properties for date strings
 const modelValueString = computed(() => {
-  return props.modelValue.toISOString().split('T')[0]
+  const year = props.modelValue.getFullYear()
+  const month = String(props.modelValue.getMonth() + 1).padStart(2, '0')
+  const day = String(props.modelValue.getDate()).padStart(2, '0')
+  return `${year}-${month}-${day}`
 })
 
 const minDateString = computed(() => {
-  return props.minDate ? props.minDate.toISOString().split('T')[0] : undefined
+  if (!props.minDate) return undefined
+  const year = props.minDate.getFullYear()
+  const month = String(props.minDate.getMonth() + 1).padStart(2, '0')
+  const day = String(props.minDate.getDate()).padStart(2, '0')
+  return `${year}-${month}-${day}`
 })
 
 const maxDateString = computed(() => {
-  return props.maxDate ? props.maxDate.toISOString().split('T')[0] : undefined
+  if (!props.maxDate) return undefined
+  const year = props.maxDate.getFullYear()
+  const month = String(props.maxDate.getMonth() + 1).padStart(2, '0')
+  const day = String(props.maxDate.getDate()).padStart(2, '0')
+  return `${year}-${month}-${day}`
 })
 
 // Methods
@@ -70,8 +81,14 @@ const handleChange = (event: Event) => {
 }
 
 const selectToday = () => {
-  const today = new Date()
-  today.setHours(0, 0, 0, 0)
+  // 日本時間（JST）で本日の日付を取得
+  const now = new Date()
+  const jstOffset = 9 * 60 // JST は UTC+9
+  const utcTime = now.getTime() + now.getTimezoneOffset() * 60000
+  const jstTime = new Date(utcTime + jstOffset * 60000)
+  
+  // 時刻を0:00:00に設定
+  const today = new Date(jstTime.getFullYear(), jstTime.getMonth(), jstTime.getDate(), 0, 0, 0, 0)
   emit('update:modelValue', today)
 }
 </script>
