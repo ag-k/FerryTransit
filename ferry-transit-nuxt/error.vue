@@ -43,7 +43,7 @@
 
         <div class="space-y-3">
           <NuxtLink
-            to="/"
+            :to="localePath('/')"
             class="inline-flex items-center px-6 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors duration-200"
           >
             <svg
@@ -91,7 +91,9 @@ defineProps<{
   }
 }>()
 
+const localePath = useLocalePath()
+
 const handleRefresh = () => {
-  clearError({ redirect: '/' })
+  clearError({ redirect: localePath('/') })
 }
 </script>

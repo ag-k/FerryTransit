@@ -60,7 +60,7 @@
     <div class="flex space-x-2">
       <NuxtLink
         :to="{
-          path: '/timetable',
+          path: localePath('/timetable'),
           query: {
             departure: departure,
             arrival: arrival
@@ -72,7 +72,7 @@
       </NuxtLink>
       <NuxtLink
         :to="{
-          path: '/transit',
+          path: localePath('/transit'),
           query: {
             departure: departure,
             arrival: arrival
@@ -129,6 +129,7 @@ const router = useRouter()
 const ferryStore = useFerryStore()
 const favoriteStore = useFavoriteStore()
 const { locale } = useI18n()
+const localePath = useLocalePath()
 
 // State
 const isConfirmOpen = ref(false)

@@ -34,7 +34,12 @@ export default defineNuxtConfig({
     langDir: 'locales',
     detectBrowserLanguage: {
       useCookie: true,
-      cookieKey: 'i18n_redirected',
+      cookieKey: 'ferry-transit-locale',
+      cookieDomain: null,
+      cookieSecure: true,
+      cookieCrossOrigin: false,
+      cookieSameSite: 'lax',
+      fallbackLocale: 'ja',
       redirectOn: 'root',
       alwaysRedirect: false
     },

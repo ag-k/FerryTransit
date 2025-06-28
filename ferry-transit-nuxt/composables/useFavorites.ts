@@ -10,6 +10,7 @@ export const useFavorites = () => {
   const uiStore = useUIStore()
   const router = useRouter()
   const { $i18n } = useNuxtApp()
+  const localePath = useLocalePath()
 
   // ルートのお気に入り切り替え
   const toggleFavoriteRoute = async (
@@ -134,7 +135,7 @@ export const useFavorites = () => {
     
     // 乗換案内ページへ遷移
     await router.push({
-      path: '/transit',
+      path: localePath('/transit'),
       query: {
         from: route.departure,
         to: route.arrival

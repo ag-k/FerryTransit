@@ -50,6 +50,7 @@ import type { SearchHistoryItem } from '~/types/history'
 const router = useRouter()
 const historyStore = useHistoryStore()
 const { locale } = useI18n()
+const localePath = useLocalePath()
 
 // Group history by date
 const groupedHistory = computed(() => {
@@ -133,7 +134,7 @@ const groupedHistory = computed(() => {
 
 const handleSearch = (history: SearchHistoryItem) => {
   router.push({
-    path: '/transit',
+    path: localePath('/transit'),
     query: {
       departure: history.departure,
       arrival: history.arrival,

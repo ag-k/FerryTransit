@@ -111,6 +111,7 @@ const router = useRouter()
 const ferryStore = useFerryStore()
 const favoriteStore = useFavoriteStore()
 const { locale } = useI18n()
+const localePath = useLocalePath()
 
 // State
 const isConfirmOpen = ref(false)
@@ -135,7 +136,7 @@ const nextDepartures = computed(() => {
 
 const viewTimetable = () => {
   router.push({
-    path: '/timetable',
+    path: localePath('/timetable'),
     query: {
       departure: props.portId
     }
