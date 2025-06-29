@@ -23,6 +23,67 @@ export const useUIStore = defineStore('ui', () => {
   // Search mode
   const searchMode = ref<'departureTime' | 'arrivalTime'>('departureTime')
   
+  // Theme state
+  const theme = ref<'light' | 'dark' | 'system'>('system')
+  const prefersDark = ref(false)
+  
+  // Initialize theme
+  const initializeTheme = () => {
+    // クライアントサイドでのみ実行
+    if (process.client) {
+      // LocalStorageから設定を読み込む
+      const savedTheme = localStorage.getItem('theme') as 'light' | 'dark' | 'system' | null
+      if (savedTheme) {
+        theme.value = savedTheme
+      }
+      
+      // システムのダークモード設定を監視
+      if (window.matchMedia) {
+        const darkModeQuery = window.matchMedia('(prefers-color-scheme: dark)')
+        prefersDark.value = darkModeQuery.matches
+        
+        darkModeQuery.addEventListener('change', (e) => {
+          prefersDark.value = e.matches
+          applyTheme()
+        })
+      }
+      
+      applyTheme()
+    }
+  }
+  
+  // テーマを適用
+  const applyTheme = () => {
+    // クライアントサイドでのみ実行
+    if (process.client) {
+      const root = document.documentElement
+      const isDark = theme.value === 'dark' || (theme.value === 'system' && prefersDark.value)
+      
+      if (isDark) {
+        root.classList.add('dark')
+      } else {
+        root.classList.remove('dark')
+      }
+    }
+  }
+  
+  // テーマを設定
+  const setTheme = (newTheme: 'light' | 'dark' | 'system') => {
+    theme.value = newTheme
+    if (process.client) {
+      localStorage.setItem('theme', newTheme)
+    }
+    applyTheme()
+  }
+  
+  // 現在の実効テーマを取得
+  const currentTheme = computed(() => {
+    if (theme.value === 'system') {
+      return prefersDark.value ? 'dark' : 'light'
+    }
+    return theme.value
+  })
+  
   // Actions
   const setActiveTab = (tabIndex: number) => {
     activeTab.value = tabIndex
@@ -101,6 +162,8 @@ export const useUIStore = defineStore('ui', () => {
     modalContent,
     dropdownStates,
     searchMode,
+    theme,
+    currentTheme,
     
     // Actions
     setActiveTab,
@@ -112,6 +175,8 @@ export const useUIStore = defineStore('ui', () => {
     toggleDropdown,
     closeAllDropdowns,
     setSearchMode,
-    setLoading
+    setLoading,
+    initializeTheme,
+    setTheme
   }
 })

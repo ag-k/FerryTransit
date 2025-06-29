@@ -326,6 +326,18 @@ ferry-transit-nuxt/
 
 ## 技術的な変更履歴
 
+### 2025年6月28日
+- ナビゲーションコンポーネントのダークモード対応を実装
+- `AppNavigation.vue`にダークモードクラスを追加
+  - 背景色: `dark:bg-gray-800`、ボーダー: `dark:border-gray-700`
+  - ホバー状態: `dark:hover:bg-gray-700`
+  - 言語ドロップダウン: `dark:bg-gray-700`、`dark:text-gray-200`
+- `AppBottomNavigation.vue`にダークモードクラスを追加
+  - 背景色: `dark:bg-gray-800`、ボーダー: `dark:border-gray-700`
+  - アクティブアイコン: `dark:text-blue-400`
+  - 非アクティブアイコン: `dark:text-gray-400`
+- ビルドとテストが正常に完了することを確認
+
 ### 2025年6月23日（フェーズ5完了）
 - フェーズ5のUI/UX実装を完了
 - お気に入り機能のUIコンポーネント実装

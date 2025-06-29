@@ -1,11 +1,11 @@
 <template>
   <div class="container max-w-[1000px] mx-auto px-4 py-8">
-    <h2 class="text-2xl font-semibold mb-6">{{ $t('TRANSIT') }}</h2>
+    <h2 class="text-2xl font-semibold mb-6 dark:text-white">{{ $t('TRANSIT') }}</h2>
     
     <!-- Search Form -->
-    <div class="bg-white rounded-lg shadow-sm border border-gray-200 mb-6">
-      <div class="bg-gray-50 px-4 py-3 border-b">
-        <h3 class="text-lg font-medium">{{ $t('SEARCH_CONDITIONS') }}</h3>
+    <div class="bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700 mb-6">
+      <div class="bg-gray-50 dark:bg-gray-700 px-4 py-3 border-b dark:border-gray-600">
+        <h3 class="text-lg font-medium dark:text-white">{{ $t('SEARCH_CONDITIONS') }}</h3>
       </div>
       <div class="p-4">
         <!-- Port Selection -->
@@ -32,7 +32,7 @@
           <div class="md:col-span-2 flex items-end justify-center mb-4">
             <button 
               type="button" 
-              class="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 transform active:scale-95 transition-all duration-150 shadow-sm hover:shadow-md"
+              class="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700 dark:bg-blue-500 dark:hover:bg-blue-600 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 dark:focus:ring-offset-gray-800 transform active:scale-95 transition-all duration-150 shadow-sm hover:shadow-md"
               @click="reverseRoute"
               aria-label="Reverse route"
             >
@@ -76,11 +76,11 @@
         <!-- Time Selection -->
         <div class="grid md:grid-cols-2 gap-4 mb-4">
           <div>
-            <label class="block text-sm font-medium text-gray-700 mb-1">{{ $t('TIME') }}</label>
+            <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">{{ $t('TIME') }}</label>
             <div class="flex">
               <select 
                 v-model="isArrivalMode"
-                class="px-3 py-2 border border-gray-300 rounded-l-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                class="px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-l-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:text-white"
                 style="min-width: 140px"
               >
                 <option :value="false">{{ $t('DEPARTURE_AFTER') }}</option>
@@ -89,7 +89,7 @@
               <input 
                 type="time"
                 v-model="time"
-                class="flex-1 px-3 py-2 border border-l-0 border-gray-300 rounded-r-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                class="flex-1 px-3 py-2 border border-l-0 border-gray-300 dark:border-gray-600 rounded-r-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:text-white"
               >
             </div>
           </div>
@@ -99,7 +99,7 @@
         <div>
           <button 
             type="button"
-            class="px-6 py-2 bg-blue-600 text-white rounded hover:bg-blue-700 active:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 transform active:scale-95 transition-all duration-150 disabled:bg-gray-400 disabled:cursor-not-allowed disabled:transform-none flex items-center shadow-sm hover:shadow-md"
+            class="px-6 py-2 bg-blue-600 text-white rounded hover:bg-blue-700 dark:bg-blue-500 dark:hover:bg-blue-600 active:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 dark:focus:ring-offset-gray-800 transform active:scale-95 transition-all duration-150 disabled:bg-gray-400 dark:disabled:bg-gray-600 disabled:cursor-not-allowed disabled:transform-none flex items-center shadow-sm hover:shadow-md"
             :disabled="!canSearch || isSearching"
             @click="handleSearch"
           >
@@ -117,8 +117,8 @@
     <div v-if="searchResults.length > 0">
       <!-- Route Panels -->
       <div v-for="(route, index) in displayedResults" :key="index" class="mb-4">
-        <div class="bg-white rounded-lg shadow-sm border border-blue-600">
-          <div class="bg-blue-600 text-white px-4 py-2 flex items-center justify-between">
+        <div class="bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-blue-600 dark:border-blue-500">
+          <div class="bg-blue-600 dark:bg-blue-700 text-white px-4 py-2 flex items-center justify-between">
             <h3 class="font-medium">
               {{ $t('ROUTE') }}{{ index + 1 }} - 
               {{ calculateDuration(route.departureTime, route.arrivalTime) }} / 
@@ -134,17 +134,17 @@
             <table class="w-full text-sm">
               <thead>
                 <tr>
-                  <th class="text-left pb-2 font-medium w-1/4">{{ $t('TIME') }}</th>
-                  <th class="text-left pb-2 font-medium">{{ $t('ROUTE') }}</th>
-                  <th class="text-left pb-2 font-medium w-1/4">{{ $t('FARE') }}</th>
+                  <th class="text-left pb-2 font-medium w-1/4 dark:text-gray-300">{{ $t('TIME') }}</th>
+                  <th class="text-left pb-2 font-medium dark:text-gray-300">{{ $t('ROUTE') }}</th>
+                  <th class="text-left pb-2 font-medium w-1/4 dark:text-gray-300">{{ $t('FARE') }}</th>
                 </tr>
               </thead>
               <tbody>
                 <!-- Departure -->
-                <tr style="background-color: #D8ECF3;">
-                  <td class="py-2 text-right pr-4">{{ formatTime(route.departureTime) }}</td>
+                <tr class="bg-[#D8ECF3] dark:bg-blue-900/20">
+                  <td class="py-2 text-right pr-4 dark:text-gray-300">{{ formatTime(route.departureTime) }}</td>
                   <td class="py-2 pl-4">
-                    <a href="#" @click.prevent="showPortInfo(route.segments[0].departure)" class="text-blue-600 hover:underline">
+                    <a href="#" @click.prevent="showPortInfo(route.segments[0].departure)" class="text-blue-600 dark:text-blue-400 hover:underline">
                       {{ getPortDisplayName(route.segments[0].departure) }}
                     </a>
                   </td>
@@ -154,43 +154,43 @@
                 <!-- Segments -->
                 <template v-for="(segment, segIndex) in route.segments" :key="'seg-' + segIndex">
                   <!-- Ship Row -->
-                  <tr class="bg-white">
-                    <td class="py-2 text-right pr-4">↓</td>
+                  <tr class="bg-white dark:bg-gray-800">
+                    <td class="py-2 text-right pr-4 dark:text-gray-300">↓</td>
                     <td class="py-2 pl-4" :style="getShipBorderStyle(segment.ship)">
                       <div class="flex items-center">
-                        <span v-if="segment.status === 2" class="mr-2 text-red-600">×</span>
-                        <span v-else-if="segment.status === 3" class="mr-2 text-yellow-600">⚠</span>
-                        <span v-else-if="segment.status === 4" class="mr-2 text-green-600">+</span>
-                        <a href="#" @click.prevent="showShipInfo(segment.ship)" class="text-blue-600 hover:underline">
+                        <span v-if="segment.status === 2" class="mr-2 text-red-600 dark:text-red-400">×</span>
+                        <span v-else-if="segment.status === 3" class="mr-2 text-yellow-600 dark:text-yellow-400">⚠</span>
+                        <span v-else-if="segment.status === 4" class="mr-2 text-green-600 dark:text-green-400">+</span>
+                        <a href="#" @click.prevent="showShipInfo(segment.ship)" class="text-blue-600 dark:text-blue-400 hover:underline">
                           {{ $t(segment.ship) }}
                         </a>
                       </div>
                     </td>
-                    <td class="py-2">¥{{ segment.fare.toLocaleString() }}</td>
+                    <td class="py-2 dark:text-gray-300">¥{{ segment.fare.toLocaleString() }}</td>
                   </tr>
                   
                   <!-- Transfer Port (if not last segment) -->
-                  <tr v-if="segIndex < route.segments.length - 1" style="background-color: #D8ECF3;">
-                    <td class="py-2 text-right pr-4">{{ formatTime(segment.arrivalTime) }}</td>
+                  <tr v-if="segIndex < route.segments.length - 1" class="bg-[#D8ECF3] dark:bg-blue-900/20">
+                    <td class="py-2 text-right pr-4 dark:text-gray-300">{{ formatTime(segment.arrivalTime) }}</td>
                     <td class="py-2 pl-4">
-                      <a href="#" @click.prevent="showPortInfo(segment.arrival)" class="text-blue-600 hover:underline">
+                      <a href="#" @click.prevent="showPortInfo(segment.arrival)" class="text-blue-600 dark:text-blue-400 hover:underline">
                         {{ getPortDisplayName(segment.arrival) }}
                       </a>
-                      <span class="text-xs text-gray-600 ml-2">({{ $t('TRANSFER') }})</span>
+                      <span class="text-xs text-gray-600 dark:text-gray-400 ml-2">({{ $t('TRANSFER') }})</span>
                     </td>
                     <td class="py-2"></td>
                   </tr>
                 </template>
                 
                 <!-- Arrival -->
-                <tr style="background-color: #D8ECF3;">
-                  <td class="py-2 text-right pr-4">{{ formatTime(route.arrivalTime) }}</td>
+                <tr class="bg-[#D8ECF3] dark:bg-blue-900/20">
+                  <td class="py-2 text-right pr-4 dark:text-gray-300">{{ formatTime(route.arrivalTime) }}</td>
                   <td class="py-2 pl-4">
-                    <a href="#" @click.prevent="showPortInfo(route.segments[route.segments.length - 1].arrival)" class="text-blue-600 hover:underline">
+                    <a href="#" @click.prevent="showPortInfo(route.segments[route.segments.length - 1].arrival)" class="text-blue-600 dark:text-blue-400 hover:underline">
                       {{ getPortDisplayName(route.segments[route.segments.length - 1].arrival) }}
                     </a>
                   </td>
-                  <td class="py-2 font-medium">
+                  <td class="py-2 font-medium dark:text-gray-300">
                     {{ $t('TOTAL') }}: ¥{{ route.totalFare.toLocaleString() }}
                   </td>
                 </tr>
@@ -204,7 +204,7 @@
       <div v-if="searchResults.length > displayLimit" class="mt-4">
         <button 
           @click="showMore"
-          class="w-full py-3 bg-blue-600 hover:bg-blue-700 text-white font-medium rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 transform active:scale-[0.98] transition-all duration-150 shadow-sm hover:shadow-md"
+          class="w-full py-3 bg-blue-600 hover:bg-blue-700 dark:bg-blue-500 dark:hover:bg-blue-600 text-white font-medium rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 dark:focus:ring-offset-gray-900 transform active:scale-[0.98] transition-all duration-150 shadow-sm hover:shadow-md"
         >
           {{ $t('MORE_BUTTON') }}
         </button>
@@ -212,7 +212,7 @@
     </div>
     
     <!-- No Results -->
-    <div v-else-if="hasSearched && !isSearching" class="bg-blue-100 border border-blue-200 text-blue-800 px-4 py-3 rounded">
+    <div v-else-if="hasSearched && !isSearching" class="bg-blue-100 dark:bg-blue-900/20 border border-blue-200 dark:border-gray-700 text-blue-800 dark:text-blue-400 px-4 py-3 rounded">
       {{ $t('NO_ROUTES_FOUND') }}
     </div>
     
@@ -224,27 +224,27 @@
     >
       <div v-if="selectedRoute">
         <div v-for="(segment, index) in selectedRoute.segments" :key="index" class="mb-3">
-          <div class="bg-white border rounded-lg">
+          <div class="bg-white dark:bg-gray-800 border dark:border-gray-700 rounded-lg">
             <div class="p-4">
-              <h6 class="text-sm text-gray-600 mb-2">
+              <h6 class="text-sm text-gray-600 dark:text-gray-400 mb-2">
                 {{ $t('LEG') }} {{ index + 1 }}
               </h6>
               <div class="grid grid-cols-1 md:grid-cols-5 gap-2">
-                <div class="md:col-span-2">
+                <div class="md:col-span-2 dark:text-gray-300">
                   <strong>{{ formatTime(segment.departureTime) }}</strong><br>
                   {{ getPortDisplayName(segment.departure) }}
                 </div>
                 <div class="md:col-span-1 text-center">
-                  <div class="mt-2">→</div>
-                  <small class="text-gray-500">{{ $t(segment.ship) }}</small>
+                  <div class="mt-2 dark:text-gray-300">→</div>
+                  <small class="text-gray-500 dark:text-gray-400">{{ $t(segment.ship) }}</small>
                 </div>
-                <div class="md:col-span-2 text-right">
+                <div class="md:col-span-2 text-right dark:text-gray-300">
                   <strong>{{ formatTime(segment.arrivalTime) }}</strong><br>
                   {{ getPortDisplayName(segment.arrival) }}
                 </div>
               </div>
               <div class="mt-2">
-                <small class="text-gray-500">
+                <small class="text-gray-500 dark:text-gray-400">
                   {{ $t('FARE') }}: ¥{{ segment.fare.toLocaleString() }}
                 </small>
               </div>
@@ -252,13 +252,13 @@
           </div>
         </div>
         
-        <div class="mt-3 p-3 bg-gray-100 rounded">
+        <div class="mt-3 p-3 bg-gray-100 dark:bg-gray-700 rounded">
           <div class="grid grid-cols-1 md:grid-cols-2 gap-2">
-            <div>
+            <div class="dark:text-gray-300">
               <strong>{{ $t('TOTAL_DURATION') }}:</strong> 
               {{ calculateDuration(selectedRoute.departureTime, selectedRoute.arrivalTime) }}
             </div>
-            <div class="text-right">
+            <div class="text-right dark:text-gray-300">
               <strong>{{ $t('TOTAL_FARE') }}:</strong> 
               ¥{{ selectedRoute.totalFare.toLocaleString() }}
             </div>
