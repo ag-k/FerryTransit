@@ -1,12 +1,12 @@
 <template>
   <div
-    class="history-item bg-white border border-gray-200 rounded-lg p-4 shadow-sm hover:shadow-md transition-shadow duration-200"
+    class="history-item bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg p-4 shadow-sm hover:shadow-md transition-shadow duration-200"
   >
     <div class="flex items-start justify-between">
       <div class="flex-1">
         <div class="flex items-center space-x-2 mb-2">
           <svg
-            class="w-5 h-5 text-gray-400"
+            class="w-5 h-5 text-gray-400 dark:text-gray-500"
             fill="none"
             stroke="currentColor"
             viewBox="0 0 24 24"
@@ -18,13 +18,13 @@
               d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"
             />
           </svg>
-          <span class="text-sm text-gray-600">{{ formatDateTime(history.searchedAt) }}</span>
+          <span class="text-sm text-gray-600 dark:text-gray-400">{{ formatDateTime(history.searchedAt) }}</span>
         </div>
 
         <div class="flex items-center space-x-2 mb-2">
-          <span class="text-lg font-semibold">{{ getPortName(history.departure) }}</span>
+          <span class="text-lg font-semibold dark:text-white">{{ getPortName(history.departure) }}</span>
           <svg
-            class="w-4 h-4 text-gray-400"
+            class="w-4 h-4 text-gray-400 dark:text-gray-500"
             fill="none"
             stroke="currentColor"
             viewBox="0 0 24 24"
@@ -36,17 +36,17 @@
               d="M9 5l7 7-7 7"
             />
           </svg>
-          <span class="text-lg font-semibold">{{ getPortName(history.arrival) }}</span>
+          <span class="text-lg font-semibold dark:text-white">{{ getPortName(history.arrival) }}</span>
         </div>
 
-        <div class="text-sm text-gray-600">
+        <div class="text-sm text-gray-600 dark:text-gray-400">
           <span>{{ formatDate(history.date) }}</span>
           <span class="mx-2">·</span>
           <span>{{ history.isArrivalMode ? $t('ARRIVE_BY') : $t('DEPARTURE_AFTER') }}</span>
-          <span class="font-medium">{{ formatTime(history.time) }}</span>
+          <span class="font-medium dark:text-gray-300">{{ formatTime(history.time) }}</span>
         </div>
 
-        <div v-if="history.resultCount !== undefined" class="text-sm text-gray-500 mt-1">
+        <div v-if="history.resultCount !== undefined" class="text-sm text-gray-500 dark:text-gray-400 mt-1">
           {{ $t('history.resultCount', { count: history.resultCount }) }}
         </div>
       </div>
@@ -54,13 +54,13 @@
       <div class="flex flex-col sm:flex-row items-end sm:items-center space-y-2 sm:space-y-0 sm:space-x-2 ml-4">
         <button
           @click="$emit('search')"
-          class="px-3 py-1 bg-blue-600 text-white rounded-md hover:bg-blue-700 transition-colors duration-200 text-sm"
+          class="px-3 py-1 bg-blue-600 dark:bg-blue-700 text-white rounded-md hover:bg-blue-700 dark:hover:bg-blue-600 transition-colors duration-200 text-sm"
         >
           {{ $t('history.searchAgain') }}
         </button>
         <button
           @click="$emit('remove')"
-          class="px-3 py-1 bg-gray-100 text-gray-700 rounded-md hover:bg-gray-200 transition-colors duration-200 text-sm"
+          class="px-3 py-1 bg-gray-100 dark:bg-gray-600 text-gray-700 dark:text-gray-100 rounded-md hover:bg-gray-200 dark:hover:bg-gray-500 transition-colors duration-200 text-sm"
         >
           {{ $t('history.delete') }}
         </button>

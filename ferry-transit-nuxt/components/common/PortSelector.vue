@@ -1,9 +1,9 @@
 <template>
   <div class="mb-4">
-    <label v-if="label" :for="selectId" class="block text-sm font-medium text-gray-700 mb-2">{{ label }}</label>
+    <label v-if="label" :for="selectId" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">{{ label }}</label>
     <select 
       :id="selectId"
-      class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 disabled:bg-gray-100 disabled:text-gray-500 disabled:cursor-not-allowed"
+      class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:text-white disabled:bg-gray-100 disabled:text-gray-500 disabled:cursor-not-allowed"
       :value="modelValue"
       :disabled="disabled"
       @change="handleChange"
@@ -43,7 +43,7 @@
         </option>
       </optgroup>
     </select>
-    <small v-if="hint" class="text-gray-500 text-sm mt-1 block">{{ hint }}</small>
+    <small v-if="hint" class="text-gray-500 dark:text-gray-400 text-sm mt-1 block">{{ hint }}</small>
   </div>
 </template>
 

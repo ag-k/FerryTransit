@@ -2,7 +2,7 @@
   <div class="history-list">
     <div v-if="groupedHistory.length > 0" class="space-y-6">
       <div v-for="group in groupedHistory" :key="group.date">
-        <h3 class="text-lg font-medium text-gray-700 mb-3">{{ group.displayDate }}</h3>
+        <h3 class="text-lg font-medium text-gray-700 dark:text-gray-300 mb-3">{{ group.displayDate }}</h3>
         <div class="space-y-3">
           <HistoryItem
             v-for="item in group.items"
@@ -17,7 +17,7 @@
 
     <div v-else class="text-center py-12">
       <svg
-        class="mx-auto h-12 w-12 text-gray-400"
+        class="mx-auto h-12 w-12 text-gray-400 dark:text-gray-600"
         fill="none"
         stroke="currentColor"
         viewBox="0 0 24 24"
@@ -29,10 +29,10 @@
           d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"
         />
       </svg>
-      <h3 class="mt-2 text-sm font-medium text-gray-900">
+      <h3 class="mt-2 text-sm font-medium text-gray-900 dark:text-gray-100">
         {{ $t('history.noHistory') }}
       </h3>
-      <p class="mt-1 text-sm text-gray-500">
+      <p class="mt-1 text-sm text-gray-500 dark:text-gray-400">
         {{ $t('history.noHistoryHint') }}
       </p>
     </div>

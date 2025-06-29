@@ -20,16 +20,16 @@
         
         <!-- Dialog -->
         <div
-          class="relative bg-white rounded-lg shadow-xl max-w-md w-full p-6 transform transition-all duration-200"
+          class="relative bg-white dark:bg-gray-800 rounded-lg shadow-xl max-w-md w-full p-6 transform transition-all duration-200"
           :class="isOpen ? 'scale-100' : 'scale-95'"
         >
           <!-- Title -->
-          <h3 class="text-lg font-semibold text-gray-900 mb-4">
+          <h3 class="text-lg font-semibold text-gray-900 dark:text-white mb-4">
             {{ title }}
           </h3>
           
           <!-- Message -->
-          <p class="text-gray-600 mb-6">
+          <p class="text-gray-600 dark:text-gray-300 mb-6">
             {{ message }}
           </p>
           
@@ -37,14 +37,14 @@
           <div class="flex justify-end space-x-2">
             <button
               @click="cancel"
-              class="px-4 py-2 text-gray-700 bg-gray-200 hover:bg-gray-300 rounded-md transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-gray-400 focus:ring-offset-2"
+              class="px-4 py-2 text-gray-700 dark:text-gray-200 bg-gray-200 dark:bg-gray-700 hover:bg-gray-300 dark:hover:bg-gray-600 rounded-md transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-gray-400 dark:focus:ring-gray-500 focus:ring-offset-2 dark:focus:ring-offset-gray-800"
             >
               {{ cancelText }}
             </button>
             <button
               @click="confirm"
               :class="[
-                'px-4 py-2 rounded-md transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-offset-2',
+                'px-4 py-2 rounded-md transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-offset-2 dark:focus:ring-offset-gray-800',
                 confirmType === 'danger'
                   ? 'bg-red-600 hover:bg-red-700 text-white focus:ring-red-500'
                   : 'bg-blue-600 hover:bg-blue-700 text-white focus:ring-blue-500'

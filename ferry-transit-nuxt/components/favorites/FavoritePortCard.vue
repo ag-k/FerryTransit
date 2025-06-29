@@ -9,12 +9,12 @@
   >
     <div
       v-if="!isDeleted"
-      class="favorite-port-card bg-white border border-gray-200 rounded-lg p-4 shadow-sm hover:shadow-md transition-shadow duration-200"
+      class="favorite-port-card bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg p-4 shadow-sm hover:shadow-md transition-shadow duration-200"
     >
       <div class="flex items-center justify-between mb-3">
         <div class="flex items-center space-x-2">
           <svg
-            class="w-5 h-5 text-green-600"
+            class="w-5 h-5 text-green-600 dark:text-green-400"
             fill="none"
             stroke="currentColor"
             viewBox="0 0 24 24"
@@ -32,28 +32,28 @@
               d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"
             />
           </svg>
-          <span class="text-sm text-gray-600">{{ $t('favorites.port') }}</span>
+          <span class="text-sm text-gray-600 dark:text-gray-400">{{ $t('favorites.port') }}</span>
         </div>
         <FavoriteButton :type="'port'" :port="portCode" />
       </div>
 
     <div class="mb-3">
-      <h3 class="text-lg font-semibold">{{ getPortName(portId) }}</h3>
-      <p v-if="portInfo" class="text-sm text-gray-600 mt-1">
+      <h3 class="text-lg font-semibold dark:text-white">{{ getPortName(portId) }}</h3>
+      <p v-if="portInfo" class="text-sm text-gray-600 dark:text-gray-400 mt-1">
         {{ locale === 'ja' ? portInfo.island_ja : portInfo.island_en }}
       </p>
     </div>
 
     <div v-if="nextDepartures.length > 0" class="mb-3">
-      <p class="text-sm text-gray-600 mb-1">{{ $t('favorites.nextDepartures') }}:</p>
+      <p class="text-sm text-gray-600 dark:text-gray-400 mb-1">{{ $t('favorites.nextDepartures') }}:</p>
       <ul class="space-y-1">
         <li
           v-for="(departure, index) in nextDepartures.slice(0, 3)"
           :key="index"
-          class="text-sm"
+          class="text-sm dark:text-gray-100"
         >
-          <span class="font-medium">{{ departure.time }}</span>
-          <span class="text-gray-600 ml-1">→ {{ getPortName(departure.arrival) }}</span>
+          <span class="font-medium dark:text-white">{{ departure.time }}</span>
+          <span class="text-gray-600 dark:text-gray-400 ml-1">→ {{ getPortName(departure.arrival) }}</span>
         </li>
       </ul>
     </div>
@@ -61,13 +61,13 @@
     <div class="flex space-x-2">
       <button
         @click="viewTimetable"
-        class="flex-1 px-3 py-2 bg-green-600 text-white rounded-md hover:bg-green-700 transition-colors duration-200 text-sm font-medium"
+        class="flex-1 px-3 py-2 bg-green-600 dark:bg-green-700 text-white rounded-md hover:bg-green-700 dark:hover:bg-green-600 transition-colors duration-200 text-sm font-medium"
       >
         {{ $t('favorites.viewTimetable') }}
       </button>
       <button
         @click="showDeleteConfirm"
-        class="px-3 py-2 bg-gray-100 text-gray-700 rounded-md hover:bg-gray-200 transition-colors duration-200 text-sm"
+        class="px-3 py-2 bg-gray-100 dark:bg-gray-600 text-gray-700 dark:text-gray-100 rounded-md hover:bg-gray-200 dark:hover:bg-gray-500 transition-colors duration-200 text-sm"
       >
         {{ $t('favorites.remove') }}
       </button>

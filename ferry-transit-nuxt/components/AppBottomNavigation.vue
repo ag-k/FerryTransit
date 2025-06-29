@@ -8,8 +8,8 @@
         class="flex flex-col items-center py-2 px-2 min-w-0 flex-1 text-xs touch-manipulation transition-colors duration-200"
         :class="[
           isActive(item.path) 
-            ? 'text-blue-600 dark:text-blue-400' 
-            : 'text-gray-600 dark:text-gray-400 hover:text-gray-800 dark:hover:text-gray-200'
+            ? 'text-blue-600 dark:text-blue-200' 
+            : 'text-gray-600 dark:text-gray-300 hover:text-gray-800 dark:hover:text-gray-100'
         ]"
       >
         <svg 

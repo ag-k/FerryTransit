@@ -4,52 +4,48 @@
 
     <div class="space-y-6">
       <!-- Language Settings -->
-      <div class="bg-white dark:bg-slate-800 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700 p-6">
+      <div class="bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700 p-6">
         <LanguageSelector />
       </div>
 
       <!-- Theme Settings -->
-      <div class="bg-white dark:bg-slate-800 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700 p-6">
+      <div class="bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700 p-6">
         <ThemeSelector />
       </div>
 
       <!-- Data Management -->
-      <div class="bg-white dark:bg-slate-800 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700 p-6">
+      <div class="bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700 p-6">
         <DataManagement />
       </div>
 
       <!-- App Information -->
-      <div class="bg-white dark:bg-slate-800 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700 p-6">
+      <div class="bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700 p-6">
         <h3 class="text-lg font-medium mb-4 dark:text-white">{{ $t('APP_INFO') }}</h3>
         <dl class="space-y-3">
           <div>
-            <dt class="text-sm text-gray-600 dark:text-gray-400">{{ $t('VERSION') }}</dt>
-            <dd class="text-base font-medium dark:text-gray-200">1.0.0</dd>
+            <dt class="text-sm text-gray-600 dark:text-gray-300">{{ $t('VERSION') }}</dt>
+            <dd class="text-base font-medium dark:text-gray-100">1.0.0</dd>
           </div>
           <div>
-            <dt class="text-sm text-gray-600 dark:text-gray-400">{{ $t('FRAMEWORK') }}</dt>
-            <dd class="text-base font-medium dark:text-gray-200">Nuxt 3 + Vue 3</dd>
-          </div>
-          <div>
-            <dt class="text-sm text-gray-600 dark:text-gray-400">{{ $t('LAST_UPDATED') }}</dt>
-            <dd class="text-base font-medium dark:text-gray-200">{{ new Date().toLocaleDateString() }}</dd>
+            <dt class="text-sm text-gray-600 dark:text-gray-300">{{ $t('LAST_UPDATED') }}</dt>
+            <dd class="text-base font-medium dark:text-gray-100">{{ new Date().toLocaleDateString() }}</dd>
           </div>
         </dl>
       </div>
 
       <!-- Links -->
-      <div class="bg-white dark:bg-slate-800 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700 p-6">
+      <div class="bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700 p-6">
         <h3 class="text-lg font-medium mb-4 dark:text-white">{{ $t('LINKS') }}</h3>
         <div class="space-y-3">
           <a
             href="https://github.com/yourusername/ferry-transit"
             target="_blank"
             rel="noopener noreferrer"
-            class="flex items-center justify-between px-4 py-3 bg-gray-50 dark:bg-slate-700 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors duration-200"
+            class="flex items-center justify-between px-4 py-3 bg-gray-50 dark:bg-gray-600 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-500 transition-colors duration-200"
           >
-            <span class="text-blue-600 dark:text-blue-400">{{ $t('DEVELOPER_SITE') }}</span>
+            <span class="text-blue-600 dark:text-blue-200">{{ $t('DEVELOPER_SITE') }}</span>
             <svg
-              class="w-5 h-5 text-gray-400 dark:text-gray-400"
+              class="w-5 h-5 text-gray-400 dark:text-gray-300"
               fill="none"
               stroke="currentColor"
               viewBox="0 0 24 24"

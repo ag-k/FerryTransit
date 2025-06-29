@@ -1,10 +1,10 @@
 <template>
   <div class="favorites-manager">
     <div class="flex items-center justify-between mb-6">
-      <h1 class="text-2xl font-bold">{{ $t('favorites.title') }}</h1>
+      <h1 class="text-2xl font-bold dark:text-white">{{ $t('favorites.title') }}</h1>
       <button
         @click="editMode = !editMode"
-        class="px-4 py-2 bg-gray-100 text-gray-700 rounded-md hover:bg-gray-200 transition-colors duration-200 flex items-center space-x-2"
+        class="px-4 py-2 bg-gray-100 dark:bg-gray-600 text-gray-700 dark:text-gray-100 rounded-md hover:bg-gray-200 dark:hover:bg-gray-500 transition-colors duration-200 flex items-center space-x-2"
       >
         <svg
           class="w-5 h-5"
@@ -25,7 +25,7 @@
 
     <FavoritesList :edit-mode="editMode" />
 
-    <div v-if="favoriteStore.routes.length > 0 || favoriteStore.ports.length > 0" class="mt-8 text-sm text-gray-600">
+    <div v-if="favoriteStore.routes.length > 0 || favoriteStore.ports.length > 0" class="mt-8 text-sm text-gray-600 dark:text-gray-400">
       <p>{{ $t('favorites.hint') }}</p>
     </div>
   </div>

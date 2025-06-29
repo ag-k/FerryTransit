@@ -1,11 +1,11 @@
 <template>
   <div class="mb-4">
-    <label v-if="label" :for="inputId" class="block text-base sm:text-sm font-medium text-gray-700 mb-2">{{ label }}</label>
+    <label v-if="label" :for="inputId" class="block text-base sm:text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">{{ label }}</label>
     <div class="flex">
       <input 
         :id="inputId"
         type="date" 
-        class="flex-1 px-3 py-3 sm:py-2 text-base sm:text-sm border border-gray-300 rounded-l-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 disabled:bg-gray-100 disabled:text-gray-500 disabled:cursor-not-allowed touch-manipulation"
+        class="flex-1 px-3 py-3 sm:py-2 text-base sm:text-sm border border-gray-300 dark:border-gray-600 rounded-l-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:text-white disabled:bg-gray-100 disabled:text-gray-500 disabled:cursor-not-allowed touch-manipulation"
         :value="modelValueString"
         :min="minDateString"
         :max="maxDateString"
@@ -15,14 +15,14 @@
       <button 
         v-if="showTodayButton"
         type="button" 
-        class="px-4 sm:px-4 py-3 sm:py-2 text-base sm:text-sm border border-l-0 border-gray-300 rounded-r-md bg-gray-50 hover:bg-gray-100 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 disabled:bg-gray-100 disabled:text-gray-400 disabled:cursor-not-allowed transition-colors touch-manipulation"
+        class="px-4 sm:px-4 py-3 sm:py-2 text-base sm:text-sm border border-l-0 border-gray-300 dark:border-gray-600 rounded-r-md bg-gray-50 dark:bg-gray-600 hover:bg-gray-100 dark:hover:bg-gray-500 dark:text-white focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 disabled:bg-gray-100 disabled:text-gray-400 disabled:cursor-not-allowed transition-colors touch-manipulation"
         :disabled="disabled"
         @click="selectToday"
       >
         {{ $t('TODAY') }}
       </button>
     </div>
-    <small v-if="hint" class="text-gray-500 text-sm mt-1 block">{{ hint }}</small>
+    <small v-if="hint" class="text-gray-500 dark:text-gray-400 text-sm mt-1 block">{{ hint }}</small>
   </div>
 </template>
 
