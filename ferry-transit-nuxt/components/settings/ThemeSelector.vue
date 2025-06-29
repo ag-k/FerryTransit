@@ -11,8 +11,8 @@
         class="w-full text-left px-4 py-3 rounded-lg border transition-colors duration-200"
         :class="[
           uiStore.theme === theme.value 
-            ? 'bg-blue-50 dark:bg-blue-900/20 border-blue-500 dark:border-blue-400 text-blue-700 dark:text-blue-300' 
-            : 'bg-white dark:bg-gray-800 border-gray-300 dark:border-gray-600 hover:bg-gray-50 dark:hover:bg-gray-700'
+            ? 'bg-blue-50 dark:bg-blue-900/40 border-blue-500 dark:border-blue-400 text-blue-700 dark:text-blue-200' 
+            : 'bg-white dark:bg-gray-800 border-gray-300 dark:border-gray-600 hover:bg-gray-50 dark:hover:bg-gray-700 dark:text-gray-100'
         ]"
       >
         <div class="flex items-center justify-between">

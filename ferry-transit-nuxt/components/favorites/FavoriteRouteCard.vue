@@ -9,12 +9,12 @@
   >
     <div
       v-if="!isDeleted"
-      class="favorite-route-card bg-white border border-gray-200 rounded-lg p-4 shadow-sm hover:shadow-md transition-shadow duration-200"
+      class="favorite-route-card bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg p-4 shadow-sm hover:shadow-md transition-shadow duration-200"
     >
       <div class="flex items-center justify-between mb-3">
         <div class="flex items-center space-x-2">
           <svg
-            class="w-5 h-5 text-blue-600"
+            class="w-5 h-5 text-blue-600 dark:text-blue-400"
             fill="none"
             stroke="currentColor"
             viewBox="0 0 24 24"
@@ -26,7 +26,7 @@
               d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6"
             />
           </svg>
-          <span class="text-sm text-gray-600">{{ $t('favorites.route') }}</span>
+          <span class="text-sm text-gray-600 dark:text-gray-400">{{ $t('favorites.route') }}</span>
         </div>
         <FavoriteButton :type="'route'" :route="{ departure, arrival }" />
       </div>
@@ -34,9 +34,9 @@
     <div class="flex items-center justify-between mb-2">
       <div class="flex-1">
         <div class="flex items-center space-x-2">
-          <span class="text-lg font-semibold">{{ getDeparturePortName(departure) }}</span>
+          <span class="text-lg font-semibold dark:text-white">{{ getDeparturePortName(departure) }}</span>
           <svg
-            class="w-4 h-4 text-gray-400"
+            class="w-4 h-4 text-gray-400 dark:text-gray-500"
             fill="none"
             stroke="currentColor"
             viewBox="0 0 24 24"
@@ -48,12 +48,12 @@
               d="M9 5l7 7-7 7"
             />
           </svg>
-          <span class="text-lg font-semibold">{{ getArrivalPortName(arrival) }}</span>
+          <span class="text-lg font-semibold dark:text-white">{{ getArrivalPortName(arrival) }}</span>
         </div>
       </div>
     </div>
 
-    <div v-if="lastSearchDate" class="text-sm text-gray-500 mb-3">
+    <div v-if="lastSearchDate" class="text-sm text-gray-500 dark:text-gray-400 mb-3">
       {{ $t('favorites.lastSearched') }}: {{ formatDate(lastSearchDate) }}
     </div>
 
@@ -66,7 +66,7 @@
             arrival: arrival
           }
         }"
-        class="flex-1 px-3 py-2 bg-gray-600 text-white rounded-md hover:bg-gray-700 transition-colors duration-200 text-sm font-medium text-center"
+        class="flex-1 px-3 py-2 bg-gray-600 dark:bg-gray-700 text-white rounded-md hover:bg-gray-700 dark:hover:bg-gray-600 transition-colors duration-200 text-sm font-medium text-center"
       >
         {{ $t('TIMETABLE') }}
       </NuxtLink>
@@ -78,13 +78,13 @@
             arrival: arrival
           }
         }"
-        class="flex-1 px-3 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 transition-colors duration-200 text-sm font-medium text-center"
+        class="flex-1 px-3 py-2 bg-blue-600 dark:bg-blue-700 text-white rounded-md hover:bg-blue-700 dark:hover:bg-blue-600 transition-colors duration-200 text-sm font-medium text-center"
       >
         {{ $t('TRANSIT') }}
       </NuxtLink>
       <button
         @click="showDeleteConfirm"
-        class="px-3 py-2 bg-gray-100 text-gray-700 rounded-md hover:bg-gray-200 transition-colors duration-200 text-sm"
+        class="px-3 py-2 bg-gray-100 dark:bg-gray-600 text-gray-700 dark:text-gray-100 rounded-md hover:bg-gray-200 dark:hover:bg-gray-500 transition-colors duration-200 text-sm"
       >
         {{ $t('favorites.remove') }}
       </button>

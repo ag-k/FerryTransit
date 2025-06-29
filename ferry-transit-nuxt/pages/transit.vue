@@ -4,7 +4,7 @@
     
     <!-- Search Form -->
     <div class="bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700 mb-6">
-      <div class="bg-gray-50 dark:bg-gray-700 px-4 py-3 border-b dark:border-gray-600">
+      <div class="bg-gray-50 dark:bg-gray-800 px-4 py-3 border-b dark:border-gray-600">
         <h3 class="text-lg font-medium dark:text-white">{{ $t('SEARCH_CONDITIONS') }}</h3>
       </div>
       <div class="p-4">
@@ -134,17 +134,17 @@
             <table class="w-full text-sm">
               <thead>
                 <tr>
-                  <th class="text-left pb-2 font-medium w-1/4 dark:text-gray-300">{{ $t('TIME') }}</th>
-                  <th class="text-left pb-2 font-medium dark:text-gray-300">{{ $t('ROUTE') }}</th>
-                  <th class="text-left pb-2 font-medium w-1/4 dark:text-gray-300">{{ $t('FARE') }}</th>
+                  <th class="text-left pb-2 font-medium w-1/4 dark:text-gray-100">{{ $t('TIME') }}</th>
+                  <th class="text-left pb-2 font-medium dark:text-gray-100">{{ $t('ROUTE') }}</th>
+                  <th class="text-left pb-2 font-medium w-1/4 dark:text-gray-100">{{ $t('FARE') }}</th>
                 </tr>
               </thead>
               <tbody>
                 <!-- Departure -->
-                <tr class="bg-[#D8ECF3] dark:bg-blue-900/20">
-                  <td class="py-2 text-right pr-4 dark:text-gray-300">{{ formatTime(route.departureTime) }}</td>
+                <tr class="bg-[#D8ECF3] dark:bg-blue-900/40">
+                  <td class="py-2 text-right pr-4 dark:text-gray-100">{{ formatTime(route.departureTime) }}</td>
                   <td class="py-2 pl-4">
-                    <a href="#" @click.prevent="showPortInfo(route.segments[0].departure)" class="text-blue-600 dark:text-blue-400 hover:underline">
+                    <a href="#" @click.prevent="showPortInfo(route.segments[0].departure)" class="text-blue-600 dark:text-blue-200 hover:underline">
                       {{ getPortDisplayName(route.segments[0].departure) }}
                     </a>
                   </td>
@@ -155,25 +155,25 @@
                 <template v-for="(segment, segIndex) in route.segments" :key="'seg-' + segIndex">
                   <!-- Ship Row -->
                   <tr class="bg-white dark:bg-gray-800">
-                    <td class="py-2 text-right pr-4 dark:text-gray-300">↓</td>
+                    <td class="py-2 text-right pr-4 dark:text-gray-100">↓</td>
                     <td class="py-2 pl-4" :style="getShipBorderStyle(segment.ship)">
                       <div class="flex items-center">
-                        <span v-if="segment.status === 2" class="mr-2 text-red-600 dark:text-red-400">×</span>
-                        <span v-else-if="segment.status === 3" class="mr-2 text-yellow-600 dark:text-yellow-400">⚠</span>
-                        <span v-else-if="segment.status === 4" class="mr-2 text-green-600 dark:text-green-400">+</span>
-                        <a href="#" @click.prevent="showShipInfo(segment.ship)" class="text-blue-600 dark:text-blue-400 hover:underline">
+                        <span v-if="segment.status === 2" class="mr-2 text-red-600 dark:text-red-300">×</span>
+                        <span v-else-if="segment.status === 3" class="mr-2 text-yellow-600 dark:text-yellow-300">⚠</span>
+                        <span v-else-if="segment.status === 4" class="mr-2 text-green-600 dark:text-green-300">+</span>
+                        <a href="#" @click.prevent="showShipInfo(segment.ship)" class="text-blue-600 dark:text-blue-200 hover:underline">
                           {{ $t(segment.ship) }}
                         </a>
                       </div>
                     </td>
-                    <td class="py-2 dark:text-gray-300">¥{{ segment.fare.toLocaleString() }}</td>
+                    <td class="py-2 dark:text-gray-100">¥{{ segment.fare.toLocaleString() }}</td>
                   </tr>
                   
                   <!-- Transfer Port (if not last segment) -->
-                  <tr v-if="segIndex < route.segments.length - 1" class="bg-[#D8ECF3] dark:bg-blue-900/20">
-                    <td class="py-2 text-right pr-4 dark:text-gray-300">{{ formatTime(segment.arrivalTime) }}</td>
+                  <tr v-if="segIndex < route.segments.length - 1" class="bg-[#D8ECF3] dark:bg-blue-900/40">
+                    <td class="py-2 text-right pr-4 dark:text-gray-100">{{ formatTime(segment.arrivalTime) }}</td>
                     <td class="py-2 pl-4">
-                      <a href="#" @click.prevent="showPortInfo(segment.arrival)" class="text-blue-600 dark:text-blue-400 hover:underline">
+                      <a href="#" @click.prevent="showPortInfo(segment.arrival)" class="text-blue-600 dark:text-blue-200 hover:underline">
                         {{ getPortDisplayName(segment.arrival) }}
                       </a>
                       <span class="text-xs text-gray-600 dark:text-gray-400 ml-2">({{ $t('TRANSFER') }})</span>
@@ -183,14 +183,14 @@
                 </template>
                 
                 <!-- Arrival -->
-                <tr class="bg-[#D8ECF3] dark:bg-blue-900/20">
-                  <td class="py-2 text-right pr-4 dark:text-gray-300">{{ formatTime(route.arrivalTime) }}</td>
+                <tr class="bg-[#D8ECF3] dark:bg-blue-900/40">
+                  <td class="py-2 text-right pr-4 dark:text-gray-100">{{ formatTime(route.arrivalTime) }}</td>
                   <td class="py-2 pl-4">
-                    <a href="#" @click.prevent="showPortInfo(route.segments[route.segments.length - 1].arrival)" class="text-blue-600 dark:text-blue-400 hover:underline">
+                    <a href="#" @click.prevent="showPortInfo(route.segments[route.segments.length - 1].arrival)" class="text-blue-600 dark:text-blue-200 hover:underline">
                       {{ getPortDisplayName(route.segments[route.segments.length - 1].arrival) }}
                     </a>
                   </td>
-                  <td class="py-2 font-medium dark:text-gray-300">
+                  <td class="py-2 font-medium dark:text-gray-100">
                     {{ $t('TOTAL') }}: ¥{{ route.totalFare.toLocaleString() }}
                   </td>
                 </tr>
@@ -212,7 +212,7 @@
     </div>
     
     <!-- No Results -->
-    <div v-else-if="hasSearched && !isSearching" class="bg-blue-100 dark:bg-blue-900/20 border border-blue-200 dark:border-gray-700 text-blue-800 dark:text-blue-400 px-4 py-3 rounded">
+    <div v-else-if="hasSearched && !isSearching" class="bg-blue-100 dark:bg-blue-900/30 border border-blue-200 dark:border-gray-700 text-blue-800 dark:text-blue-300 px-4 py-3 rounded">
       {{ $t('NO_ROUTES_FOUND') }}
     </div>
     
@@ -226,7 +226,7 @@
         <div v-for="(segment, index) in selectedRoute.segments" :key="index" class="mb-3">
           <div class="bg-white dark:bg-gray-800 border dark:border-gray-700 rounded-lg">
             <div class="p-4">
-              <h6 class="text-sm text-gray-600 dark:text-gray-400 mb-2">
+              <h6 class="text-sm text-gray-600 dark:text-gray-300 mb-2">
                 {{ $t('LEG') }} {{ index + 1 }}
               </h6>
               <div class="grid grid-cols-1 md:grid-cols-5 gap-2">
@@ -236,7 +236,7 @@
                 </div>
                 <div class="md:col-span-1 text-center">
                   <div class="mt-2 dark:text-gray-300">→</div>
-                  <small class="text-gray-500 dark:text-gray-400">{{ $t(segment.ship) }}</small>
+                  <small class="text-gray-500 dark:text-gray-300">{{ $t(segment.ship) }}</small>
                 </div>
                 <div class="md:col-span-2 text-right dark:text-gray-300">
                   <strong>{{ formatTime(segment.arrivalTime) }}</strong><br>
@@ -244,7 +244,7 @@
                 </div>
               </div>
               <div class="mt-2">
-                <small class="text-gray-500 dark:text-gray-400">
+                <small class="text-gray-500 dark:text-gray-300">
                   {{ $t('FARE') }}: ¥{{ segment.fare.toLocaleString() }}
                 </small>
               </div>

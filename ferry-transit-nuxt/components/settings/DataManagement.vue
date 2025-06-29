@@ -1,6 +1,6 @@
 <template>
   <div class="data-management">
-    <h3 class="text-sm font-medium text-gray-700 mb-3">
+    <h3 class="text-sm font-medium text-gray-700 dark:text-gray-300 mb-3">
       {{ $t('settings.dataManagement') }}
     </h3>
     
@@ -8,12 +8,12 @@
       <!-- Clear Cache -->
       <button
         @click="clearCache"
-        class="w-full px-4 py-3 bg-white border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors duration-200 text-left"
+        class="w-full px-4 py-3 bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors duration-200 text-left"
       >
         <div class="flex items-center justify-between">
           <div class="flex items-center space-x-3">
             <svg
-              class="w-5 h-5 text-gray-600"
+              class="w-5 h-5 text-gray-600 dark:text-gray-400"
               fill="none"
               stroke="currentColor"
               viewBox="0 0 24 24"
@@ -26,12 +26,12 @@
               />
             </svg>
             <div>
-              <div class="font-medium">{{ $t('settings.clearCache') }}</div>
-              <div class="text-sm text-gray-500">{{ $t('settings.clearCacheDesc') }}</div>
+              <div class="font-medium dark:text-gray-100">{{ $t('settings.clearCache') }}</div>
+              <div class="text-sm text-gray-500 dark:text-gray-400">{{ $t('settings.clearCacheDesc') }}</div>
             </div>
           </div>
           <svg
-            class="w-5 h-5 text-gray-400"
+            class="w-5 h-5 text-gray-400 dark:text-gray-500"
             fill="none"
             stroke="currentColor"
             viewBox="0 0 24 24"
@@ -49,12 +49,12 @@
       <!-- Export Favorites -->
       <button
         @click="exportFavorites"
-        class="w-full px-4 py-3 bg-white border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors duration-200 text-left"
+        class="w-full px-4 py-3 bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors duration-200 text-left"
       >
         <div class="flex items-center justify-between">
           <div class="flex items-center space-x-3">
             <svg
-              class="w-5 h-5 text-gray-600"
+              class="w-5 h-5 text-gray-600 dark:text-gray-400"
               fill="none"
               stroke="currentColor"
               viewBox="0 0 24 24"
@@ -67,12 +67,12 @@
               />
             </svg>
             <div>
-              <div class="font-medium">{{ $t('settings.exportFavorites') }}</div>
-              <div class="text-sm text-gray-500">{{ $t('settings.exportFavoritesDesc') }}</div>
+              <div class="font-medium dark:text-gray-100">{{ $t('settings.exportFavorites') }}</div>
+              <div class="text-sm text-gray-500 dark:text-gray-400">{{ $t('settings.exportFavoritesDesc') }}</div>
             </div>
           </div>
           <svg
-            class="w-5 h-5 text-gray-400"
+            class="w-5 h-5 text-gray-400 dark:text-gray-500"
             fill="none"
             stroke="currentColor"
             viewBox="0 0 24 24"
@@ -90,12 +90,12 @@
       <!-- Clear All Data -->
       <button
         @click="showClearDataConfirm = true"
-        class="w-full px-4 py-3 bg-white border border-red-300 rounded-lg hover:bg-red-50 transition-colors duration-200 text-left"
+        class="w-full px-4 py-3 bg-white dark:bg-gray-800 border border-red-300 dark:border-red-700 rounded-lg hover:bg-red-50 dark:hover:bg-red-900/20 transition-colors duration-200 text-left"
       >
         <div class="flex items-center justify-between">
           <div class="flex items-center space-x-3">
             <svg
-              class="w-5 h-5 text-red-600"
+              class="w-5 h-5 text-red-600 dark:text-red-400"
               fill="none"
               stroke="currentColor"
               viewBox="0 0 24 24"
@@ -108,12 +108,12 @@
               />
             </svg>
             <div>
-              <div class="font-medium text-red-700">{{ $t('settings.clearAllData') }}</div>
-              <div class="text-sm text-red-600">{{ $t('settings.clearAllDataDesc') }}</div>
+              <div class="font-medium text-red-700 dark:text-red-300">{{ $t('settings.clearAllData') }}</div>
+              <div class="text-sm text-red-600 dark:text-red-400">{{ $t('settings.clearAllDataDesc') }}</div>
             </div>
           </div>
           <svg
-            class="w-5 h-5 text-gray-400"
+            class="w-5 h-5 text-gray-400 dark:text-gray-500"
             fill="none"
             stroke="currentColor"
             viewBox="0 0 24 24"
@@ -135,19 +135,19 @@
       class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50"
       @click.self="showClearDataConfirm = false"
     >
-      <div class="bg-white rounded-lg p-6 max-w-sm w-full">
-        <h3 class="text-lg font-medium mb-4">{{ $t('settings.clearDataConfirmTitle') }}</h3>
-        <p class="text-gray-600 mb-6">{{ $t('settings.clearDataConfirmMessage') }}</p>
+      <div class="bg-white dark:bg-gray-800 rounded-lg p-6 max-w-sm w-full">
+        <h3 class="text-lg font-medium mb-4 dark:text-white">{{ $t('settings.clearDataConfirmTitle') }}</h3>
+        <p class="text-gray-600 dark:text-gray-300 mb-6">{{ $t('settings.clearDataConfirmMessage') }}</p>
         <div class="flex space-x-3 justify-end">
           <button
             @click="showClearDataConfirm = false"
-            class="px-4 py-2 bg-gray-100 text-gray-700 rounded-md hover:bg-gray-200 transition-colors duration-200"
+            class="px-4 py-2 bg-gray-100 dark:bg-gray-600 text-gray-700 dark:text-gray-100 rounded-md hover:bg-gray-200 dark:hover:bg-gray-500 transition-colors duration-200"
           >
             {{ $t('CLOSE') }}
           </button>
           <button
             @click="clearAllData"
-            class="px-4 py-2 bg-red-600 text-white rounded-md hover:bg-red-700 transition-colors duration-200"
+            class="px-4 py-2 bg-red-600 dark:bg-red-700 text-white rounded-md hover:bg-red-700 dark:hover:bg-red-600 transition-colors duration-200"
           >
             {{ $t('settings.clearConfirm') }}
           </button>

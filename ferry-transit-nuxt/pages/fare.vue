@@ -1,22 +1,22 @@
 <template>
   <div class="container mx-auto px-4 py-8 max-w-6xl">
-    <h2 class="text-2xl font-semibold mb-6">{{ $t('FARE_TABLE') }}</h2>
+    <h2 class="text-2xl font-semibold mb-6 dark:text-white">{{ $t('FARE_TABLE') }}</h2>
 
     <!-- Loading state -->
     <div v-if="isLoading" class="text-center py-12">
       <div class="inline-block animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>
-      <p class="mt-4 text-gray-600">{{ $t('LOADING') }}...</p>
+      <p class="mt-4 text-gray-600 dark:text-gray-400">{{ $t('LOADING') }}...</p>
     </div>
 
     <!-- Error state -->
-    <div v-else-if="error" class="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded" role="alert">
+    <div v-else-if="error" class="bg-red-100 dark:bg-red-900/20 border border-red-400 dark:border-red-700 text-red-700 dark:text-red-300 px-4 py-3 rounded" role="alert">
       {{ $t(error) }}
     </div>
 
     <!-- Fare tables -->
     <div v-else>
       <!-- Tab navigation -->
-      <div class="mb-6 border-b border-gray-200">
+      <div class="mb-6 border-b border-gray-200 dark:border-gray-700">
         <nav class="-mb-px flex space-x-8" aria-label="Tabs">
           <button
             v-for="tab in tabs"
@@ -24,8 +24,8 @@
             @click="activeTab = tab.id"
             :class="[
               activeTab === tab.id
-                ? 'border-blue-500 text-blue-600'
-                : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300',
+                ? 'border-blue-500 text-blue-600 dark:text-blue-400'
+                : 'border-transparent text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-300 hover:border-gray-300 dark:hover:border-gray-600',
               'whitespace-nowrap py-4 px-1 border-b-2 font-medium text-sm transition-colors'
             ]"
           >
@@ -36,29 +36,29 @@
 
       <!-- Oki Kisen Ferry -->
       <div v-show="activeTab === 'okiKisen'" class="mb-12">
-        <h3 class="text-xl font-medium mb-4">{{ $t('OKI_KISEN_FERRY') }}</h3>
-        <p class="text-sm text-gray-600 mb-4">{{ $t('FERRY_OKI') }}, {{ $t('FERRY_SHIRASHIMA') }}, {{ $t('FERRY_KUNIGA') }}</p>
+        <h3 class="text-xl font-medium mb-4 dark:text-white">{{ $t('OKI_KISEN_FERRY') }}</h3>
+        <p class="text-sm text-gray-600 dark:text-gray-400 mb-4">{{ $t('FERRY_OKI') }}, {{ $t('FERRY_SHIRASHIMA') }}, {{ $t('FERRY_KUNIGA') }}</p>
         
         <!-- Passenger fares -->
-        <h4 class="text-lg font-medium mb-3">{{ $t('PASSENGER_FARE') }}</h4>
+        <h4 class="text-lg font-medium mb-3 dark:text-white">{{ $t('PASSENGER_FARE') }}</h4>
         <div class="overflow-x-auto mb-8">
           <table class="w-full text-base sm:text-sm border-collapse">
             <thead>
-              <tr class="bg-gray-100">
-                <th class="border border-gray-300 px-4 py-3 text-left">{{ $t('ROUTE') }}</th>
-                <th class="border border-gray-300 px-4 py-3 text-right">{{ $t('ADULT') }}</th>
-                <th class="border border-gray-300 px-4 py-3 text-right">{{ $t('CHILD') }}</th>
+              <tr class="bg-gray-100 dark:bg-gray-800">
+                <th class="border border-gray-300 dark:border-gray-600 px-4 py-3 text-left dark:text-gray-100">{{ $t('ROUTE') }}</th>
+                <th class="border border-gray-300 dark:border-gray-600 px-4 py-3 text-right dark:text-gray-100">{{ $t('ADULT') }}</th>
+                <th class="border border-gray-300 dark:border-gray-600 px-4 py-3 text-right dark:text-gray-100">{{ $t('CHILD') }}</th>
               </tr>
             </thead>
             <tbody>
-              <tr v-for="route in okiKisenFares" :key="route.id" class="hover:bg-gray-50">
-                <td class="border border-gray-300 px-4 py-3">
+              <tr v-for="route in okiKisenFares" :key="route.id" class="hover:bg-gray-50 dark:hover:bg-gray-700/50">
+                <td class="border border-gray-300 dark:border-gray-600 px-4 py-3 dark:text-gray-100">
                   {{ getRouteDisplayName(route) }}
                 </td>
-                <td class="border border-gray-300 px-4 py-3 text-right font-mono">
+                <td class="border border-gray-300 dark:border-gray-600 px-4 py-3 text-right font-mono dark:text-gray-100">
                   {{ formatCurrency(route.fares.adult) }}
                 </td>
-                <td class="border border-gray-300 px-4 py-3 text-right font-mono">
+                <td class="border border-gray-300 dark:border-gray-600 px-4 py-3 text-right font-mono dark:text-gray-100">
                   {{ formatCurrency(route.fares.child) }}
                 </td>
               </tr>
@@ -67,32 +67,32 @@
         </div>
 
         <!-- Vehicle fares -->
-        <h4 class="text-lg font-medium mb-3">{{ $t('VEHICLE_FARE') }}</h4>
+        <h4 class="text-lg font-medium mb-3 dark:text-white">{{ $t('VEHICLE_FARE') }}</h4>
         <div class="overflow-x-auto">
           <table class="w-full text-base sm:text-sm border-collapse">
             <thead>
-              <tr class="bg-gray-100">
+              <tr class="bg-gray-100 dark:bg-gray-800">
                 <th class="border border-gray-300 px-4 py-3 text-left">{{ $t('ROUTE') }}</th>
                 <th v-for="size in vehicleSizes" :key="size" 
-                    class="border border-gray-300 px-3 sm:px-4 py-3 text-right text-xs sm:text-sm">
+                    class="border border-gray-300 dark:border-gray-600 px-3 sm:px-4 py-3 text-right text-xs sm:text-sm dark:text-gray-100">
                   {{ getVehicleSizeName(size) }}
                 </th>
               </tr>
             </thead>
             <tbody>
-              <tr v-for="route in okiKisenFares" :key="route.id" class="hover:bg-gray-50">
-                <td class="border border-gray-300 px-4 py-3">
+              <tr v-for="route in okiKisenFares" :key="route.id" class="hover:bg-gray-50 dark:hover:bg-gray-700/50">
+                <td class="border border-gray-300 dark:border-gray-600 px-4 py-3 dark:text-gray-100">
                   {{ getRouteDisplayName(route) }}
                 </td>
                 <td v-for="size in vehicleSizes" :key="size" 
-                    class="border border-gray-300 px-3 sm:px-4 py-3 text-right font-mono text-sm">
+                    class="border border-gray-300 dark:border-gray-600 px-3 sm:px-4 py-3 text-right font-mono text-sm dark:text-gray-100">
                   {{ formatCurrency(route.fares.vehicle[size]) }}
                 </td>
               </tr>
             </tbody>
           </table>
         </div>
-        <div class="mt-2 text-sm text-gray-600">
+        <div class="mt-2 text-sm text-gray-600 dark:text-gray-400">
           <p>{{ $t('CHILD_AGE_NOTE') }}</p>
           <p>{{ $t('INFANT_AGE_NOTE') }}</p>
           <p>{{ $t('VEHICLE_LENGTH_NOTE') }}</p>
@@ -101,36 +101,36 @@
 
       <!-- Naiko Sen (Ferry Dozen / Isokaze) -->
       <div v-show="activeTab === 'naikoSen'" class="mb-12">
-        <h3 class="text-xl font-medium mb-4">{{ $t('NAIKO_SEN') }}</h3>
-        <p class="text-sm text-gray-600 mb-4">{{ $t('FERRY_DOZEN') }}, {{ $t('ISOKAZE') }}</p>
+        <h3 class="text-xl font-medium mb-4 dark:text-white">{{ $t('NAIKO_SEN') }}</h3>
+        <p class="text-sm text-gray-600 dark:text-gray-400 mb-4">{{ $t('FERRY_DOZEN') }}, {{ $t('ISOKAZE') }}</p>
         
         <!-- Passenger fares -->
-        <h4 class="text-lg font-medium mb-3">{{ $t('PASSENGER_FARE') }}</h4>
+        <h4 class="text-lg font-medium mb-3 dark:text-white">{{ $t('PASSENGER_FARE') }}</h4>
         <div class="overflow-x-auto mb-8">
           <table class="w-full text-base sm:text-sm border-collapse">
             <thead>
-              <tr class="bg-gray-100">
-                <th class="border border-gray-300 px-4 py-3 text-left">{{ $t('ROUTE') }}</th>
-                <th class="border border-gray-300 px-4 py-3 text-right">{{ $t('ADULT') }}</th>
-                <th class="border border-gray-300 px-4 py-3 text-right">{{ $t('CHILD') }}</th>
+              <tr class="bg-gray-100 dark:bg-gray-800">
+                <th class="border border-gray-300 dark:border-gray-600 px-4 py-3 text-left dark:text-gray-100">{{ $t('ROUTE') }}</th>
+                <th class="border border-gray-300 dark:border-gray-600 px-4 py-3 text-right dark:text-gray-100">{{ $t('ADULT') }}</th>
+                <th class="border border-gray-300 dark:border-gray-600 px-4 py-3 text-right dark:text-gray-100">{{ $t('CHILD') }}</th>
               </tr>
             </thead>
             <tbody>
-              <tr v-for="route in naikoSenFares" :key="route.id" class="hover:bg-gray-50">
-                <td class="border border-gray-300 px-4 py-3">
+              <tr v-for="route in naikoSenFares" :key="route.id" class="hover:bg-gray-50 dark:hover:bg-gray-700/50">
+                <td class="border border-gray-300 dark:border-gray-600 px-4 py-3 dark:text-gray-100">
                   {{ getRouteDisplayName(route) }}
                 </td>
-                <td class="border border-gray-300 px-4 py-3 text-right font-mono">
+                <td class="border border-gray-300 dark:border-gray-600 px-4 py-3 text-right font-mono dark:text-gray-100">
                   {{ formatCurrency(route.fares.adult) }}
                 </td>
-                <td class="border border-gray-300 px-4 py-3 text-right font-mono">
+                <td class="border border-gray-300 dark:border-gray-600 px-4 py-3 text-right font-mono dark:text-gray-100">
                   {{ formatCurrency(route.fares.child) }}
                 </td>
               </tr>
             </tbody>
           </table>
         </div>
-        <div class="mt-2 text-sm text-gray-600">
+        <div class="mt-2 text-sm text-gray-600 dark:text-gray-400">
           <p>{{ $t('CHILD_AGE_NOTE') }}</p>
           <p>{{ $t('INFANT_AGE_NOTE') }}</p>
         </div>
@@ -138,51 +138,51 @@
 
       <!-- Rainbow Jet -->
       <div v-show="activeTab === 'rainbowJet'" class="mb-12">
-        <h3 class="text-xl font-medium mb-4">{{ $t('RAINBOWJET') }}</h3>
-        <p class="text-sm text-gray-600 mb-4">{{ $t('HIGH_SPEED_FERRY') }}</p>
+        <h3 class="text-xl font-medium mb-4 dark:text-white">{{ $t('RAINBOWJET') }}</h3>
+        <p class="text-sm text-gray-600 dark:text-gray-400 mb-4">{{ $t('HIGH_SPEED_FERRY') }}</p>
         
         <!-- Passenger fares -->
-        <h4 class="text-lg font-medium mb-3">{{ $t('PASSENGER_FARE') }}</h4>
+        <h4 class="text-lg font-medium mb-3 dark:text-white">{{ $t('PASSENGER_FARE') }}</h4>
         <div class="overflow-x-auto mb-8">
           <table class="w-full text-base sm:text-sm border-collapse">
             <thead>
-              <tr class="bg-gray-100">
-                <th class="border border-gray-300 px-4 py-3 text-left">{{ $t('ROUTE') }}</th>
-                <th class="border border-gray-300 px-4 py-3 text-right">{{ $t('ADULT') }}</th>
-                <th class="border border-gray-300 px-4 py-3 text-right">{{ $t('CHILD') }}</th>
+              <tr class="bg-gray-100 dark:bg-gray-800">
+                <th class="border border-gray-300 dark:border-gray-600 px-4 py-3 text-left dark:text-gray-100">{{ $t('ROUTE') }}</th>
+                <th class="border border-gray-300 dark:border-gray-600 px-4 py-3 text-right dark:text-gray-100">{{ $t('ADULT') }}</th>
+                <th class="border border-gray-300 dark:border-gray-600 px-4 py-3 text-right dark:text-gray-100">{{ $t('CHILD') }}</th>
               </tr>
             </thead>
             <tbody>
               <tr v-for="route in rainbowJetFares" :key="route.id" class="hover:bg-gray-50">
-                <td class="border border-gray-300 px-4 py-3">
+                <td class="border border-gray-300 dark:border-gray-600 px-4 py-3 dark:text-gray-100">
                   {{ getRouteDisplayName(route) }}
                 </td>
-                <td class="border border-gray-300 px-4 py-3 text-right font-mono">
+                <td class="border border-gray-300 dark:border-gray-600 px-4 py-3 text-right font-mono dark:text-gray-100">
                   {{ formatCurrency(6680) }}
                 </td>
-                <td class="border border-gray-300 px-4 py-3 text-right font-mono">
+                <td class="border border-gray-300 dark:border-gray-600 px-4 py-3 text-right font-mono dark:text-gray-100">
                   {{ formatCurrency(3340) }}
                 </td>
               </tr>
             </tbody>
           </table>
         </div>
-        <div class="mt-2 text-sm text-gray-600">
+        <div class="mt-2 text-sm text-gray-600 dark:text-gray-400">
           <p>{{ $t('CHILD_AGE_NOTE') }}</p>
           <p>{{ $t('INFANT_AGE_NOTE') }}</p>
-          <p class="text-red-600">{{ $t('RAINBOW_JET_NO_VEHICLE') }}</p>
+          <p class="text-red-600 dark:text-red-400">{{ $t('RAINBOW_JET_NO_VEHICLE') }}</p>
         </div>
       </div>
 
       <!-- Discounts -->
       <div class="mb-8">
-        <h3 class="text-xl font-medium mb-4">{{ $t('DISCOUNTS') }}</h3>
+        <h3 class="text-xl font-medium mb-4 dark:text-white">{{ $t('DISCOUNTS') }}</h3>
         <div class="grid md:grid-cols-2 gap-4">
           <div v-for="(discount, key) in discounts" :key="key" 
-               class="border border-gray-200 rounded-lg p-4">
-            <h4 class="font-medium mb-2">{{ $t(discount.nameKey) }}</h4>
-            <p class="text-gray-600">{{ $t(discount.descriptionKey) }}</p>
-            <p class="mt-2 text-lg font-medium text-blue-600">
+               class="border border-gray-200 dark:border-gray-700 rounded-lg p-4 dark:bg-gray-800">
+            <h4 class="font-medium mb-2 dark:text-white">{{ $t(discount.nameKey) }}</h4>
+            <p class="text-gray-600 dark:text-gray-400">{{ $t(discount.descriptionKey) }}</p>
+            <p class="mt-2 text-lg font-medium text-blue-600 dark:text-blue-400">
               {{ Math.round((1 - discount.rate) * 100) }}% OFF
             </p>
           </div>
@@ -190,9 +190,9 @@
       </div>
 
       <!-- Notes -->
-      <div class="bg-gray-100 rounded-lg p-4">
-        <h4 class="font-medium mb-2">{{ $t('NOTES') }}</h4>
-        <ul class="text-sm text-gray-700 space-y-1">
+      <div class="bg-gray-100 dark:bg-gray-800 rounded-lg p-4">
+        <h4 class="font-medium mb-2 dark:text-white">{{ $t('NOTES') }}</h4>
+        <ul class="text-sm text-gray-700 dark:text-gray-300 space-y-1">
           <li v-for="note in notes" :key="note">• {{ $t(note) }}</li>
         </ul>
       </div>

@@ -1,11 +1,11 @@
 <template>
   <div class="container mx-auto px-4 py-8 max-w-6xl">
-    <h2 class="text-2xl font-semibold mb-6">{{ $t('CALENDAR') }}</h2>
+    <h2 class="text-2xl font-semibold mb-6 dark:text-white">{{ $t('CALENDAR') }}</h2>
 
     <!-- Month navigation -->
     <div class="flex items-center justify-between mb-6">
       <button
-        class="p-2 rounded hover:bg-gray-100 transition-colors"
+        class="p-2 rounded hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors dark:text-gray-100"
         @click="previousMonth"
       >
         <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -13,12 +13,12 @@
         </svg>
       </button>
       
-      <h3 class="text-xl font-medium">
+      <h3 class="text-xl font-medium dark:text-white">
         {{ formatMonth(currentYear, currentMonth) }}
       </h3>
       
       <button
-        class="p-2 rounded hover:bg-gray-100 transition-colors"
+        class="p-2 rounded hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors dark:text-gray-100"
         @click="nextMonth"
       >
         <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -30,11 +30,11 @@
     <!-- Loading state -->
     <div v-if="isLoading" class="text-center py-12">
       <div class="inline-block animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>
-      <p class="mt-4 text-gray-600">{{ $t('LOADING') }}...</p>
+      <p class="mt-4 text-gray-600 dark:text-gray-400">{{ $t('LOADING') }}...</p>
     </div>
 
     <!-- Error state -->
-    <div v-else-if="error" class="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded" role="alert">
+    <div v-else-if="error" class="bg-red-100 dark:bg-red-900/20 border border-red-400 dark:border-red-700 text-red-700 dark:text-red-300 px-4 py-3 rounded" role="alert">
       {{ $t(error) }}
     </div>
 
@@ -43,30 +43,30 @@
       <!-- Legend -->
       <div class="mb-4 flex flex-wrap gap-4 text-sm">
         <div class="flex items-center gap-2">
-          <div class="w-4 h-4 bg-red-100 border border-red-300 rounded"></div>
-          <span>{{ $t('HOLIDAY') }}</span>
+          <div class="w-4 h-4 bg-red-100 dark:bg-red-900/30 border border-red-300 dark:border-red-600 rounded"></div>
+          <span class="dark:text-gray-100">{{ $t('HOLIDAY') }}</span>
         </div>
         <div class="flex items-center gap-2">
-          <div class="w-4 h-4 bg-yellow-100 border border-yellow-300 rounded"></div>
-          <span>{{ $t('PEAK_SEASON_NOTICE') }}</span>
+          <div class="w-4 h-4 bg-yellow-100 dark:bg-yellow-900/30 border border-yellow-300 dark:border-yellow-600 rounded"></div>
+          <span class="dark:text-gray-100">{{ $t('PEAK_SEASON_NOTICE') }}</span>
         </div>
         <div class="flex items-center gap-2">
-          <div class="w-4 h-4 bg-blue-100 border border-blue-300 rounded"></div>
-          <span>{{ $t('SPECIAL_OPERATION') }}</span>
+          <div class="w-4 h-4 bg-blue-100 dark:bg-blue-900/30 border border-blue-300 dark:border-blue-600 rounded"></div>
+          <span class="dark:text-gray-100">{{ $t('SPECIAL_OPERATION') }}</span>
         </div>
       </div>
 
       <!-- Calendar grid -->
-      <div class="border rounded-lg overflow-hidden">
+      <div class="border dark:border-gray-700 rounded-lg overflow-hidden">
         <table class="w-full table-fixed">
           <colgroup>
             <col v-for="i in 7" :key="i" class="w-full" style="width: 14.285714%;">
           </colgroup>
           <thead>
-            <tr class="bg-gray-100">
+            <tr class="bg-gray-100 dark:bg-gray-800">
               <th v-for="day in weekDays" :key="day" 
-                  class="border border-gray-300 px-2 py-3 text-center font-medium"
-                  :class="{ 'text-red-600': day === weekDays[0] }">
+                  class="border border-gray-300 dark:border-gray-600 px-2 py-3 text-center font-medium dark:text-gray-100"
+                  :class="{ 'text-red-600 dark:text-red-400': day === weekDays[0] }">
                 {{ day }}
               </th>
             </tr>
@@ -74,23 +74,23 @@
           <tbody>
             <tr v-for="(week, weekIndex) in calendarData" :key="weekIndex">
               <td v-for="(day, dayIndex) in week" :key="dayIndex"
-                  class="border border-gray-300 p-0 h-24 align-top relative"
+                  class="border border-gray-300 dark:border-gray-600 p-0 h-24 align-top relative"
                   :class="getCellClass(day)">
                 <div v-if="day" class="p-2 h-full overflow-hidden">
-                  <div class="font-medium mb-1">{{ day.day }}</div>
+                  <div class="font-medium mb-1 dark:text-gray-100">{{ day.day }}</div>
                   
                   <!-- Holiday name -->
-                  <div v-if="day.holiday" class="text-xs text-red-600 mb-1 leading-tight">
+                  <div v-if="day.holiday" class="text-xs text-red-600 dark:text-red-400 mb-1 leading-tight">
                     {{ $t(day.holiday.nameKey) }}
                   </div>
                   
                   <!-- Peak season indicator -->
-                  <div v-if="day.isPeakSeason" class="text-xs text-yellow-700 mb-1 leading-tight">
+                  <div v-if="day.isPeakSeason" class="text-xs text-yellow-700 dark:text-yellow-400 mb-1 leading-tight">
                     {{ $t(day.peakSeason.nameKey) }}
                   </div>
                   
                   <!-- Special operation -->
-                  <div v-if="day.specialOperation" class="text-xs text-blue-700 leading-tight">
+                  <div v-if="day.specialOperation" class="text-xs text-blue-700 dark:text-blue-400 leading-tight">
                     <span v-if="day.specialOperation.operationType === 'reduced'">
                       {{ $t('REDUCED_OPERATION') }}
                     </span>
@@ -110,24 +110,24 @@
 
       <!-- Month's holidays list -->
       <div v-if="monthHolidays.length > 0" class="mt-8">
-        <h4 class="text-lg font-medium mb-4">{{ $t('HOLIDAYS_THIS_MONTH') }}</h4>
+        <h4 class="text-lg font-medium mb-4 dark:text-white">{{ $t('HOLIDAYS_THIS_MONTH') }}</h4>
         <div class="grid md:grid-cols-2 gap-4">
           <div v-for="holiday in monthHolidays" :key="holiday.date" 
-               class="border border-gray-200 rounded-lg p-4">
-            <div class="font-medium">{{ formatDate(holiday.date, 'long') }}</div>
-            <div class="text-gray-600">{{ $t(holiday.nameKey) }}</div>
+               class="border border-gray-200 dark:border-gray-700 rounded-lg p-4 dark:bg-gray-800">
+            <div class="font-medium dark:text-white">{{ formatDate(holiday.date, 'long') }}</div>
+            <div class="text-gray-600 dark:text-gray-400">{{ $t(holiday.nameKey) }}</div>
           </div>
         </div>
       </div>
 
       <!-- Special operations list -->
       <div v-if="monthSpecialOperations.length > 0" class="mt-8">
-        <h4 class="text-lg font-medium mb-4">{{ $t('SPECIAL_OPERATIONS_THIS_MONTH') }}</h4>
+        <h4 class="text-lg font-medium mb-4 dark:text-white">{{ $t('SPECIAL_OPERATIONS_THIS_MONTH') }}</h4>
         <div class="space-y-2">
           <div v-for="op in monthSpecialOperations" :key="op.date" 
-               class="bg-blue-50 border border-blue-200 rounded-lg p-4">
-            <div class="font-medium">{{ formatDate(op.date, 'long') }}</div>
-            <div class="text-blue-700">{{ $t(op.descriptionKey) }}</div>
+               class="bg-blue-50 dark:bg-blue-900/40 border border-blue-200 dark:border-blue-700 rounded-lg p-4">
+            <div class="font-medium dark:text-white">{{ formatDate(op.date, 'long') }}</div>
+            <div class="text-blue-700 dark:text-blue-300">{{ $t(op.descriptionKey) }}</div>
           </div>
         </div>
       </div>
@@ -190,19 +190,19 @@ const getCellClass = (day: any) => {
   const classes = []
   
   if (day.dayOfWeek === '日' || day.dayOfWeek === 'Sun') {
-    classes.push('bg-red-50')
+    classes.push('bg-red-50 dark:bg-red-900/10')
   }
   
   if (day.isHoliday) {
-    classes.push('bg-red-100')
+    classes.push('bg-red-100 dark:bg-red-900/20')
   }
   
   if (day.isPeakSeason) {
-    classes.push('bg-yellow-50')
+    classes.push('bg-yellow-50 dark:bg-yellow-900/10')
   }
   
   if (day.specialOperation) {
-    classes.push('border-blue-400 border-2')
+    classes.push('border-blue-400 dark:border-blue-500 border-2')
   }
   
   return classes.join(' ')

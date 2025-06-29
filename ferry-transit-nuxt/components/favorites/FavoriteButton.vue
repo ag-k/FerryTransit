@@ -2,11 +2,11 @@
   <button
     @click="toggleFavorite"
     :class="[
-      'p-2 rounded-full focus:outline-none focus:ring-2 focus:ring-yellow-500 focus:ring-offset-2',
+      'p-2 rounded-full focus:outline-none focus:ring-2 focus:ring-yellow-500 focus:ring-offset-2 dark:focus:ring-offset-gray-800',
       'transition-all duration-200',
       isFavorite
-        ? 'text-yellow-500 hover:text-yellow-600'
-        : 'text-gray-400 hover:text-gray-600'
+        ? 'text-yellow-500 hover:text-yellow-600 dark:text-yellow-400 dark:hover:text-yellow-300'
+        : 'text-gray-400 hover:text-gray-600 dark:text-gray-500 dark:hover:text-gray-400'
     ]"
     :aria-label="
       isFavorite

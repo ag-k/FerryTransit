@@ -33,12 +33,12 @@
               <p v-if="shipStatus.isokaze.reason" class="mb-2 dark:text-gray-300">
                 <strong>{{ $t('REASON') }}:</strong> {{ shipStatus.isokaze.reason }}
               </p>
-              <p v-if="shipStatus.isokaze.updated" class="text-gray-500 dark:text-gray-400 text-sm mt-3">
+              <p v-if="shipStatus.isokaze.updated" class="text-gray-500 dark:text-gray-300 text-sm mt-3">
                 {{ $t('LAST_UPDATE') }}: {{ formatDateTime(shipStatus.isokaze.updated) }}
               </p>
             </div>
             <div v-else>
-              <p class="text-gray-500 dark:text-gray-400">{{ $t('NO_STATUS_INFO') }}</p>
+              <p class="text-gray-500 dark:text-gray-300">{{ $t('NO_STATUS_INFO') }}</p>
             </div>
           </div>
         </div>
@@ -64,12 +64,12 @@
               <p v-if="shipStatus.dozen.comment" class="mb-2 dark:text-gray-300">
                 <strong>{{ $t('COMMENT') }}:</strong> {{ shipStatus.dozen.comment }}
               </p>
-              <p v-if="shipStatus.dozen.updated" class="text-gray-500 dark:text-gray-400 text-sm mt-3">
+              <p v-if="shipStatus.dozen.updated" class="text-gray-500 dark:text-gray-300 text-sm mt-3">
                 {{ $t('LAST_UPDATE') }}: {{ formatDateTime(shipStatus.dozen.updated) }}
               </p>
             </div>
             <div v-else>
-              <p class="text-gray-500 dark:text-gray-400">{{ $t('NO_STATUS_INFO') }}</p>
+              <p class="text-gray-500 dark:text-gray-300">{{ $t('NO_STATUS_INFO') }}</p>
             </div>
           </div>
         </div>
@@ -123,7 +123,7 @@
               </div>
             </div>
             <div v-else>
-              <p class="text-gray-500 dark:text-gray-400">{{ $t('NO_STATUS_INFO') }}</p>
+              <p class="text-gray-500 dark:text-gray-300">{{ $t('NO_STATUS_INFO') }}</p>
             </div>
           </div>
         </div>
@@ -146,7 +146,7 @@
     </div>
     
     <!-- Last update time -->
-    <div v-if="lastFetchTime" class="text-center text-gray-500 dark:text-gray-400 mt-2">
+    <div v-if="lastFetchTime" class="text-center text-gray-500 dark:text-gray-300 mt-2">
       <small>{{ $t('LAST_UPDATE') }}: {{ formatDateTime(lastFetchTime) }}</small>
     </div>
   </div>
@@ -169,11 +169,11 @@ const lastFetchTime = computed(() => ferryStore.lastFetchTime)
 // Methods
 const getStatusClass = (status: number) => {
   switch (status) {
-    case 0: return 'text-green-600 dark:text-green-400'
-    case 1: return 'text-red-600 dark:text-red-400'
-    case 2: return 'text-yellow-600 dark:text-yellow-400'
-    case 3: return 'text-blue-600 dark:text-blue-400'
-    case 4: return 'text-purple-600 dark:text-purple-400'
+    case 0: return 'text-green-600 dark:text-green-300'
+    case 1: return 'text-red-600 dark:text-red-300'
+    case 2: return 'text-yellow-600 dark:text-yellow-300'
+    case 3: return 'text-blue-600 dark:text-blue-200'
+    case 4: return 'text-purple-600 dark:text-purple-300'
     default: return ''
   }
 }
@@ -191,9 +191,9 @@ const getStatusText = (status: number) => {
 }
 
 const getOperationClass = (state: string) => {
-  if (state === '通常運航' || state === '平常運航') return 'text-green-600 dark:text-green-400'
-  if (state === '欠航') return 'text-red-600 dark:text-red-400'
-  if (state === '条件付き運航') return 'text-yellow-600 dark:text-yellow-400'
+  if (state === '通常運航' || state === '平常運航') return 'text-green-600 dark:text-green-300'
+  if (state === '欠航') return 'text-red-600 dark:text-red-300'
+  if (state === '条件付き運航') return 'text-yellow-600 dark:text-yellow-300'
   return ''
 }
 
