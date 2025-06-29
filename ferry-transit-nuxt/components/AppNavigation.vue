@@ -1,9 +1,9 @@
 <template>
-  <nav class="bg-blue-600 text-white relative">
+  <nav class="bg-blue-600 dark:bg-gray-900 text-white relative border-b border-transparent dark:border-gray-700">
     <!-- Mobile menu overlay -->
     <div 
       v-if="menuOpen" 
-      class="fixed inset-0 bg-black bg-opacity-50 z-40 lg:hidden"
+      class="fixed inset-0 bg-black bg-opacity-50 dark:bg-opacity-70 z-40 lg:hidden"
       @click="closeMenu"
     ></div>
     
@@ -14,7 +14,7 @@
         </NuxtLink>
         
         <button 
-          class="lg:hidden relative min-w-[44px] min-h-[44px] p-2 rounded hover:bg-blue-700 transition-colors z-50 touch-manipulation flex items-center justify-center" 
+          class="lg:hidden relative min-w-[44px] min-h-[44px] p-2 rounded hover:bg-blue-700 dark:hover:bg-slate-800 transition-colors z-50 touch-manipulation flex items-center justify-center" 
           type="button" 
           aria-controls="navbarNav" 
           :aria-expanded="menuOpen" 
@@ -32,15 +32,15 @@
         </button>
         
         <div 
-          class="fixed lg:static inset-x-0 top-[68px] sm:top-[73px] lg:top-auto bg-blue-600 lg:bg-transparent w-full lg:w-auto lg:flex lg:items-center px-4 lg:px-0 pb-4 lg:pb-0 shadow-lg lg:shadow-none z-40 lg:z-auto" 
+          class="fixed lg:static inset-x-0 top-[68px] sm:top-[73px] lg:top-auto bg-blue-600 dark:bg-gray-900 lg:bg-transparent lg:dark:bg-transparent w-full lg:w-auto lg:flex lg:items-center px-4 lg:px-0 pb-4 lg:pb-0 shadow-lg lg:shadow-none z-40 lg:z-auto" 
           :class="{ 'hidden': !menuOpen }" 
           id="navbarNav"
         >
           <ul class="lg:flex lg:items-center lg:space-x-1 space-y-2 lg:space-y-0">
             <li>
               <NuxtLink 
-                class="block px-4 py-4 lg:py-2 rounded hover:bg-blue-700 transition-colors text-base lg:text-sm touch-manipulation" 
-                :class="{ 'bg-blue-700 font-medium': $route.path === '/' }"
+                class="block px-4 py-4 lg:py-2 rounded hover:bg-blue-700 dark:hover:bg-gray-700 transition-colors text-base lg:text-sm touch-manipulation" 
+                :class="{ 'bg-blue-700 dark:bg-gray-700 font-medium': $route.path === '/' }"
                 :to="localePath('/')"
                 @click="closeMenu"
               >
@@ -49,8 +49,8 @@
             </li>
             <li>
               <NuxtLink 
-                class="block px-4 py-4 lg:py-2 rounded hover:bg-blue-700 transition-colors text-base lg:text-sm touch-manipulation" 
-                :class="{ 'bg-blue-700 font-medium': $route.path === '/timetable' }"
+                class="block px-4 py-4 lg:py-2 rounded hover:bg-blue-700 dark:hover:bg-gray-700 transition-colors text-base lg:text-sm touch-manipulation" 
+                :class="{ 'bg-blue-700 dark:bg-gray-700 font-medium': $route.path === '/timetable' }"
                 :to="localePath('/timetable')"
                 @click="closeMenu"
               >
@@ -59,8 +59,8 @@
             </li>
             <li>
               <NuxtLink 
-                class="block px-4 py-4 lg:py-2 rounded hover:bg-blue-700 transition-colors text-base lg:text-sm touch-manipulation" 
-                :class="{ 'bg-blue-700 font-medium': $route.path === '/transit' }"
+                class="block px-4 py-4 lg:py-2 rounded hover:bg-blue-700 dark:hover:bg-gray-700 transition-colors text-base lg:text-sm touch-manipulation" 
+                :class="{ 'bg-blue-700 dark:bg-gray-700 font-medium': $route.path === '/transit' }"
                 :to="localePath('/transit')"
                 @click="closeMenu"
               >
@@ -69,8 +69,8 @@
             </li>
             <li>
               <NuxtLink 
-                class="block px-4 py-4 lg:py-2 rounded hover:bg-blue-700 transition-colors text-base lg:text-sm touch-manipulation" 
-                :class="{ 'bg-blue-700 font-medium': $route.path === '/status' }"
+                class="block px-4 py-4 lg:py-2 rounded hover:bg-blue-700 dark:hover:bg-gray-700 transition-colors text-base lg:text-sm touch-manipulation" 
+                :class="{ 'bg-blue-700 dark:bg-gray-700 font-medium': $route.path === '/status' }"
                 :to="localePath('/status')"
                 @click="closeMenu"
               >
@@ -79,8 +79,8 @@
             </li>
             <li>
               <NuxtLink 
-                class="block px-4 py-4 lg:py-2 rounded hover:bg-blue-700 transition-colors text-base lg:text-sm touch-manipulation" 
-                :class="{ 'bg-blue-700 font-medium': $route.path === '/fare' }"
+                class="block px-4 py-4 lg:py-2 rounded hover:bg-blue-700 dark:hover:bg-gray-700 transition-colors text-base lg:text-sm touch-manipulation" 
+                :class="{ 'bg-blue-700 dark:bg-gray-700 font-medium': $route.path === '/fare' }"
                 :to="localePath('/fare')"
                 @click="closeMenu"
               >
@@ -89,8 +89,8 @@
             </li>
             <li>
               <NuxtLink 
-                class="block px-4 py-4 lg:py-2 rounded hover:bg-blue-700 transition-colors text-base lg:text-sm touch-manipulation" 
-                :class="{ 'bg-blue-700 font-medium': $route.path === '/calendar' }"
+                class="block px-4 py-4 lg:py-2 rounded hover:bg-blue-700 dark:hover:bg-gray-700 transition-colors text-base lg:text-sm touch-manipulation" 
+                :class="{ 'bg-blue-700 dark:bg-gray-700 font-medium': $route.path === '/calendar' }"
                 :to="localePath('/calendar')"
                 @click="closeMenu"
               >
@@ -99,8 +99,8 @@
             </li>
             <li>
               <NuxtLink 
-                class="block px-4 py-4 lg:py-2 rounded hover:bg-blue-700 transition-colors text-base lg:text-sm touch-manipulation" 
-                :class="{ 'bg-blue-700 font-medium': $route.path === '/favorites' }"
+                class="block px-4 py-4 lg:py-2 rounded hover:bg-blue-700 dark:hover:bg-gray-700 transition-colors text-base lg:text-sm touch-manipulation" 
+                :class="{ 'bg-blue-700 dark:bg-gray-700 font-medium': $route.path === '/favorites' }"
                 :to="localePath('/favorites')"
                 @click="closeMenu"
               >
@@ -109,8 +109,8 @@
             </li>
             <li>
               <NuxtLink 
-                class="block px-4 py-4 lg:py-2 rounded hover:bg-blue-700 transition-colors text-base lg:text-sm touch-manipulation" 
-                :class="{ 'bg-blue-700 font-medium': $route.path === '/history' }"
+                class="block px-4 py-4 lg:py-2 rounded hover:bg-blue-700 dark:hover:bg-gray-700 transition-colors text-base lg:text-sm touch-manipulation" 
+                :class="{ 'bg-blue-700 dark:bg-gray-700 font-medium': $route.path === '/history' }"
                 :to="localePath('/history')"
                 @click="closeMenu"
               >
@@ -119,8 +119,8 @@
             </li>
             <li>
               <NuxtLink 
-                class="block px-4 py-4 lg:py-2 rounded hover:bg-blue-700 transition-colors text-base lg:text-sm touch-manipulation" 
-                :class="{ 'bg-blue-700 font-medium': $route.path === '/settings' }"
+                class="block px-4 py-4 lg:py-2 rounded hover:bg-blue-700 dark:hover:bg-gray-700 transition-colors text-base lg:text-sm touch-manipulation" 
+                :class="{ 'bg-blue-700 dark:bg-gray-700 font-medium': $route.path === '/settings' }"
                 :to="localePath('/settings')"
                 @click="closeMenu"
               >
@@ -132,7 +132,7 @@
           <!-- Language switcher -->
           <div class="lg:ml-6 mt-4 lg:mt-0 relative">
             <button 
-              class="flex items-center px-4 py-4 lg:py-2 rounded hover:bg-blue-700 transition-colors w-full lg:w-auto justify-between text-base lg:text-sm touch-manipulation"
+              class="flex items-center px-4 py-4 lg:py-2 rounded hover:bg-blue-700 dark:hover:bg-gray-700 transition-colors w-full lg:w-auto justify-between text-base lg:text-sm touch-manipulation"
               type="button"
               :aria-expanded="langMenuOpen"
               @click="toggleLangMenu"
@@ -144,12 +144,12 @@
             </button>
             <ul 
               v-if="langMenuOpen" 
-              class="absolute left-0 right-0 lg:left-auto lg:right-0 mt-2 bg-white text-gray-800 rounded shadow-lg lg:min-w-[150px] z-50"
+              class="absolute left-0 right-0 lg:left-auto lg:right-0 mt-2 bg-white dark:bg-slate-700 text-gray-800 dark:text-gray-200 rounded shadow-lg lg:min-w-[150px] z-50 border border-gray-200 dark:border-gray-600"
             >
               <li v-for="locale in availableLocales" :key="locale.code">
                 <button 
-                  class="block w-full text-left px-4 py-3 hover:bg-gray-100 transition-colors text-base touch-manipulation"
-                  :class="{ 'bg-gray-100 font-medium': locale.code === $i18n.locale }"
+                  class="block w-full text-left px-4 py-3 hover:bg-gray-100 dark:hover:bg-slate-600 transition-colors text-base touch-manipulation"
+                  :class="{ 'bg-gray-100 dark:bg-slate-600 font-medium': locale.code === $i18n.locale }"
                   @click="switchLocale(locale.code)"
                 >
                   {{ locale.name }}

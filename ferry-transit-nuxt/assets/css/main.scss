@@ -50,3 +50,107 @@ body {
 .safe-area-bottom {
   padding-bottom: env(safe-area-inset-bottom);
 }
+
+// Dark mode fallback styles
+@media (prefers-color-scheme: dark) {
+  .dark {
+    // Navigation backgrounds
+    .dark\:bg-gray-900 {
+      background-color: rgb(17 24 39) !important;
+    }
+    .dark\:bg-gray-800 {
+      background-color: rgb(31 41 55) !important;
+    }
+    .dark\:bg-slate-900 {
+      background-color: rgb(15 23 42) !important;
+    }
+    .dark\:bg-slate-800 {
+      background-color: rgb(30 41 59) !important;
+    }
+    .dark\:bg-slate-950 {
+      background-color: rgb(2 6 23) !important;
+    }
+    
+    // Text colors
+    .dark\:text-white {
+      color: rgb(255 255 255) !important;
+    }
+    .dark\:text-gray-100 {
+      color: rgb(243 244 246) !important;
+    }
+    .dark\:text-gray-200 {
+      color: rgb(229 231 235) !important;
+    }
+    .dark\:text-gray-300 {
+      color: rgb(209 213 219) !important;
+    }
+    .dark\:text-gray-400 {
+      color: rgb(156 163 175) !important;
+    }
+    
+    // Border colors
+    .dark\:border-gray-700 {
+      border-color: rgb(55 65 81) !important;
+    }
+    .dark\:border-gray-600 {
+      border-color: rgb(75 85 99) !important;
+    }
+    
+    // Hover states
+    .dark\:hover\:bg-gray-700:hover {
+      background-color: rgb(55 65 81) !important;
+    }
+    .dark\:hover\:bg-gray-600:hover {
+      background-color: rgb(75 85 99) !important;
+    }
+  }
+}
+
+// Direct dark class styles (without media query)
+.dark {
+  .dark\:bg-gray-900 {
+    background-color: rgb(17 24 39) !important;
+  }
+  .dark\:bg-gray-800 {
+    background-color: rgb(31 41 55) !important;
+  }
+  .dark\:bg-slate-900 {
+    background-color: rgb(15 23 42) !important;
+  }
+  .dark\:bg-slate-800 {
+    background-color: rgb(30 41 59) !important;
+  }
+  .dark\:bg-slate-950 {
+    background-color: rgb(2 6 23) !important;
+  }
+  
+  .dark\:text-white {
+    color: rgb(255 255 255) !important;
+  }
+  .dark\:text-gray-100 {
+    color: rgb(243 244 246) !important;
+  }
+  .dark\:text-gray-200 {
+    color: rgb(229 231 235) !important;
+  }
+  .dark\:text-gray-300 {
+    color: rgb(209 213 219) !important;
+  }
+  .dark\:text-gray-400 {
+    color: rgb(156 163 175) !important;
+  }
+  
+  .dark\:border-gray-700 {
+    border-color: rgb(55 65 81) !important;
+  }
+  .dark\:border-gray-600 {
+    border-color: rgb(75 85 99) !important;
+  }
+  
+  .dark\:hover\:bg-gray-700:hover {
+    background-color: rgb(55 65 81) !important;
+  }
+  .dark\:hover\:bg-gray-600:hover {
+    background-color: rgb(75 85 99) !important;
+  }
+}

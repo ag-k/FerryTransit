@@ -1,5 +1,5 @@
 <template>
-  <div class="min-h-screen flex flex-col">
+  <div class="min-h-screen flex flex-col bg-white dark:bg-slate-950 transition-colors">
     <AppNavigation />
     
     <!-- Alerts -->
@@ -22,10 +22,10 @@
     <!-- Bottom Navigation (Mobile Only) -->
     <AppBottomNavigation />
     
-    <footer class="mt-auto py-3 bg-gray-100">
+    <footer class="mt-auto py-3 bg-gray-100 dark:bg-slate-900">
       <div class="container mx-auto px-4">
-        <p class="text-gray-600 text-center mb-0">
-          Powered by <a href="https://oki-digilab.com/" target="_blank" class="text-blue-600 hover:text-blue-800">隠岐デジタルラボ</a>
+        <p class="text-gray-600 dark:text-gray-300 text-center mb-0">
+          Powered by <a href="https://oki-digilab.com/" target="_blank" class="text-blue-600 hover:text-blue-800 dark:text-blue-400 dark:hover:text-blue-300">隠岐デジタルラボ</a>
         </p>
       </div>
     </footer>

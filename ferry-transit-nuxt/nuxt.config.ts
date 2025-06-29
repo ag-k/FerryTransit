@@ -20,6 +20,9 @@ export default defineNuxtConfig({
     '@pinia/nuxt',
     '@nuxtjs/tailwindcss'
   ],
+  
+  // Remove inline config, use tailwind.config.js instead
+  tailwindcss: {},
 
   css: [
     '@/assets/css/main.scss'

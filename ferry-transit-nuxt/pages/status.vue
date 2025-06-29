@@ -1,6 +1,6 @@
 <template>
   <div class="container max-w-[1000px] mx-auto px-4 py-8">
-    <h2 class="text-2xl font-semibold mb-6">{{ $t('STATUS') }}</h2>
+    <h2 class="text-2xl font-semibold mb-6 dark:text-white">{{ $t('STATUS') }}</h2>
     
     <!-- Loading state -->
     <div v-if="isLoading" class="text-center py-12">
@@ -12,33 +12,33 @@
     <div v-else class="grid md:grid-cols-2 gap-6">
       <!-- いそかぜ Status -->
       <div>
-        <div class="bg-white rounded-lg shadow-sm border h-full" :class="{ 'border-red-500 border-2': shipStatus.isokaze?.hasAlert }">
-          <div class="px-4 py-3 border-b" :class="{ 'bg-red-600 text-white': shipStatus.isokaze?.hasAlert }">
-            <h3 class="text-lg font-medium">{{ $t('ISOKAZE') }}</h3>
+        <div class="bg-white dark:bg-slate-800 rounded-lg shadow-sm border dark:border-gray-700 h-full" :class="{ 'border-red-500 dark:border-red-400 border-2': shipStatus.isokaze?.hasAlert }">
+          <div class="px-4 py-3 border-b dark:border-gray-700" :class="{ 'bg-red-600 dark:bg-red-700 text-white': shipStatus.isokaze?.hasAlert, 'dark:bg-slate-700': !shipStatus.isokaze?.hasAlert }">
+            <h3 class="text-lg font-medium" :class="{ 'dark:text-white': !shipStatus.isokaze?.hasAlert }">{{ $t('ISOKAZE') }}</h3>
           </div>
           <div class="p-4">
             <div v-if="shipStatus.isokaze">
-              <p class="mb-2">
+              <p class="mb-2 dark:text-gray-200">
                 <strong>{{ $t('STATUS') }}:</strong>
                 <span :class="getStatusClass(shipStatus.isokaze.status)">
                   {{ getStatusText(shipStatus.isokaze.status) }}
                 </span>
               </p>
-              <p v-if="shipStatus.isokaze.summary" class="mb-2">
+              <p v-if="shipStatus.isokaze.summary" class="mb-2 dark:text-gray-300">
                 <strong>{{ $t('SUMMARY') }}:</strong> {{ shipStatus.isokaze.summary }}
               </p>
-              <p v-if="shipStatus.isokaze.comment" class="mb-2">
+              <p v-if="shipStatus.isokaze.comment" class="mb-2 dark:text-gray-300">
                 <strong>{{ $t('COMMENT') }}:</strong> {{ shipStatus.isokaze.comment }}
               </p>
-              <p v-if="shipStatus.isokaze.reason" class="mb-2">
+              <p v-if="shipStatus.isokaze.reason" class="mb-2 dark:text-gray-300">
                 <strong>{{ $t('REASON') }}:</strong> {{ shipStatus.isokaze.reason }}
               </p>
-              <p v-if="shipStatus.isokaze.updated" class="text-gray-500 text-sm mt-3">
+              <p v-if="shipStatus.isokaze.updated" class="text-gray-500 dark:text-gray-400 text-sm mt-3">
                 {{ $t('LAST_UPDATE') }}: {{ formatDateTime(shipStatus.isokaze.updated) }}
               </p>
             </div>
             <div v-else>
-              <p class="text-gray-500">{{ $t('NO_STATUS_INFO') }}</p>
+              <p class="text-gray-500 dark:text-gray-400">{{ $t('NO_STATUS_INFO') }}</p>
             </div>
           </div>
         </div>
@@ -46,30 +46,30 @@
       
       <!-- どうぜん Status -->
       <div>
-        <div class="bg-white rounded-lg shadow-sm border h-full" :class="{ 'border-red-500 border-2': shipStatus.dozen?.hasAlert }">
-          <div class="px-4 py-3 border-b" :class="{ 'bg-red-600 text-white': shipStatus.dozen?.hasAlert }">
-            <h3 class="text-lg font-medium">{{ $t('FERRY_DOZEN') }}</h3>
+        <div class="bg-white dark:bg-slate-800 rounded-lg shadow-sm border dark:border-gray-700 h-full" :class="{ 'border-red-500 dark:border-red-400 border-2': shipStatus.dozen?.hasAlert }">
+          <div class="px-4 py-3 border-b dark:border-gray-700" :class="{ 'bg-red-600 dark:bg-red-700 text-white': shipStatus.dozen?.hasAlert, 'dark:bg-slate-700': !shipStatus.dozen?.hasAlert }">
+            <h3 class="text-lg font-medium" :class="{ 'dark:text-white': !shipStatus.dozen?.hasAlert }">{{ $t('FERRY_DOZEN') }}</h3>
           </div>
           <div class="p-4">
             <div v-if="shipStatus.dozen">
-              <p class="mb-2">
+              <p class="mb-2 dark:text-gray-200">
                 <strong>{{ $t('STATUS') }}:</strong>
                 <span :class="getStatusClass(shipStatus.dozen.status)">
                   {{ getStatusText(shipStatus.dozen.status) }}
                 </span>
               </p>
-              <p v-if="shipStatus.dozen.summary" class="mb-2">
+              <p v-if="shipStatus.dozen.summary" class="mb-2 dark:text-gray-300">
                 <strong>{{ $t('SUMMARY') }}:</strong> {{ shipStatus.dozen.summary }}
               </p>
-              <p v-if="shipStatus.dozen.comment" class="mb-2">
+              <p v-if="shipStatus.dozen.comment" class="mb-2 dark:text-gray-300">
                 <strong>{{ $t('COMMENT') }}:</strong> {{ shipStatus.dozen.comment }}
               </p>
-              <p v-if="shipStatus.dozen.updated" class="text-gray-500 text-sm mt-3">
+              <p v-if="shipStatus.dozen.updated" class="text-gray-500 dark:text-gray-400 text-sm mt-3">
                 {{ $t('LAST_UPDATE') }}: {{ formatDateTime(shipStatus.dozen.updated) }}
               </p>
             </div>
             <div v-else>
-              <p class="text-gray-500">{{ $t('NO_STATUS_INFO') }}</p>
+              <p class="text-gray-500 dark:text-gray-400">{{ $t('NO_STATUS_INFO') }}</p>
             </div>
           </div>
         </div>
@@ -77,45 +77,45 @@
       
       <!-- Ferry Status -->
       <div class="md:col-span-2">
-        <div class="bg-white rounded-lg shadow-sm border" :class="{ 'border-red-500 border-2': shipStatus.ferry?.hasAlert }">
-          <div class="px-4 py-3 border-b" :class="{ 'bg-red-600 text-white': shipStatus.ferry?.hasAlert }">
-            <h3 class="text-lg font-medium">{{ $t('FERRY') }}</h3>
+        <div class="bg-white dark:bg-slate-800 rounded-lg shadow-sm border dark:border-gray-700" :class="{ 'border-red-500 dark:border-red-400 border-2': shipStatus.ferry?.hasAlert }">
+          <div class="px-4 py-3 border-b dark:border-gray-700" :class="{ 'bg-red-600 dark:bg-red-700 text-white': shipStatus.ferry?.hasAlert, 'dark:bg-slate-700': !shipStatus.ferry?.hasAlert }">
+            <h3 class="text-lg font-medium" :class="{ 'dark:text-white': !shipStatus.ferry?.hasAlert }">{{ $t('FERRY') }}</h3>
           </div>
           <div class="p-4">
             <div v-if="shipStatus.ferry" class="grid md:grid-cols-2 gap-6">
               <div>
-                <h6 class="font-semibold mb-2">{{ $t('FERRY') }}</h6>
-                <p class="mb-2">
+                <h6 class="font-semibold mb-2 dark:text-white">{{ $t('FERRY') }}</h6>
+                <p class="mb-2 dark:text-gray-300">
                   <strong>{{ $t('STATUS') }}:</strong>
                   <span :class="getOperationClass(shipStatus.ferry.ferryState)">
                     {{ shipStatus.ferry.ferryState }}
                   </span>
                 </p>
-                <p v-if="shipStatus.ferry.ferryComment" class="mb-2">
+                <p v-if="shipStatus.ferry.ferryComment" class="mb-2 dark:text-gray-300">
                   <strong>{{ $t('COMMENT') }}:</strong> {{ shipStatus.ferry.ferryComment }}
                 </p>
               </div>
               <div>
-                <h6 class="font-semibold mb-2">{{ $t('RAINBOWJET') }}</h6>
-                <p class="mb-2">
+                <h6 class="font-semibold mb-2 dark:text-white">{{ $t('RAINBOWJET') }}</h6>
+                <p class="mb-2 dark:text-gray-300">
                   <strong>{{ $t('STATUS') }}:</strong>
                   <span :class="getOperationClass(shipStatus.ferry.fastFerryState)">
                     {{ shipStatus.ferry.fastFerryState }}
                   </span>
                 </p>
-                <p v-if="shipStatus.ferry.fastFerryComment" class="mb-2">
+                <p v-if="shipStatus.ferry.fastFerryComment" class="mb-2 dark:text-gray-300">
                   <strong>{{ $t('COMMENT') }}:</strong> {{ shipStatus.ferry.fastFerryComment }}
                 </p>
               </div>
               <div class="md:col-span-2 mt-4">
                 <div class="grid md:grid-cols-2 gap-4">
                   <div>
-                    <p class="mb-2">
+                    <p class="mb-2 dark:text-gray-200">
                       <strong>{{ $t('TODAY_WAVE') }}:</strong> {{ shipStatus.ferry.todayWave || '-' }}
                     </p>
                   </div>
                   <div>
-                    <p class="mb-2">
+                    <p class="mb-2 dark:text-gray-200">
                       <strong>{{ $t('TOMORROW_WAVE') }}:</strong> {{ shipStatus.ferry.tomorrowWave || '-' }}
                     </p>
                   </div>
@@ -123,7 +123,7 @@
               </div>
             </div>
             <div v-else>
-              <p class="text-gray-500">{{ $t('NO_STATUS_INFO') }}</p>
+              <p class="text-gray-500 dark:text-gray-400">{{ $t('NO_STATUS_INFO') }}</p>
             </div>
           </div>
         </div>
@@ -133,7 +133,7 @@
     <!-- Refresh button -->
     <div class="text-center mt-8">
       <button 
-        class="inline-flex items-center px-4 py-2 border border-blue-600 text-blue-600 rounded hover:bg-blue-50 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+        class="inline-flex items-center px-4 py-2 border border-blue-600 dark:border-blue-400 text-blue-600 dark:text-blue-400 rounded hover:bg-blue-50 dark:hover:bg-blue-900/20 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
         :disabled="isLoading"
         @click="refreshStatus"
       >
@@ -146,7 +146,7 @@
     </div>
     
     <!-- Last update time -->
-    <div v-if="lastFetchTime" class="text-center text-gray-500 mt-2">
+    <div v-if="lastFetchTime" class="text-center text-gray-500 dark:text-gray-400 mt-2">
       <small>{{ $t('LAST_UPDATE') }}: {{ formatDateTime(lastFetchTime) }}</small>
     </div>
   </div>
@@ -169,11 +169,11 @@ const lastFetchTime = computed(() => ferryStore.lastFetchTime)
 // Methods
 const getStatusClass = (status: number) => {
   switch (status) {
-    case 0: return 'text-green-600'
-    case 1: return 'text-red-600'
-    case 2: return 'text-yellow-600'
-    case 3: return 'text-blue-600'
-    case 4: return 'text-purple-600'
+    case 0: return 'text-green-600 dark:text-green-400'
+    case 1: return 'text-red-600 dark:text-red-400'
+    case 2: return 'text-yellow-600 dark:text-yellow-400'
+    case 3: return 'text-blue-600 dark:text-blue-400'
+    case 4: return 'text-purple-600 dark:text-purple-400'
     default: return ''
   }
 }
@@ -191,9 +191,9 @@ const getStatusText = (status: number) => {
 }
 
 const getOperationClass = (state: string) => {
-  if (state === '通常運航' || state === '平常運航') return 'text-green-600'
-  if (state === '欠航') return 'text-red-600'
-  if (state === '条件付き運航') return 'text-yellow-600'
+  if (state === '通常運航' || state === '平常運航') return 'text-green-600 dark:text-green-400'
+  if (state === '欠航') return 'text-red-600 dark:text-red-400'
+  if (state === '条件付き運航') return 'text-yellow-600 dark:text-yellow-400'
   return ''
 }
 

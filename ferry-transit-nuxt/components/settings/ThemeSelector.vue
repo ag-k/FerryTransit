@@ -1,6 +1,6 @@
 <template>
   <div class="theme-selector">
-    <label class="block text-sm font-medium text-gray-700 mb-2">
+    <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
       {{ $t('settings.theme') }}
     </label>
     <div class="space-y-2">
@@ -10,9 +10,9 @@
         @click="selectTheme(theme.value)"
         class="w-full text-left px-4 py-3 rounded-lg border transition-colors duration-200"
         :class="[
-          currentTheme === theme.value 
-            ? 'bg-blue-50 border-blue-500 text-blue-700' 
-            : 'bg-white border-gray-300 hover:bg-gray-50'
+          uiStore.theme === theme.value 
+            ? 'bg-blue-50 dark:bg-blue-900/20 border-blue-500 dark:border-blue-400 text-blue-700 dark:text-blue-300' 
+            : 'bg-white dark:bg-gray-800 border-gray-300 dark:border-gray-600 hover:bg-gray-50 dark:hover:bg-gray-700'
         ]"
       >
         <div class="flex items-center justify-between">
@@ -62,8 +62,8 @@
             <span>{{ theme.label }}</span>
           </div>
           <svg
-            v-if="currentTheme === theme.value"
-            class="w-5 h-5 text-blue-600"
+            v-if="uiStore.theme === theme.value"
+            class="w-5 h-5 text-blue-600 dark:text-blue-400"
             fill="currentColor"
             viewBox="0 0 20 20"
           >
@@ -80,13 +80,12 @@
 </template>
 
 <script setup lang="ts">
-import { ref, computed } from 'vue'
+import { computed } from 'vue'
 import { useI18n } from 'vue-i18n'
+import { useUIStore } from '@/stores/ui'
 
 const { t } = useI18n()
-
-// TODO: 実際のテーマ管理ストアと連携
-const currentTheme = ref('light')
+const uiStore = useUIStore()
 
 const themes = computed(() => [
   { value: 'light', label: t('settings.themeLight') },
@@ -94,8 +93,7 @@ const themes = computed(() => [
   { value: 'system', label: t('settings.themeSystem') }
 ])
 
-const selectTheme = (theme: string) => {
-  currentTheme.value = theme
-  // TODO: テーマ変更の実装
+const selectTheme = (theme: 'light' | 'dark' | 'system') => {
+  uiStore.setTheme(theme)
 }
 </script>
