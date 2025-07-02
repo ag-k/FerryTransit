@@ -431,14 +431,15 @@ export const useRouteSearch = () => {
 
   // Calculate duration between two times
   const calculateDuration = (start: Date, end: Date): string => {
+    const { $i18n } = useNuxtApp();
     const diff = end.getTime() - start.getTime();
     const hours = Math.floor(diff / (1000 * 60 * 60));
     const minutes = Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60));
 
     if (hours > 0) {
-      return `${hours}時間${minutes}分`;
+      return `${hours}${$i18n.t('HOURS')}${minutes}${$i18n.t('MINUTES')}`;
     }
-    return `${minutes}分`;
+    return `${minutes}${$i18n.t('MINUTES')}`;
   };
 
   // Get display name for HONDO ports

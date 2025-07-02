@@ -122,16 +122,16 @@
           
           <div v-else-if="filteredTimetable.length === 0" class="text-center py-6 text-gray-500 dark:text-gray-300">
             <small v-if="!departure && !arrival">
-              出発地と目的地を選択してください
+              {{ $t('SELECT_BOTH_PORTS') }}
             </small>
             <small v-else-if="!departure">
-              出発地を選択してください
+              {{ $t('SELECT_DEPARTURE') }}
             </small>
             <small v-else-if="!arrival">
-              目的地を選択してください
+              {{ $t('SELECT_ARRIVAL') }}
             </small>
             <small v-else>
-              該当する便はありません
+              {{ $t('NO_MATCHING_TRIPS') }}
             </small>
           </div>
           
