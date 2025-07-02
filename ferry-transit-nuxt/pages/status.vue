@@ -191,9 +191,16 @@ const getStatusText = (status: number) => {
 }
 
 const getOperationClass = (state: string) => {
+  // Check Japanese states
   if (state === '通常運航' || state === '平常運航') return 'text-green-600 dark:text-green-300'
   if (state === '欠航') return 'text-red-600 dark:text-red-300'
   if (state === '条件付き運航') return 'text-yellow-600 dark:text-yellow-300'
+  
+  // Check English states
+  if (state === 'Normal Operation' || state === 'Normal Service') return 'text-green-600 dark:text-green-300'
+  if (state === 'Cancelled' || state === 'Canceled') return 'text-red-600 dark:text-red-300'
+  if (state === 'Conditional Operation') return 'text-yellow-600 dark:text-yellow-300'
+  
   return ''
 }
 
