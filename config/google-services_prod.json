@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "359025970210",
+    "project_id": "oki-ferryguide",
+    "storage_bucket": "oki-ferryguide.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:359025970210:android:c92c7e565841ec5f634e7b",
+        "android_client_info": {
+          "package_name": "com.naturebotlab.ferrytransit"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyA8wHezs9SSNbniobcZarFUbykva4RnU0s"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
