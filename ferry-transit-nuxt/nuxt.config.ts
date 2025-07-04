@@ -65,7 +65,16 @@ export default defineNuxtConfig({
     public: {
       apiBase: process.env.NUXT_PUBLIC_API_BASE || 'https://naturebot-lab.com/ferry_transit',
       shipStatusApi: process.env.NUXT_PUBLIC_SHIP_STATUS_API || 'https://ship.nkk-oki.com/api',
-      googleMapsApiKey: process.env.NUXT_PUBLIC_GOOGLE_MAPS_API_KEY || ''
+      googleMapsApiKey: process.env.NUXT_PUBLIC_GOOGLE_MAPS_API_KEY || '',
+      firebase: {
+        apiKey: process.env.NUXT_PUBLIC_FIREBASE_API_KEY || '',
+        authDomain: process.env.NUXT_PUBLIC_FIREBASE_AUTH_DOMAIN || '',
+        projectId: process.env.NUXT_PUBLIC_FIREBASE_PROJECT_ID || '',
+        storageBucket: process.env.NUXT_PUBLIC_FIREBASE_STORAGE_BUCKET || '',
+        messagingSenderId: process.env.NUXT_PUBLIC_FIREBASE_MESSAGING_SENDER_ID || '',
+        appId: process.env.NUXT_PUBLIC_FIREBASE_APP_ID || '',
+        measurementId: process.env.NUXT_PUBLIC_FIREBASE_MEASUREMENT_ID || ''
+      }
     }
   },
 
@@ -75,9 +84,9 @@ export default defineNuxtConfig({
   },
 
   nitro: {
-    cors: {
-      origin: true,
-      credentials: true
+    prerender: {
+      routes: ['/404.html'],
+      crawlLinks: false
     }
   },
 
@@ -99,11 +108,7 @@ export default defineNuxtConfig({
     }
   },
 
-  ssr: true,
-  
-  experimental: {
-    payloadExtraction: false
-  },
+  ssr: false,
   
   devServer: {
     port: 3030
