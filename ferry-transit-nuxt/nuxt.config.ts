@@ -85,8 +85,8 @@ export default defineNuxtConfig({
 
   nitro: {
     prerender: {
-      routes: ['/404.html'],
-      crawlLinks: false
+      routes: ['/', '/404.html'],
+      crawlLinks: true
     }
   },
 
@@ -95,11 +95,14 @@ export default defineNuxtConfig({
       title: '隠岐航路案内 - Oki Islands Sea Line Information',
       meta: [
         { charset: 'utf-8' },
-        { name: 'viewport', content: 'width=device-width, initial-scale=1' },
+        { name: 'viewport', content: 'width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no' },
         { 
           name: 'description', 
           content: '島根県隠岐諸島のフェリー・内航船の時刻表と乗換案内' 
-        }
+        },
+        { name: 'theme-color', content: '#3B82F6' },
+        { name: 'apple-mobile-web-app-capable', content: 'yes' },
+        { name: 'apple-mobile-web-app-status-bar-style', content: 'default' }
       ],
       link: [
         { rel: 'icon', type: 'image/x-icon', href: '/favicon.ico' },
@@ -108,7 +111,7 @@ export default defineNuxtConfig({
     }
   },
 
-  ssr: false,
+  ssr: true,
   
   devServer: {
     port: 3030
