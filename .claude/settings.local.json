@@ -44,7 +44,10 @@
       "Bash(npx tsc:*)",
       "WebFetch(domain:www.oki-kisen.co.jp)",
       "WebFetch(domain:www.okikankou.com)",
-      "Bash(touch:*)"
+      "Bash(touch:*)",
+      "Bash(python3:*)",
+      "Bash(git mv:*)",
+      "Bash(mv:*)"
     ],
     "deny": []
   }
