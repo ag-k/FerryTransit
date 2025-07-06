@@ -3,8 +3,8 @@ import { join } from 'path'
 
 export default defineEventHandler(async (event) => {
   try {
-    // src/public/data/timetable.jsonから読み込み
-    const filePath = join(process.cwd(), 'src', 'public', 'data', 'timetable.json')
+    // src/public/data/ship-status.jsonから読み込み
+    const filePath = join(process.cwd(), 'src', 'public', 'data', 'ship-status.json')
     const data = await readFile(filePath, 'utf-8')
     
     // CORSヘッダーを設定
@@ -16,9 +16,12 @@ export default defineEventHandler(async (event) => {
     
     return JSON.parse(data)
   } catch (error) {
-    throw createError({
-      statusCode: 500,
-      statusMessage: 'Failed to load timetable data'
-    })
+    // ファイルが存在しない場合はデフォルトのデータを返す
+    return {
+      isokaze: null,
+      dozen: null,
+      ferry: null,
+      lastUpdate: new Date().toISOString()
+    }
   }
 })
