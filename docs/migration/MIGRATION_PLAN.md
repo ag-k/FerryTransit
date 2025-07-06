@@ -27,8 +27,8 @@
 
 #### 1.1 Nuxt3プロジェクトの初期化
 ```bash
-npx nuxi@latest init ferry-transit-nuxt
-cd ferry-transit-nuxt
+npx nuxi@latest init src
+cd src
 npm install
 ```
 
@@ -51,7 +51,7 @@ npm install
 
 #### 1.3 ディレクトリ構造
 ```
-ferry-transit-nuxt/
+src/
 ├── components/
 │   ├── ferry/
 │   │   ├── TimetableView.vue

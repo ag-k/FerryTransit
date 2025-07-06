@@ -10,7 +10,7 @@ FerryTransitは、隠岐諸島の各港間のフェリースケジュールを�
 
 ```
 FerryTransit/
-├── ferry-transit-nuxt/    # Nuxt3版（メイン開発）
+├── src/                   # Nuxt3版（メイン開発）
 ├── archive/               # AngularJS版（レガシー、参照のみ）
 ├── config/                # 設定ファイル
 └── docs/                  # プロジェクトドキュメント
@@ -39,7 +39,7 @@ git clone [repository-url]
 cd FerryTransit
 
 # Nuxt3版のセットアップ
-cd ferry-transit-nuxt
+cd src
 npm install
 
 # 開発サーバーの起動

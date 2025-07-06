@@ -27,8 +27,8 @@
 ```bash
 # 新しいディレクトリで作業
 cd /Users/ag/works/
-npx nuxi@latest init ferry-transit-nuxt
-cd ferry-transit-nuxt
+npx nuxi@latest init src
+cd src
 ```
 
 #### 2.2 初期設定
