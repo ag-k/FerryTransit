@@ -12,6 +12,14 @@ export default defineNuxtConfig({
   vite: {
     optimizeDeps: {
       exclude: ['oxc-parser']
+    },
+    resolve: {
+      preserveSymlinks: false
+    },
+    server: {
+      fs: {
+        strict: false
+      }
     }
   },
   

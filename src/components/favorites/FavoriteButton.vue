@@ -46,9 +46,11 @@ interface Props {
 }
 
 const props = defineProps<Props>()
-const favoriteStore = useFavoriteStore()
+const favoriteStore = process.client ? useFavoriteStore() : null
 
 const isFavorite = computed(() => {
+  if (!favoriteStore) return false
+  
   if (props.type === 'route' && props.route) {
     return favoriteStore.isRouteFavorited(props.route.departure, props.route.arrival)
   }
@@ -59,6 +61,8 @@ const isFavorite = computed(() => {
 })
 
 const toggleFavorite = () => {
+  if (!favoriteStore) return
+  
   if (props.type === 'route' && props.route) {
     if (isFavorite.value) {
       // お気に入りから削除する場合は、まず該当するルートを見つける

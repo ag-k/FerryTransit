@@ -7,7 +7,7 @@
         v-if="editMode"
         class="grid gap-4 sm:grid-cols-1 md:grid-cols-2 lg:grid-cols-3"
       >
-        <draggable
+        <Draggable
           v-model="favoriteRoutes"
           @update="updateRouteOrder"
           item-key="id"
@@ -28,7 +28,7 @@
               />
             </div>
           </template>
-        </draggable>
+        </Draggable>
       </div>
       <div 
         v-else
@@ -51,7 +51,7 @@
         v-if="editMode"
         class="grid gap-4 sm:grid-cols-1 md:grid-cols-2 lg:grid-cols-3"
       >
-        <draggable
+        <Draggable
           v-model="favoritePorts"
           @update="updatePortOrder"
           item-key="id"
@@ -71,7 +71,7 @@
               />
             </div>
           </template>
-        </draggable>
+        </Draggable>
       </div>
       <div 
         v-else
@@ -120,6 +120,9 @@ import { useFavoriteStore } from '~/stores/favorite'
 import draggable from 'vuedraggable'
 import FavoriteRouteCard from './FavoriteRouteCard.vue'
 import FavoritePortCard from './FavoritePortCard.vue'
+
+// draggable をコンポーネントとして登録
+const Draggable = draggable
 
 interface Props {
   editMode?: boolean

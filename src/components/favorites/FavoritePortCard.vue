@@ -108,25 +108,42 @@ const emit = defineEmits<{
 }>()
 
 const router = useRouter()
-const ferryStore = useFerryStore()
-const favoriteStore = useFavoriteStore()
+const ferryStore = process.client ? useFerryStore() : null
+const favoriteStore = process.client ? useFavoriteStore() : null
 const { locale } = useI18n()
 const localePath = useLocalePath()
 
 // State
 const isConfirmOpen = ref(false)
 const isDeleted = ref(false)
+const isMounted = ref(false)
+
+onMounted(() => {
+  isMounted.value = true
+})
 
 // Use a simple value instead of computed for portCode
 const portCode = props.portCode || props.portId
 
 const portInfo = computed(() => {
-  return ferryStore.ports.find(p => p.PORT_ID === props.portId)
+  if (!isMounted.value || !ferryStore || !ferryStore.ports || !Array.isArray(ferryStore.ports)) return null
+  try {
+    return ferryStore.ports.find(p => p.PORT_ID === props.portId)
+  } catch (e) {
+    console.error('Error getting port info:', e)
+    return null
+  }
 })
 
 const getPortName = (portId: string) => {
-  const port = ferryStore.ports.find(p => p.PORT_ID === portId)
-  return port ? (locale.value === 'ja' ? port.PLACE_NAME_JA : port.PLACE_NAME_EN) : portId
+  if (!isMounted.value || !ferryStore || !ferryStore.ports || !Array.isArray(ferryStore.ports)) return portId
+  try {
+    const port = ferryStore.ports.find(p => p.PORT_ID === portId)
+    return port ? (locale.value === 'ja' ? port.PLACE_NAME_JA : port.PLACE_NAME_EN) : portId
+  } catch (e) {
+    console.error('Error getting port name:', e)
+    return portId
+  }
 }
 
 const nextDepartures = computed(() => {
@@ -148,6 +165,8 @@ const showDeleteConfirm = () => {
 }
 
 const handleDelete = async () => {
+  if (!favoriteStore) return
+  
   // お気に入り港を検索
   const favoritePort = favoriteStore.ports.find(p => p.portCode === portCode)
   
