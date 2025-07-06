@@ -27,7 +27,7 @@ FerryTransit/
 │   ├── css/                  # AngularJS版のスタイル
 │   ├── images/               # AngularJS版の画像
 │   └── timetable.php         # APIエンドポイント
-├── ferry-transit-nuxt/        # Nuxt3版（メイン開発）
+├── src/                       # Nuxt3版（メイン開発）
 ├── MIGRATION_PLAN.md          # 移行計画書
 └── PHASE1_TASKS.md           # フェーズ1タスクリスト
 ```
@@ -69,7 +69,7 @@ AngularJS版のファイルは`archive/`ディレクトリに移動されまし�
 ### Nuxt3 版
 
 ```bash
-cd ferry-transit-nuxt
+cd src
 
 # 開発サーバー起動
 npm run dev
@@ -255,7 +255,7 @@ npm run lint
 ### 新規作成ファイル（フェーズ4）
 
 ```
-ferry-transit-nuxt/
+src/
 ├── pages/
 │   ├── fare.vue          # 料金表ページ ✅
 │   └── calendar.vue      # 運航カレンダーページ ✅
@@ -456,7 +456,7 @@ ferry-transit-nuxt/
 
 #### 実装ファイル
 ```
-ferry-transit-nuxt/
+src/
 ├── components/
 │   ├── favorites/
 │   │   ├── FavoriteButton.vue      # お気に入り登録・削除ボタン
@@ -487,7 +487,7 @@ ferry-transit-nuxt/
 
 #### 実装ファイル
 ```
-ferry-transit-nuxt/
+src/
 ├── components/
 │   ├── history/
 │   │   ├── HistoryItem.vue         # 履歴アイテム
@@ -516,7 +516,7 @@ ferry-transit-nuxt/
 
 #### 実装ファイル
 ```
-ferry-transit-nuxt/
+src/
 ├── components/
 │   ├── settings/
 │   │   ├── LanguageSelector.vue    # 言語設定
@@ -656,7 +656,7 @@ ferry-transit-nuxt/
 ### 新規作成ファイル（フェーズ5.5）
 
 ```
-ferry-transit-nuxt/
+src/
 ├── pages/
 │   └── admin/
 │       ├── index.vue              # 管理画面ダッシュボード
