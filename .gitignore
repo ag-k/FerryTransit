@@ -1,8 +1,39 @@
+# Nuxt dev/build outputs
+.output
+.data
+.nuxt
+.nitro
+.cache
+dist
+
+# Node dependencies
+node_modules
+
+# Logs
+logs
+*.log
+
+# Misc
+.DS_Store
+.fleet
+.idea
+
+# Local env files
+.env
+.env.*
+!.env.example
+
+# Legacy files
 *.csv
 *.zip
-note_modules
-dist
 .tmp
 .sass-cache
 bower_components
 typings
+
+# Build directories
+/src/android/app/build
+/src/android/capacitor-cordova-android-plugins/build
+/src/ios/App/build
+/src/ios/App/Pods
+/src/ios/capacitor-cordova-ios-plugins
