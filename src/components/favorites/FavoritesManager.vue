@@ -25,7 +25,7 @@
 
     <FavoritesList :edit-mode="editMode" />
 
-    <div v-if="favoriteStore.routes.length > 0 || favoriteStore.ports.length > 0" class="mt-8 text-sm text-gray-600 dark:text-gray-400">
+    <div v-if="favoriteStore && (favoriteStore.routes.length > 0 || favoriteStore.ports.length > 0)" class="mt-8 text-sm text-gray-600 dark:text-gray-400">
       <p>{{ $t('favorites.hint') }}</p>
     </div>
   </div>
@@ -36,6 +36,6 @@ import { ref } from 'vue'
 import { useFavoriteStore } from '~/stores/favorite'
 import FavoritesList from './FavoritesList.vue'
 
-const favoriteStore = useFavoriteStore()
+const favoriteStore = process.client ? useFavoriteStore() : null
 const editMode = ref(false)
 </script>

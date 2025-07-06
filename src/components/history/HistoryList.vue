@@ -48,7 +48,7 @@ import HistoryItem from './HistoryItem.vue'
 import type { SearchHistoryItem } from '~/types/history'
 
 const router = useRouter()
-const historyStore = useHistoryStore()
+const historyStore = process.client ? useHistoryStore() : null
 const { locale } = useI18n()
 const localePath = useLocalePath()
 
@@ -56,6 +56,8 @@ const localePath = useLocalePath()
 const groupedHistory = computed(() => {
   const groups: { date: string; displayDate: string; items: SearchHistoryItem[] }[] = []
   const groupMap = new Map<string, SearchHistoryItem[]>()
+
+  if (!historyStore) return groups
 
   // Group by date string (YYYY-MM-DD format for consistent sorting)
   historyStore.history.forEach(item => {
@@ -146,6 +148,8 @@ const handleSearch = (history: SearchHistoryItem) => {
 }
 
 const handleRemove = (id: string) => {
-  historyStore.removeHistoryItem(id)
+  if (historyStore) {
+    historyStore.removeHistoryItem(id)
+  }
 }
 </script>
