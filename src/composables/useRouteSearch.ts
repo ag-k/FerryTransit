@@ -5,14 +5,16 @@ import { useHolidayCalendar } from "@/composables/useHolidayCalendar";
 import type { Trip, TransitRoute, TransitSegment } from "@/types";
 
 export const useRouteSearch = () => {
-  const ferryStore = useFerryStore();
-  const fareStore = useFareStore();
+  const ferryStore = process.client ? useFerryStore() : null;
+  const fareStore = process.client ? useFareStore() : null;
   const { getTripStatus, initializeData } = useFerryData();
   const { isPeakSeason, getPeakSeason } = useHolidayCalendar();
 
   // Initialize fare data
   onMounted(async () => {
-    await fareStore.loadFareMaster();
+    if (fareStore) {
+      await fareStore.loadFareMaster();
+    }
   });
 
   // Search for routes between ports
@@ -24,10 +26,12 @@ export const useRouteSearch = () => {
     isArrivalMode: boolean = false
   ): Promise<TransitRoute[]> => {
     // Ensure data is loaded
-    if (ferryStore.timetableData.length === 0) {
+    if (ferryStore && ferryStore.timetableData.length === 0) {
       await initializeData();
     }
-    await fareStore.loadFareMaster();
+    if (fareStore) {
+      await fareStore.loadFareMaster();
+    }
 
     const routes: TransitRoute[] = [];
     const searchDateTime = new Date(searchDate);
@@ -42,7 +46,7 @@ export const useRouteSearch = () => {
       searchTime,
       isArrivalMode,
     });
-    console.log("Total timetable data:", ferryStore.timetableData.length);
+    console.log("Total timetable data:", ferryStore?.timetableData.length || 0);
 
     // Get filtered timetable for the date based on start_date and end_date
     // Format date as YYYY-MM-DD in JST
@@ -51,7 +55,7 @@ export const useRouteSearch = () => {
     const day = String(searchDate.getDate()).padStart(2, "0");
     const searchDateStr = `${year}-${month}-${day}`;
 
-    const dayTimetable = ferryStore.timetableData.filter((trip) => {
+    const dayTimetable = (ferryStore?.timetableData || []).filter((trip) => {
       // Parse start and end dates
       const startDate = trip.startDate.replace(/\//g, "-");
       const endDate = trip.endDate.replace(/\//g, "-");
@@ -355,7 +359,7 @@ export const useRouteSearch = () => {
 
   // Check if port is on mainland
   const isMainlandPort = (port: string): boolean => {
-    return ferryStore.hondoPorts.includes(port) || port === "HONDO";
+    return ferryStore?.hondoPorts?.includes(port) || port === "HONDO";
   };
 
   // Calculate fare for a trip with date consideration
@@ -366,7 +370,7 @@ export const useRouteSearch = () => {
     date?: Date
   ): number => {
     // Ensure fare data is loaded
-    if (!fareStore.fareMaster) {
+    if (fareStore && !fareStore.fareMaster) {
       fareStore.loadFareMaster();
     }
 
@@ -383,7 +387,7 @@ export const useRouteSearch = () => {
     }
 
     // Get fare from master data
-    const route = fareStore.getFareByRoute(fareDeparture, fareArrival);
+    const route = fareStore?.getFareByRoute(fareDeparture, fareArrival);
 
     if (route) {
       let baseFare = route.fares.adult;

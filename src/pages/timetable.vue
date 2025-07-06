@@ -226,8 +226,8 @@ import { useFerryData } from '@/composables/useFerryData'
 import FavoriteButton from '@/components/favorites/FavoriteButton.vue'
 
 // Store and composables
-const ferryStore = useFerryStore()
-const historyStore = useHistoryStore()
+const ferryStore = process.client ? useFerryStore() : null
+const historyStore = process.client ? useHistoryStore() : null
 const { 
   filteredTimetable,
   selectedDate,
@@ -280,10 +280,12 @@ const sortedTimetable = computed(() => {
 const handleDateChange = (event: Event) => {
   const target = event.target as HTMLInputElement
   const newDate = new Date(target.value + 'T00:00:00')
-  ferryStore.setSelectedDate(newDate)
+  if (ferryStore) {
+    ferryStore.setSelectedDate(newDate)
+  }
   
   // Add to search history if route is selected
-  if (departure.value && arrival.value) {
+  if (departure.value && arrival.value && historyStore) {
     historyStore.addSearchHistory({
       type: 'timetable',
       departure: departure.value,
@@ -294,10 +296,12 @@ const handleDateChange = (event: Event) => {
 }
 
 const handleDepartureChange = (value: string) => {
-  ferryStore.setDeparture(value)
+  if (ferryStore) {
+    ferryStore.setDeparture(value)
+  }
   
   // Add to search history if both ports are selected
-  if (value && arrival.value) {
+  if (value && arrival.value && historyStore) {
     historyStore.addSearchHistory({
       type: 'timetable',
       departure: value,
@@ -308,10 +312,12 @@ const handleDepartureChange = (value: string) => {
 }
 
 const handleArrivalChange = (value: string) => {
-  ferryStore.setArrival(value)
+  if (ferryStore) {
+    ferryStore.setArrival(value)
+  }
   
   // Add to search history if both ports are selected
-  if (departure.value && value) {
+  if (departure.value && value && historyStore) {
     historyStore.addSearchHistory({
       type: 'timetable',
       departure: departure.value,
@@ -322,12 +328,14 @@ const handleArrivalChange = (value: string) => {
 }
 
 const reverseRoute = () => {
-  const temp = departure.value
-  ferryStore.setDeparture(arrival.value)
-  ferryStore.setArrival(temp)
+  if (ferryStore) {
+    const temp = departure.value
+    ferryStore.setDeparture(arrival.value)
+    ferryStore.setArrival(temp)
+  }
   
   // Add to search history after reversing
-  if (departure.value && arrival.value) {
+  if (departure.value && arrival.value && historyStore) {
     historyStore.addSearchHistory({
       type: 'timetable',
       departure: arrival.value,
@@ -342,7 +350,7 @@ const formatTime = (time: string) => {
 }
 
 const tripStatus = (trip: any) => {
-  const alerts = ferryStore.alerts || []
+  const alerts = ferryStore?.alerts || []
   const tripDate = selectedDate.value.toISOString().split('T')[0]
   
   // Check if this trip has any alerts
@@ -376,7 +384,7 @@ const showPortInfo = (portName: string) => {
   modalType.value = 'port'
   
   // Get port map from store
-  modalContent.value = ferryStore.portMaps[portName] || ''
+  modalContent.value = ferryStore?.portMaps?.[portName] || ''
   modalVisible.value = true
 }
 
@@ -389,14 +397,14 @@ onMounted(async () => {
   const route = useRoute()
   
   // URLパラメータから設定
-  if (route.query.departure) {
+  if (route.query.departure && ferryStore) {
     ferryStore.setDeparture(route.query.departure as string)
   }
-  if (route.query.arrival) {
+  if (route.query.arrival && ferryStore) {
     ferryStore.setArrival(route.query.arrival as string)
   }
   
-  if (ferryStore.timetableData.length === 0) {
+  if (ferryStore && ferryStore.timetableData.length === 0) {
     await initializeData()
   }
 })
