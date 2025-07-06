@@ -129,13 +129,16 @@ const props = withDefaults(defineProps<Props>(), {
   editMode: false
 })
 
-const favoriteStore = useFavoriteStore()
+const favoriteStore = process.client ? useFavoriteStore() : null
 
 // リアクティブにストアの変更を反映
 const favoriteRoutes = computed({
-  get: () => props.editMode ? [...favoriteStore.routes] : favoriteStore.routes,
+  get: () => {
+    if (!favoriteStore) return []
+    return props.editMode ? [...favoriteStore.routes] : favoriteStore.routes
+  },
   set: (value) => {
-    if (props.editMode) {
+    if (props.editMode && favoriteStore) {
       const ids = value.map(r => r.id)
       favoriteStore.reorderFavoriteRoutes(ids)
     }
@@ -143,9 +146,12 @@ const favoriteRoutes = computed({
 })
 
 const favoritePorts = computed({
-  get: () => props.editMode ? [...favoriteStore.ports] : favoriteStore.ports,
+  get: () => {
+    if (!favoriteStore) return []
+    return props.editMode ? [...favoriteStore.ports] : favoriteStore.ports
+  },
   set: (value) => {
-    if (props.editMode) {
+    if (props.editMode && favoriteStore) {
       const ids = value.map(p => p.id)
       favoriteStore.reorderFavoritePorts(ids)
     }
@@ -153,11 +159,13 @@ const favoritePorts = computed({
 })
 
 const updateRouteOrder = () => {
+  if (!favoriteStore) return
   const ids = favoriteRoutes.value.map(r => r.id)
   favoriteStore.reorderRoutes(ids)
 }
 
 const updatePortOrder = () => {
+  if (!favoriteStore) return
   const ids = favoritePorts.value.map(p => p.id)
   favoriteStore.reorderPorts(ids)
 }

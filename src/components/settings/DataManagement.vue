@@ -163,18 +163,22 @@ import { useOfflineStore } from '~/stores/offline'
 import { useFavoriteStore } from '~/stores/favorite'
 import { useHistoryStore } from '~/stores/history'
 
-const offlineStore = useOfflineStore()
-const favoriteStore = useFavoriteStore()
-const historyStore = useHistoryStore()
+const offlineStore = process.client ? useOfflineStore() : null
+const favoriteStore = process.client ? useFavoriteStore() : null
+const historyStore = process.client ? useHistoryStore() : null
 
 const showClearDataConfirm = ref(false)
 
 const clearCache = () => {
-  offlineStore.clearCache()
-  alert('Cache cleared') // TODO: 適切な通知に変更
+  if (offlineStore) {
+    offlineStore.clearCache()
+    alert('Cache cleared') // TODO: 適切な通知に変更
+  }
 }
 
 const exportFavorites = () => {
+  if (!favoriteStore) return
+  
   const data = {
     routes: favoriteStore.routes,
     ports: favoriteStore.ports,
@@ -191,9 +195,9 @@ const exportFavorites = () => {
 }
 
 const clearAllData = () => {
-  offlineStore.clearCache()
-  favoriteStore.clearAll()
-  historyStore.clearAll()
+  if (offlineStore) offlineStore.clearCache()
+  if (favoriteStore) favoriteStore.clearAll()
+  if (historyStore) historyStore.clearAll()
   showClearDataConfirm.value = false
   alert('All data cleared') // TODO: 適切な通知に変更
 }

@@ -205,7 +205,7 @@ import type { VehicleFare } from '@/types/fare'
 
 // Composables
 const { formatCurrency, getVehicleSizeName, getAllFares } = useFareDisplay()
-const fareStore = useFareStore()
+const fareStore = process.client ? useFareStore() : null
 
 // State
 const activeTab = ref('okiKisen')
@@ -226,8 +226,8 @@ const tabs = [
 const vehicleSizes: (keyof VehicleFare)[] = ['under3m', 'under4m', 'under5m', 'under6m', 'over6m']
 
 // Computed
-const isLoading = computed(() => fareStore.isLoading)
-const error = computed(() => fareStore.error)
+const isLoading = computed(() => fareStore?.isLoading ?? false)
+const error = computed(() => fareStore?.error ?? null)
 
 // Get route display name
 const getRouteDisplayName = (route: any) => {
@@ -285,7 +285,7 @@ onMounted(async () => {
   naikoSenFares.value = grouped.naikoSen
   rainbowJetFares.value = grouped.rainbowJet
   
-  if (fareStore.fareMaster) {
+  if (fareStore?.fareMaster) {
     discounts.value = fareStore.fareMaster.discounts
     notes.value = fareStore.fareMaster.notes
   }

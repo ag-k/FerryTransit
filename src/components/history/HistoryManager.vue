@@ -4,7 +4,7 @@
       <h1 class="text-2xl font-bold dark:text-white">{{ $t('history.title') }}</h1>
       <div class="flex space-x-2">
         <button
-          v-if="historyStore.history.length > 0"
+          v-if="historyStore && historyStore.history.length > 0"
           @click="showClearConfirm = true"
           class="px-4 py-2 bg-red-100 dark:bg-red-900/30 text-red-700 dark:text-red-300 rounded-md hover:bg-red-200 dark:hover:bg-red-900/40 transition-colors duration-200 flex items-center space-x-2"
         >
@@ -61,11 +61,13 @@ import { ref } from 'vue'
 import { useHistoryStore } from '~/stores/history'
 import HistoryList from './HistoryList.vue'
 
-const historyStore = useHistoryStore()
+const historyStore = process.client ? useHistoryStore() : null
 const showClearConfirm = ref(false)
 
 const handleClearAll = () => {
-  historyStore.clearAll()
+  if (historyStore) {
+    historyStore.clearAll()
+  }
   showClearConfirm.value = false
 }
 </script>

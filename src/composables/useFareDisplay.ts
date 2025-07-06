@@ -1,7 +1,8 @@
 import type { FareRoute, VehicleFare } from '@/types/fare'
+import { useFareStore } from '@/stores/fare'
 
 export const useFareDisplay = () => {
-  const fareStore = useFareStore()
+  const fareStore = process.client ? useFareStore() : null
   const { locale } = useI18n()
 
   // 料金フォーマット
@@ -44,12 +45,14 @@ export const useFareDisplay = () => {
 
   // ルート間の料金を取得
   const getRouteFare = async (departure: string, arrival: string): Promise<FareRoute | undefined> => {
+    if (!fareStore) return undefined
     await fareStore.loadFareMaster()
     return fareStore.getFareByRoute(departure, arrival)
   }
 
   // 料金の一括取得（料金表用）
   const getAllFares = async (): Promise<FareRoute[]> => {
+    if (!fareStore) return []
     await fareStore.loadFareMaster()
     return fareStore.fareMaster?.routes || []
   }

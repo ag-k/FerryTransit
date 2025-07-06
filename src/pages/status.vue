@@ -156,15 +156,15 @@
 import { useFerryStore } from '@/stores/ferry'
 import { useFerryData } from '@/composables/useFerryData'
 
-const ferryStore = useFerryStore()
+const ferryStore = process.client ? useFerryStore() : null
 const { updateShipStatus } = useFerryData()
 
 // State
 const isLoading = ref(false)
 
 // Store data
-const shipStatus = computed(() => ferryStore.shipStatus)
-const lastFetchTime = computed(() => ferryStore.lastFetchTime)
+const shipStatus = computed(() => ferryStore?.shipStatus || {})
+const lastFetchTime = computed(() => ferryStore?.lastFetchTime || null)
 
 // Methods
 const getStatusClass = (status: number) => {
@@ -227,7 +227,7 @@ const refreshStatus = async () => {
 
 // Fetch status on mount if data is stale
 onMounted(async () => {
-  if (ferryStore.isDataStale) {
+  if (ferryStore && ferryStore.isDataStale) {
     await refreshStatus()
   }
 })
