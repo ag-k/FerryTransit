@@ -296,14 +296,14 @@ import FavoriteButton from '@/components/favorites/FavoriteButton.vue'
 import type { TransitRoute } from '@/types'
 
 // Stores
-const ferryStore = useFerryStore()
-const historyStore = useHistoryStore()
+const ferryStore = process.client ? useFerryStore() : null
+const historyStore = process.client ? useHistoryStore() : null
 
 // Search parameters - use refs for better reactivity
-const departure = ref(ferryStore.departure)
-const arrival = ref(ferryStore.arrival)
+const departure = ref(ferryStore?.departure || '')
+const arrival = ref(ferryStore?.arrival || '')
 const date = ref(new Date())
-const time = ref(getCurrentTimeString())
+const time = ref('')
 const isArrivalMode = ref(false)
 
 // Create searchParams as a computed object for better reactivity
@@ -318,22 +318,26 @@ const searchParams = computed(() => ({
 
 // Watch for changes in departure/arrival and update ferryStore
 watch(departure, (newVal) => {
-  ferryStore.setDeparture(newVal)
+  if (ferryStore) {
+    ferryStore.setDeparture(newVal)
+  }
 })
 
 watch(arrival, (newVal) => {
-  ferryStore.setArrival(newVal)
+  if (ferryStore) {
+    ferryStore.setArrival(newVal)
+  }
 })
 
 // Watch for changes in ferryStore and update local refs
-watch(() => ferryStore.departure, (newVal) => {
-  if (departure.value !== newVal) {
+watch(() => ferryStore?.departure, (newVal) => {
+  if (newVal && departure.value !== newVal) {
     departure.value = newVal
   }
 })
 
-watch(() => ferryStore.arrival, (newVal) => {
-  if (arrival.value !== newVal) {
+watch(() => ferryStore?.arrival, (newVal) => {
+  if (newVal && arrival.value !== newVal) {
     arrival.value = newVal
   }
 })
@@ -437,14 +441,16 @@ async function handleSearch() {
     searchResults.value = results
     
     // Add to search history
-    historyStore.addSearchHistory({
-      type: 'route',
-      departure: departure.value,
-      arrival: arrival.value,
-      date: date.value,
-      time: time.value,
-      isArrivalMode: isArrivalMode.value
-    })
+    if (historyStore) {
+      historyStore.addSearchHistory({
+        type: 'route',
+        departure: departure.value,
+        arrival: arrival.value,
+        date: date.value,
+        time: time.value,
+        isArrivalMode: isArrivalMode.value
+      })
+    }
   } catch (error) {
     console.error('Search error:', error)
     searchResults.value = []
@@ -465,6 +471,9 @@ function showRouteDetails(route: TransitRoute) {
 // Initialize from URL parameters
 onMounted(() => {
   const route = useRoute()
+  
+  // 初期時刻を設定
+  time.value = getCurrentTimeString()
   
   // URLパラメータから設定
   if (route.query.departure) {

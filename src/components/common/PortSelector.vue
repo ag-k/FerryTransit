@@ -68,8 +68,10 @@ const emit = defineEmits<{
   'change': [value: string]
 }>()
 
-const ferryStore = useFerryStore()
-const { hondoPorts, dozenPorts, dogoPorts } = ferryStore
+const ferryStore = process.client ? useFerryStore() : null
+const hondoPorts = computed(() => ferryStore?.hondoPorts || [])
+const dozenPorts = computed(() => ferryStore?.dozenPorts || [])
+const dogoPorts = computed(() => ferryStore?.dogoPorts || [])
 
 // Unique ID for accessibility
 const selectId = `port-selector-${Math.random().toString(36).substr(2, 9)}`
