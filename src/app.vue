@@ -7,17 +7,9 @@
 <script setup lang="ts">
 import { useUIStore } from '@/stores/ui'
 
-// Initialize theme as early as possible
-const uiStore = useUIStore()
-
-// Run on client side only
-if (process.client) {
-  // Initialize theme immediately
-  uiStore.initializeTheme()
-}
-
-// Also ensure theme is initialized after mount
+// Initialize theme on client side only
 onMounted(() => {
+  const uiStore = useUIStore()
   uiStore.initializeTheme()
 })
 </script>
