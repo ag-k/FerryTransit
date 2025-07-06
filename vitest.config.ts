@@ -7,7 +7,7 @@ export default defineConfig({
   test: {
     globals: true,
     environment: 'happy-dom',
-    setupFiles: ['./test/setup.ts'],
+    setupFiles: ['./src/test/setup.ts'],
     coverage: {
       provider: 'v8',
       reporter: ['text', 'json', 'html'],
@@ -23,10 +23,10 @@ export default defineConfig({
   },
   resolve: {
     alias: {
-      '@': resolve(__dirname, './'),
-      '~': resolve(__dirname, './'),
-      '#app': resolve(__dirname, './test/mocks/nuxt.ts'),
-      '@/composables/useHolidayCalendar': resolve(__dirname, './test/mocks/nuxt.ts')
+      '@': resolve(__dirname, './src'),
+      '~': resolve(__dirname, './src'),
+      '#app': resolve(__dirname, './src/test/mocks/nuxt.ts'),
+      '@/composables/useHolidayCalendar': resolve(__dirname, './src/test/mocks/nuxt.ts')
     }
   }
 })
