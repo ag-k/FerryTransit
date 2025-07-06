@@ -161,23 +161,26 @@
 import { useFerryStore } from '@/stores/ferry'
 import { useFerryData } from '@/composables/useFerryData'
 
-const ferryStore = useFerryStore()
 const localePath = useLocalePath()
+
+// Initialize store only on client side
+const ferryStore = process.client ? useFerryStore() : null
 const { initializeData } = useFerryData()
 
 // Store data
-const shipStatus = computed(() => ferryStore.shipStatus)
+const shipStatus = computed(() => ferryStore?.shipStatus || {})
 
 // Computed
 const hasAlerts = computed(() => {
-  return shipStatus.value.isokaze?.hasAlert ||
-    shipStatus.value.dozen?.hasAlert ||
-    shipStatus.value.ferry?.hasAlert
+  const status = shipStatus.value
+  return status.isokaze?.hasAlert ||
+    status.dozen?.hasAlert ||
+    status.ferry?.hasAlert
 })
 
 // Initialize data on mount
 onMounted(async () => {
-  if (ferryStore.timetableData.length === 0) {
+  if (ferryStore && ferryStore.timetableData.length === 0) {
     await initializeData()
   }
 })

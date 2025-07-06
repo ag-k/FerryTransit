@@ -5,13 +5,13 @@
     <!-- Alerts -->
     <div v-if="alerts.length > 0" class="container mx-auto px-4 mt-3">
       <CommonAlertComponent
-        v-for="alert in alerts"
-        :key="alert.id"
+        v-for="(alert, index) in alerts"
+        :key="index"
         :visible="true"
         :type="alert.type"
-        :message="alert.message"
+        :message="alert.msg"
         :auto-close="true"
-        @close="uiStore.removeAlert(alert.id)"
+        @close="removeAlert(index)"
       />
     </div>
     
@@ -35,7 +35,15 @@
 <script setup lang="ts">
 import { useUIStore } from '@/stores/ui'
 
-const uiStore = useUIStore()
-const alerts = computed(() => uiStore.alerts)
+// Initialize store on client side only
+const uiStore = process.client ? useUIStore() : null
+const alerts = computed(() => uiStore?.alerts || [])
+
+// Method to remove alert
+const removeAlert = (index: number) => {
+  if (uiStore && uiStore.alerts) {
+    uiStore.alerts.splice(index, 1)
+  }
+}
 </script>
 

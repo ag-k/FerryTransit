@@ -2,8 +2,9 @@ import { useFerryStore } from '@/stores/ferry'
 import { useUIStore } from '@/stores/ui'
 
 export const useFerryData = () => {
-  const ferryStore = useFerryStore()
-  const uiStore = useUIStore()
+  // Initialize stores only on client side
+  const ferryStore = process.client ? useFerryStore() : null
+  const uiStore = process.client ? useUIStore() : null
   const { $i18n } = useNuxtApp()
 
   // 時刻文字列の比較関数
@@ -22,6 +23,8 @@ export const useFerryData = () => {
 
   // 初期データ読み込み
   const initializeData = async () => {
+    if (!ferryStore || !uiStore) return
+    
     uiStore.setLoading(true)
     
     try {
@@ -43,11 +46,13 @@ export const useFerryData = () => {
 
   // 時刻表の更新
   const updateTimetable = async () => {
+    if (!ferryStore) return
     await ferryStore.fetchTimetable(true) // 強制更新
   }
 
   // 運航状況の更新
   const updateShipStatus = async () => {
+    if (!ferryStore || !uiStore) return
     try {
       await ferryStore.fetchShipStatus()
     } catch (error) {
@@ -57,11 +62,14 @@ export const useFerryData = () => {
 
   // 出発地・到着地の入れ替え
   const reverseRoute = () => {
+    if (!ferryStore) return
     ferryStore.reverseRoute()
   }
 
   // 欠航・変更の判定
   const getTripStatus = (trip: any): number => {
+    if (!ferryStore) return 0
+    
     const dateStr = ferryStore.selectedDate.toISOString().split('T')[0]
     const { isokaze, dozen, ferry } = ferryStore.shipStatus
 
@@ -119,6 +127,7 @@ export const useFerryData = () => {
 
   // 港の地図情報取得
   const getPortMap = (portId: string): string | undefined => {
+    if (!ferryStore) return undefined
     return ferryStore.portMaps[portId]
   }
 
@@ -131,18 +140,18 @@ export const useFerryData = () => {
     getPortMap,
     
     // Store states
-    timetableData: computed(() => ferryStore.timetableData),
-    filteredTimetable: computed(() => ferryStore.filteredTimetable),
-    shipStatus: computed(() => ferryStore.shipStatus),
-    selectedDate: computed(() => ferryStore.selectedDate),
-    departure: computed(() => ferryStore.departure),
-    arrival: computed(() => ferryStore.arrival),
-    isLoading: computed(() => ferryStore.isLoading),
-    error: computed(() => ferryStore.error),
+    timetableData: computed(() => ferryStore?.timetableData || []),
+    filteredTimetable: computed(() => ferryStore?.filteredTimetable || []),
+    shipStatus: computed(() => ferryStore?.shipStatus || {}),
+    selectedDate: computed(() => ferryStore?.selectedDate || new Date()),
+    departure: computed(() => ferryStore?.departure || ''),
+    arrival: computed(() => ferryStore?.arrival || ''),
+    isLoading: computed(() => ferryStore?.isLoading || false),
+    error: computed(() => ferryStore?.error || null),
     
     // Port data
-    hondoPorts: ferryStore.hondoPorts,
-    dozenPorts: ferryStore.dozenPorts,
-    dogoPorts: ferryStore.dogoPorts
+    hondoPorts: ferryStore?.hondoPorts || [],
+    dozenPorts: ferryStore?.dozenPorts || [],
+    dogoPorts: ferryStore?.dogoPorts || []
   }
 }
