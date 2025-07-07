@@ -94,8 +94,8 @@ export default defineNuxtConfig({
 
   nitro: {
     prerender: {
-      routes: ['/', '/404.html'],
-      crawlLinks: true
+      routes: ['/404.html'],
+      crawlLinks: false
     }
   },
 
@@ -120,7 +120,7 @@ export default defineNuxtConfig({
     }
   },
 
-  ssr: true,
+  ssr: false,
   
   devServer: {
     port: 3030
