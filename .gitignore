@@ -37,3 +37,6 @@ typings
 /src/ios/App/build
 /src/ios/App/Pods
 /src/ios/capacitor-cordova-ios-plugins
+
+# Config directories
+/config
