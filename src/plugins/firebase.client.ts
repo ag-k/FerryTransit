@@ -1,6 +1,6 @@
 import { initializeApp } from 'firebase/app'
 import { getFirestore } from 'firebase/firestore'
-import { getAuth } from 'firebase/auth'
+import { getAuth, signInWithEmailAndPassword, signOut, onAuthStateChanged } from 'firebase/auth'
 import { getStorage } from 'firebase/storage'
 import { getAnalytics } from 'firebase/analytics'
 import { getFunctions } from 'firebase/functions'
@@ -33,6 +33,18 @@ export default defineNuxtPlugin(() => {
     analytics = getAnalytics(app)
   }
 
+  // Admin auth helper
+  const adminAuth = {
+    auth,
+    login: async (credentials: { email: string; password: string }) => {
+      const userCredential = await signInWithEmailAndPassword(auth, credentials.email, credentials.password)
+      return userCredential.user
+    },
+    logout: async () => {
+      await signOut(auth)
+    }
+  }
+
   return {
     provide: {
       firebase: {
@@ -42,7 +54,9 @@ export default defineNuxtPlugin(() => {
         storage,
         functions,
         analytics
-      }
+      },
+      auth, // 認証用のショートカット
+      adminAuth // 管理者認証用のヘルパー
     }
   }
 })

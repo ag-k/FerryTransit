@@ -47,7 +47,10 @@
       "Bash(touch:*)",
       "Bash(python3:*)",
       "Bash(git mv:*)",
-      "Bash(mv:*)"
+      "Bash(mv:*)",
+      "Bash(chmod:*)",
+      "Bash(firebase projects:list:*)",
+      "Bash(firebase target:apply:*)"
     ],
     "deny": []
   }

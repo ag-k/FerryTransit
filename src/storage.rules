@@ -1,0 +1,211 @@
+rules_version = '2';
+service firebase.storage {
+  match /b/{bucket}/o {
+    // ========================================
+    // Helper Functions
+    // ========================================
+    
+    // 認証済みユーザーかチェック
+    function isAuthenticated() {
+      return request.auth != null;
+    }
+    
+    // 管理者かチェック（Custom Claims）
+    function isAdmin() {
+      return isAuthenticated() && 
+        request.auth.token.admin == true;
+    }
+    
+    // スーパー管理者かチェック
+    function isSuperAdmin() {
+      return isAdmin() && 
+        request.auth.token.role == 'super';
+    }
+    
+    // 自分のユーザーIDと一致するかチェック
+    function isOwner(userId) {
+      return isAuthenticated() && 
+        request.auth.uid == userId;
+    }
+    
+    // 許可されたファイルタイプかチェック
+    function isAllowedImageType() {
+      return request.resource.contentType.matches('image/(jpeg|jpg|png|gif|webp)');
+    }
+    
+    // 許可されたドキュメントタイプかチェック
+    function isAllowedDocumentType() {
+      return request.resource.contentType.matches('application/(pdf|json|csv|vnd.ms-excel|vnd.openxmlformats-officedocument.spreadsheetml.sheet)');
+    }
+    
+    // ファイルサイズ制限（画像: 5MB）
+    function isValidImageSize() {
+      return request.resource.size < 5 * 1024 * 1024;
+    }
+    
+    // ファイルサイズ制限（ドキュメント: 50MB）
+    function isValidDocumentSize() {
+      return request.resource.size < 50 * 1024 * 1024;
+    }
+    
+    // ファイルサイズ制限（バックアップ: 100MB）
+    function isValidBackupSize() {
+      return request.resource.size < 100 * 1024 * 1024;
+    }
+    
+    // ========================================
+    // 公開データ（誰でも読み取り可能）
+    // ========================================
+    
+    // 公開データディレクトリ
+    match /public/{allPaths=**} {
+      allow read: if true;
+      allow write: if isAdmin();
+    }
+    
+    // 時刻表データ
+    match /data/timetable.json {
+      allow read: if true;
+      allow write: if isAdmin() && isAllowedDocumentType();
+    }
+    
+    // 料金マスターデータ
+    match /data/fare-master.json {
+      allow read: if true;
+      allow write: if isAdmin() && isAllowedDocumentType();
+    }
+    
+    // 祝日データ
+    match /data/holidays.json {
+      allow read: if true;
+      allow write: if isAdmin() && isAllowedDocumentType();
+    }
+    
+    // 船舶画像
+    match /images/ships/{shipId} {
+      allow read: if true;
+      allow write: if isAdmin() && isAllowedImageType() && isValidImageSize();
+    }
+    
+    // 港画像
+    match /images/ports/{portId} {
+      allow read: if true;
+      allow write: if isAdmin() && isAllowedImageType() && isValidImageSize();
+    }
+    
+    // お知らせ画像
+    match /images/announcements/{imageId} {
+      allow read: if true;
+      allow write: if isAdmin() && isAllowedImageType() && isValidImageSize();
+    }
+    
+    // ========================================
+    // 管理者専用データ
+    // ========================================
+    
+    // 管理者用ディレクトリ
+    match /admin/{allPaths=**} {
+      allow read: if isAdmin();
+      allow write: if isAdmin() && isValidDocumentSize();
+    }
+    
+    // バックアップデータ
+    match /backups/{fileName} {
+      allow read: if isAdmin();
+      allow write: if isAdmin() && 
+        (isAllowedDocumentType() || request.resource.contentType == 'application/zip') &&
+        isValidBackupSize();
+      allow delete: if isSuperAdmin();
+    }
+    
+    // エクスポートデータ
+    match /exports/{fileName} {
+      allow read: if isAdmin();
+      allow write: if isAdmin() && isAllowedDocumentType() && isValidDocumentSize();
+      allow delete: if isAdmin();
+    }
+    
+    // インポート用一時ファイル
+    match /imports/{adminId}/{fileName} {
+      allow read: if isAdmin() && isOwner(adminId);
+      allow write: if isAdmin() && isOwner(adminId) && isValidDocumentSize();
+      allow delete: if isAdmin() && isOwner(adminId);
+    }
+    
+    // ========================================
+    // ユーザーデータ
+    // ========================================
+    
+    // ユーザープロファイル画像
+    match /users/{userId}/profile/{imageId} {
+      allow read: if true;
+      allow write: if isOwner(userId) && isAllowedImageType() && isValidImageSize();
+      allow delete: if isOwner(userId) || isAdmin();
+    }
+    
+    // ユーザーアップロード（一時ファイル）
+    match /temp/{userId}/{fileName} {
+      allow read: if isOwner(userId) || isAdmin();
+      allow write: if isOwner(userId) && 
+        (isAllowedImageType() || isAllowedDocumentType()) &&
+        isValidDocumentSize();
+      allow delete: if isOwner(userId) || isAdmin();
+    }
+    
+    // ========================================
+    // ログファイル（管理者のみ）
+    // ========================================
+    
+    // システムログ
+    match /logs/{logType}/{fileName} {
+      allow read: if isAdmin();
+      allow write: if false; // システムのみが書き込み可能
+      allow delete: if isSuperAdmin();
+    }
+    
+    // エラーログ
+    match /logs/errors/{fileName} {
+      allow read: if isAdmin();
+      allow create: if isAuthenticated(); // エラー報告は認証ユーザーなら可能
+      allow update: if false;
+      allow delete: if isSuperAdmin();
+    }
+    
+    // ========================================
+    // キャッシュデータ
+    // ========================================
+    
+    // 公開キャッシュ（CDN用）
+    match /cache/public/{allPaths=**} {
+      allow read: if true;
+      allow write: if isAdmin();
+    }
+    
+    // プライベートキャッシュ
+    match /cache/private/{adminId}/{allPaths=**} {
+      allow read: if isAdmin() && isOwner(adminId);
+      allow write: if isAdmin() && isOwner(adminId);
+    }
+    
+    // ========================================
+    // 開発・テスト用（開発環境のみ）
+    // ========================================
+    
+    // 開発用データ
+    match /dev/{allPaths=**} {
+      // 本番環境では完全に無効化すること
+      allow read: if isAdmin();
+      allow write: if isAdmin() && request.auth.token.email.matches('.*@(example.com|test.com)$');
+    }
+    
+    // ========================================
+    // デフォルトルール（全て拒否）
+    // ========================================
+    
+    // 上記以外のすべてのファイルへのアクセスを拒否
+    match /{allPaths=**} {
+      allow read: if false;
+      allow write: if false;
+    }
+  }
+}

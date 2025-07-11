@@ -1,0 +1,240 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    // ========================================
+    // Helper Functions
+    // ========================================
+    
+    // 認証済みユーザーかチェック
+    function isAuthenticated() {
+      return request.auth != null;
+    }
+    
+    // 管理者かチェック（Custom Claims）
+    function isAdmin() {
+      return isAuthenticated() && 
+        request.auth.token.admin == true;
+    }
+    
+    // スーパー管理者かチェック
+    function isSuperAdmin() {
+      return isAdmin() && 
+        request.auth.token.role == 'super';
+    }
+    
+    // 一般管理者以上かチェック
+    function isGeneralAdminOrHigher() {
+      return isAdmin() && 
+        (request.auth.token.role == 'general' || request.auth.token.role == 'super');
+    }
+    
+    // 自分のユーザーIDと一致するかチェック
+    function isOwner(userId) {
+      return isAuthenticated() && 
+        request.auth.uid == userId;
+    }
+    
+    // 有効な日付形式かチェック
+    function isValidTimestamp(field) {
+      return field is timestamp;
+    }
+    
+    // 必須フィールドの存在チェック
+    function hasRequiredFields(fields) {
+      return request.resource.data.keys().hasAll(fields);
+    }
+    
+    // ========================================
+    // 公開データ（読み取り専用）
+    // ========================================
+    
+    // 時刻表データ（公開）
+    match /timetables/{document=**} {
+      allow read: if true;
+      allow write: if isAdmin();
+    }
+    
+    // 料金データ（公開）
+    match /fares/{document=**} {
+      allow read: if true;
+      allow write: if isAdmin();
+    }
+    
+    // 祝日データ（公開）
+    match /holidays/{document=**} {
+      allow read: if true;
+      allow write: if isAdmin();
+    }
+    
+    // 運航状況（公開）
+    match /shipStatus/{document=**} {
+      allow read: if true;
+      allow write: if isAdmin();
+    }
+    
+    // お知らせ（公開されているもののみ）
+    match /announcements/{announcementId} {
+      allow read: if resource.data.status == 'published' && 
+        resource.data.publishDate <= request.time;
+      allow write: if isAdmin();
+    }
+    
+    // ========================================
+    // ユーザーデータ
+    // ========================================
+    
+    // ユーザープロファイル
+    match /users/{userId} {
+      allow read: if isOwner(userId) || isAdmin();
+      allow create: if isOwner(userId) && 
+        hasRequiredFields(['createdAt', 'updatedAt']);
+      allow update: if isOwner(userId) && 
+        request.resource.data.createdAt == resource.data.createdAt;
+      allow delete: if isOwner(userId) || isAdmin();
+    }
+    
+    // ユーザー設定
+    match /users/{userId}/settings/{document=**} {
+      allow read: if isOwner(userId) || isAdmin();
+      allow write: if isOwner(userId);
+      allow delete: if isOwner(userId) || isAdmin();
+    }
+    
+    // お気に入り
+    match /users/{userId}/favorites/{document=**} {
+      allow read: if isOwner(userId) || isAdmin();
+      allow write: if isOwner(userId);
+      allow delete: if isOwner(userId) || isAdmin();
+    }
+    
+    // 検索履歴
+    match /users/{userId}/searchHistory/{document=**} {
+      allow read: if isOwner(userId) || isAdmin();
+      allow write: if isOwner(userId);
+      allow delete: if isOwner(userId) || isAdmin();
+    }
+    
+    // ========================================
+    // 管理者専用データ
+    // ========================================
+    
+    // 管理者情報
+    match /admins/{adminId} {
+      allow read: if isAdmin();
+      allow write: if isSuperAdmin();
+    }
+    
+    // 管理者操作ログ
+    match /adminLogs/{logId} {
+      allow read: if isAdmin();
+      allow create: if isAdmin() && 
+        hasRequiredFields(['action', 'timestamp', 'adminId', 'adminEmail']) &&
+        request.resource.data.adminId == request.auth.uid &&
+        request.resource.data.timestamp == request.time;
+      allow update: if false; // ログは変更不可
+      allow delete: if isSuperAdmin();
+    }
+    
+    // システム設定
+    match /settings/{settingId} {
+      allow read: if isAdmin();
+      allow write: if isSuperAdmin();
+    }
+    
+    // ========================================
+    // アナリティクスデータ
+    // ========================================
+    
+    // アクセス統計（管理者のみ閲覧可能）
+    match /analytics/{document=**} {
+      allow read: if isAdmin();
+      allow write: if isAdmin();
+    }
+    
+    // ページビュー記録（ユーザーが作成、管理者が閲覧）
+    match /pageViews/{viewId} {
+      allow read: if isAdmin();
+      allow create: if true; // 誰でも記録可能（匿名含む）
+      allow update: if false;
+      allow delete: if isAdmin();
+    }
+    
+    // エラーログ
+    match /errorLogs/{errorId} {
+      allow read: if isAdmin();
+      allow create: if true; // エラーは誰でも報告可能
+      allow update: if false;
+      allow delete: if isAdmin();
+    }
+    
+    // ========================================
+    // データ管理用コレクション
+    // ========================================
+    
+    // データ承認ワークフロー
+    match /pendingChanges/{changeId} {
+      allow read: if isAdmin();
+      allow create: if isGeneralAdminOrHigher() && 
+        hasRequiredFields(['type', 'data', 'createdBy', 'createdAt', 'status']) &&
+        request.resource.data.createdBy == request.auth.uid &&
+        request.resource.data.status == 'pending';
+      allow update: if isAdmin() && 
+        (resource.data.status == 'pending' && 
+         request.resource.data.status in ['approved', 'rejected']);
+      allow delete: if isAdmin();
+    }
+    
+    // 公開履歴
+    match /publishHistory/{historyId} {
+      allow read: if isAdmin();
+      allow create: if isAdmin() && 
+        hasRequiredFields(['type', 'publishedBy', 'publishedAt', 'data']);
+      allow update: if false; // 履歴は変更不可
+      allow delete: if isSuperAdmin();
+    }
+    
+    // バックアップメタデータ
+    match /backups/{backupId} {
+      allow read: if isAdmin();
+      allow write: if isAdmin();
+    }
+    
+    // ========================================
+    // 運航アラート（特別な権限設定）
+    // ========================================
+    
+    // 運航アラート
+    match /alerts/{alertId} {
+      // アクティブなアラートは誰でも読める
+      allow read: if resource.data.active == true || isAdmin();
+      // 管理者のみ作成・更新可能
+      allow create: if isAdmin() && 
+        hasRequiredFields(['ship', 'route', 'status', 'summary', 'active']);
+      allow update: if isAdmin();
+      allow delete: if isAdmin();
+    }
+    
+    // ========================================
+    // 一時データ
+    // ========================================
+    
+    // セッションデータ（24時間で自動削除想定）
+    match /sessions/{sessionId} {
+      allow read: if isOwner(resource.data.userId) || isAdmin();
+      allow create: if isAuthenticated() && 
+        request.resource.data.userId == request.auth.uid;
+      allow update: if isOwner(resource.data.userId);
+      allow delete: if isOwner(resource.data.userId) || isAdmin();
+    }
+    
+    // ========================================
+    // デフォルトルール（全て拒否）
+    // ========================================
+    
+    // 上記以外のすべてのドキュメントへのアクセスを拒否
+    match /{document=**} {
+      allow read: if false;
+      allow write: if false;
+    }
+  }
+}

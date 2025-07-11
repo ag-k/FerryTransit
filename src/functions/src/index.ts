@@ -1,9 +1,11 @@
-import * as functions from 'firebase-functions'
 import * as admin from 'firebase-admin'
-import { getTimetable } from './timetable'
+import { getTimetable, getTimetableFromStorage } from './timetable'
 
 // Initialize Firebase Admin
 admin.initializeApp()
 
 // Export functions
-export const getTimetableData = getTimetable
+export { getTimetable as getTimetableData, getTimetableFromStorage as getTimetableStorage }
+
+// Export admin functions
+export * from './admin'
