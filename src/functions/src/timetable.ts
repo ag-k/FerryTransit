@@ -1,13 +1,64 @@
-import * as functions from 'firebase-functions'
+import { onRequest, onCall, HttpsError } from 'firebase-functions/v2/https'
 import * as admin from 'firebase-admin'
+import * as cors from 'cors'
 
-export const getTimetable = functions
-  .region('asia-northeast1')
-  .https.onCall(async (data, context) => {
-    const { fromPort, toPort, date } = data
+// CORS設定
+const corsOptions = {
+  origin: true,
+  credentials: true
+}
+const corsHandler = cors(corsOptions)
+
+/**
+ * Firebase Storage から時刻表データを取得
+ */
+export const getTimetableFromStorage = onRequest(
+  { 
+    region: 'asia-northeast1',
+    cors: true
+  },
+  (request, response) => {
+    return corsHandler(request, response, async () => {
+      try {
+        // Firebase Storage からファイルを取得
+        const bucket = admin.storage().bucket()
+        const file = bucket.file('data/timetable.json')
+        
+        // ファイルの存在確認
+        const [exists] = await file.exists()
+        if (!exists) {
+          response.status(404).json({
+            error: 'Timetable data not found'
+          })
+          return
+        }
+        
+        // ファイルをダウンロード
+        const [contents] = await file.download()
+        const data = JSON.parse(contents.toString('utf-8'))
+        
+        // キャッシュヘッダーを設定（15分）
+        response.set('Cache-Control', 'public, max-age=900')
+        response.json(data)
+      } catch (error) {
+        console.error('Error getting timetable from storage:', error)
+        response.status(500).json({
+          error: 'Failed to fetch timetable data'
+        })
+      }
+    })
+  })
+
+/**
+ * Firestore から時刻表データを取得（既存の関数）
+ */
+export const getTimetable = onCall(
+  { region: 'asia-northeast1' },
+  async (request) => {
+    const { fromPort, toPort, date } = request.data
     
     if (!fromPort || !toPort || !date) {
-      throw new functions.https.HttpsError(
+      throw new HttpsError(
         'invalid-argument',
         'Missing required parameters: fromPort, toPort, date'
       )
@@ -78,7 +129,7 @@ export const getTimetable = functions
       
       // Merge and sort all timetables
       const allSchedules = [...allTimetables, ...specialTimetables]
-        .sort((a, b) => a.departureTime.localeCompare(b.departureTime))
+        .sort((a: any, b: any) => a.departureTime.localeCompare(b.departureTime))
       
       // Get operation alerts for the date
       const alertsSnapshot = await db.collection('operationAlerts')
@@ -96,7 +147,7 @@ export const getTimetable = functions
         date,
         fromPort,
         toPort,
-        schedules: allSchedules.map(schedule => ({
+        schedules: allSchedules.map((schedule: any) => ({
           ...schedule,
           operationStatus: alerts[schedule.routeId] || null
         }))
@@ -105,7 +156,7 @@ export const getTimetable = functions
       return response
     } catch (error) {
       console.error('Error getting timetable:', error)
-      throw new functions.https.HttpsError(
+      throw new HttpsError(
         'internal',
         'Failed to fetch timetable data'
       )

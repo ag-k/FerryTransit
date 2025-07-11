@@ -131,3 +131,72 @@ npm run lint
 - [移行計画](docs/migration/MIGRATION_PLAN.md)
 - [フェーズ1タスクリスト](docs/migration/PHASE1_TASKS.md)
 - [Nuxt3開発ドキュメント](docs/nuxt/README.md)
+
+## Firebase 設定・デプロイ
+
+### Firebase プロジェクト情報
+
+- **プロジェクトID**: `oki-ferryguide`
+- **デフォルトストレージバケット**: `oki-ferryguide.appspot.com`
+
+### Firebase ルールのデプロイ方法
+
+#### 1. 個別にデプロイ
+
+```bash
+# Firestore ルールのみ
+firebase deploy --only firestore:rules
+
+# Storage ルールのみ
+firebase deploy --only storage
+
+# 両方同時（推奨）
+firebase deploy --only firestore:rules,storage:rules
+```
+
+#### 2. ルールファイルの場所
+
+- **Firestore ルール**: `src/firestore.rules`
+- **Storage ルール**: `src/storage.rules`
+- **設定ファイル**: `firebase.json`
+
+#### 3. エラーが発生した場合
+
+**Storage デプロイでエラーが出る場合**:
+```bash
+# ストレージターゲットを設定
+firebase target:apply storage main oki-ferryguide.appspot.com
+
+# その後、再度デプロイ
+firebase deploy --only storage
+```
+
+**権限エラーが出る場合**:
+```bash
+# プロジェクトリストを確認
+firebase projects:list
+
+# プロジェクトを選択
+firebase use oki-ferryguide
+
+# アカウントを再ログイン
+firebase logout
+firebase login
+```
+
+### Firebase Admin SDK (管理者作成用)
+
+```bash
+# 管理者アカウントを作成
+export GOOGLE_APPLICATION_CREDENTIALS="/path/to/service-account-key.json"
+node src/scripts/setup-admin.js [email] [password] [role]
+
+# 例: スーパー管理者を作成
+node src/scripts/setup-admin.js admin@example.com SecurePass123! super
+```
+
+### セキュリティルールの詳細
+
+- [Firestore ルール詳細](src/scripts/README_FIRESTORE_RULES.md)
+- [Storage ルール詳細](src/scripts/README_STORAGE_RULES.md)
+- [管理者設定ガイド](src/scripts/README_ADMIN_SETUP.md)

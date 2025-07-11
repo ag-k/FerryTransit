@@ -1,65 +1,195 @@
 rules_version = '2';
 service cloud.firestore {
   match /databases/{database}/documents {
-    // 公開データの読み取り許可
+    // ヘルパー関数
+    function isAuthenticated() {
+      return request.auth != null;
+    }
+    
+    function isAdmin() {
+      return isAuthenticated() && 
+        (request.auth.token.admin == true || request.auth.token.superAdmin == true);
+    }
+    
+    function isSuperAdmin() {
+      return isAuthenticated() && request.auth.token.superAdmin == true;
+    }
+    
+    function isOwner(userId) {
+      return isAuthenticated() && request.auth.uid == userId;
+    }
+
+    // ========================================
+    // 公開データ（誰でも読み取り可能）
+    // ========================================
+    
+    // 港データ
     match /ports/{document=**} {
       allow read: if true;
-      allow write: if request.auth != null && request.auth.token.admin == true;
+      allow write: if isAdmin();
     }
     
+    // 船舶データ
     match /ships/{document=**} {
       allow read: if true;
-      allow write: if request.auth != null && request.auth.token.admin == true;
+      allow write: if isAdmin();
     }
     
+    // 航路データ
     match /routes/{document=**} {
       allow read: if true;
-      allow write: if request.auth != null && request.auth.token.admin == true;
+      allow write: if isAdmin();
     }
     
+    // 時刻表データ
     match /timetables/{document=**} {
       allow read: if true;
-      allow write: if request.auth != null && request.auth.token.admin == true;
+      allow write: if isAdmin();
     }
     
+    // 料金データ
     match /fares/{document=**} {
       allow read: if true;
-      allow write: if request.auth != null && request.auth.token.admin == true;
+      allow write: if isAdmin();
     }
     
+    // 祝日データ
     match /holidays/{document=**} {
       allow read: if true;
-      allow write: if request.auth != null && request.auth.token.admin == true;
+      allow write: if isAdmin();
     }
     
+    // アラート
+    match /alerts/{document=**} {
+      allow read: if true;
+      allow write: if isAdmin();
+    }
+    
+    // お知らせ（公開期間内のみ読み取り可能）
     match /announcements/{document=**} {
       allow read: if resource.data.isActive == true 
                   && resource.data.displayFrom <= request.time
                   && resource.data.displayUntil >= request.time;
-      allow write: if request.auth != null && request.auth.token.admin == true;
+      allow write: if isAdmin();
     }
     
+    // 運航アラート
     match /operationAlerts/{document=**} {
       allow read: if true;
-      allow write: if request.auth != null && request.auth.token.admin == true;
+      allow write: if isAdmin();
     }
     
-    // 管理者データ
+    // 運航状況
+    match /operationStatus/{document=**} {
+      allow read: if true;
+      allow write: if isAdmin();
+    }
+
+    // ========================================
+    // ユーザー個人データ
+    // ========================================
+    
+    // ユーザープロファイル
+    match /users/{userId} {
+      allow read: if isOwner(userId) || isAdmin();
+      allow create: if isOwner(userId);
+      allow update: if isOwner(userId) && !request.resource.data.keys().hasAny(['admin', 'superAdmin']) 
+                    || isAdmin();
+      allow delete: if isSuperAdmin();
+    }
+    
+    // お気に入り
+    match /users/{userId}/favorites/{document=**} {
+      allow read, write: if isOwner(userId);
+    }
+    
+    // 検索履歴
+    match /users/{userId}/searchHistory/{document=**} {
+      allow read, write: if isOwner(userId);
+    }
+
+    // ========================================
+    // 管理者専用データ
+    // ========================================
+    
+    // 管理者ユーザー（レガシー）
     match /adminUsers/{userId} {
-      allow read: if request.auth != null && 
-                     (request.auth.uid == userId || request.auth.token.admin == true);
-      allow write: if request.auth != null && request.auth.token.admin == true;
+      allow read: if isOwner(userId) || isAdmin();
+      allow write: if isAdmin();
     }
     
-    // ログデータ
+    // 管理操作ログ（管理者のみ読み取り、書き込みはクライアントからも可能）
+    match /adminLogs/{document=**} {
+      allow read: if isAdmin();
+      allow create: if isAdmin();
+      allow update, delete: if false;
+    }
+    
+    // 公開履歴
+    match /publishHistory/{document=**} {
+      allow read: if isAdmin();
+      allow create: if isAdmin();
+      allow update, delete: if false;
+    }
+    
+    // バックアップメタデータ
+    match /backups/{document=**} {
+      allow read: if isAdmin();
+      allow write: if false; // Cloud Functionsからのみ
+    }
+    
+    // システムログ
+    match /systemLogs/{document=**} {
+      allow read: if isAdmin();
+      allow write: if false; // Cloud Functionsからのみ
+    }
+
+    // ========================================
+    // アナリティクスデータ
+    // ========================================
+    
+    // アクセスログ（レガシー）
     match /accessLogs/{document=**} {
-      allow read: if request.auth != null && request.auth.token.admin == true;
+      allow read: if isAdmin();
       allow create: if true;
+      allow update, delete: if false;
     }
     
-    match /searchLogs/{document=**} {
-      allow read: if request.auth != null && request.auth.token.admin == true;
+    // ページビュー
+    match /pageViews/{document=**} {
+      allow read: if isAdmin();
       allow create: if true;
+      allow update, delete: if false;
+    }
+    
+    // 検索ログ
+    match /searchLogs/{document=**} {
+      allow read: if isAdmin();
+      allow create: if true;
+      allow update, delete: if false;
+    }
+    
+    // エラーログ
+    match /errorLogs/{document=**} {
+      allow read: if isAdmin();
+      allow create: if true;
+      allow update, delete: if false;
+    }
+
+    // ========================================
+    // その他の管理データ
+    // ========================================
+    
+    // 割引設定
+    match /discounts/{document=**} {
+      allow read: if true;
+      allow write: if isAdmin();
+    }
+    
+    // ピーク期間設定
+    match /peakPeriods/{document=**} {
+      allow read: if true;
+      allow write: if isAdmin();
     }
   }
 }

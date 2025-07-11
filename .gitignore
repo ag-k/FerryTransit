@@ -18,6 +18,14 @@ logs
 .fleet
 .idea
 
+# Google Cloud CLI
+.gcloud_cfg/
+
+# Firebase Admin SDK keys
+firebase/
+*.serviceAccountKey.json
+*firebase-adminsdk*.json
+
 # Local env files
 .env
 .env.*

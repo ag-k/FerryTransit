@@ -1,4 +1,7 @@
 import { defineStore } from 'pinia'
+import { httpsCallable } from 'firebase/functions'
+import { useFirebase } from '@/composables/useFirebase'
+import { useFirebaseStorage } from '@/composables/useFirebaseStorage'
 import type { 
   Trip, 
   TripStatus, 
@@ -340,8 +343,22 @@ export const useFerryStore = defineStore('ferry', () => {
     error.value = null
 
     try {
-      // Use local API endpoint instead of external API
-      const data = await $fetch<any[]>('/api/timetable')
+      let data: any[]
+      
+      // Firebase Functions を使用する場合
+      const useFirebaseFunctions = true // 設定で切り替え可能
+      
+      if (useFirebaseFunctions && process.client) {
+        // Firebase Storage から直接取得
+        const { getCachedJsonFile } = useFirebaseStorage()
+        data = await getCachedJsonFile<any[]>('data/timetable.json', 'rawTimetable', 15)
+      } else {
+        // Firebase Functions 経由で取得（サーバーサイドまたはフォールバック）
+        const config = useRuntimeConfig()
+        const functionsUrl = `https://asia-northeast1-${config.public.firebase.projectId}.cloudfunctions.net/getTimetableStorage`
+        data = await $fetch<any[]>(functionsUrl)
+      }
+      
       console.log('Fetched timetable data:', data.length, 'items')
       
       // Map API response fields to expected format
@@ -360,8 +377,8 @@ export const useFerryStore = defineStore('ferry', () => {
       
       lastFetchTime.value = new Date()
       
-      // LocalStorageにキャッシュ
-      if (process.client) {
+      // LocalStorageにキャッシュ（Firebase Storage の getCachedJsonFile が既に処理）
+      if (process.client && !useFirebaseFunctions) {
         try {
           localStorage.setItem('rawTimetable', JSON.stringify(data))
           localStorage.setItem('lastFetchTime', lastFetchTime.value.toISOString())
@@ -371,6 +388,7 @@ export const useFerryStore = defineStore('ferry', () => {
       }
     } catch (e) {
       error.value = 'LOAD_TIMETABLE_ERROR'
+      console.error('Failed to fetch timetable:', e)
       
       // オフラインの場合はキャッシュから読み込み
       if (process.client) {

@@ -1,5 +1,15 @@
 {
   "projects": {
-    "default": "ferry-transit"
-  }
+    "default": "oki-ferryguide"
+  },
+  "targets": {
+    "oki-ferryguide": {
+      "storage": {
+        "main": [
+          "oki-ferryguide.appspot.com"
+        ]
+      }
+    }
+  },
+  "etags": {}
 }
