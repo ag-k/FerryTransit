@@ -35,10 +35,11 @@
       </div>
       <button
         @click="refreshData"
-        class="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700"
+        :disabled="isLoading"
+        class="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 disabled:bg-gray-400"
       >
-        <ArrowPathIcon class="h-5 w-5 inline mr-1" />
-        更新
+        <ArrowPathIcon class="h-5 w-5 inline mr-1" :class="{ 'animate-spin': isLoading }" />
+        {{ isLoading ? '読み込み中...' : '更新' }}
       </button>
     </div>
 
@@ -173,11 +174,18 @@
 
 <script setup lang="ts">
 import { ArrowPathIcon } from '@heroicons/vue/24/outline'
+import { useAnalytics } from '~/composables/useAnalytics'
+import { startOfDay, endOfDay, subDays, format } from 'date-fns'
 
 definePageMeta({
   layout: 'admin',
   middleware: 'admin'
 })
+
+const { getPageViewStats, getAccessTrends, getPopularPages, getReferrerStats, getRouteSearchStats, getErrorStats } = useAnalytics()
+const { $toast } = useNuxtApp()
+
+const isLoading = ref(false)
 
 const selectedPeriod = ref('30d')
 const customStartDate = ref('')
@@ -185,30 +193,24 @@ const customEndDate = ref('')
 
 // KPIデータ
 const kpiData = ref({
-  pageViews: 45678,
-  pageViewsTrend: 12,
-  uniqueUsers: 3456,
-  uniqueUsersTrend: 8,
-  avgSessionDuration: '4分23秒',
-  avgSessionTrend: 5,
-  bounceRate: 42,
-  bounceRateTrend: -3
+  pageViews: 0,
+  pageViewsTrend: 0,
+  uniqueUsers: 0,
+  uniqueUsersTrend: 0,
+  avgSessionDuration: '0分0秒',
+  avgSessionTrend: 0,
+  bounceRate: 0,
+  bounceRateTrend: 0
 })
 
 // 人気ページ
-const topPages = ref([
-  { path: '/', title: 'トップページ', views: 12345, percentage: 27 },
-  { path: '/timetable', title: '時刻表', views: 8901, percentage: 19 },
-  { path: '/transit', title: '乗換案内', views: 7654, percentage: 17 },
-  { path: '/status', title: '運行状況', views: 6543, percentage: 14 },
-  { path: '/fare', title: '料金表', views: 4321, percentage: 9 }
-])
+const topPages = ref<Array<{ path: string; title: string; views: number; percentage: number }>>([])
 
 // リファラーデータ
 const referrerData = ref({
-  labels: ['直接アクセス', 'Google検索', 'Yahoo検索', 'SNS', 'その他'],
+  labels: [] as string[],
   datasets: [{
-    data: [35, 30, 15, 12, 8],
+    data: [] as number[],
     backgroundColor: [
       'rgb(59, 130, 246)',
       'rgb(16, 185, 129)',
@@ -224,39 +226,146 @@ const hourlyAccessData = ref({
   labels: Array.from({ length: 24 }, (_, i) => `${i}時`),
   datasets: [{
     label: 'アクセス数',
-    data: [
-      120, 95, 80, 75, 85, 110, 180, 320,
-      450, 380, 350, 420, 480, 410, 380, 450,
-      520, 580, 490, 420, 380, 320, 250, 180
-    ],
+    data: new Array(24).fill(0),
     backgroundColor: 'rgba(59, 130, 246, 0.8)'
   }]
 })
 
 // よく検索される経路
-const popularRoutes = ref([
-  { from: '本土七類', to: '西郷', count: 892 },
-  { from: '西郷', to: '本土七類', count: 765 },
-  { from: '本土七類', to: '菱浦', count: 543 },
-  { from: '西郷', to: '菱浦', count: 432 },
-  { from: '菱浦', to: '本土七類', count: 321 }
-])
+const popularRoutes = ref<Array<{ from: string; to: string; count: number }>>([])
 
 // エラー統計
-const errorStats = ref([
-  { type: '404', label: 'ページが見つからない', count: 45, percentage: 45, color: 'bg-yellow-500' },
-  { type: '500', label: 'サーバーエラー', count: 12, percentage: 12, color: 'bg-red-500' },
-  { type: 'network', label: 'ネットワークエラー', count: 28, percentage: 28, color: 'bg-orange-500' },
-  { type: 'other', label: 'その他', count: 15, percentage: 15, color: 'bg-gray-500' }
-])
+const errorStats = ref<Array<{ type: string; label: string; count: number; percentage: number; color: string }>>([])
 
-const refreshData = async () => {
-  // TODO: 選択された期間のデータを再取得
-  console.log('Refreshing analytics data for period:', selectedPeriod.value)
+const loadAnalyticsData = async () => {
+  isLoading.value = true
+  try {
+    // 期間の計算
+    let startDate: Date
+    let endDate = new Date()
+    
+    switch (selectedPeriod.value) {
+      case '7d':
+        startDate = subDays(endDate, 7)
+        break
+      case '30d':
+        startDate = subDays(endDate, 30)
+        break
+      case '90d':
+        startDate = subDays(endDate, 90)
+        break
+      case 'custom':
+        startDate = new Date(customStartDate.value)
+        endDate = new Date(customEndDate.value)
+        break
+      default:
+        startDate = subDays(endDate, 30)
+    }
+
+    // 各種統計データの取得
+    const [trends, pages, referrers, routes, errors] = await Promise.all([
+      getAccessTrends(startDate, endDate),
+      getPopularPages(startDate, endDate, 5),
+      getReferrerStats(startDate, endDate),
+      getRouteSearchStats(10),
+      getErrorStats(startDate, endDate)
+    ])
+
+    // KPIデータの更新
+    kpiData.value = {
+      pageViews: trends.total,
+      pageViewsTrend: trends.growth,
+      uniqueUsers: trends.uniqueUsers,
+      uniqueUsersTrend: trends.userGrowth,
+      avgSessionDuration: formatDuration(trends.avgSessionDuration),
+      avgSessionTrend: trends.sessionGrowth,
+      bounceRate: trends.bounceRate,
+      bounceRateTrend: trends.bounceGrowth
+    }
+
+    // 人気ページの更新
+    const totalViews = pages.reduce((sum, p) => sum + p.views, 0)
+    topPages.value = pages.map(page => ({
+      ...page,
+      percentage: Math.round((page.views / totalViews) * 100)
+    }))
+
+    // リファラーデータの更新
+    const referrerLabels = Object.keys(referrers)
+    const referrerValues = Object.values(referrers)
+    referrerData.value = {
+      labels: referrerLabels.map(translateReferrer),
+      datasets: [{
+        data: referrerValues,
+        backgroundColor: referrerData.value.datasets[0].backgroundColor
+      }]
+    }
+
+    // 時間別アクセスデータの更新
+    if (trends.hourlyData) {
+      hourlyAccessData.value.datasets[0].data = trends.hourlyData
+    }
+
+    // 人気経路の更新
+    popularRoutes.value = routes
+
+    // エラー統計の更新
+    const errorTotal = Object.values(errors).reduce((sum: number, count: any) => sum + count, 0)
+    errorStats.value = [
+      { type: '404', label: 'ページが見つからない', count: errors['404'] || 0, percentage: Math.round(((errors['404'] || 0) / errorTotal) * 100), color: 'bg-yellow-500' },
+      { type: '500', label: 'サーバーエラー', count: errors['500'] || 0, percentage: Math.round(((errors['500'] || 0) / errorTotal) * 100), color: 'bg-red-500' },
+      { type: 'network', label: 'ネットワークエラー', count: errors['network'] || 0, percentage: Math.round(((errors['network'] || 0) / errorTotal) * 100), color: 'bg-orange-500' },
+      { type: 'other', label: 'その他', count: errors['other'] || 0, percentage: Math.round(((errors['other'] || 0) / errorTotal) * 100), color: 'bg-gray-500' }
+    ]
+  } catch (error) {
+    console.error('Failed to load analytics data:', error)
+    $toast.error('アナリティクスデータの取得に失敗しました')
+  } finally {
+    isLoading.value = false
+  }
 }
 
+const refreshData = () => {
+  loadAnalyticsData()
+}
+
+// セッション時間のフォーマット
+const formatDuration = (seconds: number): string => {
+  const minutes = Math.floor(seconds / 60)
+  const remainingSeconds = seconds % 60
+  return `${minutes}分${remainingSeconds}秒`
+}
+
+// リファラーの翻訳
+const translateReferrer = (referrer: string): string => {
+  const translations: Record<string, string> = {
+    'direct': '直接アクセス',
+    'google': 'Google検索',
+    'yahoo': 'Yahoo検索',
+    'bing': 'Bing検索',
+    'facebook': 'Facebook',
+    'twitter': 'Twitter',
+    'instagram': 'Instagram',
+    'other': 'その他'
+  }
+  return translations[referrer] || referrer
+}
+
+// 期間が変更されたときに自動的にデータを再取得
+watch([selectedPeriod, customStartDate, customEndDate], () => {
+  if (selectedPeriod.value === 'custom' && (!customStartDate.value || !customEndDate.value)) {
+    return
+  }
+  loadAnalyticsData()
+})
+
 onMounted(() => {
-  // TODO: Firestoreからアナリティクスデータを取得
-  console.log('Loading analytics data...')
+  // カスタム期間のデフォルト値を設定
+  const today = new Date()
+  customEndDate.value = format(today, 'yyyy-MM-dd')
+  customStartDate.value = format(subDays(today, 30), 'yyyy-MM-dd')
+  
+  // 初期データの読み込み
+  loadAnalyticsData()
 })
 </script>

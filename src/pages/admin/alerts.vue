@@ -52,10 +52,19 @@
       <div class="flex space-x-2">
         <button
           @click="refreshData"
-          class="px-4 py-2 bg-gray-600 text-white rounded-md hover:bg-gray-700"
+          :disabled="isLoading"
+          class="px-4 py-2 bg-gray-600 text-white rounded-md hover:bg-gray-700 disabled:bg-gray-400"
         >
           <ArrowPathIcon class="h-5 w-5 inline mr-1" />
-          更新
+          {{ isLoading ? '読み込み中...' : '更新' }}
+        </button>
+        <button
+          @click="publishAlertData"
+          :disabled="isPublishing"
+          class="px-4 py-2 bg-purple-600 text-white rounded-md hover:bg-purple-700 disabled:bg-gray-400"
+        >
+          <CloudArrowUpIcon class="h-5 w-5 inline mr-1" />
+          {{ isPublishing ? '公開中...' : 'データ公開' }}
         </button>
       </div>
       <button
@@ -290,16 +299,14 @@ import {
   XCircleIcon,
   InformationCircleIcon,
   CalendarIcon,
-  ClockIcon
+  ClockIcon,
+  CloudArrowUpIcon
 } from '@heroicons/vue/24/outline'
-
-definePageMeta({
-  layout: 'admin',
-  middleware: 'admin'
-})
+import { where, orderBy } from 'firebase/firestore'
+import { useAdminFirestore } from '~/composables/useAdminFirestore'
+import { useDataPublish } from '~/composables/useDataPublish'
 
 interface Alert {
-  id: string
   ship: string
   route: string
   status: number
@@ -309,13 +316,26 @@ interface Alert {
   commentEn?: string
   startDate: string
   endDate?: string
-  updatedAt: Date
   active: boolean
+  severity: 'low' | 'medium' | 'high'
+  affectedRoutes: string[]
 }
+
+definePageMeta({
+  layout: 'admin',
+  middleware: 'admin'
+})
+
+const { getCollection, createDocument, updateDocument, deleteDocument } = useAdminFirestore()
+const { publishData } = useDataPublish()
+const { $toast } = useNuxtApp()
 
 const showAddModal = ref(false)
 const showEditModal = ref(false)
 const isSaving = ref(false)
+const isPublishing = ref(false)
+const isLoading = ref(false)
+const editingId = ref<string | null>(null)
 
 const formData = ref<Partial<Alert>>({
   ship: '',
@@ -329,28 +349,15 @@ const formData = ref<Partial<Alert>>({
   endDate: ''
 })
 
-const activeAlerts = ref<Alert[]>([
-  {
-    id: '1',
-    ship: 'フェリーおき',
-    route: '西郷 → 本土七類',
-    status: 1,
-    summary: '強風のため30分程度の遅延が発生しています',
-    comment: '現在、強風の影響により出港が遅れております。安全運航のため、ご理解をお願いいたします。',
-    startDate: new Date().toISOString(),
-    updatedAt: new Date(),
-    active: true
-  }
-])
-
-const alertHistory = ref<Alert[]>([])
+const activeAlerts = ref<Array<Alert & { id: string }>>([])
+const alertHistory = ref<Array<Alert & { id: string }>>([])
 
 const statusSummary = computed(() => {
   return {
     normal: 10,
-    delay: activeAlerts.value.filter(a => a.status === 1).length,
-    cancel: activeAlerts.value.filter(a => a.status === 2).length,
-    other: activeAlerts.value.filter(a => a.status === 3 || a.status === 4).length
+    delay: activeAlerts.value.filter((a: Alert) => a.status === 1).length,
+    cancel: activeAlerts.value.filter((a: Alert) => a.status === 2).length,
+    other: activeAlerts.value.filter((a: Alert) => a.status === 3 || a.status === 4).length
   }
 })
 
@@ -398,21 +405,31 @@ const formatTime = (date: Date) => {
   })
 }
 
-const editAlert = (alert: Alert) => {
+const editAlert = (alert: Alert & { id: string }) => {
   formData.value = { ...alert }
+  editingId.value = alert.id
   showEditModal.value = true
 }
 
-const deleteAlert = async (alert: Alert) => {
+const deleteAlert = async (alert: Alert & { id: string }) => {
+  if (!alert.id) return
+  
   if (confirm(`${alert.ship}の${alert.summary}を削除しますか？`)) {
-    // TODO: Firestoreから削除
-    activeAlerts.value = activeAlerts.value.filter(a => a.id !== alert.id)
+    try {
+      await deleteDocument('alerts', alert.id)
+      await refreshData()
+      $toast.success('アラートを削除しました')
+    } catch (error) {
+      console.error('Failed to delete alert:', error)
+      $toast.error('削除に失敗しました')
+    }
   }
 }
 
 const closeModal = () => {
   showAddModal.value = false
   showEditModal.value = false
+  editingId.value = null
   formData.value = {
     ship: '',
     route: '',
@@ -429,21 +446,82 @@ const closeModal = () => {
 const saveAlert = async () => {
   isSaving.value = true
   try {
-    // TODO: Firestoreに保存
-    console.log('Saving alert:', formData.value)
-    await new Promise(resolve => setTimeout(resolve, 1000))
+    const alertData: Alert = {
+      ship: formData.value.ship || '',
+      route: formData.value.route || '',
+      status: formData.value.status || 1,
+      summary: formData.value.summary || '',
+      comment: formData.value.comment || '',
+      summaryEn: formData.value.summaryEn || '',
+      commentEn: formData.value.commentEn || '',
+      startDate: formData.value.startDate || '',
+      endDate: formData.value.endDate,
+      active: true,
+      severity: formData.value.status === 2 ? 'high' : formData.value.status === 1 ? 'medium' : 'low',
+      affectedRoutes: [formData.value.route || '']
+    }
+
+    if (editingId.value) {
+      await updateDocument('alerts', editingId.value, alertData)
+      $toast.success('アラートを更新しました')
+    } else {
+      await createDocument('alerts', alertData)
+      $toast.success('アラートを追加しました')
+    }
+    
     closeModal()
     await refreshData()
   } catch (error) {
     console.error('Failed to save alert:', error)
+    $toast.error('保存に失敗しました')
   } finally {
     isSaving.value = false
   }
 }
 
 const refreshData = async () => {
-  // TODO: Firestoreからアラートデータを取得
-  console.log('Refreshing alert data...')
+  isLoading.value = true
+  try {
+    // アクティブなアラート
+    const activeConstraints = [
+      where('active', '==', true),
+      orderBy('startDate', 'desc')
+    ]
+    const activeData = await getCollection<Alert & { id: string }>('alerts', activeConstraints)
+    activeAlerts.value = activeData
+
+    // 過去のアラート（非アクティブまたは終了日が過去）
+    const historyConstraints = [
+      where('active', '==', false),
+      orderBy('startDate', 'desc')
+    ]
+    const historyData = await getCollection<Alert & { id: string }>('alerts', historyConstraints)
+    
+    // 終了日が設定されていて過去のものも履歴に含める
+    const expiredAlerts = activeData.filter(alert => 
+      alert.endDate && new Date(alert.endDate) < new Date()
+    )
+    
+    alertHistory.value = [...historyData, ...expiredAlerts]
+  } catch (error) {
+    console.error('Failed to fetch alerts:', error)
+    $toast.error('データの取得に失敗しました')
+  } finally {
+    isLoading.value = false
+  }
+}
+
+const publishAlertData = async () => {
+  isPublishing.value = true
+  try {
+    await publishData('alerts')
+    $toast.success('アラートデータを公開しました')
+  } catch (error) {
+    console.error('Failed to publish alert data:', error)
+    $toast.error('データの公開に失敗しました')
+  } finally {
+    isPublishing.value = false
+  }
 }
 
 onMounted(() => {
