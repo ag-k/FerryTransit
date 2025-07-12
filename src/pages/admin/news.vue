@@ -273,8 +273,12 @@ import {
   PlusIcon,
   EyeIcon,
   PencilIcon,
-  TrashIcon
+  TrashIcon,
+  ArrowPathIcon
 } from '@heroicons/vue/24/outline'
+import { orderBy, where, Timestamp } from 'firebase/firestore'
+import { useAdminFirestore } from '~/composables/useAdminFirestore'
+import { useAdminAuth } from '~/composables/useAdminAuth'
 
 definePageMeta({
   layout: 'admin',
@@ -282,30 +286,35 @@ definePageMeta({
 })
 
 interface News {
-  id: string
-  category: string
+  category: 'announcement' | 'maintenance' | 'feature' | 'campaign'
   title: string
   titleEn?: string
   content: string
   contentEn?: string
-  status: string
-  priority: string
-  publishDate: Date
+  status: 'draft' | 'published' | 'scheduled' | 'archived'
+  priority: 'low' | 'medium' | 'high' | 'urgent'
+  publishDate: Date | Timestamp
   isPinned: boolean
-  author: string
-  viewCount: number
+  author?: string
+  viewCount?: number
 }
+
+const { getCollection, createDocument, updateDocument, deleteDocument } = useAdminFirestore()
+const { user } = useAdminAuth()
+const { $toast } = useNuxtApp()
 
 const showAddModal = ref(false)
 const showEditModal = ref(false)
 const showPreviewModal = ref(false)
 const isSaving = ref(false)
+const isLoading = ref(false)
+const editingId = ref<string | null>(null)
 
 const filterCategory = ref('')
 const filterStatus = ref('')
 
 const formData = ref<Partial<News>>({
-  category: '',
+  category: 'announcement',
   title: '',
   titleEn: '',
   content: '',
@@ -317,38 +326,7 @@ const formData = ref<Partial<News>>({
 })
 
 const previewData = ref<News | null>(null)
-
-// ダミーデータ
-const newsList = ref<News[]>([
-  {
-    id: '1',
-    category: 'announcement',
-    title: '年末年始の運航スケジュールについて',
-    titleEn: 'Year-end and New Year Service Schedule',
-    content: '年末年始期間（12月28日〜1月5日）は特別ダイヤで運航いたします。',
-    contentEn: 'Special schedule will be in effect during the year-end and New Year period (Dec 28 - Jan 5).',
-    status: 'published',
-    priority: 'high',
-    publishDate: new Date('2024-01-10T09:00:00'),
-    isPinned: true,
-    author: 'admin@example.com',
-    viewCount: 1234
-  },
-  {
-    id: '2',
-    category: 'maintenance',
-    title: 'システムメンテナンスのお知らせ',
-    titleEn: 'System Maintenance Notice',
-    content: '1月20日（土）午前2時〜午前4時の間、システムメンテナンスを実施します。',
-    contentEn: 'System maintenance will be performed on January 20 (Sat) from 2:00 AM to 4:00 AM.',
-    status: 'scheduled',
-    priority: 'medium',
-    publishDate: new Date('2024-01-18T09:00:00'),
-    isPinned: false,
-    author: 'admin@example.com',
-    viewCount: 456
-  }
-])
+const newsList = ref<Array<News & { id: string }>>([])
 
 const columns = [
   { key: 'title', label: 'タイトル', sortable: true },
@@ -417,32 +395,45 @@ const getStatusLabel = (status: string) => {
   }
 }
 
-const formatDateTime = (date: Date) => {
+const formatDateTime = (date: Date | Timestamp) => {
+  if (date instanceof Timestamp) {
+    return date.toDate().toLocaleString('ja-JP')
+  }
   return date.toLocaleString('ja-JP')
 }
 
-const previewNews = (news: News) => {
+const previewNews = (news: News & { id: string }) => {
   previewData.value = news
   showPreviewModal.value = true
 }
 
-const editNews = (news: News) => {
+const editNews = (news: News & { id: string }) => {
   formData.value = { ...news }
+  editingId.value = news.id
   showEditModal.value = true
 }
 
-const deleteNews = async (news: News) => {
+const deleteNews = async (news: News & { id: string }) => {
+  if (!news.id) return
+  
   if (confirm(`「${news.title}」を削除しますか？`)) {
-    // TODO: Firestoreから削除
-    newsList.value = newsList.value.filter(n => n.id !== news.id)
+    try {
+      await deleteDocument('news', news.id)
+      await refreshData()
+      $toast.success('お知らせを削除しました')
+    } catch (error) {
+      console.error('Failed to delete news:', error)
+      $toast.error('削除に失敗しました')
+    }
   }
 }
 
 const closeModal = () => {
   showAddModal.value = false
   showEditModal.value = false
+  editingId.value = null
   formData.value = {
-    category: '',
+    category: 'announcement',
     title: '',
     titleEn: '',
     content: '',
@@ -457,20 +448,83 @@ const closeModal = () => {
 const saveNews = async () => {
   isSaving.value = true
   try {
-    // TODO: Firestoreに保存
-    console.log('Saving news:', formData.value)
-    await new Promise(resolve => setTimeout(resolve, 1000))
+    const newsData: News = {
+      category: formData.value.category as 'announcement' | 'maintenance' | 'feature' | 'campaign',
+      title: formData.value.title || '',
+      titleEn: formData.value.titleEn,
+      content: formData.value.content || '',
+      contentEn: formData.value.contentEn,
+      status: formData.value.status as 'draft' | 'published' | 'scheduled' | 'archived',
+      priority: formData.value.priority as 'low' | 'medium' | 'high' | 'urgent',
+      publishDate: formData.value.publishDate || new Date(),
+      isPinned: formData.value.isPinned || false,
+      author: user.value?.email || '',
+      viewCount: 0
+    }
+
+    if (editingId.value) {
+      await updateDocument('news', editingId.value, newsData)
+      $toast.success('お知らせを更新しました')
+    } else {
+      await createDocument('news', newsData)
+      $toast.success('お知らせを作成しました')
+    }
+    
     closeModal()
-    // TODO: データを再取得
+    await refreshData()
   } catch (error) {
     console.error('Failed to save news:', error)
+    $toast.error('保存に失敗しました')
   } finally {
     isSaving.value = false
   }
 }
 
+const refreshData = async () => {
+  isLoading.value = true
+  try {
+    const constraints = [orderBy('publishDate', 'desc')]
+    const data = await getCollection<News & { id: string }>('news', constraints)
+    newsList.value = data
+  } catch (error) {
+    console.error('Failed to fetch news:', error)
+    $toast.error('データの取得に失敗しました')
+  } finally {
+    isLoading.value = false
+  }
+}
+
+// 公開状態の自動更新
+const updateNewsStatus = async () => {
+  const now = new Date()
+  const updates: Array<{ id: string; data: Partial<News> }> = []
+
+  for (const news of newsList.value) {
+    // 予約投稿の公開処理
+    if (news.status === 'scheduled' && news.publishDate instanceof Date && news.publishDate <= now) {
+      updates.push({
+        id: news.id,
+        data: { status: 'published' }
+      })
+    }
+  }
+
+  if (updates.length > 0) {
+    const operations = updates.map(update => ({
+      type: 'update' as const,
+      collection: 'news',
+      id: update.id,
+      data: update.data
+    }))
+    await batchWrite(operations)
+    await refreshData()
+  }
+}
+
 onMounted(() => {
-  // TODO: Firestoreからお知らせデータを取得
-  console.log('Loading news data...')
+  refreshData()
+  // 1分ごとに予約投稿のチェック
+  const interval = setInterval(updateNewsStatus, 60000)
+  onUnmounted(() => clearInterval(interval))
 })
 </script>

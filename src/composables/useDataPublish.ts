@@ -14,7 +14,7 @@ export const useDataPublish = () => {
    * Firestoreデータを JSON に変換してStorageに公開
    */
   const publishData = async (
-    dataType: 'timetable' | 'fare' | 'holidays',
+    dataType: 'timetable' | 'fare' | 'holidays' | 'alerts',
     preview: boolean = false
   ): Promise<string> => {
     if (!user.value) throw new Error('認証が必要です')
@@ -36,6 +36,10 @@ export const useDataPublish = () => {
         case 'holidays':
           data = await prepareHolidayData()
           fileName = 'holidays.json'
+          break
+        case 'alerts':
+          data = await prepareAlertData()
+          fileName = 'alerts.json'
           break
         default:
           throw new Error(`Unknown data type: ${dataType}`)
@@ -149,6 +153,30 @@ export const useDataPublish = () => {
       date: holiday.date,
       name: holiday.name,
       nameEn: holiday.nameEn
+    }))
+  }
+
+  /**
+   * アラートデータの準備
+   */
+  const prepareAlertData = async () => {
+    const { where } = await import('firebase/firestore')
+    const alerts = await getCollection('alerts', [where('active', '==', true)])
+    
+    // アクティブなアラートのみをエクスポート
+    return alerts.map(alert => ({
+      id: alert.id,
+      ship: alert.ship,
+      route: alert.route,
+      status: alert.status,
+      severity: alert.severity || 'medium',
+      summary: alert.summary,
+      comment: alert.comment,
+      summaryEn: alert.summaryEn,
+      commentEn: alert.commentEn,
+      startDate: alert.startDate,
+      endDate: alert.endDate,
+      affectedRoutes: alert.affectedRoutes || []
     }))
   }
 
