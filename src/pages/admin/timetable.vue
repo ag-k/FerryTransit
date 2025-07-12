@@ -81,6 +81,14 @@
           <ArrowPathIcon class="h-5 w-5 inline mr-1" />
           更新
         </button>
+        <button
+          @click="publishTimetableData"
+          :disabled="isPublishing"
+          class="px-4 py-2 bg-purple-600 text-white rounded-md hover:bg-purple-700 disabled:bg-gray-400"
+        >
+          <CloudArrowUpIcon class="h-5 w-5 inline mr-1" />
+          {{ isPublishing ? '公開中...' : 'データ公開' }}
+        </button>
       </div>
       <div class="flex space-x-2">
         <button
@@ -300,16 +308,24 @@ import {
   PencilIcon,
   TrashIcon,
   ArrowPathIcon,
-  ArrowUpTrayIcon
+  ArrowUpTrayIcon,
+  CloudArrowUpIcon
 } from '@heroicons/vue/24/outline'
+import { orderBy, where } from 'firebase/firestore'
 import type { Trip, Port, Ship } from '~/types'
+import { useAdminFirestore } from '~/composables/useAdminFirestore'
+import { useDataPublish } from '~/composables/useDataPublish'
 
 definePageMeta({
   layout: 'admin',
   middleware: 'admin'
 })
 
-// ダミーデータ（実際はFirestoreから取得）
+const { getCollection, createDocument, updateDocument, deleteDocument, batchWrite } = useAdminFirestore()
+const { publishData } = useDataPublish()
+const { $toast } = useNuxtApp()
+
+// 港データ
 const ports = ref<Port[]>([
   { id: 'SAIGO', name: '西郷', nameEn: 'Saigo', location: { lat: 36.2, lng: 133.3 }, type: 'dogo' },
   { id: 'HISHIURA', name: '菱浦', nameEn: 'Hishiura', location: { lat: 36.1, lng: 133.2 }, type: 'dozen' },
@@ -319,6 +335,7 @@ const ports = ref<Port[]>([
   { id: 'HONDO_SAKAIMINATO', name: '本土境港', nameEn: 'Hondo Sakaiminato', location: { lat: 35.55, lng: 133.23 }, type: 'mainland' }
 ])
 
+// 船舶データ
 const ships = ref<Ship[]>([
   { id: 'FERRY_OKI', name: 'フェリーおき', nameEn: 'Ferry Oki', type: 'ferry' },
   { id: 'FERRY_SHIRASHIMA', name: 'フェリーしらしま', nameEn: 'Ferry Shirashima', type: 'ferry' },
@@ -340,6 +357,8 @@ const showEditModal = ref(false)
 const showImportModal = ref(false)
 const isSaving = ref(false)
 const isImporting = ref(false)
+const isPublishing = ref(false)
+const editingId = ref<string | null>(null)
 
 const formData = ref<Partial<Trip>>({
   name: '',
@@ -401,21 +420,31 @@ const formatTime = (time: string | Date) => {
   return new Date(time).toLocaleTimeString('ja-JP', { hour: '2-digit', minute: '2-digit' })
 }
 
-const editTimetable = (item: Trip) => {
+const editTimetable = (item: Trip & { id?: string }) => {
   formData.value = { ...item }
+  editingId.value = item.id || null
   showEditModal.value = true
 }
 
-const deleteTimetable = async (item: Trip) => {
-  if (confirm(`${item.name} の ${item.departure} → ${item.arrival} 便を削除しますか？`)) {
-    // TODO: Firestoreから削除
-    timetables.value = timetables.value.filter(t => t.tripId !== item.tripId)
+const deleteTimetable = async (item: Trip & { id?: string }) => {
+  if (!item.id) return
+  
+  if (confirm(`${item.name} の ${getPortName(item.departure)} → ${getPortName(item.arrival)} 便を削除しますか？`)) {
+    try {
+      await deleteDocument('timetables', item.id)
+      await refreshData()
+      $toast.success('時刻表を削除しました')
+    } catch (error) {
+      console.error('Failed to delete timetable:', error)
+      $toast.error('削除に失敗しました')
+    }
   }
 }
 
 const closeModal = () => {
   showAddModal.value = false
   showEditModal.value = false
+  editingId.value = null
   formData.value = {
     name: '',
     departure: '',
@@ -431,69 +460,148 @@ const closeModal = () => {
 const saveTimetable = async () => {
   isSaving.value = true
   try {
-    // TODO: Firestoreに保存
-    console.log('Saving timetable:', formData.value)
-    await new Promise(resolve => setTimeout(resolve, 1000))
+    const data = {
+      ...formData.value,
+      tripId: editingId.value ? formData.value.tripId : Date.now(),
+      price: formData.value.price || 0
+    }
+
+    if (editingId.value) {
+      await updateDocument('timetables', editingId.value, data)
+      $toast.success('時刻表を更新しました')
+    } else {
+      await createDocument('timetables', data)
+      $toast.success('時刻表を追加しました')
+    }
+    
     closeModal()
     await refreshData()
   } catch (error) {
     console.error('Failed to save timetable:', error)
+    $toast.error('保存に失敗しました')
   } finally {
     isSaving.value = false
   }
 }
 
 const refreshData = async () => {
-  // TODO: Firestoreから時刻表データを取得
-  // 現在はダミーデータ
-  timetables.value = [
-    {
-      tripId: 1,
-      name: 'フェリーおき',
-      departure: 'SAIGO',
-      arrival: 'HONDO_SHICHIRUI',
-      departureTime: '08:30',
-      arrivalTime: '11:05',
-      startDate: '2024-01-01',
-      endDate: '2024-12-31',
-      status: 0,
-      price: 3000
-    },
-    {
-      tripId: 2,
-      name: 'フェリーしらしま',
-      departure: 'HONDO_SHICHIRUI',
-      arrival: 'SAIGO',
-      departureTime: '14:25',
-      arrivalTime: '17:00',
-      startDate: '2024-01-01',
-      endDate: '2024-12-31',
-      status: 0,
-      price: 3000
-    }
-  ]
+  try {
+    const constraints = [orderBy('departureTime', 'asc')]
+    const data = await getCollection<Trip & { id: string }>('timetables', constraints)
+    timetables.value = data
+  } catch (error) {
+    console.error('Failed to fetch timetables:', error)
+    $toast.error('データの取得に失敗しました')
+  }
+}
+
+const getPortName = (portId: string) => {
+  const port = ports.value.find(p => p.id === portId)
+  return port?.name || portId
 }
 
 const handleFileSelect = (event: Event) => {
   const target = event.target as HTMLInputElement
   const file = target.files?.[0]
   if (file) {
-    // TODO: CSVファイルの処理
-    console.log('Selected file:', file.name)
+    importCSVFile(file)
+  }
+}
+
+const importCSVFile = async (file: File) => {
+  try {
+    const text = await file.text()
+    const lines = text.split('\n').filter(line => line.trim())
+    const headers = lines[0].split(',').map(h => h.trim())
+    
+    const operations = []
+    
+    for (let i = 1; i < lines.length; i++) {
+      const values = lines[i].split(',').map(v => v.trim())
+      const data: any = {
+        tripId: Date.now() + i,
+        status: 0
+      }
+      
+      headers.forEach((header, index) => {
+        const value = values[index]
+        switch (header.toLowerCase()) {
+          case '船舶名':
+          case 'ship':
+            data.name = value
+            break
+          case '出発港':
+          case 'departure':
+            data.departure = value
+            break
+          case '到着港':
+          case 'arrival':
+            data.arrival = value
+            break
+          case '出発時刻':
+          case 'departure_time':
+            data.departureTime = value
+            break
+          case '到着時刻':
+          case 'arrival_time':
+            data.arrivalTime = value
+            break
+          case '開始日':
+          case 'start_date':
+            data.startDate = value
+            break
+          case '終了日':
+          case 'end_date':
+            data.endDate = value
+            break
+          case '状態':
+          case 'status':
+            data.status = parseInt(value) || 0
+            break
+          case '料金':
+          case 'price':
+            data.price = parseInt(value) || 0
+            break
+        }
+      })
+      
+      operations.push({
+        type: 'create' as const,
+        collection: 'timetables',
+        data
+      })
+    }
+    
+    await batchWrite(operations)
+    $toast.success(`${operations.length}件のデータをインポートしました`)
+  } catch (error) {
+    console.error('Failed to import CSV:', error)
+    $toast.error('CSVのインポートに失敗しました')
   }
 }
 
 const importData = async () => {
   isImporting.value = true
   try {
-    // TODO: CSVデータをFirestoreにインポート
-    await new Promise(resolve => setTimeout(resolve, 2000))
     showImportModal.value = false
     await refreshData()
   } catch (error) {
     console.error('Failed to import data:', error)
   } finally {
     isImporting.value = false
+  }
+}
+
+const publishTimetableData = async () => {
+  isPublishing.value = true
+  try {
+    await publishData('timetable')
+    $toast.success('時刻表データを公開しました')
+  } catch (error) {
+    console.error('Failed to publish data:', error)
+    $toast.error('データの公開に失敗しました')
+  } finally {
+    isPublishing.value = false
   }
 }
 

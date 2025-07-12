@@ -41,53 +41,6 @@
 
     <!-- 選択されたデータ種別の操作 -->
     <div v-if="selectedDataType" class="space-y-6">
-      <!-- エクスポート -->
-      <div class="bg-white dark:bg-gray-800 rounded-lg shadow p-6">
-        <h2 class="text-lg font-medium text-gray-900 dark:text-white mb-4">
-          データエクスポート
-        </h2>
-        <div class="space-y-4">
-          <div>
-            <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-              エクスポート形式
-            </label>
-            <div class="grid grid-cols-2 md:grid-cols-4 gap-2">
-              <button
-                v-for="format in exportFormats"
-                :key="format.id"
-                @click="selectedFormat = format.id"
-                :class="[
-                  'px-4 py-2 rounded-md border',
-                  selectedFormat === format.id
-                    ? 'border-blue-500 bg-blue-50 dark:bg-blue-900/20 text-blue-600 dark:text-blue-400'
-                    : 'border-gray-300 dark:border-gray-600 hover:bg-gray-50 dark:hover:bg-gray-700'
-                ]"
-              >
-                {{ format.name }}
-              </button>
-            </div>
-          </div>
-          
-          <div v-if="selectedFormat === 'csv'" class="bg-yellow-50 dark:bg-yellow-900/20 p-4 rounded-md">
-            <p class="text-sm text-yellow-800 dark:text-yellow-200">
-              <ExclamationTriangleIcon class="h-5 w-5 inline mr-1" />
-              CSV形式では一部のデータ（画像URL等）が省略される場合があります
-            </p>
-          </div>
-
-          <div class="flex justify-end">
-            <button
-              @click="exportData"
-              :disabled="isExporting"
-              class="px-6 py-2 bg-green-600 text-white rounded-md hover:bg-green-700 disabled:bg-gray-400"
-            >
-              <ArrowDownTrayIcon class="h-5 w-5 inline mr-1" />
-              {{ isExporting ? 'エクスポート中...' : 'エクスポート実行' }}
-            </button>
-          </div>
-        </div>
-      </div>
-
       <!-- インポート -->
       <div class="bg-white dark:bg-gray-800 rounded-lg shadow p-6">
         <h2 class="text-lg font-medium text-gray-900 dark:text-white mb-4">
@@ -161,6 +114,53 @@
             >
               <CloudArrowUpIcon class="h-5 w-5 inline mr-1" />
               {{ isImporting ? 'インポート中...' : 'インポート実行' }}
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <!-- エクスポート -->
+      <div class="bg-white dark:bg-gray-800 rounded-lg shadow p-6">
+        <h2 class="text-lg font-medium text-gray-900 dark:text-white mb-4">
+          データエクスポート
+        </h2>
+        <div class="space-y-4">
+          <div>
+            <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+              エクスポート形式
+            </label>
+            <div class="grid grid-cols-2 md:grid-cols-4 gap-2">
+              <button
+                v-for="format in exportFormats"
+                :key="format.id"
+                @click="selectedFormat = format.id"
+                :class="[
+                  'px-4 py-2 rounded-md border',
+                  selectedFormat === format.id
+                    ? 'border-blue-500 bg-blue-50 dark:bg-blue-900/20 text-blue-600 dark:text-blue-400'
+                    : 'border-gray-300 dark:border-gray-600 hover:bg-gray-50 dark:hover:bg-gray-700'
+                ]"
+              >
+                {{ format.name }}
+              </button>
+            </div>
+          </div>
+          
+          <div v-if="selectedFormat === 'csv'" class="bg-yellow-50 dark:bg-yellow-900/20 p-4 rounded-md">
+            <p class="text-sm text-yellow-800 dark:text-yellow-200">
+              <ExclamationTriangleIcon class="h-5 w-5 inline mr-1" />
+              CSV形式では一部のデータ（画像URL等）が省略される場合があります
+            </p>
+          </div>
+
+          <div class="flex justify-end">
+            <button
+              @click="exportData"
+              :disabled="isExporting"
+              class="px-6 py-2 bg-green-600 text-white rounded-md hover:bg-green-700 disabled:bg-gray-400"
+            >
+              <ArrowDownTrayIcon class="h-5 w-5 inline mr-1" />
+              {{ isExporting ? 'エクスポート中...' : 'エクスポート実行' }}
             </button>
           </div>
         </div>

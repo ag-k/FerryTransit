@@ -26,6 +26,28 @@
       </nav>
     </div>
 
+    <!-- アクションボタン -->
+    <div class="mb-4 flex justify-between items-center">
+      <div class="flex space-x-2">
+        <button
+          @click="refreshData"
+          :disabled="isLoading"
+          class="px-4 py-2 bg-gray-600 text-white rounded-md hover:bg-gray-700 disabled:bg-gray-400"
+        >
+          <ArrowPathIcon class="h-5 w-5 inline mr-1" />
+          {{ isLoading ? '読み込み中...' : '更新' }}
+        </button>
+        <button
+          @click="publishFareData"
+          :disabled="isPublishing"
+          class="px-4 py-2 bg-purple-600 text-white rounded-md hover:bg-purple-700 disabled:bg-gray-400"
+        >
+          <CloudArrowUpIcon class="h-5 w-5 inline mr-1" />
+          {{ isPublishing ? '公開中...' : 'データ公開' }}
+        </button>
+      </div>
+    </div>
+
     <!-- 料金表 -->
     <div class="bg-white dark:bg-gray-800 rounded-lg shadow">
       <div class="p-6">
@@ -299,12 +321,20 @@
 </template>
 
 <script setup lang="ts">
-import { PencilIcon } from '@heroicons/vue/24/outline'
+import { PencilIcon, CloudArrowUpIcon, ArrowPathIcon } from '@heroicons/vue/24/outline'
+import { orderBy, where } from 'firebase/firestore'
+import { useAdminFirestore } from '~/composables/useAdminFirestore'
+import { useDataPublish } from '~/composables/useDataPublish'
+import type { FareData, Discount, PeakPeriod } from '~/types'
 
 definePageMeta({
   layout: 'admin',
   middleware: 'admin'
 })
+
+const { getCollection, createDocument, updateDocument, deleteDocument, batchWrite, getDocument } = useAdminFirestore()
+const { publishData } = useDataPublish()
+const { $toast } = useNuxtApp()
 
 const tabs = [
   { id: 'ferry', name: 'フェリー料金' },
@@ -316,68 +346,20 @@ const tabs = [
 const activeTab = ref('ferry')
 const showEditModal = ref(false)
 const isSaving = ref(false)
+const isPublishing = ref(false)
+const isLoading = ref(false)
 
-// ダミーデータ
-const ferryFares = ref([
-  { route: '本土七類 ⇔ 西郷', adult: 3350, child: 1680, car3m: 12340, car4m: 15430, car5m: 18520 },
-  { route: '本土七類 ⇔ 菱浦', adult: 2540, child: 1270, car3m: 10390, car4m: 12990, car5m: 15590 },
-  { route: '本土七類 ⇔ 別府', adult: 2540, child: 1270, car3m: 10390, car4m: 12990, car5m: 15590 },
-  { route: '本土七類 ⇔ 来居', adult: 2540, child: 1270, car3m: 10390, car4m: 12990, car5m: 15590 },
-  { route: '西郷 ⇔ 菱浦', adult: 1490, child: 750, car3m: 4630, car4m: 5790, car5m: 6950 },
-  { route: '西郷 ⇔ 別府', adult: 1490, child: 750, car3m: 4630, car4m: 5790, car5m: 6950 }
-])
-
-const highspeedFares = ref([
-  { route: '本土七類 ⇔ 西郷', adult: 6430, child: 3220 },
-  { route: '本土七類 ⇔ 菱浦', adult: 4890, child: 2450 },
-  { route: '本土七類 ⇔ 別府', adult: 4890, child: 2450 },
-  { route: '西郷 ⇔ 菱浦', adult: 2890, child: 1450 },
-  { route: '西郷 ⇔ 別府', adult: 2890, child: 1450 }
-])
-
-const peakPeriods = ref([
-  { start: '2024-04-27', end: '2024-05-06', description: 'ゴールデンウィーク' },
-  { start: '2024-08-10', end: '2024-08-18', description: '夏季休暇' },
-  { start: '2024-12-28', end: '2025-01-05', description: '年末年始' }
-])
-
+// データ
+const ferryFares = ref<Array<FareData & { id?: string }>>([])
+const highspeedFares = ref<Array<FareData & { id?: string }>>([])
+const peakPeriods = ref<Array<PeakPeriod & { id?: string }>>([])
 const peakSurchargeRate = ref(20)
-
-const discounts = ref([
-  {
-    id: 1,
-    name: '島民割引',
-    description: '隠岐諸島に住所を有する方',
-    rate: 30,
-    active: true
-  },
-  {
-    id: 2,
-    name: '団体割引',
-    description: '15名以上の団体',
-    rate: 10,
-    active: true
-  },
-  {
-    id: 3,
-    name: '学生割引',
-    description: '学生証の提示が必要',
-    rate: 20,
-    active: true
-  },
-  {
-    id: 4,
-    name: '障害者割引',
-    description: '障害者手帳の提示が必要',
-    rate: 50,
-    active: true
-  }
-])
+const discounts = ref<Array<Discount & { id?: string }>>([])
 
 // 編集用データ
-const editingFerryFares = ref([...ferryFares.value])
-const editingHighspeedFares = ref([...highspeedFares.value])
-const editingPeakSurchargeRate = ref(peakSurchargeRate.value)
+const editingFerryFares = ref<Array<FareData & { id?: string }>>([])
+const editingHighspeedFares = ref<Array<FareData & { id?: string }>>([])
+const editingPeakSurchargeRate = ref(20)
 
 const activeTabData = computed(() => {
   switch (activeTab.value) {
@@ -394,24 +376,165 @@ const activeTabData = computed(() => {
   }
 })
 
+const loadFareData = async () => {
+  isLoading.value = true
+  try {
+    // フェリー料金
+    const ferryConstraints = [where('type', '==', 'ferry'), orderBy('route')]
+    const ferryData = await getCollection<FareData & { id: string }>('fares', ferryConstraints)
+    ferryFares.value = ferryData
+
+    // 高速船料金
+    const highspeedConstraints = [where('type', '==', 'highspeed'), orderBy('route')]
+    const highspeedData = await getCollection<FareData & { id: string }>('fares', highspeedConstraints)
+    highspeedFares.value = highspeedData
+
+    // 繁忙期設定
+    const peakData = await getCollection<PeakPeriod & { id: string }>('peakPeriods', [orderBy('start')])
+    peakPeriods.value = peakData
+
+    // 料金加算率設定を取得
+    const settingsDoc = await getDocument('settings', 'fareSettings')
+    if (settingsDoc) {
+      peakSurchargeRate.value = settingsDoc.peakSurchargeRate || 20
+    }
+
+    // 割引設定
+    const discountData = await getCollection<Discount & { id: string }>('discounts', [orderBy('name')])
+    discounts.value = discountData
+
+    // 編集用データの初期化
+    editingFerryFares.value = [...ferryFares.value]
+    editingHighspeedFares.value = [...highspeedFares.value]
+    editingPeakSurchargeRate.value = peakSurchargeRate.value
+  } catch (error) {
+    console.error('Failed to load fare data:', error)
+    // エラー時は初期データを設定
+    setDefaultData()
+  } finally {
+    isLoading.value = false
+  }
+}
+
+const setDefaultData = () => {
+  // デフォルトのフェリー料金
+  ferryFares.value = [
+    { route: '本土七類 ⇔ 西郷', adult: 3350, child: 1680, car3m: 12340, car4m: 15430, car5m: 18520, type: 'ferry' },
+    { route: '本土七類 ⇔ 菱浦', adult: 2540, child: 1270, car3m: 10390, car4m: 12990, car5m: 15590, type: 'ferry' },
+    { route: '本土七類 ⇔ 別府', adult: 2540, child: 1270, car3m: 10390, car4m: 12990, car5m: 15590, type: 'ferry' },
+    { route: '本土七類 ⇔ 来居', adult: 2540, child: 1270, car3m: 10390, car4m: 12990, car5m: 15590, type: 'ferry' },
+    { route: '西郷 ⇔ 菱浦', adult: 1490, child: 750, car3m: 4630, car4m: 5790, car5m: 6950, type: 'ferry' },
+    { route: '西郷 ⇔ 別府', adult: 1490, child: 750, car3m: 4630, car4m: 5790, car5m: 6950, type: 'ferry' }
+  ]
+
+  // デフォルトの高速船料金
+  highspeedFares.value = [
+    { route: '本土七類 ⇔ 西郷', adult: 6430, child: 3220, type: 'highspeed' },
+    { route: '本土七類 ⇔ 菱浦', adult: 4890, child: 2450, type: 'highspeed' },
+    { route: '本土七類 ⇔ 別府', adult: 4890, child: 2450, type: 'highspeed' },
+    { route: '西郷 ⇔ 菱浦', adult: 2890, child: 1450, type: 'highspeed' },
+    { route: '西郷 ⇔ 別府', adult: 2890, child: 1450, type: 'highspeed' }
+  ]
+
+  // デフォルトの繁忙期
+  peakPeriods.value = [
+    { start: '2024-04-27', end: '2024-05-06', description: 'ゴールデンウィーク' },
+    { start: '2024-08-10', end: '2024-08-18', description: '夏季休暇' },
+    { start: '2024-12-28', end: '2025-01-05', description: '年末年始' }
+  ]
+
+  // デフォルトの割引設定
+  discounts.value = [
+    { id: '1', name: '島民割引', description: '隠岐諸島に住所を有する方', rate: 30, active: true, conditions: ['residence'] },
+    { id: '2', name: '団体割引', description: '15名以上の団体', rate: 10, active: true, conditions: ['group'] },
+    { id: '3', name: '学生割引', description: '学生証の提示が必要', rate: 20, active: true, conditions: ['student'] },
+    { id: '4', name: '障害者割引', description: '障害者手帳の提示が必要', rate: 50, active: true, conditions: ['disability'] }
+  ]
+}
+
 const saveFareData = async () => {
   isSaving.value = true
   try {
-    // TODO: Firestoreに保存
     if (activeTab.value === 'ferry') {
+      // フェリー料金の保存
+      const operations = editingFerryFares.value.map(fare => ({
+        type: fare.id ? 'update' as const : 'create' as const,
+        collection: 'fares',
+        id: fare.id,
+        data: {
+          route: fare.route,
+          adult: fare.adult,
+          child: fare.child,
+          car3m: fare.car3m,
+          car4m: fare.car4m,
+          car5m: fare.car5m,
+          type: 'ferry'
+        }
+      }))
+      await batchWrite(operations)
       ferryFares.value = [...editingFerryFares.value]
+      $toast.success('フェリー料金を更新しました')
     } else if (activeTab.value === 'highspeed') {
+      // 高速船料金の保存
+      const operations = editingHighspeedFares.value.map(fare => ({
+        type: fare.id ? 'update' as const : 'create' as const,
+        collection: 'fares',
+        id: fare.id,
+        data: {
+          route: fare.route,
+          adult: fare.adult,
+          child: fare.child,
+          type: 'highspeed'
+        }
+      }))
+      await batchWrite(operations)
       highspeedFares.value = [...editingHighspeedFares.value]
+      $toast.success('高速船料金を更新しました')
     } else if (activeTab.value === 'peak') {
+      // 料金加算率の保存
+      await updateDocument('settings', 'fareSettings', {
+        peakSurchargeRate: editingPeakSurchargeRate.value
+      })
       peakSurchargeRate.value = editingPeakSurchargeRate.value
+      $toast.success('繁忙期料金設定を更新しました')
     }
     
-    await new Promise(resolve => setTimeout(resolve, 1000))
     showEditModal.value = false
   } catch (error) {
     console.error('Failed to save fare data:', error)
+    $toast.error('保存に失敗しました')
   } finally {
     isSaving.value = false
   }
 }
+
+const publishFareData = async () => {
+  isPublishing.value = true
+  try {
+    await publishData('fare')
+    $toast.success('料金データを公開しました')
+  } catch (error) {
+    console.error('Failed to publish fare data:', error)
+    $toast.error('データの公開に失敗しました')
+  } finally {
+    isPublishing.value = false
+  }
+}
+
+const refreshData = () => {
+  loadFareData()
+}
+
+// 編集モーダルを開く際に編集用データを更新
+watch(showEditModal, (isOpen) => {
+  if (isOpen) {
+    editingFerryFares.value = [...ferryFares.value]
+    editingHighspeedFares.value = [...highspeedFares.value]
+    editingPeakSurchargeRate.value = peakSurchargeRate.value
+  }
+})
+
+onMounted(() => {
+  loadFareData()
+})
 </script>
