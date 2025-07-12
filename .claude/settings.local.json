@@ -50,7 +50,8 @@
       "Bash(mv:*)",
       "Bash(chmod:*)",
       "Bash(firebase projects:list:*)",
-      "Bash(firebase target:apply:*)"
+      "Bash(firebase target:apply:*)",
+      "Bash(npm ls:*)"
     ],
     "deny": []
   }
