@@ -231,6 +231,7 @@ import {
   NewspaperIcon
 } from '@heroicons/vue/24/outline'
 import { useFirebaseStorage } from '~/composables/useFirebaseStorage'
+import DataTable from '~/components/admin/DataTable.vue'
 
 definePageMeta({
   layout: 'admin',

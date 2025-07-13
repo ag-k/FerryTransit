@@ -14,7 +14,7 @@ export const useDataPublish = () => {
    * Firestoreデータを JSON に変換してStorageに公開
    */
   const publishData = async (
-    dataType: 'timetable' | 'fare' | 'holidays' | 'alerts',
+    dataType: 'timetable' | 'fare' | 'holidays' | 'alerts' | 'news',
     preview: boolean = false
   ): Promise<string> => {
     if (!user.value) throw new Error('認証が必要です')
@@ -40,6 +40,10 @@ export const useDataPublish = () => {
         case 'alerts':
           data = await prepareAlertData()
           fileName = 'alerts.json'
+          break
+        case 'news':
+          data = await prepareNewsData()
+          fileName = 'news.json'
           break
         default:
           throw new Error(`Unknown data type: ${dataType}`)
@@ -180,6 +184,33 @@ export const useDataPublish = () => {
     }))
   }
 
+  /**
+   * ニュースデータの準備
+   */
+  const prepareNewsData = async () => {
+    const { where, orderBy } = await import('firebase/firestore')
+    const news = await getCollection('news', [
+      where('status', '==', 'published'),
+      orderBy('publishDate', 'desc')
+    ])
+    
+    // 公開中のニュースのみをエクスポート
+    return news.map(item => ({
+      id: item.id,
+      category: item.category,
+      title: item.title,
+      titleEn: item.titleEn,
+      content: item.content,
+      contentEn: item.contentEn,
+      hasDetail: item.hasDetail || false,
+      detailContent: item.detailContent,
+      detailContentEn: item.detailContentEn,
+      publishDate: item.publishDate,
+      isPinned: item.isPinned || false,
+      priority: item.priority || 'medium'
+    }))
+  }
+
   // ========================================
   // 公開履歴管理
   // ========================================
@@ -260,6 +291,12 @@ export const useDataPublish = () => {
           break
         case 'holidays':
           fileName = 'holidays.json'
+          break
+        case 'alerts':
+          fileName = 'alerts.json'
+          break
+        case 'news':
+          fileName = 'news.json'
           break
         default:
           throw new Error(`Unknown data type: ${history.type}`)

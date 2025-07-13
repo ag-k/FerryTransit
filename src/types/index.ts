@@ -200,3 +200,22 @@ export interface TransitRoute {
   totalFare: number
   transferCount: number
 }
+
+// News interface
+export interface News {
+  id?: string
+  category: 'announcement' | 'maintenance' | 'feature' | 'campaign'
+  title: string
+  titleEn?: string
+  content: string
+  contentEn?: string
+  status: 'draft' | 'published' | 'scheduled' | 'archived'
+  priority: 'low' | 'medium' | 'high' | 'urgent'
+  publishDate: Date | string
+  isPinned: boolean
+  author?: string
+  viewCount?: number
+  hasDetail?: boolean  // 詳細ページの有無
+  detailContent?: string  // 詳細ページのコンテンツ（Markdown形式）
+  detailContentEn?: string  // 詳細ページのコンテンツ（英語版）
+}

@@ -22,6 +22,9 @@
     <!-- Bottom Navigation (Mobile Only) -->
     <AppBottomNavigation />
     
+    <!-- Toast Container -->
+    <ToastContainer />
+    
     <footer class="mt-auto py-3 bg-gray-100 dark:bg-slate-900">
       <div class="container mx-auto px-4">
         <p class="text-gray-600 dark:text-gray-300 text-center mb-0">
@@ -34,6 +37,7 @@
 
 <script setup lang="ts">
 import { useUIStore } from '@/stores/ui'
+import ToastContainer from '~/components/ToastContainer.vue'
 
 // Initialize store on client side only
 const uiStore = process.client ? useUIStore() : null
