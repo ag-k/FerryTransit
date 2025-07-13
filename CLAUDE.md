@@ -200,3 +200,24 @@ node src/scripts/setup-admin.js admin@example.com SecurePass123! super
 - [Firestore ルール詳細](src/scripts/README_FIRESTORE_RULES.md)
 - [Storage ルール詳細](src/scripts/README_STORAGE_RULES.md)
 - [管理者設定ガイド](src/scripts/README_ADMIN_SETUP.md)
+
+### Firestore ルール更新履歴
+
+#### 2025-01-12 追加されたコレクション
+
+1. **news コレクション**
+   - お知らせ機能の新しいコレクション
+   - 公開されているニュースは誰でも読める
+   - 管理者のみ作成・更新・削除可能
+
+2. **discounts コレクション**
+   - 割引設定（島民割引、団体割引など）
+   - 誰でも読める（公開情報）
+   - 管理者のみ編集可能
+
+3. **peakPeriods コレクション**
+   - 繁忙期設定
+   - 誰でも読める（公開情報）
+   - 管理者のみ編集可能
+
+**注意**: Firebaseルールをデプロイする際は、必ず `firebase login` で認証してから実行してください。

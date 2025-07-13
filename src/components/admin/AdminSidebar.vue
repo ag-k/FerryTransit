@@ -94,7 +94,7 @@ const baseNavigationItems = [
   { name: '時刻表管理', href: '/admin/timetable', icon: ClockIcon, permission: 'MANAGE_TIMETABLE' },
   { name: '料金管理', href: '/admin/fare', icon: CurrencyYenIcon, permission: 'MANAGE_FARE' },
   { name: '運航アラート', href: '/admin/alerts', icon: BellAlertIcon, permission: 'MANAGE_ALERTS' },
-  { name: 'お知らせ管理', href: '/admin/announcements', icon: MegaphoneIcon, permission: 'MANAGE_ANNOUNCEMENTS' },
+  { name: 'お知らせ管理', href: '/admin/news', icon: MegaphoneIcon, permission: 'MANAGE_ANNOUNCEMENTS' },
   { name: 'ユーザー分析', href: '/admin/users', icon: UsersIcon, permission: 'VIEW_ANALYTICS' },
   { name: 'データ管理', href: '/admin/data-management', icon: DocumentArrowDownIcon, permission: 'EXPORT_DATA' },
   { name: '統計情報', href: '/admin/analytics', icon: ChartBarIcon, permission: 'VIEW_ANALYTICS' },

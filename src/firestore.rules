@@ -60,6 +60,18 @@ service cloud.firestore {
       allow write: if isAdmin();
     }
     
+    // 割引設定（公開）
+    match /discounts/{document=**} {
+      allow read: if true;
+      allow write: if isAdmin();
+    }
+    
+    // 繁忙期設定（公開）
+    match /peakPeriods/{document=**} {
+      allow read: if true;
+      allow write: if isAdmin();
+    }
+    
     // 祝日データ（公開）
     match /holidays/{document=**} {
       allow read: if true;
@@ -77,6 +89,18 @@ service cloud.firestore {
       allow read: if resource.data.status == 'published' && 
         resource.data.publishDate <= request.time;
       allow write: if isAdmin();
+    }
+    
+    // ニュース（お知らせの新しいコレクション）
+    match /news/{newsId} {
+      // 公開されているニュースは誰でも読める、それ以外は管理者のみ
+      allow read: if (resource.data.status == 'published' && 
+        resource.data.publishDate <= request.time) || isAdmin();
+      // 管理者のみ作成・更新・削除可能
+      allow create: if isAdmin() && 
+        hasRequiredFields(['category', 'title', 'content', 'status', 'publishDate']);
+      allow update: if isAdmin();
+      allow delete: if isAdmin();
     }
     
     // ========================================

@@ -77,6 +77,33 @@
   "NO_STATUS": "Failed to get ships status.",
   "WAVEINFO": "Wave Height",
   "NEWS": "News",
+  "news": {
+    "title": "News",
+    "pageTitle": "News List",
+    "pageDescription": "Check the latest news and updates for Oki Islands Sea Line Information.",
+    "viewAll": "View All",
+    "readMore": "Read More",
+    "noNews": "No news available",
+    "noNewsInCategory": "No news in this category",
+    "allCategories": "All",
+    "urgent": "Urgent",
+    "pinned": "Pinned",
+    "category": {
+      "announcement": "Announcement",
+      "maintenance": "Maintenance",
+      "feature": "New Feature",
+      "campaign": "Campaign"
+    },
+    "priority": {
+      "low": "Low",
+      "medium": "Medium",
+      "high": "High",
+      "urgent": "Urgent"
+    },
+    "notFound": "News not found",
+    "notFoundDescription": "The news item you are looking for may have been deleted or does not exist.",
+    "backToList": "Back to news list"
+  },
   "KUNIGA_COURSE_A": "Course A (from Uragō Port)",
   "KUNIGA_COURSE_B": "Course B (from Beppu Port)",
   "CAPTAINS_CHOICE": "Changed to Captain's choice course",

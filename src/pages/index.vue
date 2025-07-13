@@ -69,6 +69,9 @@
       </div>
     </div>
 
+    <!-- News section -->
+    <NewsSection class="mb-8" />
+
     <!-- Current status alerts -->
     <div v-if="hasAlerts" class="mb-6">
       <div

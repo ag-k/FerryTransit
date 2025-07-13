@@ -12,7 +12,7 @@
       <div class="flex space-x-4">
         <select
           v-model="filterCategory"
-          class="rounded-md border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white"
+          class="rounded-md border border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white focus:border-blue-500 dark:focus:border-blue-400 focus:ring-2 focus:ring-blue-500 focus:ring-opacity-30 transition-colors"
         >
           <option value="">すべてのカテゴリー</option>
           <option value="announcement">お知らせ</option>
@@ -22,7 +22,7 @@
         </select>
         <select
           v-model="filterStatus"
-          class="rounded-md border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white"
+          class="rounded-md border border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white focus:border-blue-500 dark:focus:border-blue-400 focus:ring-2 focus:ring-blue-500 focus:ring-opacity-30 transition-colors"
         >
           <option value="">すべての状態</option>
           <option value="draft">下書き</option>
@@ -31,17 +31,79 @@
           <option value="archived">アーカイブ</option>
         </select>
       </div>
+      <div class="flex space-x-2">
+        <button
+          @click="refreshData"
+          :disabled="isLoading"
+          class="px-4 py-2 bg-gray-600 text-white rounded-md hover:bg-gray-700 disabled:bg-gray-400"
+        >
+          <ArrowPathIcon class="h-5 w-5 inline mr-1" />
+          更新
+        </button>
+        <button
+          @click="publishNewsData"
+          :disabled="isPublishing"
+          class="px-4 py-2 bg-purple-600 text-white rounded-md hover:bg-purple-700 disabled:bg-gray-400"
+        >
+          <CloudArrowUpIcon class="h-5 w-5 inline mr-1" />
+          {{ isPublishing ? '公開中...' : 'データ公開' }}
+        </button>
+        <button
+          @click="navigateTo('/admin/news/edit')"
+          class="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700"
+        >
+          <PlusIcon class="h-5 w-5 inline mr-1" />
+          新規作成
+        </button>
+      </div>
+    </div>
+
+    <!-- ローディング中 -->
+    <div v-if="isLoading" class="bg-white dark:bg-gray-800 rounded-lg shadow p-8 text-center">
+      <div class="inline-flex items-center">
+        <svg class="animate-spin h-5 w-5 mr-3 text-gray-600 dark:text-gray-400" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+          <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+          <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+        </svg>
+        データを読み込んでいます...
+      </div>
+    </div>
+
+    <!-- エラー表示 -->
+    <div v-else-if="loadError" class="bg-white dark:bg-gray-800 rounded-lg shadow p-8 text-center">
+      <div class="text-red-600 dark:text-red-400 mb-4">
+        <svg class="h-12 w-12 mx-auto" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+        </svg>
+      </div>
+      <p class="text-gray-600 dark:text-gray-400 mb-4">{{ loadError }}</p>
       <button
-        @click="showAddModal = true"
+        @click="refreshData"
+        class="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700"
+      >
+        <ArrowPathIcon class="h-5 w-5 inline mr-1" />
+        再試行
+      </button>
+    </div>
+
+    <!-- データなし -->
+    <div v-else-if="!isLoading && filteredNews.length === 0" class="bg-white dark:bg-gray-800 rounded-lg shadow p-8 text-center">
+      <MegaphoneIcon class="h-12 w-12 text-gray-400 mx-auto mb-4" />
+      <p class="text-gray-500 dark:text-gray-400 mb-4">
+        {{ filterCategory || filterStatus ? 'フィルター条件に一致するお知らせがありません' : 'お知らせがまだ登録されていません' }}
+      </p>
+      <button
+        v-if="!filterCategory && !filterStatus"
+        @click="navigateTo('/admin/news/edit')"
         class="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700"
       >
         <PlusIcon class="h-5 w-5 inline mr-1" />
-        新規作成
+        最初のお知らせを作成
       </button>
     </div>
 
     <!-- お知らせ一覧 -->
-    <div class="bg-white dark:bg-gray-800 rounded-lg shadow">
+    <div v-else class="bg-white dark:bg-gray-800 rounded-lg shadow">
       <DataTable
         :columns="columns"
         :data="filteredNews"
@@ -94,137 +156,6 @@
       </DataTable>
     </div>
 
-    <!-- 追加/編集モーダル -->
-    <FormModal
-      :open="showAddModal || showEditModal"
-      :title="showAddModal ? 'お知らせの作成' : 'お知らせの編集'"
-      @close="closeModal"
-      @submit="saveNews"
-      :loading="isSaving"
-      size="xl"
-    >
-      <div class="space-y-4">
-        <div class="grid grid-cols-2 gap-4">
-          <div>
-            <label class="block text-sm font-medium text-gray-700 dark:text-gray-300">
-              カテゴリー
-            </label>
-            <select
-              v-model="formData.category"
-              class="mt-1 w-full rounded-md border-gray-300 dark:border-gray-600 dark:bg-gray-700"
-              required
-            >
-              <option value="">選択してください</option>
-              <option value="announcement">お知らせ</option>
-              <option value="maintenance">メンテナンス</option>
-              <option value="feature">新機能</option>
-              <option value="campaign">キャンペーン</option>
-            </select>
-          </div>
-          <div>
-            <label class="block text-sm font-medium text-gray-700 dark:text-gray-300">
-              優先度
-            </label>
-            <select
-              v-model="formData.priority"
-              class="mt-1 w-full rounded-md border-gray-300 dark:border-gray-600 dark:bg-gray-700"
-            >
-              <option value="low">低</option>
-              <option value="medium">中</option>
-              <option value="high">高</option>
-              <option value="urgent">緊急</option>
-            </select>
-          </div>
-        </div>
-
-        <div>
-          <label class="block text-sm font-medium text-gray-700 dark:text-gray-300">
-            タイトル（日本語）
-          </label>
-          <input
-            v-model="formData.title"
-            type="text"
-            class="mt-1 w-full rounded-md border-gray-300 dark:border-gray-600 dark:bg-gray-700"
-            required
-          >
-        </div>
-
-        <div>
-          <label class="block text-sm font-medium text-gray-700 dark:text-gray-300">
-            タイトル（英語）
-          </label>
-          <input
-            v-model="formData.titleEn"
-            type="text"
-            class="mt-1 w-full rounded-md border-gray-300 dark:border-gray-600 dark:bg-gray-700"
-          >
-        </div>
-
-        <div>
-          <label class="block text-sm font-medium text-gray-700 dark:text-gray-300">
-            本文（日本語）
-          </label>
-          <textarea
-            v-model="formData.content"
-            rows="6"
-            class="mt-1 w-full rounded-md border-gray-300 dark:border-gray-600 dark:bg-gray-700"
-            required
-          ></textarea>
-        </div>
-
-        <div>
-          <label class="block text-sm font-medium text-gray-700 dark:text-gray-300">
-            本文（英語）
-          </label>
-          <textarea
-            v-model="formData.contentEn"
-            rows="6"
-            class="mt-1 w-full rounded-md border-gray-300 dark:border-gray-600 dark:bg-gray-700"
-          ></textarea>
-        </div>
-
-        <div class="grid grid-cols-2 gap-4">
-          <div>
-            <label class="block text-sm font-medium text-gray-700 dark:text-gray-300">
-              公開状態
-            </label>
-            <select
-              v-model="formData.status"
-              class="mt-1 w-full rounded-md border-gray-300 dark:border-gray-600 dark:bg-gray-700"
-            >
-              <option value="draft">下書き</option>
-              <option value="published">公開</option>
-              <option value="scheduled">予約投稿</option>
-              <option value="archived">アーカイブ</option>
-            </select>
-          </div>
-          <div>
-            <label class="block text-sm font-medium text-gray-700 dark:text-gray-300">
-              公開日時
-            </label>
-            <input
-              v-model="formData.publishDate"
-              type="datetime-local"
-              class="mt-1 w-full rounded-md border-gray-300 dark:border-gray-600 dark:bg-gray-700"
-              :disabled="formData.status !== 'scheduled'"
-            >
-          </div>
-        </div>
-
-        <div>
-          <label class="flex items-center">
-            <input
-              v-model="formData.isPinned"
-              type="checkbox"
-              class="rounded border-gray-300 text-blue-600"
-            >
-            <span class="ml-2 text-sm text-gray-700 dark:text-gray-300">
-              重要なお知らせとして固定表示する
-            </span>
-          </label>
-        </div>
-      </div>
-    </FormModal>
 
     <!-- プレビューモーダル -->
     <FormModal
@@ -274,56 +205,36 @@ import {
   EyeIcon,
   PencilIcon,
   TrashIcon,
-  ArrowPathIcon
+  ArrowPathIcon,
+  MegaphoneIcon,
+  CloudArrowUpIcon
 } from '@heroicons/vue/24/outline'
 import { orderBy, where, Timestamp } from 'firebase/firestore'
 import { useAdminFirestore } from '~/composables/useAdminFirestore'
 import { useAdminAuth } from '~/composables/useAdminAuth'
+import { useDataPublish } from '~/composables/useDataPublish'
+import DataTable from '~/components/admin/DataTable.vue'
+import FormModal from '~/components/admin/FormModal.vue'
 
 definePageMeta({
   layout: 'admin',
   middleware: 'admin'
 })
 
-interface News {
-  category: 'announcement' | 'maintenance' | 'feature' | 'campaign'
-  title: string
-  titleEn?: string
-  content: string
-  contentEn?: string
-  status: 'draft' | 'published' | 'scheduled' | 'archived'
-  priority: 'low' | 'medium' | 'high' | 'urgent'
-  publishDate: Date | Timestamp
-  isPinned: boolean
-  author?: string
-  viewCount?: number
-}
+import type { News } from '~/types'
 
-const { getCollection, createDocument, updateDocument, deleteDocument } = useAdminFirestore()
+const { getCollection, deleteDocument, batchWrite } = useAdminFirestore()
 const { user } = useAdminAuth()
+const { publishData } = useDataPublish()
 const { $toast } = useNuxtApp()
 
-const showAddModal = ref(false)
-const showEditModal = ref(false)
 const showPreviewModal = ref(false)
-const isSaving = ref(false)
 const isLoading = ref(false)
-const editingId = ref<string | null>(null)
+const isPublishing = ref(false)
+const loadError = ref<string | null>(null)
 
 const filterCategory = ref('')
 const filterStatus = ref('')
-
-const formData = ref<Partial<News>>({
-  category: 'announcement',
-  title: '',
-  titleEn: '',
-  content: '',
-  contentEn: '',
-  status: 'draft',
-  priority: 'medium',
-  publishDate: new Date(),
-  isPinned: false
-})
 
 const previewData = ref<News | null>(null)
 const newsList = ref<Array<News & { id: string }>>([])
@@ -408,9 +319,7 @@ const previewNews = (news: News & { id: string }) => {
 }
 
 const editNews = (news: News & { id: string }) => {
-  formData.value = { ...news }
-  editingId.value = news.id
-  showEditModal.value = true
+  navigateTo(`/admin/news/edit?id=${news.id}`)
 }
 
 const deleteNews = async (news: News & { id: string }) => {
@@ -428,66 +337,18 @@ const deleteNews = async (news: News & { id: string }) => {
   }
 }
 
-const closeModal = () => {
-  showAddModal.value = false
-  showEditModal.value = false
-  editingId.value = null
-  formData.value = {
-    category: 'announcement',
-    title: '',
-    titleEn: '',
-    content: '',
-    contentEn: '',
-    status: 'draft',
-    priority: 'medium',
-    publishDate: new Date(),
-    isPinned: false
-  }
-}
-
-const saveNews = async () => {
-  isSaving.value = true
-  try {
-    const newsData: News = {
-      category: formData.value.category as 'announcement' | 'maintenance' | 'feature' | 'campaign',
-      title: formData.value.title || '',
-      titleEn: formData.value.titleEn,
-      content: formData.value.content || '',
-      contentEn: formData.value.contentEn,
-      status: formData.value.status as 'draft' | 'published' | 'scheduled' | 'archived',
-      priority: formData.value.priority as 'low' | 'medium' | 'high' | 'urgent',
-      publishDate: formData.value.publishDate || new Date(),
-      isPinned: formData.value.isPinned || false,
-      author: user.value?.email || '',
-      viewCount: 0
-    }
-
-    if (editingId.value) {
-      await updateDocument('news', editingId.value, newsData)
-      $toast.success('お知らせを更新しました')
-    } else {
-      await createDocument('news', newsData)
-      $toast.success('お知らせを作成しました')
-    }
-    
-    closeModal()
-    await refreshData()
-  } catch (error) {
-    console.error('Failed to save news:', error)
-    $toast.error('保存に失敗しました')
-  } finally {
-    isSaving.value = false
-  }
-}
 
 const refreshData = async () => {
   isLoading.value = true
+  loadError.value = null
   try {
     const constraints = [orderBy('publishDate', 'desc')]
     const data = await getCollection<News & { id: string }>('news', constraints)
     newsList.value = data
+    console.log('Fetched news data:', data)
   } catch (error) {
     console.error('Failed to fetch news:', error)
+    loadError.value = 'お知らせデータの取得に失敗しました。権限を確認してください。'
     $toast.error('データの取得に失敗しました')
   } finally {
     isLoading.value = false
@@ -518,6 +379,19 @@ const updateNewsStatus = async () => {
     }))
     await batchWrite(operations)
     await refreshData()
+  }
+}
+
+const publishNewsData = async () => {
+  isPublishing.value = true
+  try {
+    await publishData('news')
+    $toast.success('お知らせデータを公開しました')
+  } catch (error) {
+    console.error('Failed to publish news data:', error)
+    $toast.error('データの公開に失敗しました')
+  } finally {
+    isPublishing.value = false
   }
 }
 

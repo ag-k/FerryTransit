@@ -180,7 +180,7 @@
           </label>
           <select
             v-model="formData.ship"
-            class="mt-1 w-full rounded-md border-gray-300 dark:border-gray-600 dark:bg-gray-700"
+            class="mt-1 w-full rounded-md border border-gray-300 dark:border-gray-600 dark:bg-gray-700 focus:border-blue-500 dark:focus:border-blue-400 focus:ring-2 focus:ring-blue-500 focus:ring-opacity-30 transition-colors"
             required
           >
             <option value="">選択してください</option>
@@ -200,7 +200,7 @@
             v-model="formData.route"
             type="text"
             placeholder="例: 西郷 → 本土七類"
-            class="mt-1 w-full rounded-md border-gray-300 dark:border-gray-600 dark:bg-gray-700"
+            class="mt-1 w-full rounded-md border border-gray-300 dark:border-gray-600 dark:bg-gray-700 focus:border-blue-500 dark:focus:border-blue-400 focus:ring-2 focus:ring-blue-500 focus:ring-opacity-30 transition-colors"
             required
           >
         </div>
@@ -210,7 +210,7 @@
           </label>
           <select
             v-model="formData.status"
-            class="mt-1 w-full rounded-md border-gray-300 dark:border-gray-600 dark:bg-gray-700"
+            class="mt-1 w-full rounded-md border border-gray-300 dark:border-gray-600 dark:bg-gray-700 focus:border-blue-500 dark:focus:border-blue-400 focus:ring-2 focus:ring-blue-500 focus:ring-opacity-30 transition-colors"
             required
           >
             <option value="1">遅延</option>
@@ -226,7 +226,7 @@
           <input
             v-model="formData.summary"
             type="text"
-            class="mt-1 w-full rounded-md border-gray-300 dark:border-gray-600 dark:bg-gray-700"
+            class="mt-1 w-full rounded-md border border-gray-300 dark:border-gray-600 dark:bg-gray-700 focus:border-blue-500 dark:focus:border-blue-400 focus:ring-2 focus:ring-blue-500 focus:ring-opacity-30 transition-colors"
             required
           >
         </div>
@@ -237,7 +237,7 @@
           <textarea
             v-model="formData.comment"
             rows="3"
-            class="mt-1 w-full rounded-md border-gray-300 dark:border-gray-600 dark:bg-gray-700"
+            class="mt-1 w-full rounded-md border border-gray-300 dark:border-gray-600 dark:bg-gray-700 focus:border-blue-500 dark:focus:border-blue-400 focus:ring-2 focus:ring-blue-500 focus:ring-opacity-30 transition-colors"
           ></textarea>
         </div>
         <div>
@@ -247,7 +247,7 @@
           <input
             v-model="formData.summaryEn"
             type="text"
-            class="mt-1 w-full rounded-md border-gray-300 dark:border-gray-600 dark:bg-gray-700"
+            class="mt-1 w-full rounded-md border border-gray-300 dark:border-gray-600 dark:bg-gray-700 focus:border-blue-500 dark:focus:border-blue-400 focus:ring-2 focus:ring-blue-500 focus:ring-opacity-30 transition-colors"
           >
         </div>
         <div>
@@ -257,7 +257,7 @@
           <textarea
             v-model="formData.commentEn"
             rows="3"
-            class="mt-1 w-full rounded-md border-gray-300 dark:border-gray-600 dark:bg-gray-700"
+            class="mt-1 w-full rounded-md border border-gray-300 dark:border-gray-600 dark:bg-gray-700 focus:border-blue-500 dark:focus:border-blue-400 focus:ring-2 focus:ring-blue-500 focus:ring-opacity-30 transition-colors"
           ></textarea>
         </div>
         <div class="grid grid-cols-2 gap-4">
@@ -268,7 +268,7 @@
             <input
               v-model="formData.startDate"
               type="datetime-local"
-              class="mt-1 w-full rounded-md border-gray-300 dark:border-gray-600 dark:bg-gray-700"
+              class="mt-1 w-full rounded-md border border-gray-300 dark:border-gray-600 dark:bg-gray-700 focus:border-blue-500 dark:focus:border-blue-400 focus:ring-2 focus:ring-blue-500 focus:ring-opacity-30 transition-colors"
               required
             >
           </div>
@@ -279,7 +279,7 @@
             <input
               v-model="formData.endDate"
               type="datetime-local"
-              class="mt-1 w-full rounded-md border-gray-300 dark:border-gray-600 dark:bg-gray-700"
+              class="mt-1 w-full rounded-md border border-gray-300 dark:border-gray-600 dark:bg-gray-700 focus:border-blue-500 dark:focus:border-blue-400 focus:ring-2 focus:ring-blue-500 focus:ring-opacity-30 transition-colors"
             >
           </div>
         </div>
@@ -305,6 +305,8 @@ import {
 import { where, orderBy } from 'firebase/firestore'
 import { useAdminFirestore } from '~/composables/useAdminFirestore'
 import { useDataPublish } from '~/composables/useDataPublish'
+import DataTable from '~/components/admin/DataTable.vue'
+import FormModal from '~/components/admin/FormModal.vue'
 
 interface Alert {
   ship: string

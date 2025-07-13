@@ -3,8 +3,9 @@ import type { AdminUser } from '~/types/auth'
 import type { Alert } from '~/types'
 
 export const useAdminFirestore = () => {
-  const { $firestore } = useNuxtApp()
-  const { user } = useAdminAuth()
+  const { $firebase } = useNuxtApp()
+  const db = $firebase.db
+  const { getCurrentUser } = useAdminAuth()
 
   // ========================================
   // 汎用CRUD操作
@@ -18,19 +19,20 @@ export const useAdminFirestore = () => {
     data: T,
     customId?: string
   ): Promise<string> => {
-    if (!user.value) throw new Error('認証が必要です')
+    const user = await getCurrentUser()
+    if (!user) throw new Error('認証が必要です')
 
     try {
       const docRef = customId 
-        ? doc($firestore, collectionName, customId)
-        : doc(collection($firestore, collectionName))
+        ? doc(db, collectionName, customId)
+        : doc(collection(db, collectionName))
 
       const documentData = {
         ...data,
         createdAt: serverTimestamp(),
         updatedAt: serverTimestamp(),
-        createdBy: user.value.uid,
-        updatedBy: user.value.uid
+        createdBy: user.uid,
+        updatedBy: user.uid
       }
 
       await setDoc(docRef, documentData)
@@ -53,15 +55,16 @@ export const useAdminFirestore = () => {
     documentId: string,
     data: Partial<T>
   ): Promise<void> => {
-    if (!user.value) throw new Error('認証が必要です')
+    const user = await getCurrentUser()
+    if (!user) throw new Error('認証が必要です')
 
     try {
-      const docRef = doc($firestore, collectionName, documentId)
+      const docRef = doc(db, collectionName, documentId)
       
       const updateData = {
         ...data,
         updatedAt: serverTimestamp(),
-        updatedBy: user.value.uid
+        updatedBy: user.uid
       }
 
       await updateDoc(docRef, updateData)
@@ -81,10 +84,11 @@ export const useAdminFirestore = () => {
     collectionName: string,
     documentId: string
   ): Promise<void> => {
-    if (!user.value) throw new Error('認証が必要です')
+    const user = await getCurrentUser()
+    if (!user) throw new Error('認証が必要です')
 
     try {
-      const docRef = doc($firestore, collectionName, documentId)
+      const docRef = doc(db, collectionName, documentId)
       
       // 削除前にデータを取得（ログ用）
       const docSnap = await getDoc(docRef)
@@ -108,7 +112,7 @@ export const useAdminFirestore = () => {
     documentId: string
   ): Promise<T | null> => {
     try {
-      const docRef = doc($firestore, collectionName, documentId)
+      const docRef = doc(db, collectionName, documentId)
       const docSnap = await getDoc(docRef)
 
       if (docSnap.exists()) {
@@ -129,7 +133,7 @@ export const useAdminFirestore = () => {
     constraints: QueryConstraint[] = []
   ): Promise<T[]> => {
     try {
-      const q = query(collection($firestore, collectionName), ...constraints)
+      const q = query(collection(db, collectionName), ...constraints)
       const querySnapshot = await getDocs(q)
 
       return querySnapshot.docs.map(doc => ({
@@ -158,7 +162,7 @@ export const useAdminFirestore = () => {
         baseConstraints.push(startAfter(lastDoc))
       }
 
-      const q = query(collection($firestore, collectionName), ...baseConstraints)
+      const q = query(collection(db, collectionName), ...baseConstraints)
       const querySnapshot = await getDocs(q)
 
       const docs = querySnapshot.docs
@@ -196,15 +200,16 @@ export const useAdminFirestore = () => {
       data?: DocumentData
     }>
   ): Promise<void> => {
-    if (!user.value) throw new Error('認証が必要です')
+    const user = await getCurrentUser()
+    if (!user) throw new Error('認証が必要です')
 
-    const batch = writeBatch($firestore)
+    const batch = writeBatch(db)
 
     try {
       for (const op of operations) {
         const docRef = op.id 
-          ? doc($firestore, op.collection, op.id)
-          : doc(collection($firestore, op.collection))
+          ? doc(db, op.collection, op.id)
+          : doc(collection(db, op.collection))
 
         switch (op.type) {
           case 'create':
@@ -213,14 +218,14 @@ export const useAdminFirestore = () => {
               createdAt: serverTimestamp(),
               updatedAt: serverTimestamp(),
               createdBy: user.value.uid,
-              updatedBy: user.value.uid
+              updatedBy: user.uid
             })
             break
           case 'update':
             batch.update(docRef, {
               ...op.data,
               updatedAt: serverTimestamp(),
-              updatedBy: user.value.uid
+              updatedBy: user.uid
             })
             break
           case 'delete':
@@ -290,15 +295,16 @@ export const useAdminFirestore = () => {
     targetId: string,
     details: any = {}
   ): Promise<void> => {
-    if (!user.value) return
+    const user = await getCurrentUser()
+    if (!user) return
 
     try {
       const logData = {
         action,
         target,
         targetId,
-        adminId: user.value.uid,
-        adminEmail: user.value.email || '',
+        adminId: user.uid,
+        adminEmail: user.email || '',
         timestamp: serverTimestamp(),
         details,
         ip: await getClientIP(),
@@ -306,7 +312,7 @@ export const useAdminFirestore = () => {
       }
 
       // ログは直接書き込み（createDocumentを使うと無限ループになる）
-      const docRef = doc(collection($firestore, 'adminLogs'))
+      const docRef = doc(collection(db, 'adminLogs'))
       await setDoc(docRef, logData)
     } catch (error) {
       console.error('Failed to log admin action:', error)

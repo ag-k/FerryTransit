@@ -157,14 +157,14 @@
                 <input
                   :value="period.start"
                   type="date"
-                  class="rounded-md border-gray-300 dark:border-gray-600 dark:bg-gray-700"
+                  class="rounded-md border border-gray-300 dark:border-gray-600 dark:bg-gray-700 focus:border-blue-500 dark:focus:border-blue-400 focus:ring-2 focus:ring-blue-500 focus:ring-opacity-30 transition-colors"
                   disabled
                 >
                 <span>〜</span>
                 <input
                   :value="period.end"
                   type="date"
-                  class="rounded-md border-gray-300 dark:border-gray-600 dark:bg-gray-700"
+                  class="rounded-md border border-gray-300 dark:border-gray-600 dark:bg-gray-700 focus:border-blue-500 dark:focus:border-blue-400 focus:ring-2 focus:ring-blue-500 focus:ring-opacity-30 transition-colors"
                   disabled
                 >
                 <span class="text-sm text-gray-600 dark:text-gray-400">
@@ -236,7 +236,7 @@
                 <input
                   v-model.number="fare.adult"
                   type="number"
-                  class="w-full rounded-md border-gray-300 dark:border-gray-600 dark:bg-gray-700"
+                  class="w-full rounded-md border border-gray-300 dark:border-gray-600 dark:bg-gray-700 focus:border-blue-500 dark:focus:border-blue-400 focus:ring-2 focus:ring-blue-500 focus:ring-opacity-30 transition-colors"
                 >
               </div>
               <div>
@@ -244,7 +244,7 @@
                 <input
                   v-model.number="fare.child"
                   type="number"
-                  class="w-full rounded-md border-gray-300 dark:border-gray-600 dark:bg-gray-700"
+                  class="w-full rounded-md border border-gray-300 dark:border-gray-600 dark:bg-gray-700 focus:border-blue-500 dark:focus:border-blue-400 focus:ring-2 focus:ring-blue-500 focus:ring-opacity-30 transition-colors"
                 >
               </div>
               <div>
@@ -252,7 +252,7 @@
                 <input
                   v-model.number="fare.car3m"
                   type="number"
-                  class="w-full rounded-md border-gray-300 dark:border-gray-600 dark:bg-gray-700"
+                  class="w-full rounded-md border border-gray-300 dark:border-gray-600 dark:bg-gray-700 focus:border-blue-500 dark:focus:border-blue-400 focus:ring-2 focus:ring-blue-500 focus:ring-opacity-30 transition-colors"
                 >
               </div>
               <div>
@@ -260,7 +260,7 @@
                 <input
                   v-model.number="fare.car4m"
                   type="number"
-                  class="w-full rounded-md border-gray-300 dark:border-gray-600 dark:bg-gray-700"
+                  class="w-full rounded-md border border-gray-300 dark:border-gray-600 dark:bg-gray-700 focus:border-blue-500 dark:focus:border-blue-400 focus:ring-2 focus:ring-blue-500 focus:ring-opacity-30 transition-colors"
                 >
               </div>
               <div>
@@ -268,7 +268,7 @@
                 <input
                   v-model.number="fare.car5m"
                   type="number"
-                  class="w-full rounded-md border-gray-300 dark:border-gray-600 dark:bg-gray-700"
+                  class="w-full rounded-md border border-gray-300 dark:border-gray-600 dark:bg-gray-700 focus:border-blue-500 dark:focus:border-blue-400 focus:ring-2 focus:ring-blue-500 focus:ring-opacity-30 transition-colors"
                 >
               </div>
             </div>
@@ -285,7 +285,7 @@
                 <input
                   v-model.number="fare.adult"
                   type="number"
-                  class="w-full rounded-md border-gray-300 dark:border-gray-600 dark:bg-gray-700"
+                  class="w-full rounded-md border border-gray-300 dark:border-gray-600 dark:bg-gray-700 focus:border-blue-500 dark:focus:border-blue-400 focus:ring-2 focus:ring-blue-500 focus:ring-opacity-30 transition-colors"
                 >
               </div>
               <div>
@@ -293,7 +293,7 @@
                 <input
                   v-model.number="fare.child"
                   type="number"
-                  class="w-full rounded-md border-gray-300 dark:border-gray-600 dark:bg-gray-700"
+                  class="w-full rounded-md border border-gray-300 dark:border-gray-600 dark:bg-gray-700 focus:border-blue-500 dark:focus:border-blue-400 focus:ring-2 focus:ring-blue-500 focus:ring-opacity-30 transition-colors"
                 >
               </div>
             </div>
@@ -311,7 +311,7 @@
               type="number"
               min="0"
               max="100"
-              class="w-32 rounded-md border-gray-300 dark:border-gray-600 dark:bg-gray-700"
+              class="w-32 rounded-md border border-gray-300 dark:border-gray-600 dark:bg-gray-700 focus:border-blue-500 dark:focus:border-blue-400 focus:ring-2 focus:ring-blue-500 focus:ring-opacity-30 transition-colors"
             >
           </div>
         </div>
@@ -326,6 +326,7 @@ import { orderBy, where } from 'firebase/firestore'
 import { useAdminFirestore } from '~/composables/useAdminFirestore'
 import { useDataPublish } from '~/composables/useDataPublish'
 import type { FareData, Discount, PeakPeriod } from '~/types'
+import FormModal from '~/components/admin/FormModal.vue'
 
 definePageMeta({
   layout: 'admin',

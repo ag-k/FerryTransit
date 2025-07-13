@@ -16,7 +16,7 @@
           </label>
           <select
             v-model="filters.departure"
-            class="w-full rounded-md border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white"
+            class="w-full rounded-md border border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white focus:border-blue-500 dark:focus:border-blue-400 focus:ring-2 focus:ring-blue-500 focus:ring-opacity-30 transition-colors"
           >
             <option value="">すべて</option>
             <option v-for="port in ports" :key="port.id" :value="port.id">
@@ -30,7 +30,7 @@
           </label>
           <select
             v-model="filters.arrival"
-            class="w-full rounded-md border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white"
+            class="w-full rounded-md border border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white focus:border-blue-500 dark:focus:border-blue-400 focus:ring-2 focus:ring-blue-500 focus:ring-opacity-30 transition-colors"
           >
             <option value="">すべて</option>
             <option v-for="port in ports" :key="port.id" :value="port.id">
@@ -44,7 +44,7 @@
           </label>
           <select
             v-model="filters.ship"
-            class="w-full rounded-md border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white"
+            class="w-full rounded-md border border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white focus:border-blue-500 dark:focus:border-blue-400 focus:ring-2 focus:ring-blue-500 focus:ring-opacity-30 transition-colors"
           >
             <option value="">すべて</option>
             <option v-for="ship in ships" :key="ship.id" :value="ship.id">
@@ -58,7 +58,7 @@
           </label>
           <select
             v-model="filters.status"
-            class="w-full rounded-md border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white"
+            class="w-full rounded-md border border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white focus:border-blue-500 dark:focus:border-blue-400 focus:ring-2 focus:ring-blue-500 focus:ring-opacity-30 transition-colors"
           >
             <option value="">すべて</option>
             <option value="0">通常運航</option>
@@ -162,7 +162,7 @@
           </label>
           <select
             v-model="formData.name"
-            class="mt-1 w-full rounded-md border-gray-300 dark:border-gray-600 dark:bg-gray-700"
+            class="mt-1 w-full rounded-md border border-gray-300 dark:border-gray-600 dark:bg-gray-700 focus:border-blue-500 dark:focus:border-blue-400 focus:ring-2 focus:ring-blue-500 focus:ring-opacity-30 transition-colors"
             required
           >
             <option value="">選択してください</option>
@@ -178,7 +178,7 @@
             </label>
             <select
               v-model="formData.departure"
-              class="mt-1 w-full rounded-md border-gray-300 dark:border-gray-600 dark:bg-gray-700"
+              class="mt-1 w-full rounded-md border border-gray-300 dark:border-gray-600 dark:bg-gray-700 focus:border-blue-500 dark:focus:border-blue-400 focus:ring-2 focus:ring-blue-500 focus:ring-opacity-30 transition-colors"
               required
             >
               <option value="">選択してください</option>
@@ -193,7 +193,7 @@
             </label>
             <select
               v-model="formData.arrival"
-              class="mt-1 w-full rounded-md border-gray-300 dark:border-gray-600 dark:bg-gray-700"
+              class="mt-1 w-full rounded-md border border-gray-300 dark:border-gray-600 dark:bg-gray-700 focus:border-blue-500 dark:focus:border-blue-400 focus:ring-2 focus:ring-blue-500 focus:ring-opacity-30 transition-colors"
               required
             >
               <option value="">選択してください</option>
@@ -211,7 +211,7 @@
             <input
               v-model="formData.departureTime"
               type="time"
-              class="mt-1 w-full rounded-md border-gray-300 dark:border-gray-600 dark:bg-gray-700"
+              class="mt-1 w-full rounded-md border border-gray-300 dark:border-gray-600 dark:bg-gray-700 focus:border-blue-500 dark:focus:border-blue-400 focus:ring-2 focus:ring-blue-500 focus:ring-opacity-30 transition-colors"
               required
             >
           </div>
@@ -222,7 +222,7 @@
             <input
               v-model="formData.arrivalTime"
               type="time"
-              class="mt-1 w-full rounded-md border-gray-300 dark:border-gray-600 dark:bg-gray-700"
+              class="mt-1 w-full rounded-md border border-gray-300 dark:border-gray-600 dark:bg-gray-700 focus:border-blue-500 dark:focus:border-blue-400 focus:ring-2 focus:ring-blue-500 focus:ring-opacity-30 transition-colors"
               required
             >
           </div>
@@ -235,7 +235,7 @@
             <input
               v-model="formData.startDate"
               type="date"
-              class="mt-1 w-full rounded-md border-gray-300 dark:border-gray-600 dark:bg-gray-700"
+              class="mt-1 w-full rounded-md border border-gray-300 dark:border-gray-600 dark:bg-gray-700 focus:border-blue-500 dark:focus:border-blue-400 focus:ring-2 focus:ring-blue-500 focus:ring-opacity-30 transition-colors"
               required
             >
           </div>
@@ -246,7 +246,7 @@
             <input
               v-model="formData.endDate"
               type="date"
-              class="mt-1 w-full rounded-md border-gray-300 dark:border-gray-600 dark:bg-gray-700"
+              class="mt-1 w-full rounded-md border border-gray-300 dark:border-gray-600 dark:bg-gray-700 focus:border-blue-500 dark:focus:border-blue-400 focus:ring-2 focus:ring-blue-500 focus:ring-opacity-30 transition-colors"
               required
             >
           </div>
@@ -257,7 +257,7 @@
           </label>
           <select
             v-model="formData.status"
-            class="mt-1 w-full rounded-md border-gray-300 dark:border-gray-600 dark:bg-gray-700"
+            class="mt-1 w-full rounded-md border border-gray-300 dark:border-gray-600 dark:bg-gray-700 focus:border-blue-500 dark:focus:border-blue-400 focus:ring-2 focus:ring-blue-500 focus:ring-opacity-30 transition-colors"
           >
             <option value="0">通常運航</option>
             <option value="1">遅延</option>
@@ -315,6 +315,8 @@ import { orderBy, where } from 'firebase/firestore'
 import type { Trip, Port, Ship } from '~/types'
 import { useAdminFirestore } from '~/composables/useAdminFirestore'
 import { useDataPublish } from '~/composables/useDataPublish'
+import DataTable from '~/components/admin/DataTable.vue'
+import FormModal from '~/components/admin/FormModal.vue'
 
 definePageMeta({
   layout: 'admin',
