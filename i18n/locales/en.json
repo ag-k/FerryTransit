@@ -280,5 +280,19 @@
     "backToHome": "Back to home",
     "tryAgain": "Try again",
     "technicalDetails": "Technical details"
+  },
+  "news": {
+    "title": "News",
+    "noNews": "No news at this time",
+    "viewAll": "View all",
+    "pageTitle": "News",
+    "pageDescription": "Check the latest announcements, maintenance information, and campaign updates for Oki sea routes.",
+    "allCategories": "All Categories",
+    "category": {
+      "announcement": "Announcement",
+      "maintenance": "Maintenance",
+      "feature": "New Feature",
+      "campaign": "Campaign"
+    }
   }
 }
