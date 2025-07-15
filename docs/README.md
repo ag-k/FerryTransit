@@ -23,6 +23,8 @@ docs/
 │   ├── TEST_IMPLEMENTATION.md       # テスト実装ガイド
 │   ├── TIMETABLE_FIX_REPORT.md      # 時刻表修正レポート
 │   └── missing-translations-report.md # 翻訳漏れレポート
+├── features/              # 機能別仕様書
+│   └── NEWS_SYSTEM.md    # お知らせ機能の仕様書
 └── archive/               # アーカイブ版（AngularJS）のドキュメント
 ```
 
@@ -50,6 +52,10 @@ docs/
 - **TIMETABLE_FIX_REPORT.md**: 時刻表機能の修正レポート
 - **missing-translations-report.md**: 国際化対応での翻訳漏れのレポート
 
+### 機能別仕様書 (`features/`)
+
+- **NEWS_SYSTEM.md**: お知らせ機能の詳細仕様書。データ構造、システムアーキテクチャ、管理機能、表示機能、セキュリティ設定などを網羅的に記載。
+
 ### アーカイブドキュメント (`archive/`)
 
 AngularJS版に関するドキュメント（今後追加予定）
@@ -66,3 +72,4 @@ AngularJS版に関するドキュメント（今後追加予定）
 ## 更新履歴
 
 - 2025-07-04: ドキュメントを`docs`ディレクトリに整理
+- 2025-07-15: お知らせ機能の仕様書（`features/NEWS_SYSTEM.md`）を追加
