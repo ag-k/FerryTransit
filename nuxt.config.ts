@@ -43,7 +43,7 @@ export default defineNuxtConfig({
       { code: 'en', name: 'English', file: 'en.json' }
     ],
     defaultLocale: 'ja',
-    langDir: 'locales',
+    langDir: '../i18n/locales',
     detectBrowserLanguage: {
       useCookie: true,
       cookieKey: 'ferry-transit-locale',
@@ -56,9 +56,7 @@ export default defineNuxtConfig({
       alwaysRedirect: false
     },
     strategy: 'prefix_except_default',
-    bundle: {
-      optimizeTranslationDirective: false
-    }
+    vueI18n: '../i18n.config.ts'
   },
 
   googleFonts: {
