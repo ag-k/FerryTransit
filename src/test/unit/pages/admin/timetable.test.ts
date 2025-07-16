@@ -36,9 +36,9 @@ const mockToast = {
 vi.mock('#app', () => ({
   useNuxtApp: () => ({
     $toast: mockToast
-  }),
-  definePageMeta: vi.fn()
+  })
 }))
+
 
 // Mock file input
 global.FileReader = vi.fn(() => ({

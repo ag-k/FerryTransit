@@ -34,9 +34,9 @@ const mockToast = {
 vi.mock('#app', () => ({
   useNuxtApp: () => ({
     $toast: mockToast
-  }),
-  definePageMeta: vi.fn()
+  })
 }))
+
 
 describe('AlertsPage', () => {
   beforeEach(() => {

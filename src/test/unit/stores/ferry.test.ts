@@ -10,6 +10,34 @@ global.$fetch = vi.fn()
 // Mock nextTick
 global.nextTick = vi.fn(() => Promise.resolve())
 
+// Mock useRuntimeConfig
+vi.mock('#app', () => ({
+  useRuntimeConfig: () => ({
+    public: {
+      firebase: {
+        projectId: 'test-project',
+        storageBucket: 'test-bucket'
+      }
+    }
+  })
+}))
+
+// Mock Firebase composables
+vi.mock('@/composables/useFirebase', () => ({
+  useFirebase: () => ({
+    app: {},
+    auth: {},
+    firestore: {},
+    storage: {}
+  })
+}))
+
+vi.mock('@/composables/useFirebaseStorage', () => ({
+  useFirebaseStorage: () => ({
+    downloadJSON: vi.fn().mockResolvedValue(mockTrips)
+  })
+}))
+
 describe('Ferry Store', () => {
   beforeEach(() => {
     setActivePinia(createPinia())
