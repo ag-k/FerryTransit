@@ -7,12 +7,13 @@
       </p>
     </div>
 
-    <!-- アクションボタン -->
-    <div class="mb-4 flex justify-between items-center">
-      <div class="flex space-x-4">
+    <!-- フィルターとアクション -->
+    <div class="mb-4 space-y-4">
+      <!-- フィルター（モバイル：縦並び、デスクトップ：横並び） -->
+      <div class="flex flex-col sm:flex-row gap-3">
         <select
           v-model="filterCategory"
-          class="rounded-md border border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white focus:border-blue-500 dark:focus:border-blue-400 focus:ring-2 focus:ring-blue-500 focus:ring-opacity-30 transition-colors"
+          class="w-full sm:w-auto rounded-md border border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white focus:border-blue-500 dark:focus:border-blue-400 focus:ring-2 focus:ring-blue-500 focus:ring-opacity-30 transition-colors px-3 py-2"
         >
           <option value="">すべてのカテゴリー</option>
           <option value="announcement">お知らせ</option>
@@ -22,7 +23,7 @@
         </select>
         <select
           v-model="filterStatus"
-          class="rounded-md border border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white focus:border-blue-500 dark:focus:border-blue-400 focus:ring-2 focus:ring-blue-500 focus:ring-opacity-30 transition-colors"
+          class="w-full sm:w-auto rounded-md border border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white focus:border-blue-500 dark:focus:border-blue-400 focus:ring-2 focus:ring-blue-500 focus:ring-opacity-30 transition-colors px-3 py-2"
         >
           <option value="">すべての状態</option>
           <option value="draft">下書き</option>
@@ -31,11 +32,13 @@
           <option value="archived">アーカイブ</option>
         </select>
       </div>
-      <div class="flex space-x-2">
+      
+      <!-- アクションボタン（モバイル：縦並び＋フル幅、デスクトップ：横並び） -->
+      <div class="flex flex-col sm:flex-row gap-2 sm:justify-end">
         <button
           @click="refreshData"
           :disabled="isLoading"
-          class="px-4 py-2 bg-gray-600 text-white rounded-md hover:bg-gray-700 disabled:bg-gray-400"
+          class="w-full sm:w-auto px-4 py-2 bg-gray-600 text-white rounded-md hover:bg-gray-700 disabled:bg-gray-400 transition-colors"
         >
           <ArrowPathIcon class="h-5 w-5 inline mr-1" />
           更新
@@ -43,14 +46,14 @@
         <button
           @click="publishNewsData"
           :disabled="isPublishing"
-          class="px-4 py-2 bg-purple-600 text-white rounded-md hover:bg-purple-700 disabled:bg-gray-400"
+          class="w-full sm:w-auto px-4 py-2 bg-purple-600 text-white rounded-md hover:bg-purple-700 disabled:bg-gray-400 transition-colors"
         >
           <CloudArrowUpIcon class="h-5 w-5 inline mr-1" />
           {{ isPublishing ? '公開中...' : 'データ公開' }}
         </button>
         <button
           @click="navigateTo('/admin/news/edit')"
-          class="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700"
+          class="w-full sm:w-auto px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 transition-colors"
         >
           <PlusIcon class="h-5 w-5 inline mr-1" />
           新規作成
@@ -134,24 +137,29 @@
           {{ formatDateTime(value) }}
         </template>
         <template #row-actions="{ row }">
-          <button
-            @click="previewNews(row)"
-            class="text-gray-600 hover:text-gray-900 dark:text-gray-400 dark:hover:text-gray-200 mr-3"
-          >
-            <EyeIcon class="h-5 w-5" />
-          </button>
-          <button
-            @click="editNews(row)"
-            class="text-blue-600 hover:text-blue-900 dark:text-blue-400 dark:hover:text-blue-300 mr-3"
-          >
-            <PencilIcon class="h-5 w-5" />
-          </button>
-          <button
-            @click="deleteNews(row)"
-            class="text-red-600 hover:text-red-900 dark:text-red-400 dark:hover:text-red-300"
-          >
-            <TrashIcon class="h-5 w-5" />
-          </button>
+          <div class="flex items-center gap-1">
+            <button
+              @click="previewNews(row)"
+              class="p-2 text-gray-600 hover:text-gray-900 dark:text-gray-400 dark:hover:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-700 rounded transition-colors"
+              title="プレビュー"
+            >
+              <EyeIcon class="h-5 w-5" />
+            </button>
+            <button
+              @click="editNews(row)"
+              class="p-2 text-blue-600 hover:text-blue-900 dark:text-blue-400 dark:hover:text-blue-300 hover:bg-blue-50 dark:hover:bg-blue-900/20 rounded transition-colors"
+              title="編集"
+            >
+              <PencilIcon class="h-5 w-5" />
+            </button>
+            <button
+              @click="deleteNews(row)"
+              class="p-2 text-red-600 hover:text-red-900 dark:text-red-400 dark:hover:text-red-300 hover:bg-red-50 dark:hover:bg-red-900/20 rounded transition-colors"
+              title="削除"
+            >
+              <TrashIcon class="h-5 w-5" />
+            </button>
+          </div>
         </template>
       </DataTable>
     </div>
