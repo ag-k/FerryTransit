@@ -59,13 +59,22 @@ vi.mock('~/composables/useNews', () => ({
   useNews: vi.fn(() => ({
     news: ref(mockNews),
     publishedNews: computed(() => mockNews),
-    loading: ref(false),
+    isLoading: ref(false),
     error: ref(null),
     fetchNews: vi.fn(),
     getNewsByCategory: vi.fn((category: string) => 
       mockNews.filter(n => n.category === category)
     ),
-    getCategoryLabel: vi.fn((category: string) => `news.category.${category}`)
+    getCategoryLabel: vi.fn((category: string) => {
+      const labels: Record<string, string> = {
+        announcement: 'お知らせ',
+        maintenance: 'メンテナンス',
+        feature: '新機能',
+        campaign: 'キャンペーン'
+      }
+      return labels[category] || category
+    }),
+    formatDate: vi.fn((date: string) => new Date(date).toLocaleDateString('ja-JP'))
   }))
 }))
 
@@ -263,11 +272,20 @@ describe('News Index Page', () => {
       vi.mocked(useNews).mockReturnValueOnce({
         news: ref([]),
         publishedNews: computed(() => []),
-        loading: ref(false),
+        isLoading: ref(false),
         error: ref(null),
         fetchNews: vi.fn(),
         getNewsByCategory: vi.fn(() => []),
-        getCategoryLabel: vi.fn((category: string) => `news.category.${category}`)
+        getCategoryLabel: vi.fn((category: string) => {
+          const labels: Record<string, string> = {
+            announcement: 'お知らせ',
+            maintenance: 'メンテナンス',
+            feature: '新機能',
+            campaign: 'キャンペーン'
+          }
+          return labels[category] || category
+        }),
+        formatDate: vi.fn((date: string) => new Date(date).toLocaleDateString('ja-JP'))
       } as any)
 
       const wrapper = createWrapper()
@@ -279,7 +297,7 @@ describe('News Index Page', () => {
       vi.mocked(useNews).mockReturnValueOnce({
         news: ref(mockNews),
         publishedNews: computed(() => mockNews),
-        loading: ref(false),
+        isLoading: ref(false),
         error: ref(null),
         fetchNews: vi.fn(),
         getNewsByCategory: vi.fn(() => []), // 空配列を返す
@@ -302,27 +320,45 @@ describe('News Index Page', () => {
       vi.mocked(useNews).mockReturnValueOnce({
         news: ref([]),
         publishedNews: computed(() => []),
-        loading: ref(true),
+        isLoading: ref(true),
         error: ref(null),
         fetchNews: vi.fn(),
         getNewsByCategory: vi.fn(() => []),
-        getCategoryLabel: vi.fn((category: string) => `news.category.${category}`)
+        getCategoryLabel: vi.fn((category: string) => {
+          const labels: Record<string, string> = {
+            announcement: 'お知らせ',
+            maintenance: 'メンテナンス',
+            feature: '新機能',
+            campaign: 'キャンペーン'
+          }
+          return labels[category] || category
+        }),
+        formatDate: vi.fn((date: string) => new Date(date).toLocaleDateString('ja-JP'))
       } as any)
 
       const wrapper = createWrapper()
       
-      expect(wrapper.find('.loading').exists()).toBe(true)
+      expect(wrapper.find('.animate-pulse').exists()).toBe(true)
     })
 
     it('エラー時はエラーメッセージが表示される', () => {
       vi.mocked(useNews).mockReturnValueOnce({
         news: ref([]),
         publishedNews: computed(() => []),
-        loading: ref(false),
+        isLoading: ref(false),
         error: ref('エラーが発生しました'),
         fetchNews: vi.fn(),
         getNewsByCategory: vi.fn(() => []),
-        getCategoryLabel: vi.fn((category: string) => `news.category.${category}`)
+        getCategoryLabel: vi.fn((category: string) => {
+          const labels: Record<string, string> = {
+            announcement: 'お知らせ',
+            maintenance: 'メンテナンス',
+            feature: '新機能',
+            campaign: 'キャンペーン'
+          }
+          return labels[category] || category
+        }),
+        formatDate: vi.fn((date: string) => new Date(date).toLocaleDateString('ja-JP'))
       } as any)
 
       const wrapper = createWrapper()

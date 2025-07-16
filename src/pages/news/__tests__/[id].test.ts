@@ -26,10 +26,19 @@ const mockNews: News = {
 vi.mock('~/composables/useNews', () => ({
   useNews: vi.fn(() => ({
     news: ref([mockNews]),
-    loading: ref(false),
+    isLoading: ref(false),
     error: ref(null),
     getNewsById: vi.fn((id: string) => id === '1' ? mockNews : undefined),
-    getCategoryLabel: vi.fn((category: string) => `news.category.${category}`)
+    getCategoryLabel: vi.fn((category: string) => {
+      const labels: Record<string, string> = {
+        announcement: 'お知らせ',
+        maintenance: 'メンテナンス',
+        feature: '新機能',
+        campaign: 'キャンペーン'
+      }
+      return labels[category] || category
+    }),
+    formatDate: vi.fn((date: string) => new Date(date).toLocaleDateString('ja-JP'))
   }))
 }))
 
@@ -171,7 +180,7 @@ describe('News Detail Page', () => {
       const wrapper = createWrapper()
       
       // ロケールを英語に変更
-      await wrapper.vm.$i18n.locale.value = 'en'
+      wrapper.vm.$i18n.locale.value = 'en'
       await wrapper.vm.$nextTick()
       
       expect(wrapper.find('h1').text()).toBe('Test Announcement')
@@ -181,7 +190,7 @@ describe('News Detail Page', () => {
     it('英語の詳細コンテンツが表示される', async () => {
       const wrapper = createWrapper()
       
-      await wrapper.vm.$i18n.locale.value = 'en'
+      wrapper.vm.$i18n.locale.value = 'en'
       await wrapper.vm.$nextTick()
       
       const detailContent = wrapper.vm.displayDetailContent
@@ -201,7 +210,7 @@ describe('News Detail Page', () => {
 
       const wrapper = createWrapper()
       
-      await wrapper.vm.$i18n.locale.value = 'en'
+      wrapper.vm.$i18n.locale.value = 'en'
       await wrapper.vm.$nextTick()
       
       expect(wrapper.find('h1').text()).toBe('テストお知らせ')

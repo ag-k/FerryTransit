@@ -23,6 +23,7 @@ vi.mock('#app', () => ({
   useRouter: () => ({
     push: vi.fn()
   }),
+  useLocalePath: () => (path: string) => path,
   useI18n: () => ({
     locale: { value: 'ja' },
     locales: { value: [
