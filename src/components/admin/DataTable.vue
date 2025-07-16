@@ -48,7 +48,7 @@
                 </span>
               </div>
             </th>
-            <th v-if="$slots.actions" scope="col" class="relative px-6 py-3">
+            <th v-if="$slots['row-actions']" scope="col" class="relative px-6 py-3">
               <span class="sr-only">アクション</span>
             </th>
           </tr>
@@ -76,13 +76,13 @@
                 {{ formatValue(row[column.key], column.format) }}
               </slot>
             </td>
-            <td v-if="$slots.actions" class="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
+            <td v-if="$slots['row-actions']" class="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
               <slot name="row-actions" :row="row" :index="index" />
             </td>
           </tr>
           <tr v-if="sortedData.length === 0">
             <td
-              :colspan="columns.length + ($slots.actions ? 1 : 0)"
+              :colspan="columns.length + ($slots['row-actions'] ? 1 : 0)"
               class="px-6 py-4 text-center text-sm text-gray-500 dark:text-gray-400"
             >
               データがありません

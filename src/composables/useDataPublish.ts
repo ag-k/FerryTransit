@@ -1,8 +1,10 @@
 import { ref as storageRef, uploadBytes, getDownloadURL, deleteObject } from 'firebase/storage'
 import type { DocumentData } from 'firebase/firestore'
+import { useAdminAuth } from '~/composables/useAdminAuth'
+import { useAdminFirestore } from '~/composables/useAdminFirestore'
 
 export const useDataPublish = () => {
-  const { $storage } = useNuxtApp()
+  const { $firebase } = useNuxtApp()
   const { user } = useAdminAuth()
   const { logAdminAction, getCollection } = useAdminFirestore()
 
@@ -17,6 +19,7 @@ export const useDataPublish = () => {
     dataType: 'timetable' | 'fare' | 'holidays' | 'alerts' | 'news',
     preview: boolean = false
   ): Promise<string> => {
+    console.log('Publishing data, user:', user.value)
     if (!user.value) throw new Error('認証が必要です')
 
     try {
@@ -60,7 +63,7 @@ export const useDataPublish = () => {
         : `data/${fileName}`
 
       // Storage にアップロード
-      const fileRef = storageRef($storage, path)
+      const fileRef = storageRef($firebase.storage, path)
       const snapshot = await uploadBytes(fileRef, jsonBlob, {
         contentType: 'application/json',
         customMetadata: {
@@ -303,7 +306,7 @@ export const useDataPublish = () => {
       }
 
       // Storage にアップロード
-      const fileRef = storageRef($storage, `data/${fileName}`)
+      const fileRef = storageRef($firebase.storage, `data/${fileName}`)
       await uploadBytes(fileRef, jsonBlob, {
         contentType: 'application/json',
         customMetadata: {
@@ -367,7 +370,7 @@ export const useDataPublish = () => {
       })
 
       // Storage にアップロード
-      const fileRef = storageRef($storage, `backups/${fileName}`)
+      const fileRef = storageRef($firebase.storage, `backups/${fileName}`)
       const snapshot = await uploadBytes(fileRef, jsonBlob, {
         contentType: 'application/json',
         customMetadata: {

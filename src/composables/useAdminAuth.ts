@@ -71,6 +71,7 @@ export const useAdminAuth = () => {
   }
 
   return {
+    user: computed(() => authStore.user),
     login,
     logout,
     getCurrentUser,

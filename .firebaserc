@@ -6,7 +6,7 @@
     "oki-ferryguide": {
       "storage": {
         "main": [
-          "oki-ferryguide.appspot.com"
+          "oki-ferryguide.firebasestorage.app"
         ]
       }
     }
