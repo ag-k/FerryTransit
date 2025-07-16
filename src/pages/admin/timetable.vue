@@ -9,14 +9,14 @@
 
     <!-- フィルター -->
     <div class="mb-6 bg-white dark:bg-gray-800 rounded-lg shadow p-4">
-      <div class="grid grid-cols-1 md:grid-cols-4 gap-4">
+      <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
         <div>
           <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
             出発港
           </label>
           <select
             v-model="filters.departure"
-            class="w-full rounded-md border border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white focus:border-blue-500 dark:focus:border-blue-400 focus:ring-2 focus:ring-blue-500 focus:ring-opacity-30 transition-colors"
+            class="w-full rounded-md border border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white focus:border-blue-500 dark:focus:border-blue-400 focus:ring-2 focus:ring-blue-500 focus:ring-opacity-30 transition-colors px-3 py-2"
           >
             <option value="">すべて</option>
             <option v-for="port in ports" :key="port.id" :value="port.id">
@@ -30,7 +30,7 @@
           </label>
           <select
             v-model="filters.arrival"
-            class="w-full rounded-md border border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white focus:border-blue-500 dark:focus:border-blue-400 focus:ring-2 focus:ring-blue-500 focus:ring-opacity-30 transition-colors"
+            class="w-full rounded-md border border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white focus:border-blue-500 dark:focus:border-blue-400 focus:ring-2 focus:ring-blue-500 focus:ring-opacity-30 transition-colors px-3 py-2"
           >
             <option value="">すべて</option>
             <option v-for="port in ports" :key="port.id" :value="port.id">
@@ -44,7 +44,7 @@
           </label>
           <select
             v-model="filters.ship"
-            class="w-full rounded-md border border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white focus:border-blue-500 dark:focus:border-blue-400 focus:ring-2 focus:ring-blue-500 focus:ring-opacity-30 transition-colors"
+            class="w-full rounded-md border border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white focus:border-blue-500 dark:focus:border-blue-400 focus:ring-2 focus:ring-blue-500 focus:ring-opacity-30 transition-colors px-3 py-2"
           >
             <option value="">すべて</option>
             <option v-for="ship in ships" :key="ship.id" :value="ship.id">
@@ -58,7 +58,7 @@
           </label>
           <select
             v-model="filters.status"
-            class="w-full rounded-md border border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white focus:border-blue-500 dark:focus:border-blue-400 focus:ring-2 focus:ring-blue-500 focus:ring-opacity-30 transition-colors"
+            class="w-full rounded-md border border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white focus:border-blue-500 dark:focus:border-blue-400 focus:ring-2 focus:ring-blue-500 focus:ring-opacity-30 transition-colors px-3 py-2"
           >
             <option value="">すべて</option>
             <option value="0">通常運航</option>
@@ -72,11 +72,11 @@
     </div>
 
     <!-- アクションボタン -->
-    <div class="mb-4 flex justify-between items-center">
-      <div class="flex space-x-2">
+    <div class="mb-4 flex flex-col sm:flex-row gap-3 justify-between">
+      <div class="flex flex-col sm:flex-row gap-2">
         <button
           @click="refreshData"
-          class="px-4 py-2 bg-gray-600 text-white rounded-md hover:bg-gray-700"
+          class="w-full sm:w-auto px-4 py-2 bg-gray-600 text-white rounded-md hover:bg-gray-700 transition-colors"
         >
           <ArrowPathIcon class="h-5 w-5 inline mr-1" />
           更新
@@ -84,23 +84,23 @@
         <button
           @click="publishTimetableData"
           :disabled="isPublishing"
-          class="px-4 py-2 bg-purple-600 text-white rounded-md hover:bg-purple-700 disabled:bg-gray-400"
+          class="w-full sm:w-auto px-4 py-2 bg-purple-600 text-white rounded-md hover:bg-purple-700 disabled:bg-gray-400 transition-colors"
         >
           <CloudArrowUpIcon class="h-5 w-5 inline mr-1" />
           {{ isPublishing ? '公開中...' : 'データ公開' }}
         </button>
       </div>
-      <div class="flex space-x-2">
+      <div class="flex flex-col sm:flex-row gap-2">
         <button
           @click="showImportModal = true"
-          class="px-4 py-2 bg-green-600 text-white rounded-md hover:bg-green-700"
+          class="w-full sm:w-auto px-4 py-2 bg-green-600 text-white rounded-md hover:bg-green-700 transition-colors"
         >
           <ArrowUpTrayIcon class="h-5 w-5 inline mr-1" />
           インポート
         </button>
         <button
           @click="showAddModal = true"
-          class="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700"
+          class="w-full sm:w-auto px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 transition-colors"
         >
           <PlusIcon class="h-5 w-5 inline mr-1" />
           新規追加
@@ -132,18 +132,22 @@
         {{ formatTime(value) }}
       </template>
       <template #row-actions="{ row }">
-        <button
-          @click="editTimetable(row)"
-          class="text-blue-600 hover:text-blue-900 dark:text-blue-400 dark:hover:text-blue-300 mr-3"
-        >
-          <PencilIcon class="h-5 w-5" />
-        </button>
-        <button
-          @click="deleteTimetable(row)"
-          class="text-red-600 hover:text-red-900 dark:text-red-400 dark:hover:text-red-300"
-        >
-          <TrashIcon class="h-5 w-5" />
-        </button>
+        <div class="flex items-center gap-1">
+          <button
+            @click="editTimetable(row)"
+            class="p-2 text-blue-600 hover:text-blue-900 dark:text-blue-400 dark:hover:text-blue-300 hover:bg-blue-50 dark:hover:bg-blue-900/20 rounded transition-colors"
+            title="編集"
+          >
+            <PencilIcon class="h-5 w-5" />
+          </button>
+          <button
+            @click="deleteTimetable(row)"
+            class="p-2 text-red-600 hover:text-red-900 dark:text-red-400 dark:hover:text-red-300 hover:bg-red-50 dark:hover:bg-red-900/20 rounded transition-colors"
+            title="削除"
+          >
+            <TrashIcon class="h-5 w-5" />
+          </button>
+        </div>
       </template>
     </DataTable>
 
