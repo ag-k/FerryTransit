@@ -4,44 +4,50 @@
  * Firebase Storage へのデータアップロードスクリプト
  * 
  * 使用方法:
- * node scripts/upload-to-storage.js
+ * node scripts/upload-to-storage.mjs
  */
 
-const admin = require('firebase-admin')
-const fs = require('fs')
-const path = require('path')
+import { initializeApp, cert } from 'firebase-admin/app'
+import { getStorage } from 'firebase-admin/storage'
+import { readFileSync, existsSync } from 'fs'
+import { join } from 'path'
+import { fileURLToPath } from 'url'
+import { dirname } from 'path'
+
+const __filename = fileURLToPath(import.meta.url)
+const __dirname = dirname(__filename)
 
 // Firebase Admin SDK の初期化
-// サービスアカウントキーが必要な場合は、環境変数で指定
+let app
 if (process.env.GOOGLE_APPLICATION_CREDENTIALS) {
-  const serviceAccount = require(process.env.GOOGLE_APPLICATION_CREDENTIALS)
-  admin.initializeApp({
-    credential: admin.credential.cert(serviceAccount),
+  const serviceAccount = JSON.parse(readFileSync(process.env.GOOGLE_APPLICATION_CREDENTIALS, 'utf8'))
+  app = initializeApp({
+    credential: cert(serviceAccount),
     storageBucket: process.env.FIREBASE_STORAGE_BUCKET || 'oki-ferryguide.firebasestorage.app'
   })
 } else {
   // デフォルトの認証情報を使用（Firebase エミュレータや GCP 環境で動作）
-  admin.initializeApp({
+  app = initializeApp({
     storageBucket: process.env.FIREBASE_STORAGE_BUCKET || 'oki-ferryguide.firebasestorage.app'
   })
 }
 
-const bucket = admin.storage().bucket()
+const bucket = getStorage().bucket()
 
 // アップロードするファイルの設定
 const filesToUpload = [
   {
-    localPath: 'src/public/data/timetable.json',
+    localPath: 'public/data/timetable.json',
     storagePath: 'data/timetable.json',
     contentType: 'application/json'
   },
   {
-    localPath: 'src/public/data/fare-master.json',
+    localPath: 'public/data/fare-master.json',
     storagePath: 'data/fare-master.json',
     contentType: 'application/json'
   },
   {
-    localPath: 'src/public/data/holidays.json',
+    localPath: 'public/data/holidays.json',
     storagePath: 'data/holidays.json',
     contentType: 'application/json'
   }
@@ -49,10 +55,10 @@ const filesToUpload = [
 
 async function uploadFile(localPath, storagePath, contentType) {
   try {
-    const filePath = path.join(process.cwd(), localPath)
+    const filePath = join(dirname(__dirname), localPath)
     
     // ファイルの存在確認
-    if (!fs.existsSync(filePath)) {
+    if (!existsSync(filePath)) {
       console.error(`❌ ファイルが見つかりません: ${filePath}`)
       return false
     }
@@ -66,9 +72,8 @@ async function uploadFile(localPath, storagePath, contentType) {
       }
     })
     
-    // ファイルを公開設定にする
-    const file = bucket.file(storagePath)
-    await file.makePublic()
+    // Uniform bucket-level accessが有効な場合、makePublicは不要
+    // Storage ルールで公開設定を管理
     
     // 公開URLを取得
     const publicUrl = `https://storage.googleapis.com/${bucket.name}/${storagePath}`

@@ -2,11 +2,11 @@
 
 ## エラーの原因
 
-`firebasestorage.googleapis.com` APIが有効化されていないため、Storage ルールのデプロイができません。
+`firebasestorage.googleapis.com` API が有効化されていないため、Storage ルールのデプロイができません。
 
 ## 解決手順
 
-### 方法1: Firebase Console から有効化（推奨）
+### 方法 1: Firebase Console から有効化（推奨）
 
 1. [Firebase Console](https://console.firebase.google.com) にアクセス
 2. プロジェクト `oki-ferryguide` を選択
@@ -19,15 +19,15 @@
    - **asia-northeast1** (東京) を推奨
 7. **「完了」** をクリック
 
-### 方法2: Google Cloud Console から有効化
+### 方法 2: Google Cloud Console から有効化
 
 1. [Google Cloud Console](https://console.cloud.google.com) にアクセス
 2. プロジェクト `oki-ferryguide` を選択
-3. 左メニューから **「APIとサービス」** → **「ライブラリ」**
+3. 左メニューから **「API とサービス」** → **「ライブラリ」**
 4. 検索バーで **「Firebase Storage」** を検索
 5. **「Cloud Storage API」** と **「Cloud Storage for Firebase API」** を有効化
 
-### 方法3: gcloud CLI から有効化
+### 方法 3: gcloud CLI から有効化
 
 ```bash
 # gcloud CLI がインストールされていない場合
@@ -81,25 +81,27 @@ firebase deploy --only firestore:rules,storage:rules
 ### 権限エラーが続く場合
 
 1. **プロジェクトオーナー権限の確認**
+
    ```bash
    # 現在のユーザーを確認
    firebase login:list
-   
+
    # 必要に応じて再ログイン
    firebase logout
    firebase login
    ```
 
 2. **プロジェクトの確認**
+
    ```bash
    # 現在のプロジェクトを確認
    firebase projects:list
-   
+
    # プロジェクトを選択
    firebase use oki-ferryguide
    ```
 
-3. **IAM権限の確認**
+3. **IAM 権限の確認**
    - Google Cloud Console → IAM
    - あなたのアカウントに以下の役割があることを確認：
      - `Firebase Admin` または
@@ -108,9 +110,10 @@ firebase deploy --only firestore:rules,storage:rules
 
 ### デフォルトバケットが作成されない場合
 
-Firebase Console でStorageを有効化すると、デフォルトバケット `oki-ferryguide.appspot.com` が自動的に作成されます。
+Firebase Console で Storage を有効化すると、デフォルトバケット `oki-ferryguide.firebasestorage.app` が自動的に作成されます。
 
 作成されない場合は、以下を確認：
+
 1. 課金アカウントが設定されているか
 2. プロジェクトが無料枠の制限に達していないか
 
