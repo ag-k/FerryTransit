@@ -9,6 +9,27 @@ export interface Port {
   }
   type: 'mainland' | 'dozen' | 'dogo'
   mapIframe?: string
+  facilities?: PortFacilities
+  access?: PortAccess
+}
+
+export interface PortFacilities {
+  parking?: boolean
+  restaurant?: boolean
+  shop?: boolean
+  waitingRoom?: boolean
+  toilet?: boolean
+  busStop?: boolean
+  taxiStand?: boolean
+}
+
+export interface PortAccess {
+  byBus?: string
+  byBusEn?: string
+  byCar?: string
+  byCarEn?: string
+  walking?: string
+  walkingEn?: string
 }
 
 // Ship definitions

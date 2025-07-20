@@ -51,6 +51,10 @@ FerryTransit/
 git clone [repository-url]
 cd FerryTransit
 
+# 環境変数の設定
+cp .env.example .env
+# .envファイルを編集して必要なAPIキーを設定
+
 # Nuxt3版のセットアップ
 cd src
 npm install
@@ -58,6 +62,19 @@ npm install
 # 開発サーバーの起動
 npm run dev
 ```
+
+#### Google Maps APIキーの設定
+
+地図機能を利用するには、Google Maps APIキーが必要です：
+
+1. [Google Cloud Console](https://console.cloud.google.com/)にアクセス
+2. プロジェクトを作成または選択
+3. Maps JavaScript APIを有効化
+4. APIキーを作成
+5. `.env`ファイルに設定：
+   ```
+   NUXT_PUBLIC_GOOGLE_MAPS_API_KEY=your_api_key_here
+   ```
 
 開発サーバーが起動したら、ブラウザで http://localhost:3000 にアクセスしてください。
 

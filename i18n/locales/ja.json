@@ -296,5 +296,53 @@
       "feature": "新機能",
       "campaign": "キャンペーン"
     }
+  },
+  "map": {
+    "disabled": "地図表示は無効になっています",
+    "enable": "地図を表示",
+    "loading": "地図を読み込み中...",
+    "error": "地図の読み込みに失敗しました",
+    "zoomIn": "拡大",
+    "zoomOut": "縮小",
+    "fullscreen": "フルスクリーン",
+    "exitFullscreen": "フルスクリーン終了",
+    "showRoutes": "航路を表示",
+    "hideRoutes": "航路を非表示",
+    "portDetails": "港の詳細",
+    "routeDetails": "航路の詳細",
+    "noPortInfo": "港の情報がありません",
+    "apiKeyMissing": "Google Maps APIキーが設定されていません。地図機能を利用するには環境変数にAPIキーを設定してください。",
+    "settings": {
+      "title": "地図設定",
+      "enableMap": "地図を表示",
+      "enableMapDesc": "時刻表や乗換案内で地図を表示します",
+      "showRoutes": "航路を表示",
+      "showRoutesDesc": "地図上に航路線を表示します",
+      "autoCenter": "自動中央表示",
+      "autoCenterDesc": "選択した港や航路を自動的に中央に表示します"
+    }
+  },
+  "port": {
+    "type": {
+      "mainland": "本土",
+      "dozen": "島前",
+      "dogo": "島後"
+    },
+    "facilities": {
+      "title": "設備情報",
+      "parking": "駐車場",
+      "restaurant": "レストラン",
+      "shop": "売店",
+      "waitingRoom": "待合室",
+      "toilet": "トイレ",
+      "busStop": "バス停",
+      "taxiStand": "タクシー乗り場"
+    },
+    "access": {
+      "title": "アクセス情報",
+      "byBus": "バスでのアクセス",
+      "byCar": "車でのアクセス",
+      "walking": "徒歩でのアクセス"
+    }
   }
 }
