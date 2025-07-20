@@ -149,7 +149,7 @@ const fetchNewsItem = async () => {
   
   try {
     // Firebase Storageから全お知らせデータを取得
-    const response = await $fetch<News[]>('https://storage.googleapis.com/oki-ferryguide.appspot.com/data/news.json')
+    const response = await $fetch<News[]>('https://storage.googleapis.com/oki-ferryguide.firebasestorage.app/data/news.json')
     
     if (response && Array.isArray(response)) {
       // IDで該当のお知らせを検索
