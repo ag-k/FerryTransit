@@ -294,5 +294,53 @@
       "feature": "New Feature",
       "campaign": "Campaign"
     }
+  },
+  "map": {
+    "disabled": "Map display is disabled",
+    "enable": "Show Map",
+    "loading": "Loading map...",
+    "error": "Failed to load map",
+    "zoomIn": "Zoom In",
+    "zoomOut": "Zoom Out",
+    "fullscreen": "Fullscreen",
+    "exitFullscreen": "Exit Fullscreen",
+    "showRoutes": "Show Routes",
+    "hideRoutes": "Hide Routes",
+    "portDetails": "Port Details",
+    "routeDetails": "Route Details",
+    "noPortInfo": "No port information available",
+    "apiKeyMissing": "Google Maps API key is not configured. Please set the API key in environment variables to use map features.",
+    "settings": {
+      "title": "Map Settings",
+      "enableMap": "Show Map",
+      "enableMapDesc": "Display map in timetable and transit search",
+      "showRoutes": "Show Routes",
+      "showRoutesDesc": "Display route lines on the map",
+      "autoCenter": "Auto Center",
+      "autoCenterDesc": "Automatically center selected ports or routes"
+    }
+  },
+  "port": {
+    "type": {
+      "mainland": "Mainland",
+      "dozen": "Dozen Islands",
+      "dogo": "Dogo Island"
+    },
+    "facilities": {
+      "title": "Facilities",
+      "parking": "Parking",
+      "restaurant": "Restaurant",
+      "shop": "Shop",
+      "waitingRoom": "Waiting Room",
+      "toilet": "Toilet",
+      "busStop": "Bus Stop",
+      "taxiStand": "Taxi Stand"
+    },
+    "access": {
+      "title": "Access Information",
+      "byBus": "By Bus",
+      "byCar": "By Car",
+      "walking": "Walking"
+    }
   }
 }

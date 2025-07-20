@@ -13,6 +13,11 @@
         <ThemeSelector />
       </div>
 
+      <!-- Map Settings -->
+      <div class="bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700 p-6">
+        <MapSettings />
+      </div>
+
       <!-- Data Management -->
       <div class="bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700 p-6">
         <DataManagement />
@@ -67,6 +72,7 @@
 <script setup lang="ts">
 import LanguageSelector from '~/components/settings/LanguageSelector.vue'
 import ThemeSelector from '~/components/settings/ThemeSelector.vue'
+import MapSettings from '~/components/settings/MapSettings.vue'
 import DataManagement from '~/components/settings/DataManagement.vue'
 
 definePageMeta({

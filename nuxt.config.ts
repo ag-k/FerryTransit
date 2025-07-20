@@ -27,7 +27,8 @@ export default defineNuxtConfig({
     '@nuxtjs/i18n',
     '@nuxtjs/google-fonts',
     '@pinia/nuxt',
-    '@nuxtjs/tailwindcss'
+    '@nuxtjs/tailwindcss',
+    '@nuxt/icon'
   ],
   
   // Remove inline config, use tailwind.config.js instead
@@ -109,6 +110,7 @@ export default defineNuxtConfig({
         },
         { name: 'theme-color', content: '#3B82F6' },
         { name: 'apple-mobile-web-app-capable', content: 'yes' },
+        { name: 'mobile-web-app-capable', content: 'yes' },
         { name: 'apple-mobile-web-app-status-bar-style', content: 'default' }
       ],
       link: [

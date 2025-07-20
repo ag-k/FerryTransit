@@ -97,6 +97,20 @@
         </div>
       </template>
     </ClientOnly>
+
+    <!-- 地図表示 -->
+    <ClientOnly>
+      <div v-if="settingsStore.mapEnabled" class="mb-6">
+        <FerryMap
+          :selected-port="selectedMapPort"
+          :selected-route="selectedMapRoute"
+          :show-port-details="true"
+          height="300px"
+          @port-click="handleMapPortClick"
+          @route-select="handleMapRouteSelect"
+        />
+      </div>
+    </ClientOnly>
     
     <!-- 時刻表 -->
     <div class="bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700">
@@ -222,12 +236,15 @@
 <script setup lang="ts">
 import { useFerryStore } from '@/stores/ferry'
 import { useHistoryStore } from '@/stores/history'
+import { useSettingsStore } from '@/stores/settings'
 import { useFerryData } from '@/composables/useFerryData'
 import FavoriteButton from '@/components/favorites/FavoriteButton.vue'
+import FerryMap from '@/components/map/FerryMap.vue'
 
 // Store and composables
 const ferryStore = process.client ? useFerryStore() : null
 const historyStore = process.client ? useHistoryStore() : null
+const settingsStore = process.client ? useSettingsStore() : null
 const { 
   filteredTimetable,
   selectedDate,
@@ -247,6 +264,8 @@ const modalTitle = ref('')
 const modalType = ref<'ship' | 'port'>('ship')
 const modalShipId = ref('')
 const modalContent = ref('')
+const selectedMapPort = ref<string>('')
+const selectedMapRoute = ref<{ from: string; to: string } | undefined>()
 
 // Computed properties
 const selectedDateString = computed(() => {
@@ -391,6 +410,35 @@ const showPortInfo = (portName: string) => {
 const closeModal = () => {
   modalVisible.value = false
 }
+
+const handleMapPortClick = (port: any) => {
+  // 地図上の港がクリックされたら、その港を出発地または到着地に設定
+  if (!departure.value) {
+    handleDepartureChange(port.id)
+  } else if (!arrival.value && port.id !== departure.value) {
+    handleArrivalChange(port.id)
+  }
+}
+
+const handleMapRouteSelect = (route: { from: string; to: string }) => {
+  // 地図上の航路が選択されたら、出発地と到着地を設定
+  handleDepartureChange(route.from)
+  handleArrivalChange(route.to)
+}
+
+// Watchers
+watch([departure, arrival], ([newDeparture, newArrival]) => {
+  if (newDeparture && newArrival) {
+    selectedMapRoute.value = { from: newDeparture, to: newArrival }
+    selectedMapPort.value = ''
+  } else if (newDeparture) {
+    selectedMapPort.value = newDeparture
+    selectedMapRoute.value = undefined
+  } else if (newArrival) {
+    selectedMapPort.value = newArrival
+    selectedMapRoute.value = undefined
+  }
+})
 
 // Initialize data on mount
 onMounted(async () => {
