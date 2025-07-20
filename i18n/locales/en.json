@@ -221,6 +221,10 @@
   "LINKS": "Links",
   "DEVELOPER_SITE": "Developer Site",
   "ABOUT_APP": "About This App",
+  "ROUTE_MAP": "Route Map",
+  "SHOW_ON_MAP": "Show on Map",
+  "LOADING_MAP": "Loading map...",
+  "MAP_LOAD_ERROR": "Failed to load map",
   "favorites": {
     "title": "Favorites",
     "route": "Route",

@@ -124,11 +124,22 @@
               {{ calculateDuration(route.departureTime, route.arrivalTime) }} / 
               ¥{{ route.totalFare.toLocaleString() }}
             </h3>
-            <FavoriteButton
-              :type="'route'"
-              :route="{ departure: departure, arrival: arrival }"
-              class="text-white hover:text-yellow-300"
-            />
+            <div class="flex items-center gap-2">
+              <button
+                @click="showRouteMap(route)"
+                class="text-white hover:text-yellow-300 focus:outline-none focus:ring-2 focus:ring-yellow-300 rounded p-1"
+                :title="$t('SHOW_ON_MAP')"
+              >
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 20l-5.447-2.724A1 1 0 013 16.382V5.618a1 1 0 011.447-.894L9 7m0 13l6-3m-6 3V7m6 10l4.553 2.276A1 1 0 0021 18.382V7.618a1 1 0 00-.553-.894L15 4m0 13V4m0 0L9 7" />
+                </svg>
+              </button>
+              <FavoriteButton
+                :type="'route'"
+                :route="{ departure: departure, arrival: arrival }"
+                class="text-white hover:text-yellow-300"
+              />
+            </div>
           </div>
           <div class="p-4">
             <table class="w-full text-sm">
@@ -282,6 +293,12 @@
       type="port"
       :port-id="modalPortId"
     />
+    
+    <!-- Route Map Modal -->
+    <RouteMapModal
+      v-model:visible="showMapModal"
+      :route="selectedMapRoute"
+    />
   </div>
 </template>
 
@@ -293,6 +310,7 @@ import PortSelector from '@/components/common/PortSelector.vue'
 import DatePicker from '@/components/common/DatePicker.vue'
 import CommonShipModal from '@/components/common/ShipModal.vue'
 import FavoriteButton from '@/components/favorites/FavoriteButton.vue'
+import RouteMapModal from '@/components/map/RouteMapModal.vue'
 import type { TransitRoute } from '@/types'
 
 // Stores
@@ -400,6 +418,8 @@ const showShipModal = ref(false)
 const showPortModal = ref(false)
 const modalShipId = ref('')
 const modalPortId = ref('')
+const showMapModal = ref(false)
+const selectedMapRoute = ref<TransitRoute | null>(null)
 
 function showShipInfo(shipName: string) {
   modalShipId.value = shipName
@@ -466,6 +486,11 @@ function showMore() {
 function showRouteDetails(route: TransitRoute) {
   selectedRoute.value = route
   showDetailsModal.value = true
+}
+
+function showRouteMap(route: TransitRoute) {
+  selectedMapRoute.value = route
+  showMapModal.value = true
 }
 
 // Initialize from URL parameters
