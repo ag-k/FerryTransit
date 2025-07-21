@@ -273,6 +273,15 @@ export const useRouteSearch = () => {
           continue;
         }
 
+        // Prevent routes that go through mainland when traveling between islands
+        if (
+          !isMainlandPort(departure) &&
+          !isMainlandPort(arrival) &&
+          (isMainlandPort(firstTrip.arrival) || isMainlandPort(secondTrip.departure))
+        ) {
+          continue;
+        }
+
         // Create route key to check for duplicates
         const routeKey = `${firstTrip.tripId}-${secondTrip.tripId}`;
         if (processedRoutes.has(routeKey)) continue;
