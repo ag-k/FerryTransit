@@ -150,6 +150,77 @@ describe('useRouteSearch', () => {
       // Reset mock
       mockGetTripStatus.mockReturnValue(0)
     })
+
+    it('should exclude routes via mainland when traveling between islands (BUG-001)', async () => {
+      const store = useFerryStore()
+      // Set up routes including mainland detour
+      store.timetableData = [
+        // Direct route: SAIGO -> HISHIURA
+        {
+          tripId: 10,
+          startDate: '2024-01-01',
+          endDate: '2024-12-31',
+          name: 'FERRY_DOZEN',
+          departure: 'SAIGO',
+          departureTime: '14:00:00' as any,
+          arrival: 'HISHIURA',
+          arrivalTime: '15:00:00' as any,
+          status: 0,
+          price: 1680
+        },
+        // Detour via mainland: SAIGO -> HONDO
+        {
+          tripId: 11,
+          startDate: '2024-01-01',
+          endDate: '2024-12-31',
+          name: 'FERRY_OKI',
+          departure: 'SAIGO',
+          departureTime: '08:00:00' as any,
+          arrival: 'HONDO_SHICHIRUI',
+          arrivalTime: '10:25:00' as any,
+          status: 0,
+          price: 3510
+        },
+        // Detour via mainland: HONDO -> HISHIURA
+        {
+          tripId: 12,
+          startDate: '2024-01-01',
+          endDate: '2024-12-31',
+          name: 'FERRY_KUNIGA',
+          departure: 'HONDO_SHICHIRUI',
+          departureTime: '11:00:00' as any,
+          arrival: 'HISHIURA',
+          arrivalTime: '13:50:00' as any,
+          status: 0,
+          price: 3300
+        }
+      ]
+      
+      const { searchRoutes } = useRouteSearch()
+      
+      const results = await searchRoutes(
+        'SAIGO',
+        'HISHIURA',
+        new Date('2024-01-15'),
+        '07:00',
+        false
+      )
+      
+      // Should only find the direct route, not the mainland detour
+      expect(results).toHaveLength(1)
+      expect(results[0].segments).toHaveLength(1)
+      expect(results[0].segments[0].departure).toBe('SAIGO')
+      expect(results[0].segments[0].arrival).toBe('HISHIURA')
+      expect(results[0].segments[0].ship).toBe('FERRY_DOZEN')
+      
+      // Verify no routes go through mainland
+      const mainlandRoute = results.find(r => 
+        r.segments.some(s => 
+          s.departure.includes('HONDO') || s.arrival.includes('HONDO')
+        )
+      )
+      expect(mainlandRoute).toBeUndefined()
+    })
   })
 
   describe('formatTime', () => {
