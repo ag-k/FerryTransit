@@ -17,6 +17,13 @@ export interface InnerIslandFare {
   child: number
 }
 
+export interface InnerIslandVehicleFare {
+  under5m: number
+  under7m: number
+  under10m: number
+  over10m: number
+}
+
 export interface FareRoute {
   id: string
   departure: string
@@ -34,6 +41,7 @@ export interface Discount {
 
 export interface FareMaster {
   innerIslandFare?: InnerIslandFare
+  innerIslandVehicleFare?: InnerIslandVehicleFare
   routes: FareRoute[]
   discounts: Record<string, Discount>
   notes: string[]
