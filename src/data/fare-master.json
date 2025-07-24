@@ -1,4 +1,8 @@
 {
+  "innerIslandFare": {
+    "adult": 300,
+    "child": 150
+  },
   "routes": [
     {
       "id": "hondo-saigo",
@@ -100,96 +104,72 @@
       "id": "beppu-hishiura",
       "departure": "BEPPU",
       "arrival": "HISHIURA",
-      "fares": {
-        "adult": 590,
-        "child": 300,
-        "vehicle": {
-          "under3m": 2200,
-          "under4m": 2750,
-          "under5m": 3300,
-          "under6m": 3850,
-          "over6m": 4400
-        }
+      "vehicle": {
+        "under3m": 2200,
+        "under4m": 2750,
+        "under5m": 3300,
+        "under6m": 3850,
+        "over6m": 4400
       }
     },
     {
       "id": "hishiura-beppu",
       "departure": "HISHIURA",
       "arrival": "BEPPU",
-      "fares": {
-        "adult": 590,
-        "child": 300,
-        "vehicle": {
-          "under3m": 2200,
-          "under4m": 2750,
-          "under5m": 3300,
-          "under6m": 3850,
-          "over6m": 4400
-        }
+      "vehicle": {
+        "under3m": 2200,
+        "under4m": 2750,
+        "under5m": 3300,
+        "under6m": 3850,
+        "over6m": 4400
       }
     },
     {
       "id": "beppu-kuri",
       "departure": "BEPPU",
       "arrival": "KURI",
-      "fares": {
-        "adult": 590,
-        "child": 300,
-        "vehicle": {
-          "under3m": 2200,
-          "under4m": 2750,
-          "under5m": 3300,
-          "under6m": 3850,
-          "over6m": 4400
-        }
+      "vehicle": {
+        "under3m": 2200,
+        "under4m": 2750,
+        "under5m": 3300,
+        "under6m": 3850,
+        "over6m": 4400
       }
     },
     {
       "id": "kuri-beppu",
       "departure": "KURI",
       "arrival": "BEPPU",
-      "fares": {
-        "adult": 590,
-        "child": 300,
-        "vehicle": {
-          "under3m": 2200,
-          "under4m": 2750,
-          "under5m": 3300,
-          "under6m": 3850,
-          "over6m": 4400
-        }
+      "vehicle": {
+        "under3m": 2200,
+        "under4m": 2750,
+        "under5m": 3300,
+        "under6m": 3850,
+        "over6m": 4400
       }
     },
     {
       "id": "hishiura-kuri",
       "departure": "HISHIURA",
       "arrival": "KURI",
-      "fares": {
-        "adult": 590,
-        "child": 300,
-        "vehicle": {
-          "under3m": 2200,
-          "under4m": 2750,
-          "under5m": 3300,
-          "under6m": 3850,
-          "over6m": 4400
-        }
+      "vehicle": {
+        "under3m": 2200,
+        "under4m": 2750,
+        "under5m": 3300,
+        "under6m": 3850,
+        "over6m": 4400
       }
     },
     {
       "id": "kuri-hishiura",
       "departure": "KURI",
       "arrival": "HISHIURA",
-      "fares": {
-        "adult": 590,
-        "child": 300,
-        "vehicle": {
-          "under3m": 2200,
-          "under4m": 2750,
-          "under5m": 3300,
-          "under6m": 3850,
-          "over6m": 4400
-        }
+      "vehicle": {
+        "under3m": 2200,
+        "under4m": 2750,
+        "under5m": 3300,
+        "under6m": 3850,
+        "over6m": 4400
       }
     }
   ],

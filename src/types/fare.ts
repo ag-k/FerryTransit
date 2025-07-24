@@ -12,11 +12,17 @@ export interface RouteFare {
   vehicle: VehicleFare
 }
 
+export interface InnerIslandFare {
+  adult: number
+  child: number
+}
+
 export interface FareRoute {
   id: string
   departure: string
   arrival: string
-  fares: RouteFare
+  fares?: RouteFare
+  vehicle?: VehicleFare
 }
 
 export interface Discount {
@@ -27,6 +33,7 @@ export interface Discount {
 }
 
 export interface FareMaster {
+  innerIslandFare?: InnerIslandFare
   routes: FareRoute[]
   discounts: Record<string, Discount>
   notes: string[]

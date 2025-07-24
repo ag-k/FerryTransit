@@ -20,6 +20,13 @@ export const useFareStore = defineStore('fare', () => {
     }
   })
 
+  const isInnerIslandRoute = computed(() => {
+    return (departure: string, arrival: string): boolean => {
+      const innerIslandPorts = ['BEPPU', 'HISHIURA', 'KURI']
+      return innerIslandPorts.includes(departure) && innerIslandPorts.includes(arrival)
+    }
+  })
+
   // Actions
   const loadFareMaster = async () => {
     if (fareMaster.value) return // Already loaded
@@ -53,6 +60,7 @@ export const useFareStore = defineStore('fare', () => {
     
     // Getters
     getFareByRoute,
+    isInnerIslandRoute,
     
     // Actions
     loadFareMaster
