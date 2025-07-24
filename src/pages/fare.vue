@@ -124,42 +124,71 @@
                   {{ formatCurrency(innerIslandFare?.adult || 300) }}
                 </td>
                 <td class="border border-gray-300 dark:border-gray-600 px-4 py-3 text-right font-mono dark:text-gray-100">
-                  {{ formatCurrency(innerIslandFare?.child || 150) }}
-                </td>
-              </tr>
-            </tbody>
-          </table>
-        </div>
-        
-        <!-- Vehicle fares -->
-        <h4 class="text-lg font-medium mb-3 dark:text-white">{{ $t('VEHICLE_FARE') }}</h4>
-        <div class="overflow-x-auto">
-          <table class="w-full text-base sm:text-sm border-collapse">
-            <thead>
-              <tr class="bg-gray-100 dark:bg-gray-800">
-                <th class="border border-gray-300 px-4 py-3 text-left">{{ $t('ROUTE') }}</th>
-                <th v-for="size in vehicleSizes" :key="size" 
-                    class="border border-gray-300 dark:border-gray-600 px-3 sm:px-4 py-3 text-right text-xs sm:text-sm dark:text-gray-100">
-                  {{ getVehicleSizeName(size) }}
-                </th>
-              </tr>
-            </thead>
-            <tbody>
-              <tr v-for="route in naikoSenFares" :key="route.id" class="hover:bg-gray-50 dark:hover:bg-gray-700/50">
-                <td class="border border-gray-300 dark:border-gray-600 px-4 py-3 dark:text-gray-100">
-                  {{ getRouteDisplayName(route) }}
-                </td>
-                <td v-for="size in vehicleSizes" :key="size" 
-                    class="border border-gray-300 dark:border-gray-600 px-3 sm:px-4 py-3 text-right font-mono text-sm dark:text-gray-100">
-                  {{ formatCurrency(route.vehicle?.[size] || 0) }}
+                  {{ formatCurrency(innerIslandFare?.child || 100) }}
                 </td>
               </tr>
             </tbody>
           </table>
         </div>
         <div class="mt-2 text-sm text-gray-600 dark:text-gray-400">
-          <p>{{ $t('CHILD_AGE_NOTE') }}</p>
-          <p>{{ $t('INFANT_AGE_NOTE') }}</p>
+          <p>{{ $t('INNER_ISLAND_CHILD_AGE_NOTE') }}</p>
+          <p>{{ $t('INNER_ISLAND_INFANT_FREE_NOTE') }}</p>
+          <p>{{ $t('INNER_ISLAND_INFANT_PAID_NOTE') }}</p>
+        </div>
+        
+        <!-- Vehicle fares -->
+        <h4 class="text-lg font-medium mb-3 dark:text-white">{{ $t('VEHICLE_FARE') }}</h4>
+        <p class="text-sm text-gray-600 dark:text-gray-400 mb-3">{{ $t('FERRY_DOZEN_VEHICLE_ONLY') }}</p>
+        <div class="overflow-x-auto">
+          <table class="w-full text-base sm:text-sm border-collapse">
+            <thead>
+              <tr class="bg-gray-100 dark:bg-gray-800">
+                <th class="border border-gray-300 dark:border-gray-600 px-4 py-3 text-left dark:text-gray-100">{{ $t('VEHICLE_SIZE') }}</th>
+                <th class="border border-gray-300 dark:border-gray-600 px-4 py-3 text-right dark:text-gray-100">{{ $t('FARE') }}</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr class="hover:bg-gray-50 dark:hover:bg-gray-700/50">
+                <td class="border border-gray-300 dark:border-gray-600 px-4 py-3 dark:text-gray-100">{{ $t('VEHICLE_UNDER_5M') }}</td>
+                <td class="border border-gray-300 dark:border-gray-600 px-4 py-3 text-right font-mono dark:text-gray-100">
+                  {{ formatCurrency(innerIslandVehicleFare?.under5m || 1000) }}
+                </td>
+              </tr>
+              <tr class="hover:bg-gray-50 dark:hover:bg-gray-700/50">
+                <td class="border border-gray-300 dark:border-gray-600 px-4 py-3 dark:text-gray-100">{{ $t('VEHICLE_5M_TO_7M') }}</td>
+                <td class="border border-gray-300 dark:border-gray-600 px-4 py-3 text-right font-mono dark:text-gray-100">
+                  {{ formatCurrency(innerIslandVehicleFare?.under7m || 2000) }}
+                </td>
+              </tr>
+              <tr class="hover:bg-gray-50 dark:hover:bg-gray-700/50">
+                <td class="border border-gray-300 dark:border-gray-600 px-4 py-3 dark:text-gray-100">{{ $t('VEHICLE_7M_TO_10M') }}</td>
+                <td class="border border-gray-300 dark:border-gray-600 px-4 py-3 text-right font-mono dark:text-gray-100">
+                  {{ formatCurrency(innerIslandVehicleFare?.under10m || 3000) }}
+                </td>
+              </tr>
+              <tr class="hover:bg-gray-50 dark:hover:bg-gray-700/50">
+                <td class="border border-gray-300 dark:border-gray-600 px-4 py-3 dark:text-gray-100">{{ $t('VEHICLE_OVER_10M') }}</td>
+                <td class="border border-gray-300 dark:border-gray-600 px-4 py-3 text-right font-mono dark:text-gray-100">
+                  {{ formatCurrency(innerIslandVehicleFare?.over10m || 3000) }} {{ $t('VEHICLE_10M_PLUS_CHARGE') }}
+                </td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+        <div class="mt-4 text-center">
+          <a 
+            href="https://www.okikankou.com/fee_detail/" 
+            target="_blank" 
+            rel="noopener noreferrer"
+            class="inline-flex items-center px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white text-sm font-medium rounded-lg transition-colors duration-200"
+          >
+            {{ $t('INNER_ISLAND_FARE_DETAILS') }}
+            <svg class="ml-2 w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14"></path>
+            </svg>
+          </a>
+        </div>
+        <div class="mt-2 text-sm text-gray-600 dark:text-gray-400">
           <p>{{ $t('VEHICLE_LENGTH_NOTE') }}</p>
         </div>
       </div>
@@ -243,6 +272,7 @@ const rainbowJetFares = ref<any[]>([])
 const discounts = ref<any>({})
 const notes = ref<string[]>([])
 const innerIslandFare = ref<any>(null)
+const innerIslandVehicleFare = ref<any>(null)
 
 // Tab definitions
 const tabs = [
@@ -318,6 +348,7 @@ onMounted(async () => {
     discounts.value = fareStore.fareMaster.discounts
     notes.value = fareStore.fareMaster.notes
     innerIslandFare.value = fareStore.fareMaster.innerIslandFare
+    innerIslandVehicleFare.value = fareStore.fareMaster.innerIslandVehicleFare
   }
 })
 

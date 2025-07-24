@@ -1,7 +1,13 @@
 {
   "innerIslandFare": {
     "adult": 300,
-    "child": 150
+    "child": 100
+  },
+  "innerIslandVehicleFare": {
+    "under5m": 1000,
+    "under7m": 2000,
+    "under10m": 3000,
+    "over10m": 3000
   },
   "routes": [
     {
@@ -105,11 +111,11 @@
       "departure": "BEPPU",
       "arrival": "HISHIURA",
       "vehicle": {
-        "under3m": 2200,
-        "under4m": 2750,
-        "under5m": 3300,
-        "under6m": 3850,
-        "over6m": 4400
+        "under3m": 1000,
+        "under4m": 1000,
+        "under5m": 1000,
+        "under6m": 2000,
+        "over6m": 3000
       }
     },
     {
@@ -117,11 +123,11 @@
       "departure": "HISHIURA",
       "arrival": "BEPPU",
       "vehicle": {
-        "under3m": 2200,
-        "under4m": 2750,
-        "under5m": 3300,
-        "under6m": 3850,
-        "over6m": 4400
+        "under3m": 1000,
+        "under4m": 1000,
+        "under5m": 1000,
+        "under6m": 2000,
+        "over6m": 3000
       }
     },
     {
@@ -129,11 +135,11 @@
       "departure": "BEPPU",
       "arrival": "KURI",
       "vehicle": {
-        "under3m": 2200,
-        "under4m": 2750,
-        "under5m": 3300,
-        "under6m": 3850,
-        "over6m": 4400
+        "under3m": 1000,
+        "under4m": 1000,
+        "under5m": 1000,
+        "under6m": 2000,
+        "over6m": 3000
       }
     },
     {
@@ -141,11 +147,11 @@
       "departure": "KURI",
       "arrival": "BEPPU",
       "vehicle": {
-        "under3m": 2200,
-        "under4m": 2750,
-        "under5m": 3300,
-        "under6m": 3850,
-        "over6m": 4400
+        "under3m": 1000,
+        "under4m": 1000,
+        "under5m": 1000,
+        "under6m": 2000,
+        "over6m": 3000
       }
     },
     {
@@ -153,11 +159,11 @@
       "departure": "HISHIURA",
       "arrival": "KURI",
       "vehicle": {
-        "under3m": 2200,
-        "under4m": 2750,
-        "under5m": 3300,
-        "under6m": 3850,
-        "over6m": 4400
+        "under3m": 1000,
+        "under4m": 1000,
+        "under5m": 1000,
+        "under6m": 2000,
+        "over6m": 3000
       }
     },
     {
@@ -165,11 +171,11 @@
       "departure": "KURI",
       "arrival": "HISHIURA",
       "vehicle": {
-        "under3m": 2200,
-        "under4m": 2750,
-        "under5m": 3300,
-        "under6m": 3850,
-        "over6m": 4400
+        "under3m": 1000,
+        "under4m": 1000,
+        "under5m": 1000,
+        "under6m": 2000,
+        "over6m": 3000
       }
     }
   ],
