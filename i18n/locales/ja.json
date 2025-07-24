@@ -143,6 +143,8 @@
   "VEHICLE_FARE": "車両運賃",
   "ADULT": "大人",
   "CHILD": "小人",
+  "INNER_ISLAND_ROUTE_COMMON": "島前内航船共通",
+  "ALL_INNER_ISLAND_ROUTES": "全島前間航路",
   "CHILD_AGE_NOTE": "※小人は6歳以上12歳未満",
   "INFANT_AGE_NOTE": "※6歳未満は無料（大人1名につき1名まで）",
   "VEHICLE_LENGTH_NOTE": "※車両の長さは車検証記載の全長",

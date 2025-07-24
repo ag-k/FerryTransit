@@ -291,7 +291,7 @@
       v-model:visible="showPortModal"
       :title="getPortDisplayName(modalPortId)"
       type="port"
-      :port-id="modalPortId"
+      :content="modalPortContent"
     />
     
     <!-- Route Map Modal -->
@@ -420,6 +420,12 @@ const modalShipId = ref('')
 const modalPortId = ref('')
 const showMapModal = ref(false)
 const selectedMapRoute = ref<TransitRoute | null>(null)
+
+// Get port map content
+const modalPortContent = computed(() => {
+  if (!modalPortId.value) return ''
+  return ferryStore?.portMaps?.[modalPortId.value] || ''
+})
 
 function showShipInfo(shipName: string) {
   modalShipId.value = shipName

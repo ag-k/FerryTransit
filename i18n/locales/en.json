@@ -100,6 +100,8 @@
   "VEHICLE_FARE": "Vehicle Fares",
   "ADULT": "Adult",
   "CHILD": "Child",
+  "INNER_ISLAND_ROUTE_COMMON": "Inter-Island Ferry Common",
+  "ALL_INNER_ISLAND_ROUTES": "All Dozen Island Routes",
   "CHILD_AGE_NOTE": "* Children are 6-11 years old",
   "INFANT_AGE_NOTE": "* Children under 6 ride free (up to 1 child per adult)",
   "VEHICLE_LENGTH_NOTE": "* Vehicle length is the overall length stated on the vehicle registration",

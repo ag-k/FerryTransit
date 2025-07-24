@@ -110,9 +110,38 @@
           <table class="w-full text-base sm:text-sm border-collapse">
             <thead>
               <tr class="bg-gray-100 dark:bg-gray-800">
-                <th class="border border-gray-300 dark:border-gray-600 px-4 py-3 text-left dark:text-gray-100">{{ $t('ROUTE') }}</th>
+                <th class="border border-gray-300 dark:border-gray-600 px-4 py-3 text-left dark:text-gray-100">{{ $t('INNER_ISLAND_ROUTE_COMMON') }}</th>
                 <th class="border border-gray-300 dark:border-gray-600 px-4 py-3 text-right dark:text-gray-100">{{ $t('ADULT') }}</th>
                 <th class="border border-gray-300 dark:border-gray-600 px-4 py-3 text-right dark:text-gray-100">{{ $t('CHILD') }}</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr class="hover:bg-gray-50 dark:hover:bg-gray-700/50">
+                <td class="border border-gray-300 dark:border-gray-600 px-4 py-3 dark:text-gray-100">
+                  {{ $t('ALL_INNER_ISLAND_ROUTES') }}
+                </td>
+                <td class="border border-gray-300 dark:border-gray-600 px-4 py-3 text-right font-mono dark:text-gray-100">
+                  {{ formatCurrency(innerIslandFare?.adult || 300) }}
+                </td>
+                <td class="border border-gray-300 dark:border-gray-600 px-4 py-3 text-right font-mono dark:text-gray-100">
+                  {{ formatCurrency(innerIslandFare?.child || 150) }}
+                </td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+        
+        <!-- Vehicle fares -->
+        <h4 class="text-lg font-medium mb-3 dark:text-white">{{ $t('VEHICLE_FARE') }}</h4>
+        <div class="overflow-x-auto">
+          <table class="w-full text-base sm:text-sm border-collapse">
+            <thead>
+              <tr class="bg-gray-100 dark:bg-gray-800">
+                <th class="border border-gray-300 px-4 py-3 text-left">{{ $t('ROUTE') }}</th>
+                <th v-for="size in vehicleSizes" :key="size" 
+                    class="border border-gray-300 dark:border-gray-600 px-3 sm:px-4 py-3 text-right text-xs sm:text-sm dark:text-gray-100">
+                  {{ getVehicleSizeName(size) }}
+                </th>
               </tr>
             </thead>
             <tbody>
@@ -120,11 +149,9 @@
                 <td class="border border-gray-300 dark:border-gray-600 px-4 py-3 dark:text-gray-100">
                   {{ getRouteDisplayName(route) }}
                 </td>
-                <td class="border border-gray-300 dark:border-gray-600 px-4 py-3 text-right font-mono dark:text-gray-100">
-                  {{ formatCurrency(route.fares.adult) }}
-                </td>
-                <td class="border border-gray-300 dark:border-gray-600 px-4 py-3 text-right font-mono dark:text-gray-100">
-                  {{ formatCurrency(route.fares.child) }}
+                <td v-for="size in vehicleSizes" :key="size" 
+                    class="border border-gray-300 dark:border-gray-600 px-3 sm:px-4 py-3 text-right font-mono text-sm dark:text-gray-100">
+                  {{ formatCurrency(route.vehicle?.[size] || 0) }}
                 </td>
               </tr>
             </tbody>
@@ -133,6 +160,7 @@
         <div class="mt-2 text-sm text-gray-600 dark:text-gray-400">
           <p>{{ $t('CHILD_AGE_NOTE') }}</p>
           <p>{{ $t('INFANT_AGE_NOTE') }}</p>
+          <p>{{ $t('VEHICLE_LENGTH_NOTE') }}</p>
         </div>
       </div>
 
@@ -214,6 +242,7 @@ const naikoSenFares = ref<any[]>([])
 const rainbowJetFares = ref<any[]>([])
 const discounts = ref<any>({})
 const notes = ref<string[]>([])
+const innerIslandFare = ref<any>(null)
 
 // Tab definitions
 const tabs = [
@@ -288,6 +317,7 @@ onMounted(async () => {
   if (fareStore?.fareMaster) {
     discounts.value = fareStore.fareMaster.discounts
     notes.value = fareStore.fareMaster.notes
+    innerIslandFare.value = fareStore.fareMaster.innerIslandFare
   }
 })
 
