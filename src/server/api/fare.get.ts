@@ -3,8 +3,8 @@ import { join } from 'path'
 
 export default defineEventHandler(async (event) => {
   try {
-    // src/public/data/fare-master.jsonから読み込み
-    const filePath = join(process.cwd(), 'src', 'public', 'data', 'fare-master.json')
+    // src/data/fare-master.jsonから読み込み
+    const filePath = join(process.cwd(), 'src', 'data', 'fare-master.json')
     const data = await readFile(filePath, 'utf-8')
     
     // CORSヘッダーを設定

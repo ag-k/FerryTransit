@@ -210,15 +210,59 @@
               </tr>
             </thead>
             <tbody>
-              <tr v-for="route in rainbowJetFares" :key="route.id" class="hover:bg-gray-50">
+              <tr v-if="rainbowJetSpecialFares?.['hondo-oki']" class="hover:bg-gray-50 dark:hover:bg-gray-700/50">
                 <td class="border border-gray-300 dark:border-gray-600 px-4 py-3 dark:text-gray-100">
-                  {{ getRouteDisplayName(route) }}
+                  {{ $t('HONDO_OKI') }}
                 </td>
                 <td class="border border-gray-300 dark:border-gray-600 px-4 py-3 text-right font-mono dark:text-gray-100">
-                  {{ formatCurrency(6680) }}
+                  {{ formatCurrency(rainbowJetSpecialFares['hondo-oki'].adult) }}
                 </td>
                 <td class="border border-gray-300 dark:border-gray-600 px-4 py-3 text-right font-mono dark:text-gray-100">
-                  {{ formatCurrency(3340) }}
+                  {{ formatCurrency(rainbowJetSpecialFares['hondo-oki'].child) }}
+                </td>
+              </tr>
+              <tr v-if="rainbowJetSpecialFares?.['dozen-dogo']" class="hover:bg-gray-50 dark:hover:bg-gray-700/50">
+                <td class="border border-gray-300 dark:border-gray-600 px-4 py-3 dark:text-gray-100">
+                  {{ $t('DOZEN_DOGO') }}
+                </td>
+                <td class="border border-gray-300 dark:border-gray-600 px-4 py-3 text-right font-mono dark:text-gray-100">
+                  {{ formatCurrency(rainbowJetSpecialFares['dozen-dogo'].adult) }}
+                </td>
+                <td class="border border-gray-300 dark:border-gray-600 px-4 py-3 text-right font-mono dark:text-gray-100">
+                  {{ formatCurrency(rainbowJetSpecialFares['dozen-dogo'].child) }}
+                </td>
+              </tr>
+              <tr v-if="rainbowJetSpecialFares?.['beppu-hishiura']" class="hover:bg-gray-50 dark:hover:bg-gray-700/50">
+                <td class="border border-gray-300 dark:border-gray-600 px-4 py-3 dark:text-gray-100">
+                  {{ $t('BEPPU_HISHIURA') }}
+                </td>
+                <td class="border border-gray-300 dark:border-gray-600 px-4 py-3 text-right font-mono dark:text-gray-100">
+                  {{ formatCurrency(rainbowJetSpecialFares['beppu-hishiura'].adult) }}
+                </td>
+                <td class="border border-gray-300 dark:border-gray-600 px-4 py-3 text-right font-mono dark:text-gray-100">
+                  {{ formatCurrency(rainbowJetSpecialFares['beppu-hishiura'].child) }}
+                </td>
+              </tr>
+              <tr v-if="rainbowJetSpecialFares?.['hishiura-kuri']" class="hover:bg-gray-50 dark:hover:bg-gray-700/50">
+                <td class="border border-gray-300 dark:border-gray-600 px-4 py-3 dark:text-gray-100">
+                  {{ $t('HISHIURA_KURI') }}
+                </td>
+                <td class="border border-gray-300 dark:border-gray-600 px-4 py-3 text-right font-mono dark:text-gray-100">
+                  {{ rainbowJetSpecialFares['hishiura-kuri'].adult ? formatCurrency(rainbowJetSpecialFares['hishiura-kuri'].adult) : '—' }}
+                </td>
+                <td class="border border-gray-300 dark:border-gray-600 px-4 py-3 text-right font-mono dark:text-gray-100">
+                  {{ rainbowJetSpecialFares['hishiura-kuri'].child ? formatCurrency(rainbowJetSpecialFares['hishiura-kuri'].child) : '—' }}
+                </td>
+              </tr>
+              <tr v-if="rainbowJetSpecialFares?.['kuri-beppu']" class="hover:bg-gray-50 dark:hover:bg-gray-700/50">
+                <td class="border border-gray-300 dark:border-gray-600 px-4 py-3 dark:text-gray-100">
+                  {{ $t('KURI_BEPPU') }}
+                </td>
+                <td class="border border-gray-300 dark:border-gray-600 px-4 py-3 text-right font-mono dark:text-gray-100">
+                  {{ rainbowJetSpecialFares['kuri-beppu'].adult ? formatCurrency(rainbowJetSpecialFares['kuri-beppu'].adult) : '—' }}
+                </td>
+                <td class="border border-gray-300 dark:border-gray-600 px-4 py-3 text-right font-mono dark:text-gray-100">
+                  {{ rainbowJetSpecialFares['kuri-beppu'].child ? formatCurrency(rainbowJetSpecialFares['kuri-beppu'].child) : '—' }}
                 </td>
               </tr>
             </tbody>
@@ -232,7 +276,7 @@
       </div>
 
       <!-- Discounts -->
-      <div class="mb-8">
+      <div v-if="activeTab !== 'naikoSen'" class="mb-8">
         <h3 class="text-xl font-medium mb-4 dark:text-white">{{ $t('DISCOUNTS') }}</h3>
         <div class="grid md:grid-cols-2 gap-4">
           <div v-for="(discount, key) in discounts" :key="key" 
@@ -246,13 +290,6 @@
         </div>
       </div>
 
-      <!-- Notes -->
-      <div class="bg-gray-100 dark:bg-gray-800 rounded-lg p-4">
-        <h4 class="font-medium mb-2 dark:text-white">{{ $t('NOTES') }}</h4>
-        <ul class="text-sm text-gray-700 dark:text-gray-300 space-y-1">
-          <li v-for="note in notes" :key="note">• {{ $t(note) }}</li>
-        </ul>
-      </div>
     </div>
   </div>
 </template>
@@ -270,9 +307,9 @@ const okiKisenFares = ref<any[]>([])
 const naikoSenFares = ref<any[]>([])
 const rainbowJetFares = ref<any[]>([])
 const discounts = ref<any>({})
-const notes = ref<string[]>([])
 const innerIslandFare = ref<any>(null)
 const innerIslandVehicleFare = ref<any>(null)
+const rainbowJetSpecialFares = ref<any>(null)
 
 // Tab definitions
 const tabs = [
@@ -344,11 +381,16 @@ onMounted(async () => {
   naikoSenFares.value = grouped.naikoSen
   rainbowJetFares.value = grouped.rainbowJet
   
-  if (fareStore?.fareMaster) {
-    discounts.value = fareStore.fareMaster.discounts
-    notes.value = fareStore.fareMaster.notes
-    innerIslandFare.value = fareStore.fareMaster.innerIslandFare
-    innerIslandVehicleFare.value = fareStore.fareMaster.innerIslandVehicleFare
+  // Ensure fareStore is loaded
+  if (fareStore) {
+    await fareStore.loadFareMaster()
+    
+    if (fareStore.fareMaster) {
+      discounts.value = fareStore.fareMaster.discounts
+      innerIslandFare.value = fareStore.fareMaster.innerIslandFare
+      innerIslandVehicleFare.value = fareStore.fareMaster.innerIslandVehicleFare
+      rainbowJetSpecialFares.value = fareStore.fareMaster.rainbowJetFares
+    }
   }
 })
 

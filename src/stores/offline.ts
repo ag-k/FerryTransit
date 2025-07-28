@@ -1,7 +1,6 @@
 import { defineStore } from 'pinia'
 import { ref, readonly } from 'vue'
 import { useOfflineStorage } from '@/composables/useOfflineStorage'
-import { useFirebaseStorage } from '@/composables/useFirebaseStorage'
 import type { TimetableData } from '@/types/timetable'
 import type { FerryStatus } from '@/types/ferry'
 import type { FareMaster } from '@/types/fare'
@@ -54,9 +53,8 @@ export const useOfflineStore = defineStore('offline', () => {
     try {
       // オンラインの場合は通常通り取得
       if (!isOffline.value) {
-        // Firebase Storage から取得
-        const { getCachedJsonFile } = useFirebaseStorage()
-        const data = await getCachedJsonFile<TimetableData>('data/timetable.json', 'timetableData', 15)
+        // publicディレクトリから直接取得
+        const data = await $fetch<TimetableData>('/data/timetable.json')
         // 成功したらローカルに保存
         if (data) {
           saveTimetableData(data)
@@ -117,9 +115,8 @@ export const useOfflineStore = defineStore('offline', () => {
       
       // オンラインの場合は新しいデータを取得
       if (!isOffline.value) {
-        // Firebase Storage から取得
-        const { getCachedJsonFile } = useFirebaseStorage()
-        const data = await getCachedJsonFile<FareMaster>('data/fare-master.json', 'fareMaster', 60 * 24)
+        // publicディレクトリから直接取得
+        const data = await $fetch<FareMaster>('/data/fare-master.json')
         // 成功したらローカルに保存
         if (data) {
           saveFareData(data)
@@ -152,9 +149,8 @@ export const useOfflineStore = defineStore('offline', () => {
       
       // オンラインの場合は新しいデータを取得
       if (!isOffline.value) {
-        // Firebase Storage から取得
-        const { getCachedJsonFile } = useFirebaseStorage()
-        const data = await getCachedJsonFile<HolidayMaster>('data/holidays.json', 'holidayMaster', 60 * 24 * 7)
+        // publicディレクトリから直接取得
+        const data = await $fetch<HolidayMaster>('/data/holidays.json')
         // 成功したらローカルに保存
         if (data) {
           saveHolidayData(data)
@@ -185,8 +181,7 @@ export const useOfflineStore = defineStore('offline', () => {
     
     // 時刻表データ
     try {
-      const { getCachedJsonFile } = useFirebaseStorage()
-      const timetable = await getCachedJsonFile<TimetableData>('data/timetable.json', 'timetableData', 15)
+      const timetable = await $fetch<TimetableData>('/data/timetable.json')
       if (timetable) {
         saveTimetableData(timetable)
         lastSync.value.timetable = Date.now()
@@ -197,8 +192,7 @@ export const useOfflineStore = defineStore('offline', () => {
     
     // 料金データ
     try {
-      const { getCachedJsonFile } = useFirebaseStorage()
-      const fare = await getCachedJsonFile<FareMaster>('data/fare-master.json', 'fareMaster', 60 * 24)
+      const fare = await $fetch<FareMaster>('/data/fare-master.json')
       if (fare) {
         saveFareData(fare)
         lastSync.value.fare = Date.now()
@@ -209,8 +203,7 @@ export const useOfflineStore = defineStore('offline', () => {
     
     // 祝日データ
     try {
-      const { getCachedJsonFile } = useFirebaseStorage()
-      const holiday = await getCachedJsonFile<HolidayMaster>('data/holidays.json', 'holidayMaster', 60 * 24 * 7)
+      const holiday = await $fetch<HolidayMaster>('/data/holidays.json')
       if (holiday) {
         saveHolidayData(holiday)
         lastSync.value.holiday = Date.now()
