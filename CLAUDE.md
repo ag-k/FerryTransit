@@ -107,6 +107,7 @@ npm run lint
    - 乗換案内 (TRANSIT)
    - 運行状況 (STATUS)
    - 設定 (SETTINGS)
+7. **SPA環境**: このプロジェクトはSPA（Single Page Application）のため、`/server/api`ディレクトリの使用は禁止。すべてのデータ取得はFirebase StorageまたはFirestoreを経由して行う
 
 ## 移行状況
 

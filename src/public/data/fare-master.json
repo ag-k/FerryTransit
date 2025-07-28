@@ -1,18 +1,50 @@
 {
+  "innerIslandFare": {
+    "adult": 300,
+    "child": 100
+  },
+  "innerIslandVehicleFare": {
+    "under5m": 1000,
+    "under7m": 2000,
+    "under10m": 3000,
+    "over10m": 3000
+  },
+  "rainbowJetFares": {
+    "hondo-oki": {
+      "adult": 6680,
+      "child": 3340
+    },
+    "dozen-dogo": {
+      "adult": 3050,
+      "child": 1530
+    },
+    "beppu-hishiura": {
+      "adult": 410,
+      "child": 210
+    },
+    "hishiura-kuri": {
+      "adult": null,
+      "child": null
+    },
+    "kuri-beppu": {
+      "adult": null,
+      "child": null
+    }
+  },
   "routes": [
     {
       "id": "hondo-saigo",
       "departure": "HONDO",
       "arrival": "SAIGO",
       "fares": {
-        "adult": 3510,
-        "child": 1755,
+        "adult": 3520,
+        "child": 1760,
         "vehicle": {
-          "under3m": 13750,
-          "under4m": 18260,
-          "under5m": 22870,
-          "under6m": 27390,
-          "over6m": 35530
+          "under3m": 8800,
+          "under4m": 11000,
+          "under5m": 13200,
+          "under6m": 15400,
+          "over6m": 17600
         }
       }
     },
@@ -21,14 +53,14 @@
       "departure": "SAIGO",
       "arrival": "HONDO",
       "fares": {
-        "adult": 3510,
-        "child": 1755,
+        "adult": 3520,
+        "child": 1760,
         "vehicle": {
-          "under3m": 13750,
-          "under4m": 18260,
-          "under5m": 22870,
-          "under6m": 27390,
-          "over6m": 35530
+          "under3m": 8800,
+          "under4m": 11000,
+          "under5m": 13200,
+          "under6m": 15400,
+          "over6m": 17600
         }
       }
     },
@@ -37,14 +69,14 @@
       "departure": "SAIGO",
       "arrival": "BEPPU",
       "fares": {
-        "adult": 300,
-        "child": 100,
+        "adult": 1540,
+        "child": 770,
         "vehicle": {
-          "under3m": 1000,
-          "under4m": 1000,
-          "under5m": 1000,
-          "under6m": 2000,
-          "over6m": 2000
+          "under3m": 4400,
+          "under4m": 5500,
+          "under5m": 6600,
+          "under6m": 7700,
+          "over6m": 8800
         }
       }
     },
@@ -53,14 +85,14 @@
       "departure": "BEPPU",
       "arrival": "SAIGO",
       "fares": {
-        "adult": 300,
-        "child": 100,
+        "adult": 1540,
+        "child": 770,
         "vehicle": {
-          "under3m": 1000,
-          "under4m": 1000,
-          "under5m": 1000,
-          "under6m": 2000,
-          "over6m": 2000
+          "under3m": 4400,
+          "under4m": 5500,
+          "under5m": 6600,
+          "under6m": 7700,
+          "over6m": 8800
         }
       }
     },
@@ -69,14 +101,14 @@
       "departure": "SAIGO",
       "arrival": "HISHIURA",
       "fares": {
-        "adult": 300,
-        "child": 100,
+        "adult": 1540,
+        "child": 770,
         "vehicle": {
-          "under3m": 1000,
-          "under4m": 1000,
-          "under5m": 1000,
-          "under6m": 2000,
-          "over6m": 2000
+          "under3m": 4400,
+          "under4m": 5500,
+          "under5m": 6600,
+          "under6m": 7700,
+          "over6m": 8800
         }
       }
     },
@@ -85,14 +117,14 @@
       "departure": "HISHIURA",
       "arrival": "SAIGO",
       "fares": {
-        "adult": 300,
-        "child": 100,
+        "adult": 1540,
+        "child": 770,
         "vehicle": {
-          "under3m": 1000,
-          "under4m": 1000,
-          "under5m": 1000,
-          "under6m": 2000,
-          "over6m": 2000
+          "under3m": 4400,
+          "under4m": 5500,
+          "under5m": 6600,
+          "under6m": 7700,
+          "over6m": 8800
         }
       }
     },
@@ -108,7 +140,7 @@
           "under4m": 1000,
           "under5m": 1000,
           "under6m": 2000,
-          "over6m": 2000
+          "over6m": 3000
         }
       }
     },
@@ -124,7 +156,7 @@
           "under4m": 1000,
           "under5m": 1000,
           "under6m": 2000,
-          "over6m": 2000
+          "over6m": 3000
         }
       }
     },
@@ -140,7 +172,7 @@
           "under4m": 1000,
           "under5m": 1000,
           "under6m": 2000,
-          "over6m": 2000
+          "over6m": 3000
         }
       }
     },
@@ -156,7 +188,7 @@
           "under4m": 1000,
           "under5m": 1000,
           "under6m": 2000,
-          "over6m": 2000
+          "over6m": 3000
         }
       }
     },
@@ -172,7 +204,7 @@
           "under4m": 1000,
           "under5m": 1000,
           "under6m": 2000,
-          "over6m": 2000
+          "over6m": 3000
         }
       }
     },
@@ -188,7 +220,7 @@
           "under4m": 1000,
           "under5m": 1000,
           "under6m": 2000,
-          "over6m": 2000
+          "over6m": 3000
         }
       }
     },
@@ -197,14 +229,14 @@
       "departure": "HONDO",
       "arrival": "BEPPU",
       "fares": {
-        "adult": 3510,
-        "child": 1755,
+        "adult": 3520,
+        "child": 1760,
         "vehicle": {
-          "under3m": 13750,
-          "under4m": 18260,
-          "under5m": 22870,
-          "under6m": 27390,
-          "over6m": 35530
+          "under3m": 8800,
+          "under4m": 11000,
+          "under5m": 13200,
+          "under6m": 15400,
+          "over6m": 17600
         }
       }
     },
@@ -213,14 +245,14 @@
       "departure": "BEPPU",
       "arrival": "HONDO",
       "fares": {
-        "adult": 3510,
-        "child": 1755,
+        "adult": 3520,
+        "child": 1760,
         "vehicle": {
-          "under3m": 13750,
-          "under4m": 18260,
-          "under5m": 22870,
-          "under6m": 27390,
-          "over6m": 35530
+          "under3m": 8800,
+          "under4m": 11000,
+          "under5m": 13200,
+          "under6m": 15400,
+          "over6m": 17600
         }
       }
     },
@@ -229,14 +261,14 @@
       "departure": "HONDO",
       "arrival": "HISHIURA",
       "fares": {
-        "adult": 3510,
-        "child": 1755,
+        "adult": 3520,
+        "child": 1760,
         "vehicle": {
-          "under3m": 13750,
-          "under4m": 18260,
-          "under5m": 22870,
-          "under6m": 27390,
-          "over6m": 35530
+          "under3m": 8800,
+          "under4m": 11000,
+          "under5m": 13200,
+          "under6m": 15400,
+          "over6m": 17600
         }
       }
     },
@@ -245,14 +277,14 @@
       "departure": "HISHIURA",
       "arrival": "HONDO",
       "fares": {
-        "adult": 3510,
-        "child": 1755,
+        "adult": 3520,
+        "child": 1760,
         "vehicle": {
-          "under3m": 13750,
-          "under4m": 18260,
-          "under5m": 22870,
-          "under6m": 27390,
-          "over6m": 35530
+          "under3m": 8800,
+          "under4m": 11000,
+          "under5m": 13200,
+          "under6m": 15400,
+          "over6m": 17600
         }
       }
     },
@@ -261,14 +293,14 @@
       "departure": "HONDO",
       "arrival": "KURI",
       "fares": {
-        "adult": 3510,
-        "child": 1755,
+        "adult": 3520,
+        "child": 1760,
         "vehicle": {
-          "under3m": 13750,
-          "under4m": 18260,
-          "under5m": 22870,
-          "under6m": 27390,
-          "over6m": 35530
+          "under3m": 8800,
+          "under4m": 11000,
+          "under5m": 13200,
+          "under6m": 15400,
+          "over6m": 17600
         }
       }
     },
@@ -277,14 +309,14 @@
       "departure": "KURI",
       "arrival": "HONDO",
       "fares": {
-        "adult": 3510,
-        "child": 1755,
+        "adult": 3520,
+        "child": 1760,
         "vehicle": {
-          "under3m": 13750,
-          "under4m": 18260,
-          "under5m": 22870,
-          "under6m": 27390,
-          "over6m": 35530
+          "under3m": 8800,
+          "under4m": 11000,
+          "under5m": 13200,
+          "under6m": 15400,
+          "over6m": 17600
         }
       }
     }
@@ -312,7 +344,5 @@
       "descriptionKey": "DISCOUNT_STUDENT_DESC"
     }
   },
-  "notes": [
-    "NOTE_SEASONAL_SURCHARGE"
-  ]
+  "notes": []
 }

@@ -9,6 +9,28 @@
     "under10m": 3000,
     "over10m": 3000
   },
+  "rainbowJetFares": {
+    "hondo-oki": {
+      "adult": 6680,
+      "child": 3340
+    },
+    "dozen-dogo": {
+      "adult": 3050,
+      "child": 1530
+    },
+    "beppu-hishiura": {
+      "adult": 410,
+      "child": 210
+    },
+    "hishiura-kuri": {
+      "adult": null,
+      "child": null
+    },
+    "kuri-beppu": {
+      "adult": null,
+      "child": null
+    }
+  },
   "routes": [
     {
       "id": "hondo-saigo",
@@ -202,7 +224,5 @@
       "descriptionKey": "DISCOUNT_STUDENT_DESC"
     }
   },
-  "notes": [
-    "NOTE_SEASONAL_SURCHARGE"
-  ]
+  "notes": []
 }

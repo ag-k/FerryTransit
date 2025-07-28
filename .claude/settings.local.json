@@ -51,7 +51,8 @@
       "Bash(chmod:*)",
       "Bash(firebase projects:list:*)",
       "Bash(firebase target:apply:*)",
-      "Bash(npm ls:*)"
+      "Bash(npm ls:*)",
+      "WebFetch(domain:okikankou.com)"
     ],
     "deny": []
   }
