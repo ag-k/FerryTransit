@@ -39,27 +39,39 @@
         <h3 class="text-xl font-medium mb-4 dark:text-white">{{ $t('OKI_KISEN_FERRY') }}</h3>
         <p class="text-sm text-gray-600 dark:text-gray-400 mb-4">{{ $t('FERRY_OKI') }}, {{ $t('FERRY_SHIRASHIMA') }}, {{ $t('FERRY_KUNIGA') }}</p>
         
-        <!-- Passenger fares -->
-        <h4 class="text-lg font-medium mb-3 dark:text-white">{{ $t('PASSENGER_FARE') }}</h4>
+        <!-- Seat class fares -->
+        <h4 class="text-lg font-medium mb-3 dark:text-white">{{ $t('SEAT_CLASS_FARE') }}</h4>
         <div class="overflow-x-auto mb-8">
           <table class="w-full text-base sm:text-sm border-collapse">
             <thead>
               <tr class="bg-gray-100 dark:bg-gray-800">
-                <th class="border border-gray-300 dark:border-gray-600 px-4 py-3 text-left dark:text-gray-100">{{ $t('ROUTE') }}</th>
-                <th class="border border-gray-300 dark:border-gray-600 px-4 py-3 text-right dark:text-gray-100">{{ $t('ADULT') }}</th>
-                <th class="border border-gray-300 dark:border-gray-600 px-4 py-3 text-right dark:text-gray-100">{{ $t('CHILD') }}</th>
+                <th class="border border-gray-300 dark:border-gray-600 px-4 py-3 text-left dark:text-gray-100"></th>
+                <th class="border border-gray-300 dark:border-gray-600 px-4 py-3 text-center dark:text-gray-100">{{ $t('HONDO_OKI') }}</th>
+                <th class="border border-gray-300 dark:border-gray-600 px-4 py-3 text-center dark:text-gray-100">{{ $t('DOZEN_DOGO') }}</th>
+                <th class="border border-gray-300 dark:border-gray-600 px-4 py-3 text-center dark:text-gray-100">{{ $t('BEPPU_HISHIURA') }}<br>({{ $t('DOZEN') }})</th>
+                <th class="border border-gray-300 dark:border-gray-600 px-4 py-3 text-center dark:text-gray-100">{{ $t('HISHIURA_KURI') }}<br>({{ $t('DOZEN') }})</th>
+                <th class="border border-gray-300 dark:border-gray-600 px-4 py-3 text-center dark:text-gray-100">{{ $t('KURI_BEPPU') }}<br>({{ $t('DOZEN') }})</th>
               </tr>
             </thead>
             <tbody>
-              <tr v-for="route in okiKisenFares" :key="route.id" class="hover:bg-gray-50 dark:hover:bg-gray-700/50">
-                <td class="border border-gray-300 dark:border-gray-600 px-4 py-3 dark:text-gray-100">
-                  {{ getRouteDisplayName(route) }}
+              <tr v-for="seatClass in seatClasses" :key="seatClass.key" class="hover:bg-gray-50 dark:hover:bg-gray-700/50">
+                <td class="border border-gray-300 dark:border-gray-600 px-4 py-3 font-medium dark:text-gray-100">
+                  {{ $t(seatClass.nameKey) }}
                 </td>
-                <td class="border border-gray-300 dark:border-gray-600 px-4 py-3 text-right font-mono dark:text-gray-100">
-                  {{ formatCurrency(route.fares.adult) }}
+                <td class="border border-gray-300 dark:border-gray-600 px-4 py-3 text-center font-mono dark:text-gray-100">
+                  {{ getSeatClassFare('hondo-oki', seatClass.key) }}
                 </td>
-                <td class="border border-gray-300 dark:border-gray-600 px-4 py-3 text-right font-mono dark:text-gray-100">
-                  {{ formatCurrency(route.fares.child) }}
+                <td class="border border-gray-300 dark:border-gray-600 px-4 py-3 text-center font-mono dark:text-gray-100">
+                  {{ getSeatClassFare('dozen-dogo', seatClass.key) }}
+                </td>
+                <td class="border border-gray-300 dark:border-gray-600 px-4 py-3 text-center font-mono dark:text-gray-100">
+                  {{ getSeatClassFare('beppu-hishiura', seatClass.key) }}
+                </td>
+                <td class="border border-gray-300 dark:border-gray-600 px-4 py-3 text-center font-mono dark:text-gray-100">
+                  {{ getSeatClassFare('hishiura-kuri', seatClass.key) }}
+                </td>
+                <td class="border border-gray-300 dark:border-gray-600 px-4 py-3 text-center font-mono dark:text-gray-100">
+                  {{ getSeatClassFare('kuri-beppu', seatClass.key) }}
                 </td>
               </tr>
             </tbody>
@@ -72,21 +84,33 @@
           <table class="w-full text-base sm:text-sm border-collapse">
             <thead>
               <tr class="bg-gray-100 dark:bg-gray-800">
-                <th class="border border-gray-300 px-4 py-3 text-left">{{ $t('ROUTE') }}</th>
-                <th v-for="size in vehicleSizes" :key="size" 
-                    class="border border-gray-300 dark:border-gray-600 px-3 sm:px-4 py-3 text-right text-xs sm:text-sm dark:text-gray-100">
-                  {{ getVehicleSizeName(size) }}
-                </th>
+                <th class="border border-gray-300 dark:border-gray-600 px-4 py-3 text-left dark:text-gray-100"></th>
+                <th class="border border-gray-300 dark:border-gray-600 px-4 py-3 text-center dark:text-gray-100">{{ $t('HONDO_OKI') }}</th>
+                <th class="border border-gray-300 dark:border-gray-600 px-4 py-3 text-center dark:text-gray-100">{{ $t('DOZEN_DOGO') }}</th>
+                <th class="border border-gray-300 dark:border-gray-600 px-4 py-3 text-center dark:text-gray-100">{{ $t('BEPPU_HISHIURA') }}<br>({{ $t('DOZEN') }})</th>
+                <th class="border border-gray-300 dark:border-gray-600 px-4 py-3 text-center dark:text-gray-100">{{ $t('HISHIURA_KURI') }}<br>({{ $t('DOZEN') }})</th>
+                <th class="border border-gray-300 dark:border-gray-600 px-4 py-3 text-center dark:text-gray-100">{{ $t('KURI_BEPPU') }}<br>({{ $t('DOZEN') }})</th>
               </tr>
             </thead>
             <tbody>
-              <tr v-for="route in okiKisenFares" :key="route.id" class="hover:bg-gray-50 dark:hover:bg-gray-700/50">
-                <td class="border border-gray-300 dark:border-gray-600 px-4 py-3 dark:text-gray-100">
-                  {{ getRouteDisplayName(route) }}
+              <tr v-for="size in vehicleSizeList" :key="size.key" class="hover:bg-gray-50 dark:hover:bg-gray-700/50">
+                <td class="border border-gray-300 dark:border-gray-600 px-4 py-3 font-medium dark:text-gray-100">
+                  {{ size.label }}
                 </td>
-                <td v-for="size in vehicleSizes" :key="size" 
-                    class="border border-gray-300 dark:border-gray-600 px-3 sm:px-4 py-3 text-right font-mono text-sm dark:text-gray-100">
-                  {{ formatCurrency(route.fares.vehicle[size]) }}
+                <td class="border border-gray-300 dark:border-gray-600 px-4 py-3 text-center font-mono dark:text-gray-100">
+                  {{ getVehicleFare('hondo-oki', size.key) }}
+                </td>
+                <td class="border border-gray-300 dark:border-gray-600 px-4 py-3 text-center font-mono dark:text-gray-100">
+                  {{ getVehicleFare('dozen-dogo', size.key) }}
+                </td>
+                <td class="border border-gray-300 dark:border-gray-600 px-4 py-3 text-center font-mono dark:text-gray-100">
+                  {{ getVehicleFare('beppu-hishiura', size.key) }}
+                </td>
+                <td class="border border-gray-300 dark:border-gray-600 px-4 py-3 text-center font-mono dark:text-gray-100">
+                  {{ getVehicleFare('hishiura-kuri', size.key) }}
+                </td>
+                <td class="border border-gray-300 dark:border-gray-600 px-4 py-3 text-center font-mono dark:text-gray-100">
+                  {{ getVehicleFare('kuri-beppu', size.key) }}
                 </td>
               </tr>
             </tbody>
@@ -311,6 +335,15 @@ const innerIslandFare = ref<any>(null)
 const innerIslandVehicleFare = ref<any>(null)
 const rainbowJetSpecialFares = ref<any>(null)
 
+// Seat class definitions
+const seatClasses = [
+  { key: 'class2', nameKey: 'SEAT_CLASS_2' },
+  { key: 'class2Special', nameKey: 'SEAT_CLASS_2_SPECIAL' },
+  { key: 'class1', nameKey: 'SEAT_CLASS_1' },
+  { key: 'classSpecial', nameKey: 'SEAT_CLASS_SPECIAL' },
+  { key: 'specialRoom', nameKey: 'SEAT_CLASS_SPECIAL_ROOM' }
+]
+
 // Tab definitions
 const tabs = [
   { id: 'okiKisen', nameKey: 'OKI_KISEN_FERRY' },
@@ -318,8 +351,23 @@ const tabs = [
   { id: 'rainbowJet', nameKey: 'RAINBOWJET' }
 ]
 
-// Vehicle sizes
+// Vehicle sizes (for old format compatibility)
 const vehicleSizes: (keyof VehicleFare)[] = ['under3m', 'under4m', 'under5m', 'under6m', 'over6m']
+
+// Vehicle size list for new format
+const vehicleSizeList = [
+  { key: 'under3m', label: '3m未満' },
+  { key: 'under4m', label: '4m未満' },
+  { key: 'under5m', label: '5m未満' },
+  { key: 'under6m', label: '6m未満' },
+  { key: 'under7m', label: '7m未満' },
+  { key: 'under8m', label: '8m未満' },
+  { key: 'under9m', label: '9m未満' },
+  { key: 'under10m', label: '10m未満' },
+  { key: 'under11m', label: '11m未満' },
+  { key: 'under12m', label: '12m未満' },
+  { key: 'over12m', label: '12m以上\n1m増すごとに' }
+]
 
 // Computed
 const isLoading = computed(() => fareStore?.isLoading ?? false)
@@ -331,6 +379,97 @@ const getRouteDisplayName = (route: any) => {
   return `${$i18n.t(route.departure)} → ${$i18n.t(route.arrival)}`
 }
 
+// Get mainland route fare for a specific destination
+const getMainlandRouteFare = (destination: string, seatClass: string) => {
+  let fare = null
+  const routeId = `hondo-${destination}`
+  const reverseRouteId = `${destination}-hondo`
+  
+  const route = okiKisenFares.value.find(r => r.id === routeId || r.id === reverseRouteId)
+  fare = route?.fares?.seatClass?.[seatClass]
+  
+  return fare ? formatCurrency(fare) : '—'
+}
+
+// Get seat class fare for a specific route
+const getSeatClassFare = (routeType: string, seatClass: string) => {
+  let fare = null
+  
+  if (routeType === 'hondo-oki') {
+    // 本土〜隠岐（すべての本土路線は同一料金）
+    const route = okiKisenFares.value.find(r => 
+      r.id === 'hondo-saigo' || r.id === 'saigo-hondo' ||
+      r.id === 'hondo-beppu' || r.id === 'beppu-hondo' ||
+      r.id === 'hondo-hishiura' || r.id === 'hishiura-hondo' ||
+      r.id === 'hondo-kuri' || r.id === 'kuri-hondo'
+    )
+    fare = route?.fares?.seatClass?.[seatClass]
+  } else if (routeType === 'dozen-dogo') {
+    // 島前〜島後（西郷〜別府/菱浦/来居）
+    const route = okiKisenFares.value.find(r => 
+      r.id === 'saigo-beppu' || r.id === 'beppu-saigo' || 
+      r.id === 'saigo-hishiura' || r.id === 'hishiura-saigo' ||
+      r.id === 'saigo-kuri' || r.id === 'kuri-saigo'
+    )
+    fare = route?.fares?.seatClass?.[seatClass]
+  } else if (routeType === 'beppu-hishiura') {
+    // 別府〜菱浦
+    const route = okiKisenFares.value.find(r => r.id === 'beppu-hishiura' || r.id === 'hishiura-beppu')
+    fare = route?.fares?.seatClass?.[seatClass]
+  } else if (routeType === 'hishiura-kuri') {
+    // 菱浦〜来居
+    const route = okiKisenFares.value.find(r => r.id === 'hishiura-kuri' || r.id === 'kuri-hishiura')
+    fare = route?.fares?.seatClass?.[seatClass]
+  } else if (routeType === 'kuri-beppu') {
+    // 来居〜別府
+    const route = okiKisenFares.value.find(r => r.id === 'kuri-beppu' || r.id === 'beppu-kuri')
+    fare = route?.fares?.seatClass?.[seatClass]
+  }
+  
+  return fare ? formatCurrency(fare) : '—'
+}
+
+// Get vehicle fare for a specific route
+const getVehicleFare = (routeType: string, sizeKey: string) => {
+  let fare = null
+  let route = null
+  
+  if (routeType === 'hondo-oki') {
+    // 本土〜隠岐（すべての本土路線は同一料金）
+    route = okiKisenFares.value.find(r => 
+      r.id === 'hondo-saigo' || r.id === 'saigo-hondo' ||
+      r.id === 'hondo-beppu' || r.id === 'beppu-hondo' ||
+      r.id === 'hondo-hishiura' || r.id === 'hishiura-hondo' ||
+      r.id === 'hondo-kuri' || r.id === 'kuri-hondo'
+    )
+  } else if (routeType === 'dozen-dogo') {
+    // 島前〜島後（西郷〜別府/菱浦/来居）
+    route = okiKisenFares.value.find(r => 
+      r.id === 'saigo-beppu' || r.id === 'beppu-saigo' || 
+      r.id === 'saigo-hishiura' || r.id === 'hishiura-saigo' ||
+      r.id === 'saigo-kuri' || r.id === 'kuri-saigo'
+    )
+  } else if (routeType === 'beppu-hishiura') {
+    // 別府〜菱浦
+    route = okiKisenFares.value.find(r => r.id === 'beppu-hishiura' || r.id === 'hishiura-beppu')
+  } else if (routeType === 'hishiura-kuri') {
+    // 菱浦〜来居
+    route = okiKisenFares.value.find(r => r.id === 'hishiura-kuri' || r.id === 'kuri-hishiura')
+  } else if (routeType === 'kuri-beppu') {
+    // 来居〜別府
+    route = okiKisenFares.value.find(r => r.id === 'kuri-beppu' || r.id === 'beppu-kuri')
+  }
+  
+  // For over12m, use over12mPer1m field
+  if (sizeKey === 'over12m') {
+    fare = route?.fares?.vehicle?.['over12mPer1m']
+  } else {
+    fare = route?.fares?.vehicle?.[sizeKey]
+  }
+  
+  return fare ? formatCurrency(fare) : '—'
+}
+
 // Group fares by ship type
 const groupFaresByShipType = (fares: any[]) => {
   // Define routes for each ship type
@@ -338,11 +477,15 @@ const groupFaresByShipType = (fares: any[]) => {
     'hondo-saigo', 'saigo-hondo',
     'hondo-beppu', 'beppu-hondo',
     'hondo-hishiura', 'hishiura-hondo',
-    'hondo-kuri', 'kuri-hondo'
+    'hondo-kuri', 'kuri-hondo',
+    'saigo-beppu', 'beppu-saigo',
+    'saigo-hishiura', 'hishiura-saigo',
+    'saigo-kuri', 'kuri-saigo',
+    'beppu-hishiura', 'hishiura-beppu',
+    'beppu-kuri', 'kuri-beppu',
+    'hishiura-kuri', 'kuri-hishiura'
   ]
   const naikoSenRoutes = [
-    'saigo-beppu', 'beppu-saigo', 
-    'saigo-hishiura', 'hishiura-saigo',
     'beppu-hishiura', 'hishiura-beppu', 
     'beppu-kuri', 'kuri-beppu', 
     'hishiura-kuri', 'kuri-hishiura'

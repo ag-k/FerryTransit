@@ -39,12 +39,25 @@
       "fares": {
         "adult": 3520,
         "child": 1760,
+        "seatClass": {
+          "class2": 3510,
+          "class2Special": 4520,
+          "class1": 6360,
+          "classSpecial": 7930,
+          "specialRoom": 8890
+        },
         "vehicle": {
-          "under3m": 8800,
-          "under4m": 11000,
-          "under5m": 13200,
-          "under6m": 15400,
-          "over6m": 17600
+          "under3m": 13750,
+          "under4m": 18260,
+          "under5m": 22870,
+          "under6m": 27390,
+          "under7m": 35530,
+          "under8m": 40700,
+          "under9m": 45760,
+          "under10m": 50820,
+          "under11m": 55870,
+          "under12m": 60940,
+          "over12mPer1m": 5070
         }
       }
     },
@@ -55,12 +68,25 @@
       "fares": {
         "adult": 3520,
         "child": 1760,
+        "seatClass": {
+          "class2": 3510,
+          "class2Special": 4520,
+          "class1": 6360,
+          "classSpecial": 7930,
+          "specialRoom": 8890
+        },
         "vehicle": {
-          "under3m": 8800,
-          "under4m": 11000,
-          "under5m": 13200,
-          "under6m": 15400,
-          "over6m": 17600
+          "under3m": 13750,
+          "under4m": 18260,
+          "under5m": 22870,
+          "under6m": 27390,
+          "under7m": 35530,
+          "under8m": 40700,
+          "under9m": 45760,
+          "under10m": 50820,
+          "under11m": 55870,
+          "under12m": 60940,
+          "over12mPer1m": 5070
         }
       }
     },
@@ -71,12 +97,25 @@
       "fares": {
         "adult": 1540,
         "child": 770,
+        "seatClass": {
+          "class2": 1600,
+          "class2Special": 2120,
+          "class1": 2910,
+          "classSpecial": 3630,
+          "specialRoom": 4120
+        },
         "vehicle": {
-          "under3m": 4400,
-          "under4m": 5500,
-          "under5m": 6600,
-          "under6m": 7700,
-          "over6m": 8800
+          "under3m": 5600,
+          "under4m": 7470,
+          "under5m": 9360,
+          "under6m": 11220,
+          "under7m": 13200,
+          "under8m": 15180,
+          "under9m": 17060,
+          "under10m": 18920,
+          "under11m": 20800,
+          "under12m": 22660,
+          "over12mPer1m": 1880
         }
       }
     },
@@ -87,12 +126,25 @@
       "fares": {
         "adult": 1540,
         "child": 770,
+        "seatClass": {
+          "class2": 1600,
+          "class2Special": 2120,
+          "class1": 2910,
+          "classSpecial": 3630,
+          "specialRoom": 4120
+        },
         "vehicle": {
-          "under3m": 4400,
-          "under4m": 5500,
-          "under5m": 6600,
-          "under6m": 7700,
-          "over6m": 8800
+          "under3m": 5600,
+          "under4m": 7470,
+          "under5m": 9360,
+          "under6m": 11220,
+          "under7m": 13200,
+          "under8m": 15180,
+          "under9m": 17060,
+          "under10m": 18920,
+          "under11m": 20800,
+          "under12m": 22660,
+          "over12mPer1m": 1880
         }
       }
     },
@@ -103,12 +155,25 @@
       "fares": {
         "adult": 1540,
         "child": 770,
+        "seatClass": {
+          "class2": 1600,
+          "class2Special": 2120,
+          "class1": 2910,
+          "classSpecial": 3630,
+          "specialRoom": 4120
+        },
         "vehicle": {
-          "under3m": 4400,
-          "under4m": 5500,
-          "under5m": 6600,
-          "under6m": 7700,
-          "over6m": 8800
+          "under3m": 5600,
+          "under4m": 7470,
+          "under5m": 9360,
+          "under6m": 11220,
+          "under7m": 13200,
+          "under8m": 15180,
+          "under9m": 17060,
+          "under10m": 18920,
+          "under11m": 20800,
+          "under12m": 22660,
+          "over12mPer1m": 1880
         }
       }
     },
@@ -119,12 +184,25 @@
       "fares": {
         "adult": 1540,
         "child": 770,
+        "seatClass": {
+          "class2": 1600,
+          "class2Special": 2120,
+          "class1": 2910,
+          "classSpecial": 3630,
+          "specialRoom": 4120
+        },
         "vehicle": {
-          "under3m": 4400,
-          "under4m": 5500,
-          "under5m": 6600,
-          "under6m": 7700,
-          "over6m": 8800
+          "under3m": 5600,
+          "under4m": 7470,
+          "under5m": 9360,
+          "under6m": 11220,
+          "under7m": 13200,
+          "under8m": 15180,
+          "under9m": 17060,
+          "under10m": 18920,
+          "under11m": 20800,
+          "under12m": 22660,
+          "over12mPer1m": 1880
         }
       }
     },
@@ -133,14 +211,27 @@
       "departure": "BEPPU",
       "arrival": "HISHIURA",
       "fares": {
-        "adult": 300,
-        "child": 100,
+        "adult": 410,
+        "child": 205,
+        "seatClass": {
+          "class2": 410,
+          "class2Special": 630,
+          "class1": 650,
+          "classSpecial": 830,
+          "specialRoom": 1150
+        },
         "vehicle": {
-          "under3m": 1000,
-          "under4m": 1000,
-          "under5m": 1000,
-          "under6m": 2000,
-          "over6m": 3000
+          "under3m": 950,
+          "under4m": 1260,
+          "under5m": 1590,
+          "under6m": 1900,
+          "under7m": 2230,
+          "under8m": 2560,
+          "under9m": 2870,
+          "under10m": 3200,
+          "under11m": 3510,
+          "under12m": 3810,
+          "over12mPer1m": 310
         }
       }
     },
@@ -149,14 +240,27 @@
       "departure": "HISHIURA",
       "arrival": "BEPPU",
       "fares": {
-        "adult": 300,
-        "child": 100,
+        "adult": 410,
+        "child": 205,
+        "seatClass": {
+          "class2": 410,
+          "class2Special": 630,
+          "class1": 650,
+          "classSpecial": 830,
+          "specialRoom": 1150
+        },
         "vehicle": {
-          "under3m": 1000,
-          "under4m": 1000,
-          "under5m": 1000,
-          "under6m": 2000,
-          "over6m": 3000
+          "under3m": 950,
+          "under4m": 1260,
+          "under5m": 1590,
+          "under6m": 1900,
+          "under7m": 2230,
+          "under8m": 2560,
+          "under9m": 2870,
+          "under10m": 3200,
+          "under11m": 3510,
+          "under12m": 3810,
+          "over12mPer1m": 310
         }
       }
     },
@@ -165,14 +269,27 @@
       "departure": "BEPPU",
       "arrival": "KURI",
       "fares": {
-        "adult": 300,
-        "child": 100,
+        "adult": 780,
+        "child": 390,
+        "seatClass": {
+          "class2": 780,
+          "class2Special": 1040,
+          "class1": 1390,
+          "classSpecial": 1730,
+          "specialRoom": 2040
+        },
         "vehicle": {
-          "under3m": 1000,
-          "under4m": 1000,
-          "under5m": 1000,
-          "under6m": 2000,
-          "over6m": 3000
+          "under3m": 950,
+          "under4m": 1260,
+          "under5m": 1590,
+          "under6m": 1900,
+          "under7m": 2230,
+          "under8m": 2560,
+          "under9m": 2870,
+          "under10m": 3200,
+          "under11m": 3510,
+          "under12m": 3810,
+          "over12mPer1m": 310
         }
       }
     },
@@ -181,14 +298,27 @@
       "departure": "KURI",
       "arrival": "BEPPU",
       "fares": {
-        "adult": 300,
-        "child": 100,
+        "adult": 780,
+        "child": 390,
+        "seatClass": {
+          "class2": 780,
+          "class2Special": 1040,
+          "class1": 1390,
+          "classSpecial": 1730,
+          "specialRoom": 2040
+        },
         "vehicle": {
-          "under3m": 1000,
-          "under4m": 1000,
-          "under5m": 1000,
-          "under6m": 2000,
-          "over6m": 3000
+          "under3m": 950,
+          "under4m": 1260,
+          "under5m": 1590,
+          "under6m": 1900,
+          "under7m": 2230,
+          "under8m": 2560,
+          "under9m": 2870,
+          "under10m": 3200,
+          "under11m": 3510,
+          "under12m": 3810,
+          "over12mPer1m": 310
         }
       }
     },
@@ -197,14 +327,27 @@
       "departure": "HISHIURA",
       "arrival": "KURI",
       "fares": {
-        "adult": 300,
-        "child": 100,
+        "adult": 780,
+        "child": 390,
+        "seatClass": {
+          "class2": 780,
+          "class2Special": 1040,
+          "class1": 1390,
+          "classSpecial": 1730,
+          "specialRoom": 2040
+        },
         "vehicle": {
-          "under3m": 1000,
-          "under4m": 1000,
-          "under5m": 1000,
-          "under6m": 2000,
-          "over6m": 3000
+          "under3m": 950,
+          "under4m": 1260,
+          "under5m": 1590,
+          "under6m": 1900,
+          "under7m": 2230,
+          "under8m": 2560,
+          "under9m": 2870,
+          "under10m": 3200,
+          "under11m": 3510,
+          "under12m": 3810,
+          "over12mPer1m": 310
         }
       }
     },
@@ -213,14 +356,27 @@
       "departure": "KURI",
       "arrival": "HISHIURA",
       "fares": {
-        "adult": 300,
-        "child": 100,
+        "adult": 780,
+        "child": 390,
+        "seatClass": {
+          "class2": 780,
+          "class2Special": 1040,
+          "class1": 1390,
+          "classSpecial": 1730,
+          "specialRoom": 2040
+        },
         "vehicle": {
-          "under3m": 1000,
-          "under4m": 1000,
-          "under5m": 1000,
-          "under6m": 2000,
-          "over6m": 3000
+          "under3m": 1520,
+          "under4m": 2040,
+          "under5m": 2540,
+          "under6m": 3040,
+          "under7m": 3700,
+          "under8m": 4240,
+          "under9m": 4750,
+          "under10m": 5280,
+          "under11m": 5820,
+          "under12m": 6340,
+          "over12mPer1m": 520
         }
       }
     },
@@ -231,12 +387,25 @@
       "fares": {
         "adult": 3520,
         "child": 1760,
+        "seatClass": {
+          "class2": 3510,
+          "class2Special": 4520,
+          "class1": 6360,
+          "classSpecial": 7930,
+          "specialRoom": 8890
+        },
         "vehicle": {
-          "under3m": 8800,
-          "under4m": 11000,
-          "under5m": 13200,
-          "under6m": 15400,
-          "over6m": 17600
+          "under3m": 13750,
+          "under4m": 18260,
+          "under5m": 22870,
+          "under6m": 27390,
+          "under7m": 35530,
+          "under8m": 40700,
+          "under9m": 45760,
+          "under10m": 50820,
+          "under11m": 55870,
+          "under12m": 60940,
+          "over12mPer1m": 5070
         }
       }
     },
@@ -247,12 +416,25 @@
       "fares": {
         "adult": 3520,
         "child": 1760,
+        "seatClass": {
+          "class2": 3510,
+          "class2Special": 4520,
+          "class1": 6360,
+          "classSpecial": 7930,
+          "specialRoom": 8890
+        },
         "vehicle": {
-          "under3m": 8800,
-          "under4m": 11000,
-          "under5m": 13200,
-          "under6m": 15400,
-          "over6m": 17600
+          "under3m": 13750,
+          "under4m": 18260,
+          "under5m": 22870,
+          "under6m": 27390,
+          "under7m": 35530,
+          "under8m": 40700,
+          "under9m": 45760,
+          "under10m": 50820,
+          "under11m": 55870,
+          "under12m": 60940,
+          "over12mPer1m": 5070
         }
       }
     },
@@ -263,12 +445,25 @@
       "fares": {
         "adult": 3520,
         "child": 1760,
+        "seatClass": {
+          "class2": 3510,
+          "class2Special": 4520,
+          "class1": 6360,
+          "classSpecial": 7930,
+          "specialRoom": 8890
+        },
         "vehicle": {
-          "under3m": 8800,
-          "under4m": 11000,
-          "under5m": 13200,
-          "under6m": 15400,
-          "over6m": 17600
+          "under3m": 13750,
+          "under4m": 18260,
+          "under5m": 22870,
+          "under6m": 27390,
+          "under7m": 35530,
+          "under8m": 40700,
+          "under9m": 45760,
+          "under10m": 50820,
+          "under11m": 55870,
+          "under12m": 60940,
+          "over12mPer1m": 5070
         }
       }
     },
@@ -279,12 +474,25 @@
       "fares": {
         "adult": 3520,
         "child": 1760,
+        "seatClass": {
+          "class2": 3510,
+          "class2Special": 4520,
+          "class1": 6360,
+          "classSpecial": 7930,
+          "specialRoom": 8890
+        },
         "vehicle": {
-          "under3m": 8800,
-          "under4m": 11000,
-          "under5m": 13200,
-          "under6m": 15400,
-          "over6m": 17600
+          "under3m": 13750,
+          "under4m": 18260,
+          "under5m": 22870,
+          "under6m": 27390,
+          "under7m": 35530,
+          "under8m": 40700,
+          "under9m": 45760,
+          "under10m": 50820,
+          "under11m": 55870,
+          "under12m": 60940,
+          "over12mPer1m": 5070
         }
       }
     },
@@ -295,12 +503,25 @@
       "fares": {
         "adult": 3520,
         "child": 1760,
+        "seatClass": {
+          "class2": 3510,
+          "class2Special": 4520,
+          "class1": 6360,
+          "classSpecial": 7930,
+          "specialRoom": 8890
+        },
         "vehicle": {
-          "under3m": 8800,
-          "under4m": 11000,
-          "under5m": 13200,
-          "under6m": 15400,
-          "over6m": 17600
+          "under3m": 13750,
+          "under4m": 18260,
+          "under5m": 22870,
+          "under6m": 27390,
+          "under7m": 35530,
+          "under8m": 40700,
+          "under9m": 45760,
+          "under10m": 50820,
+          "under11m": 55870,
+          "under12m": 60940,
+          "over12mPer1m": 5070
         }
       }
     },
@@ -311,12 +532,25 @@
       "fares": {
         "adult": 3520,
         "child": 1760,
+        "seatClass": {
+          "class2": 3510,
+          "class2Special": 4520,
+          "class1": 6360,
+          "classSpecial": 7930,
+          "specialRoom": 8890
+        },
         "vehicle": {
-          "under3m": 8800,
-          "under4m": 11000,
-          "under5m": 13200,
-          "under6m": 15400,
-          "over6m": 17600
+          "under3m": 13750,
+          "under4m": 18260,
+          "under5m": 22870,
+          "under6m": 27390,
+          "under7m": 35530,
+          "under8m": 40700,
+          "under9m": 45760,
+          "under10m": 50820,
+          "under11m": 55870,
+          "under12m": 60940,
+          "over12mPer1m": 5070
         }
       }
     }
