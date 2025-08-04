@@ -72,10 +72,10 @@
           </div>
         </div>
 
-        <div v-if="error?.statusMessage" class="mt-8 text-sm text-gray-500">
+        <div class="mt-8 text-sm text-gray-500">
           <details class="cursor-pointer">
             <summary>{{ $t('error.technicalDetails') }}</summary>
-            <pre class="mt-2 text-left bg-gray-100 p-4 rounded overflow-x-auto">{{ error }}</pre>
+            <pre class="mt-2 text-left bg-gray-100 p-4 rounded overflow-x-auto">{{ JSON.stringify(error, null, 2) }}</pre>
           </details>
         </div>
       </div>
