@@ -23,6 +23,11 @@
         <DataManagement />
       </div>
 
+      <!-- System Settings -->
+      <div class="bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700 p-6">
+        <SystemSettings />
+      </div>
+
       <!-- App Information -->
       <div class="bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700 p-6">
         <h3 class="text-lg font-medium mb-4 dark:text-white">{{ $t('APP_INFO') }}</h3>
@@ -74,6 +79,7 @@ import LanguageSelector from '~/components/settings/LanguageSelector.vue'
 import ThemeSelector from '~/components/settings/ThemeSelector.vue'
 import MapSettings from '~/components/settings/MapSettings.vue'
 import DataManagement from '~/components/settings/DataManagement.vue'
+import SystemSettings from '~/components/settings/SystemSettings.vue'
 
 definePageMeta({
   title: 'SETTINGS'

@@ -6,7 +6,7 @@ export const useAdminPermissions = () => {
   const permissions = {
     // スーパー管理者のみ
     MANAGE_ADMINS: ['super'],
-    SYSTEM_SETTINGS: ['super'],
+    SYSTEM_SETTINGS: ['super', 'general'], // 一般管理者もアクセス可能に変更
     DELETE_ALL_DATA: ['super'],
     
     // スーパー管理者と一般管理者
