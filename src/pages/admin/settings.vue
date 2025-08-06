@@ -238,11 +238,6 @@
         </div>
       </div>
 
-      <!-- システム設定（一般ユーザー向け設定と同じコンポーネント） -->
-      <div class="bg-white dark:bg-gray-800 rounded-lg shadow p-6">
-        <SystemSettings />
-      </div>
-
       <!-- 保存ボタン -->
       <div class="flex justify-end space-x-3">
         <button
@@ -281,7 +276,6 @@ definePageMeta({
 import { ref, onMounted } from 'vue'
 import { useRouter } from 'vue-router'
 import { doc, getDoc, setDoc } from 'firebase/firestore'
-import SystemSettings from '~/components/settings/SystemSettings.vue'
 import ToggleSwitch from '~/components/common/ToggleSwitch.vue'
 import { useToast } from '~/composables/useToast'
 import { useAdminFirebase } from '~/composables/useAdminFirebase'
