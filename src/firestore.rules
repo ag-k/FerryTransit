@@ -218,7 +218,7 @@ service cloud.firestore {
     match /publishHistory/{historyId} {
       allow read: if isAdmin();
       allow create: if isAdmin() && 
-        hasRequiredFields(['type', 'publishedBy', 'publishedAt', 'data']);
+        hasRequiredFields(['type', 'publishedBy', 'publishedAt']);
       allow update: if false; // 履歴は変更不可
       allow delete: if isSuperAdmin();
     }

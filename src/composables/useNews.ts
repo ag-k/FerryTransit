@@ -22,7 +22,7 @@ export const useNews = () => {
       if (import.meta.client) {
         try {
           const response = await fetch(
-            "https://storage.googleapis.com/oki-ferryguide.firebasestorage.app/data/news.json",
+            "https://firebasestorage.googleapis.com/v0/b/oki-ferryguide.firebasestorage.app/o/data%2Fnews.json?alt=media",
             {
               method: "GET",
               mode: "cors",
