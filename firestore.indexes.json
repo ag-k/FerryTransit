@@ -61,21 +61,15 @@
       ]
     },
     {
-      "collectionGroup": "accessLogs",
+      "collectionGroup": "news",
       "queryScope": "COLLECTION",
       "fields": [
         {
-          "fieldPath": "createdAt",
-          "order": "DESCENDING"
-        }
-      ]
-    },
-    {
-      "collectionGroup": "searchLogs",
-      "queryScope": "COLLECTION",
-      "fields": [
+          "fieldPath": "status",
+          "order": "ASCENDING"
+        },
         {
-          "fieldPath": "createdAt",
+          "fieldPath": "publishDate",
           "order": "DESCENDING"
         }
       ]

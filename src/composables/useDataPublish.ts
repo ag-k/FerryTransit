@@ -1,5 +1,6 @@
 import { ref as storageRef, uploadBytes, getDownloadURL, deleteObject } from 'firebase/storage'
 import type { DocumentData } from 'firebase/firestore'
+import { Timestamp } from 'firebase/firestore'
 import { useAdminAuth } from '~/composables/useAdminAuth'
 import { useAdminFirestore } from '~/composables/useAdminFirestore'
 
@@ -20,6 +21,7 @@ export const useDataPublish = () => {
     preview: boolean = false
   ): Promise<string> => {
     console.log('Publishing data, user:', user.value)
+    console.log('Data type:', dataType, 'Preview:', preview)
     if (!user.value) throw new Error('認証が必要です')
 
     try {
@@ -56,14 +58,19 @@ export const useDataPublish = () => {
       const jsonBlob = new Blob([JSON.stringify(data, null, 2)], {
         type: 'application/json'
       })
+      console.log('Created JSON blob, size:', jsonBlob.size, 'bytes')
+      console.log('Data to publish:', data)
 
       // Storage パスを決定
       const path = preview 
         ? `preview/${fileName}` 
         : `data/${fileName}`
+      console.log('Storage path:', path)
 
       // Storage にアップロード
+      console.log('Creating storage reference...')
       const fileRef = storageRef($firebase.storage, path)
+      console.log('Uploading to Firebase Storage...')
       const snapshot = await uploadBytes(fileRef, jsonBlob, {
         contentType: 'application/json',
         customMetadata: {
@@ -72,6 +79,7 @@ export const useDataPublish = () => {
           dataType
         }
       })
+      console.log('Upload complete:', snapshot)
 
       // ダウンロードURLを取得
       const downloadURL = await getDownloadURL(snapshot.ref)
@@ -192,10 +200,12 @@ export const useDataPublish = () => {
    */
   const prepareNewsData = async () => {
     const { where, orderBy } = await import('firebase/firestore')
+    console.log('Fetching news from Firestore...')
     const news = await getCollection('news', [
       where('status', '==', 'published'),
       orderBy('publishDate', 'desc')
     ])
+    console.log('News items fetched:', news.length, news)
     
     // 公開中のニュースのみをエクスポート
     return news.map(item => ({
@@ -208,9 +218,10 @@ export const useDataPublish = () => {
       hasDetail: item.hasDetail || false,
       detailContent: item.detailContent,
       detailContentEn: item.detailContentEn,
-      publishDate: item.publishDate,
+      publishDate: item.publishDate instanceof Timestamp ? item.publishDate.toDate().toISOString() : item.publishDate,
       isPinned: item.isPinned || false,
-      priority: item.priority || 'medium'
+      priority: item.priority || 'medium',
+      status: item.status || 'published' // statusフィールドを追加
     }))
   }
 
