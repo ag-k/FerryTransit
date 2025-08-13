@@ -1,15 +1,9 @@
 <template>
-  <Teleport to="body">
+  <Teleport to="#teleports">
     <div class="fixed top-4 right-4 z-50 space-y-2 max-w-sm">
-      <TransitionGroup
-        name="toast"
-        tag="div"
-        @enter="onEnter"
-        @leave="onLeave"
-      >
-        <div
-          v-for="toast in toasts"
-          :key="toast.id"
+      <div
+        v-for="toast in toastList"
+        :key="toast.id"
           :class="[
             'relative overflow-hidden rounded-lg shadow-lg pointer-events-auto',
             'transform transition-all duration-300 ease-in-out',
@@ -51,7 +45,6 @@
             />
           </div>
         </div>
-      </TransitionGroup>
     </div>
   </Teleport>
 </template>
@@ -67,6 +60,12 @@ import {
 import { useToast } from '~/composables/useToast'
 
 const { toasts, removeToast } = useToast()
+
+// computed を使用してtoastsをリアクティブに取得
+const toastList = computed(() => {
+  return toasts.value
+})
+
 
 const getToastClasses = (type: string) => {
   switch (type) {
@@ -113,15 +112,16 @@ const getIconClasses = (type: string) => {
   }
 }
 
-const onEnter = (el: Element) => {
-  ;(el as HTMLElement).style.opacity = '0'
-  ;(el as HTMLElement).style.transform = 'translateX(100%)'
-}
-
-const onLeave = (el: Element) => {
-  ;(el as HTMLElement).style.opacity = '0'
-  ;(el as HTMLElement).style.transform = 'translateX(100%)'
-}
+// TransitionGroup用の関数（一時的にコメントアウト）
+// const onEnter = (el: Element) => {
+//   ;(el as HTMLElement).style.opacity = '0'
+//   ;(el as HTMLElement).style.transform = 'translateX(100%)'
+// }
+// 
+// const onLeave = (el: Element) => {
+//   ;(el as HTMLElement).style.opacity = '0'
+//   ;(el as HTMLElement).style.transform = 'translateX(100%)'
+// }
 </script>
 
 <style>
