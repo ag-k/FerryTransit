@@ -1,6 +1,6 @@
 <template>
   <Teleport to="#teleports">
-    <div class="fixed top-4 right-4 z-50 space-y-2 max-w-sm">
+    <div class="fixed top-4 right-4 z-50 space-y-2 min-w-[320px] max-w-md">
       <div
         v-for="toast in toastList"
         :key="toast.id"
@@ -19,8 +19,8 @@
                   aria-hidden="true"
                 />
               </div>
-              <div class="ml-3 w-0 flex-1">
-                <p class="text-sm font-medium">
+              <div class="ml-3 flex-1 min-w-0 pr-2">
+                <p class="text-sm font-medium whitespace-nowrap">
                   {{ toast.message }}
                 </p>
               </div>
