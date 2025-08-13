@@ -393,8 +393,22 @@ const updateNewsStatus = async () => {
 const publishNewsData = async () => {
   isPublishing.value = true
   try {
-    await publishData('news')
+    const url = await publishData('news')
     $toast.success('お知らせデータを公開しました')
+    
+    // 成功時のリアクション
+    // 公開したデータの件数を取得
+    const publishedCount = newsList.value.filter(n => n.status === 'published').length
+    
+    // 詳細メッセージを表示
+    setTimeout(() => {
+      $toast.info(`${publishedCount}件のお知らせを公開しました`)
+    }, 500)
+    
+    // データを再読み込み
+    setTimeout(() => {
+      refreshData()
+    }, 1000)
   } catch (error) {
     console.error('Failed to publish news data:', error)
     $toast.error('データの公開に失敗しました')
