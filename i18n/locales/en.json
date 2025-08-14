@@ -374,6 +374,12 @@
     "pageTitle": "News",
     "pageDescription": "Check the latest announcements, maintenance information, and campaign updates for Oki sea routes.",
     "allCategories": "All Categories",
+    "readMore": "Read more",
+    "noNewsInCategory": "No news in this category",
+    "urgent": "Urgent",
+    "pinned": "Pinned",
+    "notFound": "News not found",
+    "backToList": "Back to list",
     "category": {
       "announcement": "Announcement",
       "maintenance": "Maintenance",
