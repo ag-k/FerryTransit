@@ -376,6 +376,12 @@
     "pageTitle": "お知らせ一覧",
     "pageDescription": "隠岐航路に関する最新のお知らせ・メンテナンス情報・キャンペーン情報をご確認いただけます。",
     "allCategories": "すべてのカテゴリー",
+    "readMore": "続きを読む",
+    "noNewsInCategory": "このカテゴリーにお知らせはありません",
+    "urgent": "緊急",
+    "pinned": "固定表示",
+    "notFound": "お知らせが見つかりません",
+    "backToList": "一覧に戻る",
     "category": {
       "announcement": "お知らせ",
       "maintenance": "メンテナンス",
