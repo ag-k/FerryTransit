@@ -62,8 +62,9 @@
           </div>
         </div>
         
-        <!-- Date Selection -->
+        <!-- Date and Time Selection -->
         <div class="grid md:grid-cols-2 gap-4 mb-4">
+          <!-- Date Selection -->
           <div>
             <DatePicker
               v-model="date"
@@ -71,10 +72,8 @@
               :min-date="today"
             />
           </div>
-        </div>
-        
-        <!-- Time Selection -->
-        <div class="grid md:grid-cols-2 gap-4 mb-4">
+          
+          <!-- Time Selection -->
           <div>
             <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">{{ $t('TIME') }}</label>
             <div class="flex">
@@ -119,10 +118,14 @@
       <div v-for="(route, index) in displayedResults" :key="index" class="mb-4">
         <div class="bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-blue-600 dark:border-blue-500">
           <div class="bg-blue-600 dark:bg-blue-700 text-white px-4 py-2 flex items-center justify-between">
-            <h3 class="font-medium">
-              {{ $t('ROUTE') }}{{ index + 1 }} - 
-              {{ calculateDuration(route.departureTime, route.arrivalTime) }} / 
-              ¥{{ route.totalFare.toLocaleString() }}
+            <h3 class="font-medium flex items-center gap-2">
+              <span class="inline-flex items-center justify-center w-7 h-7 bg-white text-blue-600 dark:bg-gray-200 dark:text-blue-700 rounded-full font-bold text-sm">
+                {{ index + 1 }}
+              </span>
+              <span>
+                {{ calculateDuration(route.departureTime, route.arrivalTime) }} / 
+                ¥{{ route.totalFare.toLocaleString() }}
+              </span>
             </h3>
             <div class="flex items-center gap-2">
               <button
@@ -237,8 +240,11 @@
         <div v-for="(segment, index) in selectedRoute.segments" :key="index" class="mb-3">
           <div class="bg-white dark:bg-gray-800 border dark:border-gray-700 rounded-lg">
             <div class="p-4">
-              <h6 class="text-sm text-gray-600 dark:text-gray-300 mb-2">
-                {{ $t('LEG') }} {{ index + 1 }}
+              <h6 class="text-sm text-gray-600 dark:text-gray-300 mb-2 flex items-center gap-2">
+                <span class="inline-flex items-center justify-center w-5 h-5 bg-blue-600 text-white dark:bg-blue-700 rounded-full font-bold text-xs">
+                  {{ index + 1 }}
+                </span>
+                <span>{{ $t('LEG') }}</span>
               </h6>
               <div class="grid grid-cols-1 md:grid-cols-5 gap-2">
                 <div class="md:col-span-2 dark:text-gray-300">
