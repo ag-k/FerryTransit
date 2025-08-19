@@ -25,10 +25,10 @@ const mockNews: News = {
 // useNewsのモック
 vi.mock('~/composables/useNews', () => ({
   useNews: vi.fn(() => ({
-    news: ref([mockNews]),
+    publishedNews: ref([mockNews]),
     isLoading: ref(false),
     error: ref(null),
-    getNewsById: vi.fn((id: string) => id === '1' ? mockNews : undefined),
+    fetchNews: vi.fn(() => Promise.resolve()),
     getCategoryLabel: vi.fn((category: string) => {
       const labels: Record<string, string> = {
         announcement: 'お知らせ',
