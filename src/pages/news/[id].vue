@@ -133,9 +133,13 @@
 <script setup lang="ts">
 import { marked } from 'marked'
 import type { News } from '~/types'
+import { useNews } from '~/composables/useNews'
 
 const route = useRoute()
 const { $i18n } = useNuxtApp()
+
+// useNewsコンポザブルを使用
+const { publishedNews, fetchNews, getCategoryLabel, formatDate } = useNews()
 
 // データ
 const newsItem = ref<News | null>(null)
@@ -148,17 +152,15 @@ const fetchNewsItem = async () => {
   error.value = null
   
   try {
-    // Firebase Storageから全お知らせデータを取得
-    const response = await $fetch<News[]>('https://storage.googleapis.com/oki-ferryguide.firebasestorage.app/data/news.json')
+    // お知らせデータを取得
+    await fetchNews()
     
-    if (response && Array.isArray(response)) {
-      // IDで該当のお知らせを検索
-      const found = response.find(item => item.id === route.params.id)
-      if (found) {
-        newsItem.value = found
-      } else {
-        error.value = 'お知らせが見つかりませんでした'
-      }
+    // IDで該当のお知らせを検索
+    const found = publishedNews.value.find(item => item.id === route.params.id)
+    if (found) {
+      newsItem.value = found
+    } else {
+      error.value = 'お知らせが見つかりませんでした'
     }
   } catch (err) {
     console.error('Failed to fetch news item:', err)
@@ -225,29 +227,6 @@ const getCategoryClass = (category: string) => {
   }
 }
 
-// カテゴリーのラベルを取得
-const getCategoryLabel = (category: string) => {
-  const labels: Record<string, string> = {
-    'announcement': $i18n.t('news.category.announcement'),
-    'maintenance': $i18n.t('news.category.maintenance'),
-    'feature': $i18n.t('news.category.feature'),
-    'campaign': $i18n.t('news.category.campaign')
-  }
-  
-  return labels[category] || category
-}
-
-// 日付のフォーマット
-const formatDate = (date: string | Date) => {
-  const locale = $i18n.locale.value
-  const dateObj = typeof date === 'string' ? new Date(date) : date
-  
-  return dateObj.toLocaleDateString(locale === 'ja' ? 'ja-JP' : 'en-US', {
-    year: 'numeric',
-    month: 'long',
-    day: 'numeric'
-  })
-}
 
 // データの取得
 onMounted(() => {
