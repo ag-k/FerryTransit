@@ -5,6 +5,9 @@ import { getStorage } from 'firebase/storage'
 import { getAnalytics } from 'firebase/analytics'
 import { getFunctions } from 'firebase/functions'
 
+// Export db for direct imports
+export let db: ReturnType<typeof getFirestore>
+
 export default defineNuxtPlugin(() => {
   const config = useRuntimeConfig()
   
@@ -22,7 +25,7 @@ export default defineNuxtPlugin(() => {
   const app = initializeApp(firebaseConfig)
   
   // Initialize services
-  const db = getFirestore(app)
+  db = getFirestore(app)
   const auth = getAuth(app)
   const storage = getStorage(app)
   const functions = getFunctions(app, 'asia-northeast1') // Tokyo region

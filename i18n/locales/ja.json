@@ -1,6 +1,7 @@
 {
   "TITLE": "隠岐航路案内",
   "HOME": "ホーム",
+  "ABOUT_APP": "このアプリについて",
   "STATUS": "運航状況",
   "CURRENCY_UNIT": "円",
   "HOURS": "時間",
@@ -373,6 +374,8 @@
     "title": "お知らせ",
     "noNews": "現在お知らせはありません",
     "viewAll": "すべて見る",
+    "showOlder": "過去のお知らせを表示",
+    "hideOlder": "過去のお知らせを隠す",
     "pageTitle": "お知らせ一覧",
     "pageDescription": "隠岐航路に関する最新のお知らせ・メンテナンス情報・キャンペーン情報をご確認いただけます。",
     "allCategories": "すべてのカテゴリー",
