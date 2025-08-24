@@ -1,6 +1,7 @@
 {
   "TITLE": "Oki Islands Sea Line Information",
   "HOME": "Home",
+  "ABOUT_APP": "About This App",
   "STATUS": "Service Status",
   "CURRENCY_UNIT": "yen",
   "HOURS": "hours",
@@ -371,6 +372,8 @@
     "title": "News",
     "noNews": "No news at this time",
     "viewAll": "View all",
+    "showOlder": "Show older news",
+    "hideOlder": "Hide older news",
     "pageTitle": "News",
     "pageDescription": "Check the latest announcements, maintenance information, and campaign updates for Oki sea routes.",
     "allCategories": "All Categories",
