@@ -193,9 +193,18 @@ import { getRoutePath } from '~/data/ferry-routes'
 import type { RouteData, RoutesDataFile, RoutesMetadata } from '~/types/route'
 import { uploadJSON, getJSONData } from '~/composables/useDataPublish'
 import { useAdminAuth } from '~/composables/useAdminAuth'
+import { getAuth } from 'firebase/auth'
 
 const { user } = useAdminAuth()
 const { $toast } = useNuxtApp()
+
+// Firebase Auth の現在のユーザーを直接取得
+const auth = getAuth()
+const currentUser = ref(auth.currentUser)
+
+// デバッグ用
+console.log('Admin Routes - User from composable:', user.value)
+console.log('Admin Routes - Current user from auth:', auth.currentUser)
 
 // State
 const isFetching = ref(false)
@@ -441,7 +450,11 @@ const fetchAllRoutes = async () => {
 
 // Firebase Storageに保存
 const saveToStorage = async () => {
-  if (!user.value) {
+  // 現在のユーザーを確認
+  const authUser = currentUser.value || auth.currentUser
+  console.log('Save - Current user:', authUser)
+  
+  if (!authUser) {
     addLog('error', '認証が必要です。ログインしてください。')
     $toast.error('認証が必要です。ログインしてください。')
     return
@@ -460,7 +473,7 @@ const saveToStorage = async () => {
       version: currentMetadata.value ? currentMetadata.value.version + 1 : 1,
       lastFetchedAt: new Date().toISOString(),
       totalRoutes: fetchedRoutes.value.length,
-      fetchedBy: user.value?.email || 'admin'
+      fetchedBy: authUser.email || 'admin'
     }
 
     // データファイルを作成
@@ -470,7 +483,7 @@ const saveToStorage = async () => {
     }
 
     // Firebase Storageにアップロード
-    await uploadJSON('routes/ferry-routes.json', dataFile, user.value ? { uid: user.value.uid } : undefined)
+    await uploadJSON('routes/ferry-routes.json', dataFile, authUser ? { uid: authUser.uid } : undefined)
     
     currentMetadata.value = metadata
     addLog('success', `Firebase Storageに保存しました (v${metadata.version})`)
@@ -487,6 +500,12 @@ const saveToStorage = async () => {
 
 // マウント時の処理
 onMounted(async () => {
+  // Firebase Auth の状態を待つ
+  const { getCurrentUser } = useAdminAuth()
+  const authUser = await getCurrentUser()
+  currentUser.value = authUser
+  console.log('Mounted - Current user:', authUser)
+  
   await loadCurrentData()
   await initGoogleMaps()
 })
