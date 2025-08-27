@@ -90,6 +90,8 @@
   "NO_STATUS": "Failed to get ships status.",
   "WAVEINFO": "Wave Height",
   "NEWS": "News",
+  "MAP_SHOW": "Show Map",
+  "MAP_HIDE": "Hide Map",
   "KUNIGA_COURSE_A": "Course A (from Uragō Port)",
   "KUNIGA_COURSE_B": "Course B (from Beppu Port)",
   "CAPTAINS_CHOICE": "Changed to Captain's choice course",
