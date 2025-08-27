@@ -91,6 +91,8 @@
   "NO_STATUS": "運航状況が取得できません。",
   "WAVEINFO": "隠岐の海況波高",
   "NEWS": "お知らせ",
+  "MAP_SHOW": "地図を表示",
+  "MAP_HIDE": "地図を隠す",
   "KUNIGA_COURSE_A": "浦郷発Aコース",
   "KUNIGA_COURSE_B": "別府発Bコース",
   "CAPTAINS_CHOICE": "船長おまかせコースに変更",
