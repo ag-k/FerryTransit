@@ -60,8 +60,10 @@
       "mcp__serena__write_memory",
       "mcp__serena__search_for_pattern",
       "mcp__serena__replace_regex",
-      "Bash(firebase deploy:*)"
+      "Bash(firebase deploy:*)",
+      "Bash(PORT=3031 npm run dev)"
     ],
-    "deny": []
+    "deny": [],
+    "defaultMode": "acceptEdits"
   }
 }

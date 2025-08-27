@@ -73,7 +73,8 @@ import {
   UsersIcon,
   DocumentArrowDownIcon,
   ChartBarIcon,
-  CogIcon
+  CogIcon,
+  MapIcon
 } from '@heroicons/vue/24/outline'
 
 const route = useRoute()
@@ -93,6 +94,7 @@ const baseNavigationItems = [
   { name: 'ダッシュボード', href: '/admin', icon: HomeIcon, permission: null },
   { name: '時刻表管理', href: '/admin/timetable', icon: ClockIcon, permission: 'MANAGE_TIMETABLE' },
   { name: '料金管理', href: '/admin/fare', icon: CurrencyYenIcon, permission: 'MANAGE_FARE' },
+  { name: '航路データ管理', href: '/admin/routes', icon: MapIcon, permission: 'MANAGE_TIMETABLE' },
   { name: '運航アラート', href: '/admin/alerts', icon: BellAlertIcon, permission: 'MANAGE_ALERTS' },
   { name: 'お知らせ管理', href: '/admin/news', icon: MegaphoneIcon, permission: 'MANAGE_ANNOUNCEMENTS' },
   { name: 'ユーザー分析', href: '/admin/users', icon: UsersIcon, permission: 'VIEW_ANALYTICS' },

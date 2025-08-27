@@ -4,6 +4,57 @@ import { Timestamp } from 'firebase/firestore'
 import { useAdminAuth } from '~/composables/useAdminAuth'
 import { useAdminFirestore } from '~/composables/useAdminFirestore'
 
+/**
+ * 公開用のJSONデータをStorageから取得（ユーザー向け）
+ */
+export const getJSONData = async <T>(path: string): Promise<T | null> => {
+  try {
+    const { $firebase } = useNuxtApp()
+    const fileRef = storageRef($firebase.storage, `data/${path}`)
+    const url = await getDownloadURL(fileRef)
+    
+    const response = await fetch(url)
+    if (!response.ok) {
+      throw new Error(`Failed to fetch: ${response.statusText}`)
+    }
+    
+    return await response.json() as T
+  } catch (error) {
+    console.error('Failed to get JSON data:', error)
+    return null
+  }
+}
+
+/**
+ * JSONデータをStorageにアップロード（管理者向け）
+ */
+export const uploadJSON = async (path: string, data: any): Promise<string> => {
+  const { $firebase } = useNuxtApp()
+  const { user } = useAdminAuth()
+  
+  if (!user.value) throw new Error('認証が必要です')
+
+  try {
+    const jsonBlob = new Blob([JSON.stringify(data, null, 2)], {
+      type: 'application/json'
+    })
+
+    const fileRef = storageRef($firebase.storage, `data/${path}`)
+    const snapshot = await uploadBytes(fileRef, jsonBlob, {
+      contentType: 'application/json',
+      customMetadata: {
+        uploadedBy: user.value.uid,
+        uploadedAt: new Date().toISOString()
+      }
+    })
+
+    return await getDownloadURL(snapshot.ref)
+  } catch (error) {
+    console.error('JSON upload failed:', error)
+    throw error
+  }
+}
+
 export const useDataPublish = () => {
   const { $firebase } = useNuxtApp()
   const { user } = useAdminAuth()
