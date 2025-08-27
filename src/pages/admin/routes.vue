@@ -192,9 +192,9 @@ import { PORTS_DATA, ROUTES_DATA } from '~/data/ports'
 import { getRoutePath } from '~/data/ferry-routes'
 import type { RouteData, RoutesDataFile, RoutesMetadata } from '~/types/route'
 import { uploadJSON, getJSONData } from '~/composables/useDataPublish'
-import { useAuthStore } from '~/stores/auth'
+import { useAdminAuth } from '~/composables/useAdminAuth'
 
-const authStore = useAuthStore()
+const { user } = useAdminAuth()
 const { $toast } = useNuxtApp()
 
 // State
@@ -441,6 +441,12 @@ const fetchAllRoutes = async () => {
 
 // Firebase Storageに保存
 const saveToStorage = async () => {
+  if (!user.value) {
+    addLog('error', '認証が必要です。ログインしてください。')
+    $toast.error('認証が必要です。ログインしてください。')
+    return
+  }
+
   if (fetchedRoutes.value.length === 0) {
     addLog('error', '保存する航路データがありません')
     return
@@ -454,7 +460,7 @@ const saveToStorage = async () => {
       version: currentMetadata.value ? currentMetadata.value.version + 1 : 1,
       lastFetchedAt: new Date().toISOString(),
       totalRoutes: fetchedRoutes.value.length,
-      fetchedBy: authStore.user?.email || 'admin'
+      fetchedBy: user.value?.email || 'admin'
     }
 
     // データファイルを作成
@@ -464,7 +470,7 @@ const saveToStorage = async () => {
     }
 
     // Firebase Storageにアップロード
-    await uploadJSON('routes/ferry-routes.json', dataFile)
+    await uploadJSON('routes/ferry-routes.json', dataFile, user.value ? { uid: user.value.uid } : undefined)
     
     currentMetadata.value = metadata
     addLog('success', `Firebase Storageに保存しました (v${metadata.version})`)

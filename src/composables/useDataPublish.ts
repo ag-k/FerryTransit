@@ -28,12 +28,9 @@ export const getJSONData = async <T>(path: string): Promise<T | null> => {
 /**
  * JSONデータをStorageにアップロード（管理者向け）
  */
-export const uploadJSON = async (path: string, data: any): Promise<string> => {
+export const uploadJSON = async (path: string, data: any, userInfo?: { uid: string }): Promise<string> => {
   const { $firebase } = useNuxtApp()
-  const { user } = useAdminAuth()
   
-  if (!user.value) throw new Error('認証が必要です')
-
   try {
     const jsonBlob = new Blob([JSON.stringify(data, null, 2)], {
       type: 'application/json'
@@ -43,7 +40,7 @@ export const uploadJSON = async (path: string, data: any): Promise<string> => {
     const snapshot = await uploadBytes(fileRef, jsonBlob, {
       contentType: 'application/json',
       customMetadata: {
-        uploadedBy: user.value.uid,
+        uploadedBy: userInfo?.uid || 'system',
         uploadedAt: new Date().toISOString()
       }
     })
