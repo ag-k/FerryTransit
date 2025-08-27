@@ -174,5 +174,10 @@ export const ROUTES_DATA = [
   { from: 'SAIGO', to: 'HISHIURA', ships: ['FERRY_DOZEN'] },
   { from: 'SAIGO', to: 'BEPPU', ships: ['FERRY_DOZEN'] },
   { from: 'HISHIURA', to: 'KURI', ships: ['FERRY_DOZEN'] },
-  { from: 'BEPPU', to: 'KURI', ships: ['FERRY_DOZEN'] }
+  { from: 'BEPPU', to: 'KURI', ships: ['FERRY_DOZEN'] },
+  { from: 'BEPPU', to: 'HISHIURA', ships: ['FERRY_DOZEN'] },
+  { from: 'KURI', to: 'HONDO_SHICHIRUI', ships: ['FERRY_OKI', 'FERRY_SHIRASHIMA', 'FERRY_KUNIGA'] },
+  { from: 'KURI', to: 'HONDO_SAKAIMINATO', ships: ['FERRY_OKI', 'FERRY_SHIRASHIMA', 'FERRY_KUNIGA'] },
+  { from: 'HONDO_SAKAIMINATO', to: 'BEPPU', ships: ['FERRY_OKI', 'FERRY_SHIRASHIMA', 'FERRY_KUNIGA'] },
+  { from: 'BEPPU', to: 'HONDO_SHICHIRUI', ships: ['FERRY_OKI', 'FERRY_SHIRASHIMA', 'FERRY_KUNIGA'] }
 ]
