@@ -87,6 +87,12 @@ service firebase.storage {
       allow write: if isAdmin() && isAllowedDocumentType();
     }
     
+    // 航路データ
+    match /data/routes/{fileName} {
+      allow read: if true;
+      allow write: if isAdmin() && isAllowedDocumentType();
+    }
+    
     // 船舶画像
     match /images/ships/{shipId} {
       allow read: if true;
