@@ -189,7 +189,6 @@
 import { ref, onMounted } from 'vue'
 import { Loader } from '@googlemaps/js-api-loader'
 import { PORTS_DATA, ROUTES_DATA } from '~/data/ports'
-import { getRoutePath } from '~/data/ferry-routes'
 import type { RouteData, RoutesDataFile, RoutesMetadata } from '~/types/route'
 import { uploadJSON, getJSONData } from '~/composables/useDataPublish'
 import { useAdminAuth } from '~/composables/useAdminAuth'
@@ -388,27 +387,16 @@ const fetchSingleRoute = async (from: string, to: string): Promise<RouteData | n
           }
         }
       } catch (drivingError) {
-        addLog('error', `${fromPort.name} → ${toPort.name}: APIで取得失敗`)
+        addLog('error', `${fromPort.name} → ${toPort.name}: APIで取得失敗、スキップします`)
       }
     }
   } catch (error) {
     addLog('error', `${fromPort.name} → ${toPort.name}: エラー - ${error}`)
   }
 
-  // 取得できなかった場合は直線ルート
-  addLog('warning', `${fromPort.name} → ${toPort.name}: 直線ルートを使用`)
-  return {
-    id: `${from}_${to}`,
-    from,
-    to,
-    fromName: fromPort.name,
-    toName: toPort.name,
-    path: [fromPort.location, toPort.location],
-    source: 'custom',
-    geodesic: true,
-    createdAt: new Date().toISOString(),
-    updatedAt: new Date().toISOString()
-  }
+  // Google Directions APIで取得できなかった場合はnullを返す
+  addLog('warning', `${fromPort.name} → ${toPort.name}: Google APIで取得できなかったためスキップ`)
+  return null
 }
 
 // すべての航路データを取得
@@ -445,7 +433,12 @@ const fetchAllRoutes = async () => {
   progress.value.message = ''
   isFetching.value = false
   
-  addLog('success', `${fetchedRoutes.value.length}件の航路データを取得しました`)
+  const skippedCount = ROUTES_DATA.length - fetchedRoutes.value.length
+  if (skippedCount > 0) {
+    addLog('warning', `${fetchedRoutes.value.length}件取得、${skippedCount}件はAPIで取得できませんでした`)
+  } else {
+    addLog('success', `${fetchedRoutes.value.length}件の航路データを取得しました`)
+  }
 }
 
 // Firebase Storageに保存
