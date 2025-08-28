@@ -295,10 +295,13 @@ watch(route, () => {
 // Watch locale changes (news content is already reactive via computed)
 
 // Close menus on click outside
+let handleClickOutside: ((e: MouseEvent | TouchEvent) => void) | null = null
+
 onMounted(async () => {
   // お知らせデータを取得
   await fetchNews()
-  const handleClickOutside = (event: MouseEvent | TouchEvent) => {
+
+  handleClickOutside = (event: MouseEvent | TouchEvent) => {
     const target = event.target as HTMLElement
     const nav = target.closest('nav')
     const hamburger = target.closest('button[aria-controls="navbarNav"]')
@@ -312,17 +315,15 @@ onMounted(async () => {
   // Add both click and touch event listeners
   document.addEventListener('click', handleClickOutside)
   document.addEventListener('touchstart', handleClickOutside, { passive: true })
-
-  onUnmounted(() => {
-    document.removeEventListener('click', handleClickOutside)
-    document.removeEventListener('touchstart', handleClickOutside)
-    // Ensure body scroll is restored
-    document.body.style.overflow = ''
-  })
 })
 
 // Clean up on component unmount
 onUnmounted(() => {
+  if (handleClickOutside) {
+    document.removeEventListener('click', handleClickOutside)
+    document.removeEventListener('touchstart', handleClickOutside)
+  }
+  // Ensure body scroll is restored
   document.body.style.overflow = ''
 })
 </script>

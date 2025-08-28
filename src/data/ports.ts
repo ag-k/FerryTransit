@@ -167,17 +167,30 @@ export const PORTS_DATA: Record<string, Port> = {
 
 // 航路データ（港間の接続）
 export const ROUTES_DATA = [
+  // 七類 → 西郷
   { from: 'HONDO_SHICHIRUI', to: 'SAIGO', ships: ['FERRY_OKI', 'FERRY_SHIRASHIMA', 'FERRY_KUNIGA'] },
-  { from: 'HONDO_SHICHIRUI', to: 'HISHIURA', ships: ['FERRY_OKI', 'FERRY_SHIRASHIMA', 'FERRY_KUNIGA'] },
-  { from: 'HONDO_SAKAIMINATO', to: 'SAIGO', ships: ['FERRY_OKI', 'FERRY_SHIRASHIMA', 'FERRY_KUNIGA'] },
-  { from: 'HONDO_SAKAIMINATO', to: 'HISHIURA', ships: ['FERRY_OKI', 'FERRY_SHIRASHIMA', 'FERRY_KUNIGA'] },
+  // 七類 → 来居
+  { from: 'HONDO_SHICHIRUI', to: 'KURI', ships: ['FERRY_OKI', 'FERRY_SHIRASHIMA', 'FERRY_KUNIGA'] },
+  // 西郷 → 菱浦
   { from: 'SAIGO', to: 'HISHIURA', ships: ['FERRY_DOZEN'] },
-  { from: 'SAIGO', to: 'BEPPU', ships: ['FERRY_DOZEN'] },
-  { from: 'HISHIURA', to: 'KURI', ships: ['FERRY_DOZEN'] },
-  { from: 'BEPPU', to: 'KURI', ships: ['FERRY_DOZEN'] },
+  // 西郷 → 七類
+  { from: 'SAIGO', to: 'HONDO_SHICHIRUI', ships: ['FERRY_OKI', 'FERRY_SHIRASHIMA', 'FERRY_KUNIGA'] },
+  // 菱浦 → 別府
+  { from: 'HISHIURA', to: 'BEPPU', ships: ['FERRY_DOZEN'] },
+  // 菱浦 → 西郷
+  { from: 'HISHIURA', to: 'SAIGO', ships: ['FERRY_DOZEN'] },
+  // 別府 → 七類
+  { from: 'BEPPU', to: 'HONDO_SHICHIRUI', ships: ['FERRY_OKI', 'FERRY_SHIRASHIMA', 'FERRY_KUNIGA'] },
+  // 別府 → 菱浦
   { from: 'BEPPU', to: 'HISHIURA', ships: ['FERRY_DOZEN'] },
-  { from: 'KURI', to: 'HONDO_SHICHIRUI', ships: ['FERRY_OKI', 'FERRY_SHIRASHIMA', 'FERRY_KUNIGA'] },
+  // 別府 → 来居
+  { from: 'BEPPU', to: 'KURI', ships: ['FERRY_DOZEN'] },
+  // 別府 → 西郷
+  { from: 'BEPPU', to: 'SAIGO', ships: ['FERRY_DOZEN'] },
+  // 来居 → 別府
+  { from: 'KURI', to: 'BEPPU', ships: ['FERRY_DOZEN'] },
+  // 来居 → 境港
   { from: 'KURI', to: 'HONDO_SAKAIMINATO', ships: ['FERRY_OKI', 'FERRY_SHIRASHIMA', 'FERRY_KUNIGA'] },
-  { from: 'HONDO_SAKAIMINATO', to: 'BEPPU', ships: ['FERRY_OKI', 'FERRY_SHIRASHIMA', 'FERRY_KUNIGA'] },
-  { from: 'BEPPU', to: 'HONDO_SHICHIRUI', ships: ['FERRY_OKI', 'FERRY_SHIRASHIMA', 'FERRY_KUNIGA'] }
+  // 境港 → 別府
+  { from: 'HONDO_SAKAIMINATO', to: 'BEPPU', ships: ['FERRY_OKI', 'FERRY_SHIRASHIMA', 'FERRY_KUNIGA'] }
 ]
