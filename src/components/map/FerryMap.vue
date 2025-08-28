@@ -221,7 +221,17 @@ const drawRoutesFromStorage = () => {
   polylines.value.forEach(polyline => polyline.setMap(null))
   polylines.value = []
 
-  routesFromStorage.value.forEach(route => {
+  // アクティブルートのみ描画（selectedRoute が指定されている場合）
+  const activeOnly = props.selectedRoute
+    ? routesFromStorage.value.filter(r =>
+        (r.from === props.selectedRoute!.from && r.to === props.selectedRoute!.to) ||
+        (r.from === props.selectedRoute!.to && r.to === props.selectedRoute!.from)
+      )
+    : []
+
+  const targetRoutes = props.selectedRoute ? activeOnly : []
+
+  targetRoutes.forEach(route => {
     // ソースに応じて色とスタイルを設定
     let strokeColor: string
     let strokeOpacity: number
@@ -321,6 +331,8 @@ const drawRoutesFromStorage = () => {
 // ソースラベルを取得
 const getSourceLabel = (source: string) => {
   switch (source) {
+    case 'overpass_osm':
+      return 'Overpass (OSM)'
     case 'google_transit':
       return 'Google Transit API'
     case 'google_driving':
@@ -341,7 +353,15 @@ const drawRoutes = () => {
   polylines.value.forEach(polyline => polyline.setMap(null))
   polylines.value = []
 
-  ROUTES_DATA.forEach(route => {
+  // アクティブなルートのみ描画
+  const activeRoutes = props.selectedRoute
+    ? ROUTES_DATA.filter(r =>
+        (r.from === props.selectedRoute!.from && r.to === props.selectedRoute!.to) ||
+        (r.from === props.selectedRoute!.to && r.to === props.selectedRoute!.from)
+      )
+    : []
+
+  activeRoutes.forEach(route => {
     const fromPort = PORTS_DATA[route.from]
     const toPort = PORTS_DATA[route.to]
 
@@ -683,7 +703,12 @@ watch(() => props.selectedPort, (portId) => {
 
 watch(() => props.selectedRoute, (route) => {
   if (route) {
-    highlightRoute(route.from, route.to)
+    // ストレージ由来のルートをアクティブのみで再描画
+    if (routesFromStorage.value.length > 0) {
+      drawRoutesFromStorage()
+    } else {
+      highlightRoute(route.from, route.to)
+    }
   }
 })
 

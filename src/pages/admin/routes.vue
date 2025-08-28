@@ -220,6 +220,264 @@ const progress = ref({
 // Google Maps
 const directionsService = ref<google.maps.DirectionsService>()
 
+// 2点間の距離（メートル）を算出（ハバーサイン）
+const haversineDistanceMeters = (a: google.maps.LatLngLiteral, b: google.maps.LatLngLiteral) => {
+  const R = 6371e3
+  const toRad = (d: number) => (d * Math.PI) / 180
+  const dLat = toRad(b.lat - a.lat)
+  const dLng = toRad(b.lng - a.lng)
+  const lat1 = toRad(a.lat)
+  const lat2 = toRad(b.lat)
+  const sinDLat = Math.sin(dLat / 2)
+  const sinDLng = Math.sin(dLng / 2)
+  const h = sinDLat * sinDLat + Math.cos(lat1) * Math.cos(lat2) * sinDLng * sinDLng
+  const c = 2 * Math.atan2(Math.sqrt(h), Math.sqrt(1 - h))
+  return R * c
+}
+
+const computePathDistanceMeters = (path: google.maps.LatLngLiteral[]) => {
+  let total = 0
+  for (let i = 1; i < path.length; i++) {
+    total += haversineDistanceMeters(path[i - 1], path[i])
+  }
+  return total
+}
+
+// グラフ構築用ユーティリティ（Overpassのway群から最短経路を探索）
+type GraphNode = { lat: number; lng: number }
+type Graph = { nodes: GraphNode[]; adj: Map<number, Array<{ to: number; w: number }>> }
+
+const buildGraphFromWays = (ways: any[], joinTolerance = 300): Graph => {
+  const nodes: GraphNode[] = []
+  const adj: Map<number, Array<{ to: number; w: number }>> = new Map()
+
+  // 各wayを細分化してノード・エッジ追加
+  const pushNode = (pt: GraphNode) => {
+    const idx = nodes.length
+    nodes.push(pt)
+    return idx
+  }
+
+  const addEdge = (a: number, b: number) => {
+    const w = haversineDistanceMeters(nodes[a], nodes[b])
+    if (!adj.has(a)) adj.set(a, [])
+    if (!adj.has(b)) adj.set(b, [])
+    adj.get(a)!.push({ to: b, w })
+    adj.get(b)!.push({ to: a, w })
+  }
+
+  // まず全てのwayのポイントをノードとして直列エッジを張る
+  const wayEndpoints: Array<{ first: number; last: number }> = []
+  for (const w of ways) {
+    const geom = w.geometry as Array<{ lat: number; lon: number }>
+    if (!geom || geom.length < 2) continue
+    let prevIdx: number | null = null
+    let firstIdx = -1
+    for (let i = 0; i < geom.length; i++) {
+      const idx = pushNode({ lat: geom[i].lat, lng: geom[i].lon })
+      if (prevIdx !== null) addEdge(prevIdx, idx)
+      else firstIdx = idx
+      prevIdx = idx
+    }
+    if (firstIdx !== -1 && prevIdx !== null) wayEndpoints.push({ first: firstIdx, last: prevIdx })
+  }
+
+  // 端点が近い別way同士を接続（joinTolerance以内）
+  const endpoints = wayEndpoints.flatMap(ep => [ep.first, ep.last])
+  for (let i = 0; i < endpoints.length; i++) {
+    for (let j = i + 1; j < endpoints.length; j++) {
+      const a = endpoints[i]
+      const b = endpoints[j]
+      const d = haversineDistanceMeters(nodes[a], nodes[b])
+      if (d <= joinTolerance) addEdge(a, b)
+    }
+  }
+
+  return { nodes, adj }
+}
+
+const findNearestNode = (graph: Graph, pt: GraphNode) => {
+  let best = -1
+  let bestD = Number.POSITIVE_INFINITY
+  for (let i = 0; i < graph.nodes.length; i++) {
+    const d = haversineDistanceMeters(graph.nodes[i], pt)
+    if (d < bestD) { bestD = d; best = i }
+  }
+  return best
+}
+
+const shortestPath = (graph: Graph, startIdx: number, goalIdx: number): number[] => {
+  const n = graph.nodes.length
+  const dist = new Array(n).fill(Number.POSITIVE_INFINITY)
+  const prev = new Array(n).fill(-1)
+  const visited = new Array(n).fill(false)
+
+  // 2分ヒープなどは不要な規模想定、単純反復
+  dist[startIdx] = 0
+  for (let iter = 0; iter < n; iter++) {
+    let u = -1
+    let best = Number.POSITIVE_INFINITY
+    for (let i = 0; i < n; i++) {
+      if (!visited[i] && dist[i] < best) { best = dist[i]; u = i }
+    }
+    if (u === -1) break
+    visited[u] = true
+    if (u === goalIdx) break
+    const edges = graph.adj.get(u) || []
+    for (const { to, w } of edges) {
+      const nd = dist[u] + w
+      if (nd < dist[to]) { dist[to] = nd; prev[to] = u }
+    }
+  }
+  if (prev[goalIdx] === -1) return []
+  const path: number[] = []
+  let cur = goalIdx
+  while (cur !== -1) { path.push(cur); cur = prev[cur] }
+  path.reverse()
+  return path
+}
+
+// ============ Overpass API (OSM) ============
+// Overpass で route=ferry の関係を取得し、港名（from/to）や空間条件で絞り込み
+const fetchRouteViaOverpass = async (from: string, to: string): Promise<RouteData | null> => {
+  const fromPort = PORTS_DATA[from]
+  const toPort = PORTS_DATA[to]
+  if (!fromPort || !toPort) return null
+
+  // 港名のバリエーション（日本語/英語、末尾の「港」を除外した形も）
+  const normalize = (s?: string) => s ? s.replace(/港$/u, '').trim() : ''
+  const fromJa = normalize(fromPort.name)
+  const toJa = normalize(toPort.name)
+  const fromEn = normalize((fromPort as any).nameEn || '').replace(/\s*Port$/i, '')
+  const toEn = normalize((toPort as any).nameEn || '').replace(/\s*Port$/i, '')
+
+  const escapeRe = (s: string) => s.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')
+  const jaOpt = (s: string) => s ? `${escapeRe(s)}(?:港)?` : ''
+  const enOpt = (s: string) => s ? `${escapeRe(s)}(?:\\s*Port)?` : ''
+  const fromRe = new RegExp(`^(?:${[jaOpt(fromJa), enOpt(fromEn)].filter(Boolean).join('|')})$`, 'i')
+  const toRe = new RegExp(`^(?:${[jaOpt(toJa), enOpt(toEn)].filter(Boolean).join('|')})$`, 'i')
+
+  // バウンディングボックス（両港を含む矩形に余白を持たせる）
+  const minLat = Math.min(fromPort.location.lat, toPort.location.lat) - 0.6
+  const maxLat = Math.max(fromPort.location.lat, toPort.location.lat) + 0.6
+  const minLng = Math.min(fromPort.location.lng, toPort.location.lng) - 0.6
+  const maxLng = Math.max(fromPort.location.lng, toPort.location.lng) + 0.6
+
+  // bbox 内の route=ferry 関係と、そのメンバー ways の形状を取得
+  // Relation は members 情報を含むように out body とし、ways は out geom
+  const query = `
+    [out:json][timeout:60];
+    rel["route"="ferry"](${minLat},${minLng},${maxLat},${maxLng})->.rels;
+    way(r.rels)->.wrel;
+    way["route"="ferry"](${minLat},${minLng},${maxLat},${maxLng})->.wonly;
+    (.wrel; .wonly;);
+    out geom;`
+
+  try {
+    addLog('info', `${fromPort.name} → ${toPort.name}: Overpass API クエリ実行`)
+    const res = await fetch('https://overpass-api.de/api/interpreter', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+      body: new URLSearchParams({ data: query }) as any
+    })
+    if (!res.ok) {
+      const t = await res.text()
+      addLog('error', `Overpass API エラー: ${res.status} ${t}`)
+      return null
+    }
+    const data = await res.json()
+
+    const elements = data?.elements || []
+    const rels = elements.filter((el: any) => el.type === 'relation')
+    let ways = elements.filter((el: any) => el.type === 'way' && Array.isArray(el.geometry))
+    if (ways.length === 0) {
+      addLog('warning', `${fromPort.name} → ${toPort.name}: Overpassでフェリー形状が見つかりませんでした`)
+      return null
+    }
+
+    // 経由地回避の簡易フィルタ（特定ペア向け）
+    const filterWaysByAvoid = (inputWays: any[], avoidIds: string[], radius = 5000) => {
+      const avoidPorts = avoidIds.map(id => PORTS_DATA[id]?.location).filter(Boolean)
+      if (avoidPorts.length === 0) return inputWays
+      const filtered = inputWays.filter((w: any) => {
+        for (const g of w.geometry) {
+          for (const ap of avoidPorts) {
+            const d = haversineDistanceMeters({ lat: g.lat, lng: g.lon }, ap as any)
+            if (d <= radius) return false
+          }
+        }
+        return true
+      })
+      return filtered.length > 0 ? filtered : inputWays // 強すぎる場合は元に戻す
+    }
+
+    // ルール適用（特定経由地を避ける）
+    const isBeppuShichirui = (from === 'BEPPU' && to === 'HONDO_SHICHIRUI') || (from === 'HONDO_SHICHIRUI' && to === 'BEPPU')
+    if (isBeppuShichirui) {
+      ways = filterWaysByAvoid(ways, ['SAIGO'], 5000)
+    }
+    const isShichiruiKuri = (from === 'HONDO_SHICHIRUI' && to === 'KURI') || (from === 'KURI' && to === 'HONDO_SHICHIRUI')
+    if (isShichiruiKuri) {
+      ways = filterWaysByAvoid(ways, ['SAIGO', 'BEPPU'], 5000)
+    }
+    // 最短経路（ノードグラフ）で直通最短を抽出
+    const graph = buildGraphFromWays(ways, 300)
+    const sIdx = findNearestNode(graph, { lat: fromPort.location.lat, lng: fromPort.location.lng })
+    const tIdx = findNearestNode(graph, { lat: toPort.location.lat, lng: toPort.location.lng })
+    let clipped: { lat: number; lng: number }[] = []
+    if (sIdx !== -1 && tIdx !== -1) {
+      const pathIdx = shortestPath(graph, sIdx, tIdx)
+      if (pathIdx.length >= 2) {
+        clipped = pathIdx.map(i => graph.nodes[i])
+      }
+    }
+
+    // 最短経路が求められない場合は、従来クリップにフォールバック
+    if (clipped.length < 2) {
+      // 全ノードから港に最も近い点を検索して直線的に切り出し
+      const allPts = graph.nodes
+      const aIdx = allPts.reduce((best, p, idx) => {
+        const d = haversineDistanceMeters(p, fromPort.location)
+        return d < best.d ? { idx, d } : best
+      }, { idx: 0, d: Number.POSITIVE_INFINITY }).idx
+      const bIdx = allPts.reduce((best, p, idx) => {
+        const d = haversineDistanceMeters(p, toPort.location)
+        return d < best.d ? { idx, d } : best
+      }, { idx: 0, d: Number.POSITIVE_INFINITY }).idx
+      const start = Math.min(aIdx, bIdx)
+      const end = Math.max(aIdx, bIdx)
+      clipped = allPts.slice(start, end + 1)
+    }
+
+    if (clipped.length < 2) {
+      addLog('warning', `${fromPort.name} → ${toPort.name}: Overpass形状のクリップに失敗（代替へ）`)
+      return null
+    }
+
+    const distance = Math.round(computePathDistanceMeters(clipped))
+    const duration = Math.round(distance / (37 * 1000 / 3600))
+    addLog('success', `${fromPort.name} → ${toPort.name}: Overpassでフェリー形状取得成功`)
+
+    return {
+      id: `${from}_${to}`,
+      from,
+      to,
+      fromName: fromPort.name,
+      toName: toPort.name,
+      path: clipped,
+      distance,
+      duration,
+      source: 'overpass_osm',
+      geodesic: true,
+      createdAt: new Date().toISOString(),
+      updatedAt: new Date().toISOString()
+    }
+  } catch (e) {
+    addLog('error', `${fromPort.name} → ${toPort.name}: Overpass取得エラー - ${e}`)
+    return null
+  }
+}
+
 // 初期化
 const initGoogleMaps = async () => {
   const apiKey = useRuntimeConfig().public.googleMapsApiKey
@@ -244,6 +502,406 @@ const initGoogleMaps = async () => {
   }
 }
 
+
+// Google Routes APIを使用してフェリールートを取得
+const fetchRouteViaRoutesAPI = async (from: string, to: string): Promise<RouteData | null> => {
+  const apiKey = useRuntimeConfig().public.googleMapsApiKey
+  if (!apiKey) return null
+
+  const fromPort = PORTS_DATA[from]
+  const toPort = PORTS_DATA[to]
+  if (!fromPort || !toPort) return null
+
+  // 長距離海上ルートの場合は、DRIVINGモードと海上中継点を使用
+  const isLongSeaRoute = (from === 'HONDO_SAKAIMINATO' && to === 'BEPPU') || 
+                         (from === 'BEPPU' && to === 'HONDO_SAKAIMINATO') ||
+                         (from === 'HONDO_SHICHIRUI' && to === 'BEPPU') ||
+                         (from === 'BEPPU' && to === 'HONDO_SHICHIRUI')
+
+  if (isLongSeaRoute) {
+    try {
+      // 海上中継点を設定（フェリー航路に沿った座標）
+      let waypoints: any[] = []
+      
+      if (from === 'HONDO_SAKAIMINATO' || from === 'HONDO_SHICHIRUI') {
+        // 境港/七類→別府の順方向
+        waypoints = [
+          { location: { latLng: { latitude: 35.8, longitude: 133.15 }}}, // 海上点1
+          { location: { latLng: { latitude: 36.0, longitude: 133.10 }}}  // 海上点2
+        ]
+      } else {
+        // 別府→境港/七類の逆方向
+        waypoints = [
+          { location: { latLng: { latitude: 36.0, longitude: 133.10 }}}, // 海上点1
+          { location: { latLng: { latitude: 35.8, longitude: 133.15 }}}  // 海上点2
+        ]
+      }
+
+      const requestBody: any = {
+        origin: {
+          location: {
+            latLng: {
+              latitude: fromPort.location.lat,
+              longitude: fromPort.location.lng
+            }
+          }
+        },
+        destination: {
+          location: {
+            latLng: {
+              latitude: toPort.location.lat,
+              longitude: toPort.location.lng
+            }
+          }
+        },
+        intermediates: waypoints,
+        travelMode: 'DRIVE', // DRIVEモードで海上ルートを取得
+        polylineQuality: 'HIGH_QUALITY',
+        polylineEncoding: 'ENCODED_POLYLINE',
+        languageCode: 'ja',
+        units: 'METRIC'
+      }
+
+      console.log(`Routes API Request (SEA ROUTE) for ${fromPort.name} → ${toPort.name}:`, JSON.stringify(requestBody, null, 2))
+      addLog('info', `海上ルートAPI リクエスト: ${fromPort.name} → ${toPort.name}`)
+
+      const response = await fetch(
+        `https://routes.googleapis.com/directions/v2:computeRoutes?key=${apiKey}`,
+        {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'X-Goog-FieldMask': 'routes.duration,routes.distanceMeters,routes.polyline'
+          },
+          body: JSON.stringify(requestBody)
+        }
+      )
+
+      if (!response.ok) {
+        const errorText = await response.text()
+        console.error(`Routes API Error Response:`, errorText)
+        throw new Error(`Routes API Error: ${response.status}`)
+      }
+
+      const data = await response.json()
+      console.log(`Routes API Response (SEA):`, data)
+
+      if (data.routes && data.routes.length > 0) {
+        const route = data.routes[0]
+        
+        if (route.polyline?.encodedPolyline) {
+          // エンコードされたポリラインをデコード（フル経路）
+          const decodedFullPath: google.maps.LatLngLiteral[] = []
+          const encodedPolyline = route.polyline.encodedPolyline
+          
+          let index = 0
+          let lat = 0
+          let lng = 0
+          
+          while (index < encodedPolyline.length) {
+            let b
+            let shift = 0
+            let result = 0
+            do {
+              b = encodedPolyline.charCodeAt(index++) - 63
+              result |= (b & 0x1f) << shift
+              shift += 5
+            } while (b >= 0x20)
+            const dlat = ((result & 1) ? ~(result >> 1) : (result >> 1))
+            lat += dlat
+
+            shift = 0
+            result = 0
+            do {
+              b = encodedPolyline.charCodeAt(index++) - 63
+              result |= (b & 0x1f) << shift
+              shift += 5
+            } while (b >= 0x20)
+            const dlng = ((result & 1) ? ~(result >> 1) : (result >> 1))
+            lng += dlng
+
+            decodedFullPath.push({ lat: lat / 1e5, lng: lng / 1e5 })
+          }
+          
+          // 海上中継点（waypoints）付近の区間のみを抽出して陸上を除去
+          const wpA = waypoints[0]?.location?.latLng
+          const wpB = waypoints[1]?.location?.latLng
+
+          const nearestIndex = (target?: { latitude: number; longitude: number }) => {
+            if (!target) return -1
+            let bestIdx = -1
+            let bestDist = Number.POSITIVE_INFINITY
+            for (let i = 0; i < decodedFullPath.length; i++) {
+              const d = haversineDistanceMeters(
+                decodedFullPath[i],
+                { lat: target.latitude, lng: target.longitude }
+              )
+              if (d < bestDist) {
+                bestDist = d
+                bestIdx = i
+              }
+            }
+            return bestIdx
+          }
+
+          let clippedPath: google.maps.LatLngLiteral[] = decodedFullPath
+          const idxA = nearestIndex(wpA)
+          const idxB = nearestIndex(wpB)
+          if (idxA !== -1 && idxB !== -1 && decodedFullPath.length > 1) {
+            const start = Math.min(idxA, idxB)
+            const end = Math.max(idxA, idxB)
+            // start==end にならないように+1
+            clippedPath = decodedFullPath.slice(start, end + 1)
+          }
+
+          if (clippedPath.length > 1) {
+            // 海上区間の距離・時間を再計算（37km/hで近似）
+            const seaDistance = Math.round(computePathDistanceMeters(clippedPath))
+            const seaDuration = Math.round(seaDistance / (37 * 1000 / 3600))
+
+            addLog('success', `${fromPort.name} → ${toPort.name}: 海上区間のみ抽出して取得成功`)
+
+            return {
+              id: `${from}_${to}`,
+              from,
+              to,
+              fromName: fromPort.name,
+              toName: toPort.name,
+              path: clippedPath,
+              distance: seaDistance,
+              duration: seaDuration,
+              source: 'google_routes',
+              geodesic: true,
+              createdAt: new Date().toISOString(),
+              updatedAt: new Date().toISOString()
+            }
+          }
+        }
+      }
+    } catch (error) {
+      addLog('warning', `${fromPort.name} → ${toPort.name}: 海上ルートAPI失敗 - ${error}`)
+      console.error('Sea Route API Error:', error)
+    }
+  }
+
+  // 通常の短距離ルートの場合はTRANSITモードを試行
+  try {
+    // Routes API用のリクエストボディを構築（TRANSITモードでフェリーを探索）
+    const departureTime = new Date()
+    // デフォルトは10:00。境港→別府は14:25指定（フェリーしらしま直行便対策）
+    if (from === 'HONDO_SAKAIMINATO' && to === 'BEPPU') {
+      departureTime.setHours(14, 25, 0, 0)
+    } else {
+      departureTime.setHours(10, 0, 0, 0)
+    }
+    
+    const requestBody: any = {
+      origin: {
+        location: {
+          latLng: {
+            latitude: fromPort.location.lat,
+            longitude: fromPort.location.lng
+          }
+        }
+      },
+      destination: {
+        location: {
+          latLng: {
+            latitude: toPort.location.lat,
+            longitude: toPort.location.lng
+          }
+        }
+      },
+      travelMode: 'TRANSIT',
+      departureTime: departureTime.toISOString(),
+      computeAlternativeRoutes: false,
+      transitPreferences: {
+        routingPreference: 'FEWER_TRANSFERS'
+      },
+      polylineQuality: 'HIGH_QUALITY',
+      polylineEncoding: 'ENCODED_POLYLINE',
+      languageCode: 'ja',
+      units: 'METRIC'
+    }
+
+    // デバッグログ: リクエスト内容を出力
+    console.log(`Routes API Request for ${fromPort.name} → ${toPort.name}:`, JSON.stringify(requestBody, null, 2))
+    addLog('info', `Routes API リクエスト: ${fromPort.name} (${fromPort.location.lat}, ${fromPort.location.lng}) → ${toPort.name} (${toPort.location.lat}, ${toPort.location.lng})`)
+
+    // Routes APIを呼び出し（詳細なレスポンスを要求）
+    const response = await fetch(
+      `https://routes.googleapis.com/directions/v2:computeRoutes?key=${apiKey}`,
+      {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'X-Goog-FieldMask': 'routes.duration,routes.distanceMeters,routes.polyline,routes.legs.steps.transitDetails,routes.legs.steps.polyline,routes.legs.steps.travelMode'
+        },
+        body: JSON.stringify(requestBody)
+      }
+    )
+
+    if (!response.ok) {
+      const errorText = await response.text()
+      console.error(`Routes API Error Response:`, errorText)
+      
+      // エラーレスポンスをパースしてより詳細な情報を取得
+      try {
+        const errorJson = JSON.parse(errorText)
+        if (errorJson.error) {
+          addLog('error', `Routes API エラー: ${errorJson.error.message || errorJson.error.status}`)
+          if (errorJson.error.details) {
+            console.error('Error details:', errorJson.error.details)
+          }
+        }
+      } catch (e) {
+        // JSONパースに失敗した場合はテキストをそのまま使用
+      }
+      
+      throw new Error(`Routes API Error: ${response.status} - ${errorText}`)
+    }
+
+    const data = await response.json()
+    console.log(`Routes API Response:`, data)
+
+    if (data.routes && data.routes.length > 0) {
+      const route = data.routes[0]
+      
+      // FERRYステップのみを抽出してポリラインを結合
+      const ferryPolylines: string[] = []
+      let totalDistance = 0
+      let totalDuration = 0
+      
+      // 各レグのステップを確認
+      if (route.legs && route.legs.length > 0) {
+        for (const leg of route.legs) {
+          if (leg.steps) {
+            for (const step of leg.steps) {
+              // デバッグ: 各ステップの詳細を出力
+              if (step.transitDetails) {
+                console.log('Transit step found:', {
+                  vehicleType: step.transitDetails?.transitLine?.vehicle?.type,
+                  lineName: step.transitDetails?.transitLine?.name,
+                  vehicleName: step.transitDetails?.transitLine?.vehicle?.name
+                })
+              }
+              
+              // transitDetailsがあり、vehicle.typeがFERRYのステップのみ採用
+              if (step.transitDetails?.transitLine?.vehicle?.type === 'FERRY') {
+                if (step.polyline?.encodedPolyline) {
+                  ferryPolylines.push(step.polyline.encodedPolyline)
+                }
+                if (step.distanceMeters) totalDistance += step.distanceMeters
+                if (step.duration) {
+                  const seconds = parseInt(step.duration.replace('s', '') || '0')
+                  totalDuration += seconds
+                }
+                
+                addLog('info', `FERRYステップ検出: ${step.transitDetails.transitLine.name || 'フェリー'}`)
+              }
+            }
+          }
+        }
+      }
+      
+      // FERRYステップが見つからない場合は、陸上区間を含む恐れがあるため
+      // 全体ルートは使わず、海上直線ルートにフォールバック
+      if (ferryPolylines.length === 0) {
+        addLog('warning', `${fromPort.name} → ${toPort.name}: FERRYステップなし → 海上直線ルートにフォールバック`)
+
+        // 直線補間の海上経路（50点）
+        const steps = 50
+        const seaPath: google.maps.LatLngLiteral[] = []
+        for (let i = 0; i <= steps; i++) {
+          const t = i / steps
+          seaPath.push({
+            lat: fromPort.location.lat + (toPort.location.lat - fromPort.location.lat) * t,
+            lng: fromPort.location.lng + (toPort.location.lng - fromPort.location.lng) * t
+          })
+        }
+
+        const seaDistance = Math.round(computePathDistanceMeters(seaPath))
+        const seaDuration = Math.round(seaDistance / (37 * 1000 / 3600))
+
+        return {
+          id: `${from}_${to}`,
+          from,
+          to,
+          fromName: fromPort.name,
+          toName: toPort.name,
+          path: seaPath,
+          distance: seaDistance,
+          duration: seaDuration,
+          source: 'custom',
+          geodesic: true,
+          createdAt: new Date().toISOString(),
+          updatedAt: new Date().toISOString()
+        }
+      }
+      
+      // エンコードされたポリラインをデコード
+      const decodedPath: google.maps.LatLngLiteral[] = []
+      
+      for (const encodedPolyline of ferryPolylines) {
+        let index = 0
+        let lat = 0
+        let lng = 0
+        
+        while (index < encodedPolyline.length) {
+          let b
+          let shift = 0
+          let result = 0
+          do {
+            b = encodedPolyline.charCodeAt(index++) - 63
+            result |= (b & 0x1f) << shift
+            shift += 5
+          } while (b >= 0x20)
+          const dlat = ((result & 1) ? ~(result >> 1) : (result >> 1))
+          lat += dlat
+
+          shift = 0
+          result = 0
+          do {
+            b = encodedPolyline.charCodeAt(index++) - 63
+            result |= (b & 0x1f) << shift
+            shift += 5
+          } while (b >= 0x20)
+          const dlng = ((result & 1) ? ~(result >> 1) : (result >> 1))
+          lng += dlng
+
+          decodedPath.push({ lat: lat / 1e5, lng: lng / 1e5 })
+        }
+      }
+      
+      if (decodedPath.length > 0) {
+        addLog('success', `${fromPort.name} → ${toPort.name}: フェリールート取得成功 (${ferryPolylines.length}区間)`)
+
+        return {
+          id: `${from}_${to}`,
+          from,
+          to,
+          fromName: fromPort.name,
+          toName: toPort.name,
+          path: decodedPath,
+          distance: totalDistance || route.distanceMeters,
+          duration: totalDuration || parseInt(route.duration?.replace('s', '') || '0'),
+          source: 'google_routes',
+          geodesic: true,
+          createdAt: new Date().toISOString(),
+          updatedAt: new Date().toISOString()
+        }
+      }
+    } else {
+      addLog('warning', `${fromPort.name} → ${toPort.name}: Routes APIがルートを返しませんでした`)
+    }
+  } catch (error) {
+    addLog('error', `${fromPort.name} → ${toPort.name}: Routes API失敗 - ${error}`)
+    console.error('Routes API Error:', error)
+  }
+
+  return null
+}
+
 // ログを追加
 const addLog = (type: 'info' | 'success' | 'error' | 'warning', message: string) => {
   logs.value.unshift({
@@ -261,10 +919,14 @@ const addLog = (type: 'info' | 'success' | 'error' | 'warning', message: string)
 // ソースラベルを取得
 const getSourceLabel = (source: string) => {
   switch (source) {
+    case 'overpass_osm':
+      return 'Overpass (OSM)'
     case 'google_transit':
       return 'Google Transit'
     case 'google_driving':
       return 'Google Driving'
+    case 'google_routes':
+      return 'Google Routes API'
     case 'manual':
       return '手動定義'
     case 'custom':
@@ -289,16 +951,59 @@ const loadCurrentData = async () => {
 
 // 単一ルートを取得
 const fetchSingleRoute = async (from: string, to: string): Promise<RouteData | null> => {
-  if (!directionsService.value) return null
-
   const fromPort = PORTS_DATA[from]
   const toPort = PORTS_DATA[to]
   
   if (!fromPort || !toPort) return null
 
+  // 長距離海上ルートかどうか判定（境港/七類→別府など）
+  const isLongSeaRoute = (from === 'HONDO_SAKAIMINATO' && to === 'BEPPU') || 
+                         (from === 'BEPPU' && to === 'HONDO_SAKAIMINATO') ||
+                         (from === 'HONDO_SHICHIRUI' && to === 'BEPPU') ||
+                         (from === 'BEPPU' && to === 'HONDO_SHICHIRUI')
+  
+  // まず Overpass (OSM) を優先
+  addLog('info', `${fromPort.name} → ${toPort.name}: Overpass (OSM) を試行中...`)
+  const overpassResult = await fetchRouteViaOverpass(from, to)
+  if (overpassResult) return overpassResult
+
+  // 長距離海上ルートはGoogle Routes API（中継点＋クリップ）でフォールバック
+  if (isLongSeaRoute) {
+    addLog('info', `${fromPort.name} → ${toPort.name}: Overpass失敗、Routes APIを試行`)
+    const routesApiResult = await fetchRouteViaRoutesAPI(from, to)
+    if (routesApiResult) return routesApiResult
+
+    addLog('info', `${fromPort.name} → ${toPort.name}: Routes API失敗、Directions APIを試行`)
+  }
+
+  // Directions Serviceが初期化されていない場合はnullを返す
+  if (!directionsService.value) return null
+  
   // Google Directions APIで取得を試行
   try {
-    // TRANSITモードで試行
+    // 長距離海上ルートの場合は複数の海上中継点を設定
+    let waypoints: google.maps.DirectionsWaypoint[] = []
+    
+    if (isLongSeaRoute) {
+      // 境港/七類→別府の実際のフェリー航路に沿った中継点
+      if (from === 'HONDO_SAKAIMINATO' || from === 'HONDO_SHICHIRUI') {
+        // 境港/七類→別府の順方向
+        waypoints = [
+          { location: { lat: 36.05, lng: 133.25 }, stopover: false }, // 隠岐諸島西側海域
+          { location: { lat: 36.20, lng: 133.35 }, stopover: false }, // 島前海域
+          { location: { lat: 36.10, lng: 133.55 }, stopover: false }  // 別府港への接近海域
+        ]
+      } else {
+        // 別府→境港/七類の逆方向
+        waypoints = [
+          { location: { lat: 36.10, lng: 133.55 }, stopover: false }, // 別府港からの出発海域
+          { location: { lat: 36.20, lng: 133.35 }, stopover: false }, // 島前海域
+          { location: { lat: 36.05, lng: 133.25 }, stopover: false }  // 隠岐諸島西側海域
+        ]
+      }
+    }
+    
+    // TRANSITモードで試行（フェリー優先）
     let request: google.maps.DirectionsRequest = {
       origin: fromPort.location,
       destination: toPort.location,
@@ -308,15 +1013,176 @@ const fetchSingleRoute = async (from: string, to: string): Promise<RouteData | n
         routingPreference: google.maps.TransitRoutePreference.FEWER_TRANSFERS
       }
     }
+    // 境港→別府は 14:25 発で検索（直行便ヒット率を上げる）
+    if (isLongSeaRoute && from === 'HONDO_SAKAIMINATO' && to === 'BEPPU') {
+      const dt = new Date()
+      dt.setHours(14, 25, 0, 0)
+      request.transitOptions = {
+        ...request.transitOptions,
+        departureTime: dt
+      }
+    }
+    
+    // 長距離海上ルートの場合は中継点を追加
+    if (isLongSeaRoute && waypoints.length > 0) {
+      request.waypoints = waypoints
+      request.optimizeWaypoints = false // 中継点の順序を維持
+    }
 
     try {
       const result = await directionsService.value.route(request)
       
       if (result.routes && result.routes.length > 0) {
         const route = result.routes[0]
-        const leg = route.legs[0]
+        const legs = route.legs
+
+        // フェリー区間のみ抽出
+        let ferryPath: google.maps.LatLng[] = []
+        let totalDistance = 0
+        let totalDuration = 0
+
+        for (const leg of legs) {
+          if (!leg.steps) continue
+          for (const step of leg.steps) {
+            const isFerry = step.travel_mode === google.maps.TravelMode.TRANSIT &&
+              // @ts-ignore: transit オブジェクトはランタイムに存在
+              step.transit?.line?.vehicle?.type === google.maps.TransitVehicleType.FERRY
+            if (isFerry) {
+              // 距離・時間
+              if (step.distance?.value) totalDistance += step.distance.value
+              if (step.duration?.value) totalDuration += step.duration.value
+              // 経路点
+              if (step.path && step.path.length > 0) {
+                ferryPath = ferryPath.concat(step.path)
+              }
+            }
+          }
+        }
+
+        if (ferryPath.length > 0) {
+          addLog('success', `${fromPort.name} → ${toPort.name}: Transitのフェリー区間のみ抽出して取得成功`)
+          return {
+            id: `${from}_${to}`,
+            from,
+            to,
+            fromName: fromPort.name,
+            toName: toPort.name,
+            path: ferryPath.map(p => ({ lat: p.lat(), lng: p.lng() })),
+            distance: totalDistance || undefined,
+            duration: totalDuration || undefined,
+            source: 'google_transit',
+            geodesic: true,
+            createdAt: new Date().toISOString(),
+            updatedAt: new Date().toISOString()
+          }
+        }
+
+        // フェリー区間が見つからない場合のフォールバック
+        if (isLongSeaRoute) {
+          // 直線の海上ルートを生成
+          const stepsCount = 50
+          const seaPath: google.maps.LatLngLiteral[] = []
+          for (let i = 0; i <= stepsCount; i++) {
+            const t = i / stepsCount
+            seaPath.push({
+              lat: fromPort.location.lat + (toPort.location.lat - fromPort.location.lat) * t,
+              lng: fromPort.location.lng + (toPort.location.lng - fromPort.location.lng) * t
+            })
+          }
+          const seaDistance = Math.round(computePathDistanceMeters(seaPath))
+          const seaDuration = Math.round(seaDistance / (37 * 1000 / 3600))
+          addLog('warning', `${fromPort.name} → ${toPort.name}: TransitでFERRYなし → 海上直線ルートにフォールバック`)
+          return {
+            id: `${from}_${to}`,
+            from,
+            to,
+            fromName: fromPort.name,
+            toName: toPort.name,
+            path: seaPath,
+            distance: seaDistance,
+            duration: seaDuration,
+            source: 'custom',
+            geodesic: true,
+            createdAt: new Date().toISOString(),
+            updatedAt: new Date().toISOString()
+          }
+        }
+      }
+    } catch (transitError) {
+      // TRANSITが失敗した場合のみDRIVINGモードを試行（ただし長距離海上ルートは除く）
+      if (!isLongSeaRoute) {
+        request = {
+          origin: fromPort.location,
+          destination: toPort.location,
+          travelMode: google.maps.TravelMode.DRIVING,
+          avoidHighways: true,
+          avoidTolls: true,
+          avoidFerries: false
+        }
+
+        try {
+          const result = await directionsService.value.route(request)
+          
+          if (result.routes && result.routes.length > 0) {
+            const route = result.routes[0]
+            const leg = route.legs[0]
+            
+            addLog('warning', `${fromPort.name} → ${toPort.name}: Google Driving APIで取得`)
+            
+            return {
+              id: `${from}_${to}`,
+              from,
+              to,
+              fromName: fromPort.name,
+              toName: toPort.name,
+              path: route.overview_path.map(p => ({ lat: p.lat(), lng: p.lng() })),
+              distance: leg.distance?.value,
+              duration: leg.duration?.value,
+              source: 'google_driving',
+              geodesic: true,
+              createdAt: new Date().toISOString(),
+              updatedAt: new Date().toISOString()
+            }
+          }
+        } catch (drivingError) {
+          addLog('error', `${fromPort.name} → ${toPort.name}: APIで取得失敗`)
+        }
+      } else {
+        // 長距離海上ルートの場合は直線を生成（フォールバック）
+        const generateSeaPath = (from: google.maps.LatLngLiteral, to: google.maps.LatLngLiteral) => {
+          const points = []
+          const steps = 50 // 経路点数
+          
+          for (let i = 0; i <= steps; i++) {
+            const ratio = i / steps
+            points.push({
+              lat: from.lat + (to.lat - from.lat) * ratio,
+              lng: from.lng + (to.lng - from.lng) * ratio
+            })
+          }
+          
+          return points
+        }
         
-        addLog('success', `${fromPort.name} → ${toPort.name}: Google Transit APIで取得成功`)
+        const path = generateSeaPath(fromPort.location, toPort.location)
+        
+        // 大まかな距離計算（球面三角法）
+        const R = 6371000 // 地球の半径（メートル）
+        const lat1 = fromPort.location.lat * Math.PI / 180
+        const lat2 = toPort.location.lat * Math.PI / 180
+        const deltaLat = (toPort.location.lat - fromPort.location.lat) * Math.PI / 180
+        const deltaLng = (toPort.location.lng - fromPort.location.lng) * Math.PI / 180
+        
+        const a = Math.sin(deltaLat/2) * Math.sin(deltaLat/2) +
+                  Math.cos(lat1) * Math.cos(lat2) *
+                  Math.sin(deltaLng/2) * Math.sin(deltaLng/2)
+        const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a))
+        const distance = R * c
+        
+        // フェリーの平均速度を20ノット（約37km/h）と仮定
+        const duration = Math.round(distance / (37 * 1000 / 3600))
+        
+        addLog('warning', `${fromPort.name} → ${toPort.name}: 海上直線ルートを生成（フォールバック）`)
         
         return {
           id: `${from}_${to}`,
@@ -324,52 +1190,14 @@ const fetchSingleRoute = async (from: string, to: string): Promise<RouteData | n
           to,
           fromName: fromPort.name,
           toName: toPort.name,
-          path: route.overview_path.map(p => ({ lat: p.lat(), lng: p.lng() })),
-          distance: leg.distance?.value,
-          duration: leg.duration?.value,
-          source: 'google_transit',
+          path,
+          distance: Math.round(distance),
+          duration,
+          source: 'custom',
           geodesic: true,
           createdAt: new Date().toISOString(),
           updatedAt: new Date().toISOString()
         }
-      }
-    } catch (transitError) {
-      // TRANSITが失敗したらDRIVINGモードで試行
-      request = {
-        origin: fromPort.location,
-        destination: toPort.location,
-        travelMode: google.maps.TravelMode.DRIVING,
-        avoidHighways: true,
-        avoidTolls: true,
-        avoidFerries: false
-      }
-
-      try {
-        const result = await directionsService.value.route(request)
-        
-        if (result.routes && result.routes.length > 0) {
-          const route = result.routes[0]
-          const leg = route.legs[0]
-          
-          addLog('warning', `${fromPort.name} → ${toPort.name}: Google Driving APIで取得`)
-          
-          return {
-            id: `${from}_${to}`,
-            from,
-            to,
-            fromName: fromPort.name,
-            toName: toPort.name,
-            path: route.overview_path.map(p => ({ lat: p.lat(), lng: p.lng() })),
-            distance: leg.distance?.value,
-            duration: leg.duration?.value,
-            source: 'google_driving',
-            geodesic: true,
-            createdAt: new Date().toISOString(),
-            updatedAt: new Date().toISOString()
-          }
-        }
-      } catch (drivingError) {
-        addLog('error', `${fromPort.name} → ${toPort.name}: APIで取得失敗、スキップします`)
       }
     }
   } catch (error) {
