@@ -296,24 +296,6 @@ const fetchSingleRoute = async (from: string, to: string): Promise<RouteData | n
   
   if (!fromPort || !toPort) return null
 
-  // まず手動定義のルートを確認
-  const manualPath = getRoutePath(from, to)
-  if (manualPath && manualPath.length > 0) {
-    addLog('info', `${fromPort.name} → ${toPort.name}: 手動定義のルートを使用`)
-    return {
-      id: `${from}_${to}`,
-      from,
-      to,
-      fromName: fromPort.name,
-      toName: toPort.name,
-      path: manualPath,
-      source: 'manual',
-      geodesic: true,
-      createdAt: new Date().toISOString(),
-      updatedAt: new Date().toISOString()
-    }
-  }
-
   // Google Directions APIで取得を試行
   try {
     // TRANSITモードで試行
