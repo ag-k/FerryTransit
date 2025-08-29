@@ -192,13 +192,9 @@ const renderActiveRoute = () => {
 
   console.log('[FerryMap] renderActiveRoute selectedRoute=', props.selectedRoute, 'storageRoutes=', routesFromStorage.value.length)
   if (props.selectedRoute) {
-    // まずストレージから描画を試行し、失敗ならフォールバック
+    // ストレージに存在するルートのみ描画（フォールバックは行わない）
     const drawn = drawRoutesFromStorage()
     console.log('[FerryMap] drawRoutesFromStorage drawn=', drawn)
-    if (!drawn) {
-      const fb = drawRoutes()
-      console.log('[FerryMap] fallback drawRoutes drawn=', fb)
-    }
   } else {
     // 未選択なら非表示のまま
   }
@@ -380,112 +376,7 @@ const getSourceLabel = (source: string) => {
   }
 }
 
-const drawRoutes = (): boolean => {
-  if (!map.value) return false
-
-  // 既存のpolylineをクリア
-  polylines.value.forEach(polyline => polyline.setMap(null))
-  polylines.value = []
-
-  // アクティブなルートのみ描画
-  const activeRoutes = props.selectedRoute
-    ? ROUTES_DATA.filter(r =>
-        (r.from === props.selectedRoute!.from && r.to === props.selectedRoute!.to) ||
-        (r.from === props.selectedRoute!.to && r.to === props.selectedRoute!.from)
-      )
-    : []
-
-  const bounds = new google.maps.LatLngBounds()
-  let drew = false
-  activeRoutes.forEach(route => {
-    const fromPort = PORTS_DATA[route.from]
-    const toPort = PORTS_DATA[route.to]
-
-    if (fromPort && toPort) {
-      // ferry-routes.tsから詳細な経路データを取得
-      const detailedPath = getRoutePath(route.from, route.to)
-      
-      let pathPoints: google.maps.LatLngLiteral[]
-      
-      if (detailedPath && detailedPath.length > 0) {
-        // 詳細な中間点がある場合は使用
-        pathPoints = detailedPath
-      } else {
-        // ない場合は直線のgeodesic曲線を使用
-        pathPoints = [fromPort.location, toPort.location]
-      }
-
-      const polyline = new google.maps.Polyline({
-        path: pathPoints,
-        geodesic: true, // 地球の曲率に沿った航路
-        strokeColor: '#4682B4', // スチールブルー（海路らしい色）
-        strokeOpacity: 0.7,
-        strokeWeight: 2,
-        icons: [{
-          icon: {
-            path: google.maps.SymbolPath.FORWARD_OPEN_ARROW,
-            scale: 2,
-            strokeColor: '#4682B4',
-            strokeOpacity: 0.8
-          },
-          offset: '50%'
-        }],
-        map: map.value
-      })
-
-      // マウスオーバーでハイライト
-      polyline.addListener('mouseover', () => {
-        polyline.setOptions({
-          strokeWeight: 3,
-          strokeOpacity: 0.9
-        })
-      })
-
-      polyline.addListener('mouseout', () => {
-        polyline.setOptions({
-          strokeWeight: 2,
-          strokeOpacity: 0.7
-        })
-      })
-
-      // クリックイベント
-      polyline.addListener('click', () => {
-        emit('routeSelect', { from: route.from, to: route.to })
-      })
-
-      polylines.value.push(polyline)
-      // Fit bounds
-      pathPoints.forEach(pt => bounds.extend(pt as any))
-      drew = true
-    }
-  })
-
-  if (!drew && props.selectedRoute) {
-    // ROUTES_DATA に存在しない場合は、出発港→到着港の直線で最低限描画
-    const fromPort = PORTS_DATA[props.selectedRoute.from]
-    const toPort = PORTS_DATA[props.selectedRoute.to]
-    if (fromPort && toPort) {
-      const pathPoints: google.maps.LatLngLiteral[] = [fromPort.location, toPort.location]
-      const polyline = new google.maps.Polyline({
-        path: pathPoints,
-        geodesic: true,
-        strokeColor: '#4682B4',
-        strokeOpacity: 0.8,
-        strokeWeight: 3,
-        map: map.value
-      })
-      polylines.value.push(polyline)
-      pathPoints.forEach(pt => bounds.extend(pt as any))
-      drew = true
-    }
-  }
-
-  if (drew && map.value) {
-    map.value.fitBounds(bounds, { padding: 80 })
-  }
-
-  return drew
-}
+// drawRoutes はフォールバックを廃止したため未使用（将来の再利用に備え削除）
 
 const highlightRoute = (from: string, to: string) => {
   if (!map.value) return
