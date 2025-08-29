@@ -420,6 +420,11 @@ const fetchRouteViaOverpass = async (from: string, to: string): Promise<RouteDat
     if (isShichiruiKuri) {
       ways = filterWaysByAvoid(ways, ['SAIGO', 'BEPPU'], 5000)
     }
+    const isHishiuraSaigo = (from === 'HISHIURA' && to === 'SAIGO') || (from === 'SAIGO' && to === 'HISHIURA')
+    if (isHishiuraSaigo) {
+      // 菱浦↔西郷は別府（BEPPU）経由を避ける
+      ways = filterWaysByAvoid(ways, ['BEPPU'], 5000)
+    }
     // 最短経路（ノードグラフ）で直通最短を抽出
     const graph = buildGraphFromWays(ways, 300)
     const sIdx = findNearestNode(graph, { lat: fromPort.location.lat, lng: fromPort.location.lng })
