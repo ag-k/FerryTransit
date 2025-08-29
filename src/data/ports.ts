@@ -191,6 +191,8 @@ export const ROUTES_DATA = [
   { from: 'KURI', to: 'BEPPU', ships: ['FERRY_DOZEN'] },
   // 来居 → 境港
   { from: 'KURI', to: 'HONDO_SAKAIMINATO', ships: ['FERRY_OKI', 'FERRY_SHIRASHIMA', 'FERRY_KUNIGA'] },
+  // 菱浦 → 境港
+  { from: 'HISHIURA', to: 'HONDO_SAKAIMINATO', ships: ['FERRY_OKI', 'FERRY_SHIRASHIMA', 'FERRY_KUNIGA'] },
   // 境港 → 別府
   { from: 'HONDO_SAKAIMINATO', to: 'BEPPU', ships: ['FERRY_OKI', 'FERRY_SHIRASHIMA', 'FERRY_KUNIGA'] }
 ]
