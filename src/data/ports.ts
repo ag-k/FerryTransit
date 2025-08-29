@@ -175,6 +175,8 @@ export const ROUTES_DATA = [
   { from: 'SAIGO', to: 'HISHIURA', ships: ['FERRY_DOZEN'] },
   // 西郷 → 七類
   { from: 'SAIGO', to: 'HONDO_SHICHIRUI', ships: ['FERRY_OKI', 'FERRY_SHIRASHIMA', 'FERRY_KUNIGA'] },
+  // 菱浦 → 七類
+  { from: 'HISHIURA', to: 'HONDO_SHICHIRUI', ships: ['FERRY_OKI', 'FERRY_SHIRASHIMA', 'FERRY_KUNIGA'] },
   // 菱浦 → 別府
   { from: 'HISHIURA', to: 'BEPPU', ships: ['FERRY_DOZEN'] },
   // 菱浦 → 西郷
