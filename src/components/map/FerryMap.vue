@@ -168,21 +168,39 @@ const initializeMap = async () => {
     addPortMarkers()
     
     // Firebase Storageから航路データを読み込み
-    const hasStorageData = await loadRoutesFromStorage()
-    
-    // 航路を描画
-    if (hasStorageData) {
-      drawRoutesFromStorage()
-    } else {
-      // フォールバック：手動定義のルートと Directions API
-      drawRoutes()
-      // fetchDirectionsRoutes() // 必要に応じて有効化
-    }
+    await loadRoutesFromStorage()
+    console.log('[FerryMap] init: selectedRoute=', props.selectedRoute)
+    // 現在の選択状態に合わせて描画（未選択なら消去）
+    renderActiveRoute()
     
     isLoading.value = false
   } catch (error) {
     console.error('Failed to load Google Maps:', error)
     isLoading.value = false
+  }
+}
+
+// 現在の選択状態に合わせて再描画
+const renderActiveRoute = () => {
+  if (!map.value) return
+  // 既存のpolylineを必ずクリア
+  polylines.value.forEach(polyline => polyline.setMap(null))
+  polylines.value = []
+  if (infoWindow.value) {
+    try { infoWindow.value.close() } catch {}
+  }
+
+  console.log('[FerryMap] renderActiveRoute selectedRoute=', props.selectedRoute, 'storageRoutes=', routesFromStorage.value.length)
+  if (props.selectedRoute) {
+    // まずストレージから描画を試行し、失敗ならフォールバック
+    const drawn = drawRoutesFromStorage()
+    console.log('[FerryMap] drawRoutesFromStorage drawn=', drawn)
+    if (!drawn) {
+      const fb = drawRoutes()
+      console.log('[FerryMap] fallback drawRoutes drawn=', fb)
+    }
+  } else {
+    // 未選択なら非表示のまま
   }
 }
 
@@ -214,8 +232,9 @@ const addPortMarkers = () => {
 }
 
 // Firebase Storageから取得したデータで航路を描画
-const drawRoutesFromStorage = () => {
-  if (!map.value || routesFromStorage.value.length === 0) return
+// 描画に成功したら true、該当ルートなし等で何も描画しなければ false を返す
+const drawRoutesFromStorage = (): boolean => {
+  if (!map.value || routesFromStorage.value.length === 0) return false
 
   // 既存のpolylineをクリア
   polylines.value.forEach(polyline => polyline.setMap(null))
@@ -230,7 +249,14 @@ const drawRoutesFromStorage = () => {
     : []
 
   const targetRoutes = props.selectedRoute ? activeOnly : []
+  if (props.selectedRoute && targetRoutes.length === 0) {
+    console.log('[FerryMap] storage: no target route for', props.selectedRoute)
+    // ストレージに該当ルートが存在しない => フォールバック描画に委ねる
+    return false
+  }
 
+  const bounds = new google.maps.LatLngBounds()
+  let drew = false
   targetRoutes.forEach(route => {
     // ソースに応じて色とスタイルを設定
     let strokeColor: string
@@ -325,7 +351,15 @@ const drawRoutesFromStorage = () => {
     ;(polyline as any).routeData = route
 
     polylines.value.push(polyline)
+    // Fit bounds
+    route.path.forEach(pt => bounds.extend(pt as any))
+    drew = true
   })
+
+  if (drew && map.value) {
+    map.value.fitBounds(bounds, { padding: 80 })
+  }
+  return drew
 }
 
 // ソースラベルを取得
@@ -346,8 +380,8 @@ const getSourceLabel = (source: string) => {
   }
 }
 
-const drawRoutes = () => {
-  if (!map.value) return
+const drawRoutes = (): boolean => {
+  if (!map.value) return false
 
   // 既存のpolylineをクリア
   polylines.value.forEach(polyline => polyline.setMap(null))
@@ -361,6 +395,8 @@ const drawRoutes = () => {
       )
     : []
 
+  const bounds = new google.maps.LatLngBounds()
+  let drew = false
   activeRoutes.forEach(route => {
     const fromPort = PORTS_DATA[route.from]
     const toPort = PORTS_DATA[route.to]
@@ -418,8 +454,37 @@ const drawRoutes = () => {
       })
 
       polylines.value.push(polyline)
+      // Fit bounds
+      pathPoints.forEach(pt => bounds.extend(pt as any))
+      drew = true
     }
   })
+
+  if (!drew && props.selectedRoute) {
+    // ROUTES_DATA に存在しない場合は、出発港→到着港の直線で最低限描画
+    const fromPort = PORTS_DATA[props.selectedRoute.from]
+    const toPort = PORTS_DATA[props.selectedRoute.to]
+    if (fromPort && toPort) {
+      const pathPoints: google.maps.LatLngLiteral[] = [fromPort.location, toPort.location]
+      const polyline = new google.maps.Polyline({
+        path: pathPoints,
+        geodesic: true,
+        strokeColor: '#4682B4',
+        strokeOpacity: 0.8,
+        strokeWeight: 3,
+        map: map.value
+      })
+      polylines.value.push(polyline)
+      pathPoints.forEach(pt => bounds.extend(pt as any))
+      drew = true
+    }
+  }
+
+  if (drew && map.value) {
+    map.value.fitBounds(bounds, { padding: 80 })
+  }
+
+  return drew
 }
 
 const highlightRoute = (from: string, to: string) => {
@@ -701,16 +766,25 @@ watch(() => props.selectedPort, (portId) => {
   }
 })
 
-watch(() => props.selectedRoute, (route) => {
-  if (route) {
-    // ストレージ由来のルートをアクティブのみで再描画
-    if (routesFromStorage.value.length > 0) {
-      drawRoutesFromStorage()
-    } else {
-      highlightRoute(route.from, route.to)
-    }
-  }
+watch(() => props.selectedRoute, () => {
+  renderActiveRoute()
 })
+
+// ルートデータ読み込み後にも再描画（初期ロードや再取得に対応）
+watch(routesFromStorage, () => {
+  renderActiveRoute()
+})
+
+// 初回同期: 地図が初期化され、選択ルートが与えられたら即描画
+watch(
+  () => ({ hasMap: !!map.value, route: props.selectedRoute ? `${props.selectedRoute.from}->${props.selectedRoute.to}` : '' }),
+  (state) => {
+    if (state.hasMap && props.selectedRoute) {
+      renderActiveRoute()
+    }
+  },
+  { immediate: true }
+)
 
 watch(isMapEnabled, (enabled) => {
   if (enabled && !map.value) {

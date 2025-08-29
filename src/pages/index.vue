@@ -461,8 +461,11 @@ watch([departure, arrival], ([newDeparture, newArrival]) => {
   } else if (newArrival) {
     selectedMapPort.value = newArrival
     selectedMapRoute.value = undefined
+  } else {
+    selectedMapRoute.value = undefined
+    selectedMapPort.value = ''
   }
-})
+}, { immediate: true })
 
 // Initialize data on mount
 onMounted(async () => {
