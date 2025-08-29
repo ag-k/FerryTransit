@@ -1236,8 +1236,8 @@ const fetchAllRoutes = async () => {
       fetchedRoutes.value.push(routeData)
     }
 
-    // API制限を避けるため少し待機
-    await new Promise(resolve => setTimeout(resolve, 500))
+    // API制限（特に Overpass API）を避けるため待機を延長
+    await new Promise(resolve => setTimeout(resolve, 2000))
   }
 
   progress.value.message = ''
