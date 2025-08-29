@@ -193,6 +193,8 @@ export const ROUTES_DATA = [
   { from: 'BEPPU', to: 'SAIGO', ships: ['FERRY_DOZEN'] },
   // 来居 → 西郷
   { from: 'KURI', to: 'SAIGO', ships: ['FERRY_DOZEN'] },
+  // 西郷 → 境港
+  { from: 'SAIGO', to: 'HONDO_SAKAIMINATO', ships: ['FERRY_OKI', 'FERRY_SHIRASHIMA', 'FERRY_KUNIGA'] },
   // 来居 → 別府
   { from: 'KURI', to: 'BEPPU', ships: ['FERRY_DOZEN'] },
   // 来居 → 境港
