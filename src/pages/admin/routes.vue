@@ -422,8 +422,8 @@ const fetchRouteViaOverpass = async (from: string, to: string): Promise<RouteDat
     }
     const isHishiuraSaigo = (from === 'HISHIURA' && to === 'SAIGO') || (from === 'SAIGO' && to === 'HISHIURA')
     if (isHishiuraSaigo) {
-      // 菱浦↔西郷は別府・本土港（七類・境港）経由を避ける
-      ways = filterWaysByAvoid(ways, ['BEPPU', 'HONDO_SHICHIRUI', 'HONDO_SAKAIMINATO'], 8000)
+      // 菱浦↔西郷は本土港（七類・境港）の経由のみ回避（別府は除外対象にしない）
+      ways = filterWaysByAvoid(ways, ['HONDO_SHICHIRUI', 'HONDO_SAKAIMINATO'], 8000)
     }
     // 最短経路（ノードグラフ）で直通最短を抽出
     const graph = buildGraphFromWays(ways, 300)
