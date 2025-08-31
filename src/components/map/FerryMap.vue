@@ -255,14 +255,19 @@ const drawRoutesFromStorage = (): boolean => {
   polylines.value = []
 
   // アクティブルートのみ描画（selectedRoute が指定されている場合）
-  const activeOnly = props.selectedRoute
-    ? routesFromStorage.value.filter(r =>
-        (r.from === props.selectedRoute!.from && r.to === props.selectedRoute!.to) ||
-        (r.from === props.selectedRoute!.to && r.to === props.selectedRoute!.from)
-      )
-    : []
+  let targetRoutes: RouteData[] = []
+  if (props.selectedRoute) {
+    const sel = props.selectedRoute
+    const expandSide = (id: string) =>
+      id === 'HONDO' ? ['HONDO_SHICHIRUI', 'HONDO_SAKAIMINATO'] : [id]
+    const fromCandidates = expandSide(sel.from)
+    const toCandidates = expandSide(sel.to)
 
-  const targetRoutes = props.selectedRoute ? activeOnly : []
+    targetRoutes = routesFromStorage.value.filter(r =>
+      (fromCandidates.includes(r.from) && toCandidates.includes(r.to)) ||
+      (fromCandidates.includes(r.to) && toCandidates.includes(r.from))
+    )
+  }
   if (props.selectedRoute && targetRoutes.length === 0) {
     console.log('[FerryMap] storage: no target route for', props.selectedRoute)
     // ストレージに該当ルートが存在しない => フォールバック描画に委ねる
