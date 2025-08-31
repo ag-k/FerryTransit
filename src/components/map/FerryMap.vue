@@ -205,6 +205,11 @@ const renderActiveRoute = () => {
 
   console.log('[FerryMap] renderActiveRoute selectedRoute=', props.selectedRoute, 'storageRoutes=', routesFromStorage.value.length)
   if (props.selectedRoute) {
+    // 出発地と目的地が同じ場合はルートを表示せず、当該港へズーム
+    if (props.selectedRoute.from === props.selectedRoute.to) {
+      focusPort(props.selectedRoute.from)
+      return
+    }
     // ストレージに存在するルートのみ描画（フォールバックは行わない）
     const drawn = drawRoutesFromStorage()
     console.log('[FerryMap] drawRoutesFromStorage drawn=', drawn)
