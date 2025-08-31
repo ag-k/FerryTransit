@@ -78,6 +78,19 @@ const showPortModal = ref(false)
 const selectedPortData = ref<Port | null>(null)
 const routesFromStorage = ref<RouteData[]>([])
 
+// 地図のfitBoundsにUIを考慮した余白を適用
+const fitBoundsWithUiPadding = (bounds: google.maps.LatLngBounds) => {
+  if (!map.value) return
+  const isMobile = typeof window !== 'undefined' && window.innerWidth < 768
+  const padding: any = {
+    top: 80,
+    right: 110,
+    bottom: isMobile ? 190 : 130, // モバイルではボトムナビ分を多めに確保
+    left: 110
+  }
+  map.value.fitBounds(bounds, padding)
+}
+
 // Computed
 const isMapEnabled = computed(() => settingsStore.mapEnabled)
 const currentLocale = computed(() => $i18n.locale.value)
@@ -353,7 +366,7 @@ const drawRoutesFromStorage = (): boolean => {
   })
 
   if (drew && map.value) {
-    map.value.fitBounds(bounds, { padding: 80 })
+    fitBoundsWithUiPadding(bounds)
   }
   return drew
 }
@@ -505,7 +518,7 @@ const highlightRoute = (from: string, to: string) => {
       const bounds = new google.maps.LatLngBounds()
       bounds.extend(fromPort.location)
       bounds.extend(toPort.location)
-      map.value.fitBounds(bounds, { padding: 100 })
+      fitBoundsWithUiPadding(bounds)
     }
   }
 }
