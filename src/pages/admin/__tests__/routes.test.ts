@@ -1,5 +1,6 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest'
 import { mount } from '@vue/test-utils'
+import { nextTick } from 'vue'
 import RoutesAdminPage from '../routes.vue'
 import { ref } from 'vue'
 
@@ -86,6 +87,11 @@ describe('Admin Routes Page - 現在の航路詳細表示', () => {
       }
     })
 
+    // onMounted の非同期ロードを待機
+    await nextTick()
+    await new Promise(r => setTimeout(r, 0))
+    await nextTick()
+
     // メタデータと一覧タイトルの表示
     expect(wrapper.text()).toContain('現在の航路データ')
     // 一覧ブロック
@@ -105,18 +111,27 @@ describe('Admin Routes Page - 現在の航路詳細表示', () => {
       }
     })
 
+    // 非同期ロード待機
+    await nextTick()
+    await new Promise(r => setTimeout(r, 0))
+    await nextTick()
+
     // 最初の「詳細」ボタンをクリック
     const detailButtons = wrapper.findAll('button')
     const detailBtn = detailButtons.find(b => b.text() === '詳細')
     expect(detailBtn).toBeTruthy()
     await detailBtn!.trigger('click')
+    await nextTick()
+    await new Promise(r => setTimeout(r, 0))
+    await nextTick()
 
-    // モーダルのタイトルに選択した航路が表示される
-    expect(wrapper.text()).toContain('A港 → B港 の詳細')
-    // 主要項目
-    expect(wrapper.text()).toContain('ルートID')
-    expect(wrapper.text()).toContain('取得元')
-    expect(wrapper.text()).toContain('経路点数')
+    // モーダルは Teleport で body 配下に描画されるため body を検査
+    expect(document.body.textContent).toContain('A港 → B港 の詳細')
+    // 主要項目（モーダル内）
+    const bodyText = document.body.textContent || ''
+    expect(bodyText).toContain('ルートID')
+    expect(bodyText).toContain('取得元')
+    expect(bodyText).toContain('経路点数')
   })
 
   it('Storageからダウンロードボタンでダウンロード処理が呼ばれる', async () => {
