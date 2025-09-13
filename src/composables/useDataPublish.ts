@@ -5,22 +5,21 @@ import { useAdminAuth } from '~/composables/useAdminAuth'
 import { useAdminFirestore } from '~/composables/useAdminFirestore'
 
 /**
- * 公開用のJSONデータをStorageから取得（ユーザー向け）
+ * 公開用のJSONデータを Hosting から取得（ユーザー向け）
+ * 参照URL例: /data/routes/ferry-routes.json
  */
 export const getJSONData = async <T>(path: string): Promise<T | null> => {
   try {
-    const { $firebase } = useNuxtApp()
-    const fileRef = storageRef($firebase.storage, `data/${path}`)
-    const url = await getDownloadURL(fileRef)
-    
-    const response = await fetch(url)
-    if (!response.ok) {
-      throw new Error(`Failed to fetch: ${response.statusText}`)
+    const localUrl = `/data/${path}`
+    const res = await fetch(localUrl, { cache: 'no-cache' })
+    if (!res.ok) {
+      throw new Error(`Local fetch failed: ${res.status} ${res.statusText}`)
     }
-    
-    return await response.json() as T
-  } catch (error) {
-    console.error('Failed to get JSON data:', error)
+    const json = (await res.json()) as T
+    if (process.dev) console.log(`[getJSONData] loaded from local: ${localUrl}`)
+    return json
+  } catch (e) {
+    if (process.dev) console.error(`[getJSONData] failed to load local JSON for ${path}:`, e)
     return null
   }
 }
@@ -48,6 +47,20 @@ export const uploadJSON = async (path: string, data: any, userInfo?: { uid: stri
     return await getDownloadURL(snapshot.ref)
   } catch (error) {
     console.error('JSON upload failed:', error)
+    throw error
+  }
+}
+
+/**
+ * Storage上のJSONのダウンロードURLを取得
+ */
+export const getStorageDownloadURL = async (path: string): Promise<string> => {
+  const { $firebase } = useNuxtApp()
+  try {
+    const fileRef = storageRef($firebase.storage, `data/${path}`)
+    return await getDownloadURL(fileRef)
+  } catch (error) {
+    console.error('Failed to get download URL:', error)
     throw error
   }
 }

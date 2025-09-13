@@ -1,6 +1,5 @@
 <template>
-  <AdminLayout>
-    <div class="space-y-6">
+  <div class="space-y-6">
       <div class="sm:flex sm:items-center sm:justify-between">
         <div>
           <h1 class="text-2xl font-bold text-gray-900 dark:text-white">
@@ -45,6 +44,60 @@
         </dl>
       </div>
 
+      <!-- 現在の航路一覧 -->
+      <div v-if="currentRoutes.length > 0" class="bg-white dark:bg-gray-800 shadow rounded-lg p-6">
+        <h2 class="text-lg font-medium text-gray-900 dark:text-white mb-4">
+          現在の航路一覧 ({{ currentRoutes.length }}件)
+        </h2>
+
+        <DataTable
+          :columns="[
+            { key: 'label', label: '航路', sortable: true },
+            { key: 'source', label: '取得元' },
+            { key: 'path', label: '経路点数', align: 'right' },
+            { key: 'distance', label: '距離', align: 'right' },
+            { key: 'duration', label: '所要時間', align: 'right' },
+            { key: 'updatedAt', label: '更新日時', sortable: true, format: 'datetime' }
+          ]"
+          :data="currentRoutes"
+          :pagination="true"
+          :page-size="10"
+        >
+          <template #cell-label="{ row }">
+            {{ row.fromName }} → {{ row.toName }}
+          </template>
+          <template #cell-source="{ value }">
+            <span
+              :class="{
+                'text-green-600': value === 'google_transit',
+                'text-yellow-600': value === 'google_driving',
+                'text-blue-600': value === 'manual',
+                'text-gray-600': value === 'custom' || value === 'google_routes' || value === 'overpass_osm'
+              }"
+            >
+              {{ getSourceLabel(value) }}
+            </span>
+          </template>
+          <template #cell-path="{ row }">
+            {{ row.path?.length || 0 }}
+          </template>
+          <template #cell-distance="{ row }">
+            {{ row.distance ? `${(row.distance / 1000).toFixed(1)} km` : '-' }}
+          </template>
+          <template #cell-duration="{ row }">
+            {{ row.duration ? `${Math.round(row.duration / 60)} 分` : '-' }}
+          </template>
+          <template #row-actions="{ row }">
+            <button
+              @click.stop="openDetails(row)"
+              class="text-blue-600 hover:text-blue-900 dark:text-blue-400 dark:hover:text-blue-300"
+            >
+              詳細
+            </button>
+          </template>
+        </DataTable>
+      </div>
+
       <!-- アクションボタン -->
       <div class="bg-white dark:bg-gray-800 shadow rounded-lg p-6">
         <h2 class="text-lg font-medium text-gray-900 dark:text-white mb-4">
@@ -77,6 +130,19 @@
               class="mr-2 h-5 w-5"
             />
             {{ isSaving ? '保存中...' : 'Firebase Storageに保存' }}
+          </button>
+
+          <button
+            @click="downloadFromStorage"
+            :disabled="isDownloading"
+            class="ml-4 inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md shadow-sm text-white bg-gray-700 hover:bg-gray-800 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-gray-500 disabled:opacity-50 disabled:cursor-not-allowed"
+          >
+            <Icon
+              :name="isDownloading ? 'heroicons:arrow-path' : 'heroicons:arrow-down-tray'"
+              :class="{ 'animate-spin': isDownloading }"
+              class="mr-2 h-5 w-5"
+            />
+            {{ isDownloading ? 'ダウンロード中...' : 'Storageからダウンロード' }}
           </button>
         </div>
 
@@ -180,19 +246,112 @@
             </span>
           </div>
         </div>
-      </div>
     </div>
-  </AdminLayout>
+
+    <!-- 詳細モーダル -->
+    <TransitionRoot as="template" :show="showDetails">
+      <Dialog as="div" class="relative z-50" @close="closeDetails">
+        <TransitionChild
+          as="template"
+          enter="ease-out duration-300"
+          enter-from="opacity-0"
+          enter-to="opacity-100"
+          leave="ease-in duration-200"
+          leave-from="opacity-100"
+          leave-to="opacity-0"
+        >
+          <div class="fixed inset-0 bg-black/40" />
+        </TransitionChild>
+
+        <div class="fixed inset-0 z-10 overflow-y-auto" v-if="selectedRoute">
+          <div class="flex min-h-full items-end justify-center p-4 text-center sm:items-center sm:p-0">
+            <TransitionChild
+              as="template"
+              enter="ease-out duration-300"
+              enter-from="opacity-0 translate-y-4 sm:translate-y-0 sm:scale-95"
+              enter-to="opacity-100 translate-y-0 sm:scale-100"
+              leave="ease-in duration-200"
+              leave-from="opacity-100 translate-y-0 sm:scale-100"
+              leave-to="opacity-0 translate-y-4 sm:translate-y-0 sm:scale-95"
+            >
+              <DialogPanel class="relative transform overflow-hidden rounded-lg bg-white dark:bg-gray-800 text-left shadow-xl transition-all sm:my-8 sm:w-full sm:max-w-2xl">
+                <div class="px-6 py-5">
+                  <DialogTitle as="h3" class="text-lg leading-6 font-medium text-gray-900 dark:text-white">
+                    {{ selectedRoute.fromName }} → {{ selectedRoute.toName }} の詳細
+                  </DialogTitle>
+                  <div class="mt-4 grid grid-cols-1 sm:grid-cols-2 gap-4 text-sm">
+                    <div>
+                      <div class="text-gray-500 dark:text-gray-400">ルートID</div>
+                      <div class="text-gray-900 dark:text-gray-100">{{ selectedRoute.id }}</div>
+                    </div>
+                    <div>
+                      <div class="text-gray-500 dark:text-gray-400">取得元</div>
+                      <div class="text-gray-900 dark:text-gray-100">{{ getSourceLabel(selectedRoute.source) }}</div>
+                    </div>
+                    <div>
+                      <div class="text-gray-500 dark:text-gray-400">経路点数</div>
+                      <div class="text-gray-900 dark:text-gray-100">{{ selectedRoute.path?.length || 0 }}</div>
+                    </div>
+                    <div>
+                      <div class="text-gray-500 dark:text-gray-400">距離</div>
+                      <div class="text-gray-900 dark:text-gray-100">{{ selectedRoute.distance ? `${(selectedRoute.distance / 1000).toFixed(1)} km` : '-' }}</div>
+                    </div>
+                    <div>
+                      <div class="text-gray-500 dark:text-gray-400">所要時間</div>
+                      <div class="text-gray-900 dark:text-gray-100">{{ selectedRoute.duration ? `${Math.round(selectedRoute.duration / 60)} 分` : '-' }}</div>
+                    </div>
+                    <div>
+                      <div class="text-gray-500 dark:text-gray-400">測地線</div>
+                      <div class="text-gray-900 dark:text-gray-100">{{ selectedRoute.geodesic ? 'はい' : 'いいえ' }}</div>
+                    </div>
+                    <div>
+                      <div class="text-gray-500 dark:text-gray-400">作成日時</div>
+                      <div class="text-gray-900 dark:text-gray-100">{{ new Date(selectedRoute.createdAt).toLocaleString('ja-JP') }}</div>
+                    </div>
+                    <div>
+                      <div class="text-gray-500 dark:text-gray-400">更新日時</div>
+                      <div class="text-gray-900 dark:text-gray-100">{{ new Date(selectedRoute.updatedAt).toLocaleString('ja-JP') }}</div>
+                    </div>
+                  </div>
+                </div>
+                <div class="bg-gray-50 dark:bg-gray-700 px-6 py-4 sm:flex sm:flex-row-reverse">
+                  <button
+                    type="button"
+                    @click="closeDetails"
+                    class="w-full inline-flex justify-center rounded-md border border-transparent shadow-sm px-4 py-2 text-base font-medium text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 sm:ml-3 sm:w-auto sm:text-sm"
+                  >
+                    閉じる
+                  </button>
+                </div>
+              </DialogPanel>
+            </TransitionChild>
+          </div>
+        </div>
+      </Dialog>
+    </TransitionRoot>
+  </div>
 </template>
 
 <script setup lang="ts">
 import { ref, onMounted } from 'vue'
+import {
+  Dialog,
+  DialogPanel,
+  DialogTitle,
+  TransitionChild,
+  TransitionRoot,
+} from '@headlessui/vue'
 import { Loader } from '@googlemaps/js-api-loader'
 import { PORTS_DATA, ROUTES_DATA } from '~/data/ports'
 import type { RouteData, RoutesDataFile, RoutesMetadata } from '~/types/route'
-import { uploadJSON, getJSONData } from '~/composables/useDataPublish'
+import { uploadJSON, getJSONData, getStorageDownloadURL } from '~/composables/useDataPublish'
 import { useAdminAuth } from '~/composables/useAdminAuth'
 import { getAuth } from 'firebase/auth'
+import DataTable from '~/components/admin/DataTable.vue'
+
+definePageMeta({
+  layout: 'admin',
+})
 
 const { user } = useAdminAuth()
 const { $toast } = useNuxtApp()
@@ -208,14 +367,28 @@ console.log('Admin Routes - Current user from auth:', auth.currentUser)
 // State
 const isFetching = ref(false)
 const isSaving = ref(false)
+const isDownloading = ref(false)
 const fetchedRoutes = ref<RouteData[]>([])
 const currentMetadata = ref<RoutesMetadata | null>(null)
+const currentRoutes = ref<RouteData[]>([])
 const logs = ref<{ timestamp: number; type: 'info' | 'success' | 'error' | 'warning'; message: string }[]>([])
 const progress = ref({
   current: 0,
   total: 0,
   message: ''
 })
+
+// 詳細モーダル
+const showDetails = ref(false)
+const selectedRoute = ref<RouteData | null>(null)
+const openDetails = (route: RouteData) => {
+  selectedRoute.value = route
+  showDetails.value = true
+}
+const closeDetails = () => {
+  showDetails.value = false
+  selectedRoute.value = null
+}
 
 // Google Maps
 const directionsService = ref<google.maps.DirectionsService>()
@@ -947,6 +1120,7 @@ const loadCurrentData = async () => {
     const data = await getJSONData<RoutesDataFile>('routes/ferry-routes.json')
     if (data) {
       currentMetadata.value = data.metadata
+      currentRoutes.value = data.routes || []
       addLog('info', `現在の航路データを読み込みました (v${data.metadata.version})`)
     }
   } catch (error) {
@@ -1292,8 +1466,10 @@ const saveToStorage = async () => {
 
     // Firebase Storageにアップロード
     await uploadJSON('routes/ferry-routes.json', dataFile, authUser ? { uid: authUser.uid } : undefined)
-    
+
+    // 画面にも即時反映
     currentMetadata.value = metadata
+    currentRoutes.value = [...fetchedRoutes.value]
     addLog('success', `Firebase Storageに保存しました (v${metadata.version})`)
     
     // 成功通知
@@ -1303,6 +1479,35 @@ const saveToStorage = async () => {
     $toast.error('航路データの保存に失敗しました')
   } finally {
     isSaving.value = false
+  }
+}
+
+// Firebase Storage から現在のデータをダウンロード
+const downloadFromStorage = async () => {
+  isDownloading.value = true
+  try {
+    const url = await getStorageDownloadURL('routes/ferry-routes.json')
+    // 直接URLを開くと保存名が付かない可能性があるため、Blob化して保存
+    const res = await fetch(url, { cache: 'no-cache' })
+    if (!res.ok) throw new Error(`HTTP ${res.status}`)
+    const blob = await res.blob()
+    const objectUrl = URL.createObjectURL(blob)
+    const a = document.createElement('a')
+    const version = currentMetadata.value?.version
+    a.href = objectUrl
+    a.download = version ? `ferry-routes.v${version}.json` : 'ferry-routes.json'
+    document.body.appendChild(a)
+    a.click()
+    a.remove()
+    URL.revokeObjectURL(objectUrl)
+    addLog('success', 'Storageから航路データをダウンロードしました')
+    $toast.success('Storageから航路データをダウンロードしました')
+  } catch (error) {
+    console.error('Download failed:', error)
+    addLog('error', 'Storageからのダウンロードに失敗しました')
+    $toast.error('Storageからのダウンロードに失敗しました')
+  } finally {
+    isDownloading.value = false
   }
 }
 
