@@ -77,6 +77,7 @@ const isLoading = ref(false)
 const showPortModal = ref(false)
 const selectedPortData = ref<Port | null>(null)
 const routesFromStorage = ref<RouteData[]>([])
+const labelOverlays = ref<Map<string, any>>(new Map())
 
 // 地図のfitBoundsにUIを考慮した余白を適用
 const fitBoundsWithUiPadding = (bounds: google.maps.LatLngBounds) => {
@@ -179,6 +180,8 @@ const initializeMap = async () => {
 
     // 港のマーカーを追加
     addPortMarkers()
+    // 初期の選択状態に応じてマーカーの見た目を更新
+    updateAllMarkerStyles()
     
     // Firebase Storageから航路データを読み込み
     await loadRoutesFromStorage()
@@ -213,9 +216,15 @@ const renderActiveRoute = () => {
     // ストレージに存在するルートのみ描画（フォールバックは行わない）
     const drawn = drawRoutesFromStorage()
     console.log('[FerryMap] drawRoutesFromStorage drawn=', drawn)
+    if (!drawn) {
+      const fb = drawFallbackRoute()
+      console.log('[FerryMap] drawFallbackRoute drawn=', fb)
+    }
   } else {
     // 未選択なら非表示のまま
   }
+  // ルートに応じたマーカー強調を更新
+  updateAllMarkerStyles()
 }
 
 const addPortMarkers = () => {
@@ -224,11 +233,13 @@ const addPortMarkers = () => {
   console.log('Adding port markers...')
   
   Object.values(PORTS_DATA).forEach(port => {
-    // 通常のMarkerを作成（アイコンなしでテスト）
+    // デフォルト（非アクティブ）のスタイルでマーカーを作成
     const marker = new google.maps.Marker({
       position: port.location,
       map: map.value,
-      title: currentLocale.value === 'ja' ? port.name : port.nameEn
+      title: currentLocale.value === 'ja' ? port.name : port.nameEn,
+      icon: getMarkerIcon(false),
+      zIndex: 1
     })
 
     // クリックイベント
@@ -242,6 +253,154 @@ const addPortMarkers = () => {
 
     markers.value.set(port.id, marker)
     console.log(`Marker added for ${port.id} at lat:${port.location.lat}, lng:${port.location.lng}`)
+  })
+}
+
+// 'HONDO' を本土2港に展開
+const expandMainland = (id: string): string[] => {
+  return id === 'HONDO' ? ['HONDO_SHICHIRUI', 'HONDO_SAKAIMINATO'] : [id]
+}
+
+// 選択状態に応じてアクティブな港ID集合を取得
+const getActivePortIds = (): Set<string> => {
+  const active = new Set<string>()
+  if (props.selectedRoute) {
+    expandMainland(props.selectedRoute.from).forEach(id => active.add(id))
+    expandMainland(props.selectedRoute.to).forEach(id => active.add(id))
+  } else if (props.selectedPort) {
+    expandMainland(props.selectedPort).forEach(id => active.add(id))
+  }
+  return active
+}
+
+// マーカー用のアイコン（アクティブ/非アクティブ）
+const getMarkerIcon = (active: boolean): google.maps.Icon | google.maps.Symbol => {
+  const googleAny: any = (window as any).google
+  const SymbolPath = googleAny?.maps?.SymbolPath
+  const base = {
+    path: SymbolPath ? SymbolPath.CIRCLE : 0,
+    scale: active ? 8 : 6,
+    fillOpacity: 1,
+    strokeWeight: active ? 2 : 1
+  } as any
+  if (active) {
+    base.fillColor = '#2563EB' // blue-600
+    base.strokeColor = '#1D4ED8' // blue-700
+  } else {
+    base.fillColor = '#9CA3AF' // gray-400
+    base.strokeColor = '#6B7280' // gray-500
+  }
+  return base
+}
+
+// LabelOverlay のコンストラクタを遅延生成（SSR/未ロード時の参照を回避）
+let LabelOverlayCtor: any | null = null
+const ensureLabelOverlayCtor = (): any | null => {
+  if (LabelOverlayCtor) return LabelOverlayCtor
+  if (typeof window === 'undefined') return null
+  const g: any = (window as any).google
+  if (!g?.maps?.OverlayView) return null
+  LabelOverlayCtor = class LabelOverlay extends g.maps.OverlayView {
+    position: any
+    text: string
+    div: HTMLDivElement | null
+    constructor(position: any, text: string) {
+      super()
+      this.position = position
+      this.text = text
+      this.div = null
+    }
+    onAdd() {
+      const div = document.createElement('div')
+      div.style.position = 'absolute'
+      div.style.whiteSpace = 'nowrap'
+      div.style.padding = '2px 6px'
+      div.style.borderRadius = '6px'
+      div.style.fontSize = '12px'
+      div.style.lineHeight = '18px'
+      div.style.color = '#111827'
+      div.style.background = '#FFFFFF'
+      div.style.border = '1px solid #E5E7EB'
+      div.style.boxShadow = '0 1px 2px rgba(0,0,0,0.06)'
+      div.style.pointerEvents = 'none'
+      div.textContent = this.text
+      this.div = div
+      const panes = (this as any).getPanes()
+      panes?.overlayLayer.appendChild(div)
+    }
+    draw() {
+      if (!this.div) return
+      const projection = (this as any).getProjection()
+      const point = projection?.fromLatLngToDivPixel(this.position)
+      if (point) {
+        this.div.style.left = `${point.x + 10}px`
+        this.div.style.top = `${point.y - 14}px`
+      }
+    }
+    onRemove() {
+      if (this.div && this.div.parentNode) {
+        this.div.parentNode.removeChild(this.div)
+      }
+      this.div = null
+    }
+    setText(text: string) {
+      this.text = text
+      if (this.div) this.div.textContent = text
+    }
+    setPosition(position: any) {
+      this.position = position
+      this.draw()
+    }
+  }
+  return LabelOverlayCtor
+}
+
+// ラベルの表示/更新
+const showOrUpdateLabel = (portId: string) => {
+  if (!map.value) return
+  const port = PORTS_DATA[portId]
+  if (!port) return
+  const text = currentLocale.value === 'ja' ? port.name : port.nameEn
+  const g: any = (window as any).google
+  const pos = new g.maps.LatLng(port.location.lat, port.location.lng)
+
+  const existing = labelOverlays.value.get(portId) as any
+  if (existing) {
+    existing.setText(text)
+    existing.setPosition(pos)
+    existing.draw()
+    return
+  }
+  const Ctor = ensureLabelOverlayCtor()
+  if (!Ctor) return
+  const overlay = new Ctor(pos, text)
+  overlay.setMap(map.value)
+  labelOverlays.value.set(portId, overlay)
+}
+
+// ラベルの非表示
+const hideLabel = (portId: string) => {
+  const overlay = labelOverlays.value.get(portId) as any
+  if (overlay) {
+    overlay.setMap(null as any)
+    labelOverlays.value.delete(portId)
+  }
+}
+
+// すべてのマーカー/ラベルを選択状態に応じて更新
+const updateAllMarkerStyles = () => {
+  if (!map.value || markers.value.size === 0) return
+  const activeIds = getActivePortIds()
+  markers.value.forEach((marker, id) => {
+    const isActive = activeIds.has(id)
+    marker.setIcon(getMarkerIcon(isActive))
+    marker.setZIndex(isActive ? 10 : 1)
+    marker.setOpacity(isActive ? 1 : 0.85)
+    if (isActive) {
+      showOrUpdateLabel(id)
+    } else {
+      hideLabel(id)
+    }
   })
 }
 
@@ -313,6 +472,7 @@ const drawRoutesFromStorage = (): boolean => {
       strokeColor,
       strokeOpacity,
       strokeWeight,
+      zIndex: 5,
       strokeDasharray: dashArray,
       icons: [{
         icon: {
@@ -378,6 +538,54 @@ const drawRoutesFromStorage = (): boolean => {
   if (drew && map.value) {
     fitBoundsWithUiPadding(bounds)
   }
+  return drew
+}
+
+// ストレージに対象がない場合のフォールバック描画（手動定義の経路）
+const drawFallbackRoute = (): boolean => {
+  if (!map.value || !props.selectedRoute) return false
+
+  const sel = props.selectedRoute
+  const fromCandidates = expandMainland(sel.from)
+  const toCandidates = expandMainland(sel.to)
+
+  const googleAny: any = (window as any).google
+  const bounds = new googleAny.maps.LatLngBounds()
+  let drew = false
+
+  fromCandidates.forEach(from => {
+    toCandidates.forEach(to => {
+      const path = getRoutePath(from, to)
+      if (!path || path.length < 2) return
+      const smoothed = smoothPath(path, 120)
+      const polyline = new googleAny.maps.Polyline({
+        path: smoothed,
+        geodesic: true,
+        strokeColor: '#4682B4',
+        strokeOpacity: 0.75,
+        strokeWeight: 3,
+        zIndex: 5,
+        icons: [{
+          icon: {
+            path: googleAny.maps.SymbolPath.FORWARD_OPEN_ARROW,
+            scale: 2,
+            strokeColor: '#4682B4',
+            strokeOpacity: 0.9
+          },
+          offset: '50%'
+        }],
+        map: map.value
+      })
+      polylines.value.push(polyline)
+      smoothed.forEach(p => bounds.extend(p))
+      drew = true
+    })
+  })
+
+  if (drew) {
+    fitBoundsWithUiPadding(bounds)
+  }
+
   return drew
 }
 
@@ -678,10 +886,14 @@ watch(() => props.selectedPort, (portId) => {
   if (portId) {
     focusPort(portId)
   }
+  // 港選択に応じてマーカー強調を更新
+  updateAllMarkerStyles()
 })
 
 watch(() => props.selectedRoute, () => {
   renderActiveRoute()
+  // ルート選択に応じてマーカー強調を更新
+  updateAllMarkerStyles()
 })
 
 // ルートデータ読み込み後にも再描画（初期ロードや再取得に対応）
@@ -714,6 +926,9 @@ watch(currentLocale, () => {
       marker.setTitle(currentLocale.value === 'ja' ? port.name : port.nameEn)
     }
   })
+  // 現在表示中のラベル文言も更新
+  const activeIds = getActivePortIds()
+  activeIds.forEach(id => showOrUpdateLabel(id))
 })
 
 // Lifecycle
@@ -729,6 +944,8 @@ onUnmounted(() => {
   polylines.value.forEach(polyline => polyline.setMap(null))
   markers.value.clear()
   polylines.value = []
+  labelOverlays.value.forEach(overlay => overlay.setMap(null as any))
+  labelOverlays.value.clear()
 })
 </script>
 

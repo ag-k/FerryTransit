@@ -61,7 +61,8 @@
       "mcp__serena__search_for_pattern",
       "mcp__serena__replace_regex",
       "Bash(firebase deploy:*)",
-      "Bash(PORT=3031 npm run dev)"
+      "Bash(PORT=3031 npm run dev)",
+      "mcp__serena__replace_symbol_body"
     ],
     "deny": [],
     "defaultMode": "acceptEdits"
