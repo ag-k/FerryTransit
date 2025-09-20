@@ -423,14 +423,18 @@ const drawRoutesFromStorage = (): boolean => {
     const fromCandidates = expandSide(sel.from)
     const toCandidates = expandSide(sel.to)
 
-    targetRoutes = routesFromStorage.value.filter(r =>
-      (fromCandidates.includes(r.from) && toCandidates.includes(r.to)) ||
-      (fromCandidates.includes(r.to) && toCandidates.includes(r.from))
+    const directMatches = routesFromStorage.value.filter(r =>
+      fromCandidates.includes(r.from) && toCandidates.includes(r.to)
     )
+
+    if (directMatches.length > 0) {
+      targetRoutes = directMatches
+    }
   }
+
   if (props.selectedRoute && targetRoutes.length === 0) {
     console.log('[FerryMap] storage: no target route for', props.selectedRoute)
-    // ストレージに該当ルートが存在しない => フォールバック描画に委ねる
+    // ストレージに該当ルートが存在しない
     return false
   }
 
