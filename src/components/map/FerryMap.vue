@@ -38,7 +38,6 @@
 import { ref, onMounted, onUnmounted, watch, computed } from 'vue'
 import { Loader } from '@googlemaps/js-api-loader'
 import { PORTS_DATA, ROUTES_DATA } from '~/data/ports'
-import { getRoutePath, smoothPath } from '~/data/ferry-routes'
 import PortDetailsModal from './PortDetailsModal.vue'
 import type { Port } from '~/types'
 import type { RouteData, RoutesDataFile } from '~/types/route'
@@ -200,6 +199,9 @@ const initializeMap = async () => {
 const renderActiveRoute = () => {
   if (!map.value) return
   // 既存のpolylineを必ずクリア
+  if (directionsRenderer.value) {
+    try { directionsRenderer.value.setMap(null) } catch {}
+  }
   polylines.value.forEach(polyline => polyline.setMap(null))
   polylines.value = []
   if (infoWindow.value) {
@@ -217,8 +219,7 @@ const renderActiveRoute = () => {
     const drawn = drawRoutesFromStorage()
     console.log('[FerryMap] drawRoutesFromStorage drawn=', drawn)
     if (!drawn) {
-      const fb = drawFallbackRoute()
-      console.log('[FerryMap] drawFallbackRoute drawn=', fb)
+      console.log('[FerryMap] storage route not found; skipping fallback rendering')
     }
   } else {
     // 未選択なら非表示のまま
@@ -541,54 +542,6 @@ const drawRoutesFromStorage = (): boolean => {
   return drew
 }
 
-// ストレージに対象がない場合のフォールバック描画（手動定義の経路）
-const drawFallbackRoute = (): boolean => {
-  if (!map.value || !props.selectedRoute) return false
-
-  const sel = props.selectedRoute
-  const fromCandidates = expandMainland(sel.from)
-  const toCandidates = expandMainland(sel.to)
-
-  const googleAny: any = (window as any).google
-  const bounds = new googleAny.maps.LatLngBounds()
-  let drew = false
-
-  fromCandidates.forEach(from => {
-    toCandidates.forEach(to => {
-      const path = getRoutePath(from, to)
-      if (!path || path.length < 2) return
-      const smoothed = smoothPath(path, 120)
-      const polyline = new googleAny.maps.Polyline({
-        path: smoothed,
-        geodesic: true,
-        strokeColor: '#4682B4',
-        strokeOpacity: 0.75,
-        strokeWeight: 3,
-        zIndex: 5,
-        icons: [{
-          icon: {
-            path: googleAny.maps.SymbolPath.FORWARD_OPEN_ARROW,
-            scale: 2,
-            strokeColor: '#4682B4',
-            strokeOpacity: 0.9
-          },
-          offset: '50%'
-        }],
-        map: map.value
-      })
-      polylines.value.push(polyline)
-      smoothed.forEach(p => bounds.extend(p))
-      drew = true
-    })
-  })
-
-  if (drew) {
-    fitBoundsWithUiPadding(bounds)
-  }
-
-  return drew
-}
-
 // ソースラベルを取得
 const getSourceLabel = (source: string) => {
   switch (source) {
@@ -606,8 +559,6 @@ const getSourceLabel = (source: string) => {
       return source
   }
 }
-
-// drawRoutes はフォールバックを廃止したため未使用（将来の再利用に備え削除）
 
 const highlightRoute = (from: string, to: string) => {
   if (!map.value) return
@@ -659,7 +610,7 @@ const highlightRoute = (from: string, to: string) => {
         }]
       })
     } else {
-      // フォールバック（従来のスタイル）
+      // routeDataが設定されていないポリライン（Directions APIなど）
       polyline.setOptions({
         strokeColor: '#4682B4',
         strokeOpacity: 0.7,
