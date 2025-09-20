@@ -61,7 +61,7 @@
                 {{ $t('FARE_TABLE') }}
               </NuxtLink>
             </li>
-            <li>
+            <li v-if="isCalendarEnabled">
               <NuxtLink
                 class="block px-4 py-4 lg:py-2 rounded hover:bg-blue-700 dark:hover:bg-gray-700 transition-colors text-base lg:text-sm touch-manipulation"
                 :class="{ 'bg-blue-700 dark:bg-gray-700 font-medium': $route.path === '/calendar' }"
@@ -213,6 +213,8 @@ const { locale, locales } = useI18n()
 const route = useRoute()
 const switchLocalePath = useSwitchLocalePath()
 const localePath = useLocalePath()
+const runtimeConfig = useRuntimeConfig()
+const isCalendarEnabled = computed(() => runtimeConfig.public?.features?.calendar ?? false)
 
 // Menu states
 const menuOpen = ref(false)

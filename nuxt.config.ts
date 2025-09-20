@@ -1,4 +1,13 @@
 // https://nuxt.com/docs/api/configuration/nuxt-config
+
+const parseBooleanEnv = (value?: string) => {
+  if (!value) {
+    return false
+  }
+
+  return ['1', 'true', 'yes', 'on'].includes(value.toLowerCase())
+}
+
 export default defineNuxtConfig({
   srcDir: 'src/',
   compatibilityDate: '2025-05-15',
@@ -74,6 +83,9 @@ export default defineNuxtConfig({
       apiBase: process.env.NUXT_PUBLIC_API_BASE || 'https://naturebot-lab.com/ferry_transit',
       shipStatusApi: process.env.NUXT_PUBLIC_SHIP_STATUS_API || 'https://ship.nkk-oki.com/api',
       googleMapsApiKey: process.env.NUXT_PUBLIC_GOOGLE_MAPS_API_KEY || '',
+      features: {
+        calendar: parseBooleanEnv(process.env.NUXT_PUBLIC_FEATURE_CALENDAR)
+      },
       firebase: {
         apiKey: process.env.NUXT_PUBLIC_FIREBASE_API_KEY || '',
         authDomain: process.env.NUXT_PUBLIC_FIREBASE_AUTH_DOMAIN || '',
