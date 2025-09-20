@@ -70,6 +70,9 @@ global.useNuxtApp = vi.fn(() => ({
 }))
 global.useRuntimeConfig = vi.fn(() => ({
   public: {
+    features: {
+      calendar: false
+    },
     firebase: {
       projectId: 'test-project',
       storageBucket: 'test-bucket'

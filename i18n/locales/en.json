@@ -171,6 +171,8 @@
   "OPERATION_NEW_YEAR": "New Year Special Schedule",
   "OPERATION_OBON_EXTRA": "Obon Extra Services",
   "CALENDAR": "Operation Calendar",
+  "CALENDAR_UNAVAILABLE_TITLE": "Operation Calendar (Unavailable)",
+  "CALENDAR_UNAVAILABLE_MESSAGE": "The operation calendar is currently unavailable.",
   "HOLIDAY_LOAD_ERROR": "Failed to load holiday data",
   "PEAK_SEASON_NOTICE": "Peak Season Rates Apply",
   "SPECIAL_OPERATION": "Special Operation",

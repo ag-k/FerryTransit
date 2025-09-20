@@ -214,6 +214,8 @@
   "OPERATION_NEW_YEAR": "年始特別ダイヤ",
   "OPERATION_OBON_EXTRA": "お盆臨時便運航",
   "CALENDAR": "運航カレンダー",
+  "CALENDAR_UNAVAILABLE_TITLE": "運航カレンダー（非公開）",
+  "CALENDAR_UNAVAILABLE_MESSAGE": "現在、運航カレンダーは公開を停止しています。",
   "HOLIDAY_LOAD_ERROR": "祝日データの読み込みに失敗しました",
   "PEAK_SEASON_NOTICE": "繁忙期料金適用",
   "SPECIAL_OPERATION": "特別運航",
