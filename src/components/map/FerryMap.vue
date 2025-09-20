@@ -35,7 +35,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref, onMounted, onUnmounted, watch, computed } from 'vue'
+import { ref, onMounted, onUnmounted, watch, computed, nextTick } from 'vue'
 import { Loader } from '@googlemaps/js-api-loader'
 import { PORTS_DATA, ROUTES_DATA } from '~/data/ports'
 import PortDetailsModal from './PortDetailsModal.vue'
@@ -71,6 +71,8 @@ const mapContainer = ref<HTMLElement>()
 const map = ref<google.maps.Map>()
 const markers = ref<Map<string, google.maps.Marker>>(new Map())
 const polylines = ref<google.maps.Polyline[]>([])
+const allPolylines = new Set<google.maps.Polyline>()
+const mapListeners: google.maps.MapsEventListener[] = []
 const infoWindow = ref<google.maps.InfoWindow>()
 const isLoading = ref(false)
 const showPortModal = ref(false)
@@ -89,6 +91,60 @@ const fitBoundsWithUiPadding = (bounds: google.maps.LatLngBounds) => {
     left: 110
   }
   map.value.fitBounds(bounds, padding)
+}
+
+const detachPolyline = (polyline: google.maps.Polyline) => {
+  try {
+    polyline.setMap(null)
+  } catch {}
+  if (typeof window !== 'undefined') {
+    const g: any = (window as any).google
+    g?.maps?.event?.clearInstanceListeners(polyline)
+  }
+  allPolylines.delete(polyline)
+}
+
+const syncActivePolylineCache = () => {
+  polylines.value = polylines.value.filter(polyline => allPolylines.has(polyline))
+}
+
+const ensureOnlySelectedRouteVisible = () => {
+  const selected = props.selectedRoute
+  if (!selected) {
+    for (const polyline of Array.from(allPolylines)) {
+      detachPolyline(polyline)
+    }
+    polylines.value = []
+    return
+  }
+
+  const { from, to } = selected
+  for (const polyline of Array.from(allPolylines)) {
+    const routeData = (polyline as any).routeData as RouteData | undefined
+    const isMatch = !!routeData && routeData.from === from && routeData.to === to
+    if (!isMatch) {
+      detachPolyline(polyline)
+    } else if (map.value && polyline.getMap() !== map.value) {
+      polyline.setMap(map.value)
+    }
+  }
+  syncActivePolylineCache()
+}
+
+const registerPolyline = (polyline: google.maps.Polyline, route?: RouteData) => {
+  if (route) {
+    ;(polyline as any).routeData = route
+  }
+  polylines.value.push(polyline)
+  allPolylines.add(polyline)
+}
+
+const resetRouteOverlays = () => {
+  if (directionsRenderer.value) {
+    try { directionsRenderer.value.setMap(null) } catch {}
+  }
+  polylines.value.forEach(detachPolyline)
+  polylines.value = []
 }
 
 // Computed
@@ -177,6 +233,11 @@ const initializeMap = async () => {
       }
     })
 
+    const zoomListener = map.value.addListener('zoom_changed', () => {
+      ensureOnlySelectedRouteVisible()
+    })
+    mapListeners.push(zoomListener)
+
     // 港のマーカーを追加
     addPortMarkers()
     // 初期の選択状態に応じてマーカーの見た目を更新
@@ -187,7 +248,7 @@ const initializeMap = async () => {
     console.log('[FerryMap] init: selectedRoute=', props.selectedRoute)
     // 現在の選択状態に合わせて描画（未選択なら消去）
     renderActiveRoute()
-    
+
     isLoading.value = false
   } catch (error) {
     console.error('Failed to load Google Maps:', error)
@@ -198,12 +259,7 @@ const initializeMap = async () => {
 // 現在の選択状態に合わせて再描画
 const renderActiveRoute = () => {
   if (!map.value) return
-  // 既存のpolylineを必ずクリア
-  if (directionsRenderer.value) {
-    try { directionsRenderer.value.setMap(null) } catch {}
-  }
-  polylines.value.forEach(polyline => polyline.setMap(null))
-  polylines.value = []
+  resetRouteOverlays()
   if (infoWindow.value) {
     try { infoWindow.value.close() } catch {}
   }
@@ -213,6 +269,7 @@ const renderActiveRoute = () => {
     // 出発地と目的地が同じ場合はルートを表示せず、当該港へズーム
     if (props.selectedRoute.from === props.selectedRoute.to) {
       focusPort(props.selectedRoute.from)
+      ensureOnlySelectedRouteVisible()
       return
     }
     // ストレージに存在するルートのみ描画（フォールバックは行わない）
@@ -224,6 +281,7 @@ const renderActiveRoute = () => {
   } else {
     // 未選択なら非表示のまま
   }
+  ensureOnlySelectedRouteVisible()
   // ルートに応じたマーカー強調を更新
   updateAllMarkerStyles()
 }
@@ -410,10 +468,6 @@ const updateAllMarkerStyles = () => {
 const drawRoutesFromStorage = (): boolean => {
   if (!map.value || routesFromStorage.value.length === 0) return false
 
-  // 既存のpolylineをクリア
-  polylines.value.forEach(polyline => polyline.setMap(null))
-  polylines.value = []
-
   // アクティブルートのみ描画（selectedRoute が指定されている場合）
   let targetRoutes: RouteData[] = []
   if (props.selectedRoute) {
@@ -532,9 +586,7 @@ const drawRoutesFromStorage = (): boolean => {
     })
 
     // メタデータをpolylineに保存
-    ;(polyline as any).routeData = route
-
-    polylines.value.push(polyline)
+    registerPolyline(polyline, route)
     // Fit bounds
     route.path.forEach(pt => bounds.extend(pt as any))
     drew = true
@@ -750,8 +802,7 @@ const fetchDirectionsRoutes = async () => {
               }],
               map: map.value
             })
-            
-            polylines.value.push(ferryRoute)
+            registerPolyline(ferryRoute)
             continue // 成功したら次のルートへ
           }
         }
@@ -801,8 +852,7 @@ const fetchDirectionsRoutes = async () => {
               }],
               map: map.value
             })
-            
-            polylines.value.push(ferryRoute)
+            registerPolyline(ferryRoute)
           }
         }
       } catch (drivingError) {
@@ -897,6 +947,12 @@ onUnmounted(() => {
   // クリーンアップ
   markers.value.forEach(marker => marker.setMap(null))
   polylines.value.forEach(polyline => polyline.setMap(null))
+  for (const listener of mapListeners) {
+    listener.remove()
+  }
+  for (const polyline of Array.from(allPolylines)) {
+    detachPolyline(polyline)
+  }
   markers.value.clear()
   polylines.value = []
   labelOverlays.value.forEach(overlay => overlay.setMap(null as any))
