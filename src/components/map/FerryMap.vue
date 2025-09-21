@@ -118,10 +118,43 @@ const ensureOnlySelectedRouteVisible = () => {
     return
   }
 
-  const { from, to } = selected
+  const fromCandidates = expandMainland(selected.from)
+  const toCandidates = expandMainland(selected.to)
+
+  const matchesSelectedRoute = (route: RouteData): boolean => {
+    return fromCandidates.includes(route.from) && toCandidates.includes(route.to)
+  }
+
+  const matchesPolylineWithoutMetadata = (polyline: google.maps.Polyline): boolean => {
+    const path = polyline.getPath()
+    if (!path || path.getLength() < 2) return false
+
+    const start = path.getAt(0)
+    const end = path.getAt(path.getLength() - 1)
+    if (!start || !end) return false
+
+    const isNearPort = (point: google.maps.LatLng, portId: string) => {
+      const port = PORTS_DATA[portId]
+      if (!port) return false
+      return (
+        Math.abs(point.lat() - port.location.lat) < 0.001 &&
+        Math.abs(point.lng() - port.location.lng) < 0.001
+      )
+    }
+
+    for (const fromId of fromCandidates) {
+      for (const toId of toCandidates) {
+        if (isNearPort(start, fromId) && isNearPort(end, toId)) {
+          return true
+        }
+      }
+    }
+    return false
+  }
+
   for (const polyline of Array.from(allPolylines)) {
     const routeData = (polyline as any).routeData as RouteData | undefined
-    const isMatch = !!routeData && routeData.from === from && routeData.to === to
+    const isMatch = routeData ? matchesSelectedRoute(routeData) : matchesPolylineWithoutMetadata(polyline)
     if (!isMatch) {
       detachPolyline(polyline)
     } else if (map.value && polyline.getMap() !== map.value) {
@@ -684,39 +717,51 @@ const highlightRoute = (from: string, to: string) => {
     }
   })
 
+  const fromCandidates = expandMainland(from)
+  const toCandidates = expandMainland(to)
+
   // 選択された航路をハイライト
   const selectedPolyline = polylines.value.find(polyline => {
     const routeData = (polyline as any).routeData
     
     // Storage由来のデータがある場合
     if (routeData) {
-      return (routeData.from === from && routeData.to === to) || 
-             (routeData.from === to && routeData.to === from)
+      const directMatch = fromCandidates.includes(routeData.from) && toCandidates.includes(routeData.to)
+      const reverseMatch = fromCandidates.includes(routeData.to) && toCandidates.includes(routeData.from)
+      return directMatch || reverseMatch
     }
-    
+
     // フォールバック：座標で判定
-    const fromPort = PORTS_DATA[from]
-    const toPort = PORTS_DATA[to]
-    
-    if (!fromPort || !toPort) return false
+    const fromPorts = fromCandidates
+      .map(id => PORTS_DATA[id])
+      .filter((port): port is Port => !!port)
+    const toPorts = toCandidates
+      .map(id => PORTS_DATA[id])
+      .filter((port): port is Port => !!port)
+    if (fromPorts.length === 0 || toPorts.length === 0) return false
     
     const path = polyline.getPath()
     const pathLength = path.getLength()
     if (pathLength < 2) return false
-    
+
     const start = path.getAt(0)
     const end = path.getAt(pathLength - 1)
-    
-    return (
-      (Math.abs(start.lat() - fromPort.location.lat) < 0.001 &&
-       Math.abs(start.lng() - fromPort.location.lng) < 0.001 &&
-       Math.abs(end.lat() - toPort.location.lat) < 0.001 &&
-       Math.abs(end.lng() - toPort.location.lng) < 0.001) ||
-      (Math.abs(start.lat() - toPort.location.lat) < 0.001 &&
-       Math.abs(start.lng() - toPort.location.lng) < 0.001 &&
-       Math.abs(end.lat() - fromPort.location.lat) < 0.001 &&
-       Math.abs(end.lng() - fromPort.location.lng) < 0.001)
+
+    const isClose = (point: google.maps.LatLng, port: Port) => (
+      Math.abs(point.lat() - port.location.lat) < 0.001 &&
+      Math.abs(point.lng() - port.location.lng) < 0.001
     )
+
+    for (const fromPort of fromPorts) {
+      for (const toPort of toPorts) {
+        const directMatch = isClose(start, fromPort) && isClose(end, toPort)
+        const reverseMatch = isClose(start, toPort) && isClose(end, fromPort)
+        if (directMatch || reverseMatch) {
+          return true
+        }
+      }
+    }
+    return false
   })
 
   if (selectedPolyline) {
