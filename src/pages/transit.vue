@@ -29,15 +29,41 @@
             </div>
           </div>
           
-          <div class="md:col-span-2 flex items-end justify-center mb-4">
-            <button 
-              type="button" 
-              class="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700 dark:bg-blue-500 dark:hover:bg-blue-600 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 dark:focus:ring-offset-gray-800 transform active:scale-95 transition-all duration-150 shadow-sm hover:shadow-md"
+          <div class="md:col-span-2 flex items-center justify-center md:items-end mb-4">
+            <button
+              type="button"
+              class="p-3 md:px-4 md:py-2 text-base border border-blue-600 dark:border-blue-400 text-blue-600 dark:text-blue-200 rounded-md hover:bg-blue-50 dark:hover:bg-blue-900/20 transition-colors flex-shrink-0 touch-manipulation"
               @click="reverseRoute"
+              title="出発地と到着地を入れ替え"
               aria-label="Reverse route"
             >
-              <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" viewBox="0 0 16 16">
-                <path fill-rule="evenodd" d="M1 11.5a.5.5 0 0 0 .5.5h11.793l-3.147 3.146a.5.5 0 0 0 .708.708l4-4a.5.5 0 0 0 0-.708l-4-4a.5.5 0 0 0-.708.708L13.293 11H1.5a.5.5 0 0 0-.5.5zm14-7a.5.5 0 0 1-.5.5H2.707l3.147 3.146a.5.5 0 1 1-.708.708l-4-4a.5.5 0 0 1 0-.708l4-4a.5.5 0 1 1 .708.708L2.707 4H14.5a.5.5 0 0 1 .5.5z"/>
+              <svg
+                class="md:hidden"
+                xmlns="http://www.w3.org/2000/svg"
+                width="20"
+                height="20"
+                fill="currentColor"
+                viewBox="0 0 16 16"
+                aria-hidden="true"
+              >
+                <path
+                  fill-rule="evenodd"
+                  d="M11.5 15a.5.5 0 0 0 .5-.5V2.707l3.146 3.147a.5.5 0 0 0 .708-.708l-4-4a.5.5 0 0 0-.708 0l-4 4a.5.5 0 1 0 .708.708L11 2.707V14.5a.5.5 0 0 0 .5.5zm-7-14a.5.5 0 0 1 .5.5v11.793l3.146-3.147a.5.5 0 0 1 .708.708l-4 4a.5.5 0 0 1-.708 0l-4-4a.5.5 0 0 1 .708-.708L4 13.293V1.5a.5.5 0 0 1 .5-.5z"
+                />
+              </svg>
+              <svg
+                class="hidden md:inline"
+                xmlns="http://www.w3.org/2000/svg"
+                width="20"
+                height="20"
+                fill="currentColor"
+                viewBox="0 0 16 16"
+                aria-hidden="true"
+              >
+                <path
+                  fill-rule="evenodd"
+                  d="M1 11.5a.5.5 0 0 0 .5.5h11.793l-3.147 3.146a.5.5 0 0 0 .708.708l4-4a.5.5 0 0 0 0-.708l-4-4a.5.5 0 0 0-.708.708L13.293 11H1.5a.5.5 0 0 0-.5.5zm14-7a.5.5 0 0 1-.5.5H2.707l3.147 3.146a.5.5 0 1 1-.708.708l-4-4a.5.5 0 0 1 0-.708l4-4a.5.5 0 1 1 .708.708L2.707 4H14.5a.5.5 0 0 1 .5.5z"
+                />
               </svg>
             </button>
           </div>
