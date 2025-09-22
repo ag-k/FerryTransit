@@ -195,9 +195,9 @@ describe('SystemSettings', () => {
     
     await clearCacheButton.trigger('click')
     
-    expect(global.confirm).toHaveBeenCalledWith('settings.confirmClearCache')
+    expect(global.confirm).toHaveBeenCalledWith(i18n.global.t('settings.confirmClearCache'))
     expect(mockStore.clearCache).toHaveBeenCalled()
-    expect(global.alert).toHaveBeenCalledWith('settings.cacheCleared')
+    expect(global.alert).toHaveBeenCalledWith(i18n.global.t('settings.cacheCleared'))
   })
 
   it('設定リセットの確認ダイアログが表示される', async () => {
@@ -214,9 +214,9 @@ describe('SystemSettings', () => {
     
     await resetButton.trigger('click')
     
-    expect(global.confirm).toHaveBeenCalledWith('settings.confirmResetSettings')
+    expect(global.confirm).toHaveBeenCalledWith(i18n.global.t('settings.confirmResetSettings'))
     expect(mockStore.resetSettings).toHaveBeenCalled()
-    expect(global.alert).toHaveBeenCalledWith('settings.settingsReset')
+    expect(global.alert).toHaveBeenCalledWith(i18n.global.t('settings.settingsReset'))
     expect(window.location.reload).toHaveBeenCalled()
   })
 

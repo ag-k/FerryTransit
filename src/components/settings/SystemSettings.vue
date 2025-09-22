@@ -222,16 +222,16 @@ const settingsStore = useSettingsStore()
 const { t } = useI18n()
 
 const clearCacheWithConfirmation = () => {
-  if (confirm('キャッシュを削除しますか？この操作は元に戻せません。')) {
+  if (confirm(t('settings.confirmClearCache'))) {
     settingsStore.clearCache()
-    alert('キャッシュが削除されました。')
+    alert(t('settings.cacheCleared'))
   }
 }
 
 const resetSettingsWithConfirmation = () => {
-  if (confirm('すべての設定をリセットしますか？この操作は元に戻せません。')) {
+  if (confirm(t('settings.confirmResetSettings'))) {
     settingsStore.resetSettings()
-    alert('設定がリセットされました。')
+    alert(t('settings.settingsReset'))
     window.location.reload()
   }
 }
