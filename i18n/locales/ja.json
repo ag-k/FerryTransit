@@ -388,6 +388,7 @@
     "urgent": "緊急",
     "pinned": "固定表示",
     "notFound": "お知らせが見つかりません",
+    "notFoundDescription": "お探しのお知らせは削除されたか、URLが間違っている可能性があります。",
     "backToList": "一覧に戻る",
     "category": {
       "announcement": "お知らせ",

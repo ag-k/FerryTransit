@@ -99,16 +99,22 @@ const i18n = createI18n({
   messages: {
     ja: {
       news: {
+        title: 'お知らせ一覧',
         pageTitle: 'お知らせ一覧',
         pageDescription: '隠岐航路に関する最新のお知らせ',
         allCategories: 'すべてのカテゴリー',
+        noNews: '該当するお知らせはありません',
+        noNewsInCategory: '該当するお知らせはありません',
+        urgent: '至急',
+        pinned: '固定表示',
+        notFoundDescription: 'お探しのお知らせは削除されたか、URLが間違っている可能性があります。',
+        readMore: '続きを読む',
         category: {
           announcement: 'お知らせ',
           maintenance: 'メンテナンス',
           feature: '新機能',
           campaign: 'キャンペーン'
-        },
-        noNews: '該当するお知らせはありません'
+        }
       }
     }
   }
@@ -155,7 +161,7 @@ describe('News Index Page', () => {
     it('ニュースカードが表示される', () => {
       const wrapper = createWrapper()
       
-      const cards = wrapper.findAllComponents(NewsCard)
+      const cards = wrapper.findAll('.news-grid article')
       expect(cards.length).toBeGreaterThan(0)
     })
   })
@@ -201,7 +207,7 @@ describe('News Index Page', () => {
     it('10件ずつ表示される', () => {
       const wrapper = createWrapper()
       
-      const displayedCards = wrapper.findAllComponents(NewsCard)
+      const displayedCards = wrapper.findAll('.news-grid article')
       expect(displayedCards).toHaveLength(10)
     })
 
@@ -301,7 +307,8 @@ describe('News Index Page', () => {
         error: ref(null),
         fetchNews: vi.fn(),
         getNewsByCategory: vi.fn(() => []), // 空配列を返す
-        getCategoryLabel: vi.fn((category: string) => `news.category.${category}`)
+        getCategoryLabel: vi.fn((category: string) => `news.category.${category}`),
+        formatDate: vi.fn((date: string) => new Date(date).toLocaleDateString('ja-JP'))
       } as any)
 
       const wrapper = createWrapper()

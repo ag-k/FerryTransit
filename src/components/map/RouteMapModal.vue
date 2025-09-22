@@ -271,8 +271,11 @@ watch(() => props.visible, async (newVal) => {
 })
 
 // Redraw route when route changes
-watch(() => props.route, async () => {
-  if (map.value && props.route) {
+watch(() => props.route, async (newRoute) => {
+  if (!map.value) return
+  // ルート変更時は必ず一度クリア
+  clearMapElements()
+  if (newRoute) {
     await drawRoute()
   }
 })

@@ -1,7 +1,7 @@
 <template>
   <div class="container mx-auto px-4 py-8 max-w-4xl">
     <!-- ローディング -->
-    <div v-if="isLoading" class="animate-pulse">
+    <div v-if="isLoading" class="animate-pulse" data-testid="loading-state">
       <div class="h-8 bg-gray-200 dark:bg-gray-700 rounded w-3/4 mb-4"></div>
       <div class="h-4 bg-gray-200 dark:bg-gray-700 rounded w-1/4 mb-8"></div>
       <div class="space-y-3">
@@ -12,7 +12,7 @@
     </div>
 
     <!-- エラー -->
-    <div v-else-if="error || !newsItem" class="text-center py-16">
+    <div v-else-if="error || !newsItem" class="text-center py-16" data-testid="error-state">
       <div class="text-red-600 dark:text-red-400 mb-4">
         <svg class="w-16 h-16 mx-auto" fill="none" stroke="currentColor" viewBox="0 0 24 24">
           <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
@@ -36,11 +36,11 @@
     </div>
 
     <!-- お知らせ詳細 -->
-    <article v-else>
+    <article v-else data-testid="news-detail">
       <!-- パンくずリスト -->
-      <nav class="mb-6">
+      <nav class="mb-6" data-testid="breadcrumb">
         <ol class="flex items-center space-x-2 text-sm">
-          <li>
+          <li data-testid="breadcrumb-item">
             <NuxtLink
               to="/"
               class="text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-200"
@@ -49,7 +49,7 @@
             </NuxtLink>
           </li>
           <li class="text-gray-400 dark:text-gray-600">/</li>
-          <li>
+          <li data-testid="breadcrumb-item">
             <NuxtLink
               to="/news"
               class="text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-200"
@@ -58,7 +58,7 @@
             </NuxtLink>
           </li>
           <li class="text-gray-400 dark:text-gray-600">/</li>
-          <li class="text-gray-700 dark:text-gray-300">
+          <li class="text-gray-700 dark:text-gray-300" data-testid="breadcrumb-item">
             {{ getLocalizedTitle(newsItem) }}
           </li>
         </ol>
@@ -69,10 +69,9 @@
         <div class="flex items-start justify-between mb-4">
           <div class="flex items-center gap-2">
             <span
-              :class="[
-                'px-2 py-1 text-xs rounded-full',
-                getCategoryClass(newsItem.category)
-              ]"
+              class="category-badge px-2 py-1 text-xs rounded-full"
+              :class="getCategoryClass(newsItem.category)"
+              data-testid="category-badge"
             >
               {{ getCategoryLabel(newsItem.category) }}
             </span>
@@ -86,13 +85,12 @@
               v-if="newsItem.isPinned"
               class="text-blue-600 dark:text-blue-400"
               :title="$t('news.pinned')"
+              data-testid="pinned-icon"
             >
-              <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
-                <path d="M5 4a2 2 0 012-2h6a2 2 0 012 2v14l-5-2.5L5 18V4z" />
-              </svg>
+              <Icon name="mdi:pin" class="w-4 h-4" aria-hidden="true" />
             </span>
           </div>
-          <time class="text-sm text-gray-500 dark:text-gray-400">
+          <time class="text-sm text-gray-500 dark:text-gray-400" data-testid="publish-date">
             {{ formatDate(newsItem.publishDate) }}
           </time>
         </div>
@@ -110,7 +108,11 @@
       </header>
 
       <!-- 詳細コンテンツ（Markdown） -->
-      <div v-if="newsItem.hasDetail && getLocalizedDetailContent(newsItem)" class="prose prose-lg dark:prose-invert max-w-none">
+      <div
+        v-if="newsItem.hasDetail && getLocalizedDetailContent(newsItem)"
+        class="prose prose-lg dark:prose-invert max-w-none"
+        data-testid="detail-content"
+      >
         <div v-html="renderedContent"></div>
       </div>
 
@@ -131,12 +133,14 @@
 </template>
 
 <script setup lang="ts">
+import { ref, computed, watch, onMounted, getCurrentInstance } from 'vue'
 import { marked } from 'marked'
 import type { News } from '~/types'
 import { useNews } from '~/composables/useNews'
 
 const route = useRoute()
 const { $i18n } = useNuxtApp()
+const vm = getCurrentInstance()
 
 // useNewsコンポザブルを使用
 const { publishedNews, fetchNews, getCategoryLabel, formatDate } = useNews()
@@ -145,6 +149,36 @@ const { publishedNews, fetchNews, getCategoryLabel, formatDate } = useNews()
 const newsItem = ref<News | null>(null)
 const isLoading = ref(false)
 const error = ref<string | null>(null)
+
+const resolvedRouteId = computed<string | undefined>(() => {
+  const param = route.params?.id
+  const normalized = Array.isArray(param) ? param[0] : param
+  if (typeof normalized === 'string') {
+    return normalized
+  }
+
+  const fallbackRoute = vm?.proxy?.$route || vm?.appContext?.config?.globalProperties?.$route
+  const fallback = fallbackRoute?.params?.id
+  const fallbackNormalized = Array.isArray(fallback) ? fallback[0] : fallback
+  return typeof fallbackNormalized === 'string' ? fallbackNormalized : undefined
+})
+
+// 公開済みお知らせの変化を監視して対象IDを紐付け
+watch(
+  () => [publishedNews.value, resolvedRouteId.value],
+  ([newsList, id]) => {
+    if (!id || !Array.isArray(newsList) || newsList.length === 0) {
+      return
+    }
+
+    const found = newsList.find(item => item.id === id)
+    if (found) {
+      newsItem.value = found
+      error.value = null
+    }
+  },
+  { immediate: true, deep: true }
+)
 
 // お知らせを取得
 const fetchNewsItem = async () => {
@@ -156,7 +190,8 @@ const fetchNewsItem = async () => {
     await fetchNews()
     
     // IDで該当のお知らせを検索
-    const found = publishedNews.value.find(item => item.id === route.params.id)
+    const targetId = resolvedRouteId.value || (Array.isArray(route.params.id) ? route.params.id[0] : route.params.id)
+    const found = targetId ? publishedNews.value.find(item => item.id === targetId) : undefined
     if (found) {
       newsItem.value = found
     } else {

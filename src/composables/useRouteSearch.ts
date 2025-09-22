@@ -196,6 +196,11 @@ export const useRouteSearch = () => {
   ): TransitRoute[] => {
     const routes: TransitRoute[] = [];
     const processedRoutes = new Set<string>();
+    const tripMap = new Map<string, Trip>();
+
+    for (const trip of timetable) {
+      tripMap.set(String(trip.tripId), trip);
+    }
 
     // Handle special HONDO port mapping
     const departurePorts =
@@ -207,17 +212,77 @@ export const useRouteSearch = () => {
         ? ["HONDO_SHICHIRUI", "HONDO_SAKAIMINATO"]
         : [arrival];
 
+    const parseTimeParts = (timeValue: string | Date): [number, number] => {
+      if (timeValue instanceof Date) {
+        return [timeValue.getHours(), timeValue.getMinutes()];
+      }
+
+      const parts = String(timeValue).split(":");
+      const hours = Number(parts[0]);
+      const minutes = Number(parts[1] || 0);
+      return [hours, minutes];
+    };
+
+    const collectTripChain = (
+      startTrip: Trip
+    ): { trips: Trip[]; maxStatus: number } | null => {
+      const chain: Trip[] = [startTrip];
+      let current = startTrip;
+      let maxStatus = getTripStatus(startTrip);
+
+      if (maxStatus === 2) {
+        return null;
+      }
+
+      if (arrivalPorts.includes(current.arrival)) {
+        return { trips: chain, maxStatus };
+      }
+
+      while (current.nextId) {
+        if (isMainlandPort(current.arrival)) {
+          return null;
+        }
+
+        const nextTrip = tripMap.get(String(current.nextId));
+        if (!nextTrip) {
+          return null;
+        }
+
+        if (nextTrip.name !== current.name) {
+          return null;
+        }
+
+        if (nextTrip.departure !== current.arrival) {
+          return null;
+        }
+
+        const nextStatus = getTripStatus(nextTrip);
+        if (nextStatus === 2) {
+          return null;
+        }
+
+        chain.push(nextTrip);
+        maxStatus = Math.max(maxStatus, nextStatus);
+        current = nextTrip;
+
+        if (arrivalPorts.includes(current.arrival)) {
+          return { trips: chain, maxStatus };
+        }
+      }
+
+      return null;
+    };
+
     // First leg trips
     for (const firstTrip of timetable) {
       if (!departurePorts.includes(firstTrip.departure)) continue;
 
-      // Create date objects using the search date and trip times
-      const [firstDepHours, firstDepMinutes] = firstTrip.departureTime
-        .split(":")
-        .map(Number);
-      const [firstArrHours, firstArrMinutes] = firstTrip.arrivalTime
-        .split(":")
-        .map(Number);
+      const [firstDepHours, firstDepMinutes] = parseTimeParts(
+        firstTrip.departureTime
+      );
+      const [firstArrHours, firstArrMinutes] = parseTimeParts(
+        firstTrip.arrivalTime
+      );
 
       const firstDepartureTime = new Date(searchTime);
       firstDepartureTime.setHours(firstDepHours, firstDepMinutes, 0, 0);
@@ -225,46 +290,38 @@ export const useRouteSearch = () => {
       const firstArrivalTime = new Date(searchTime);
       firstArrivalTime.setHours(firstArrHours, firstArrMinutes, 0, 0);
 
-      // Check time constraint for first leg
       if (!isArrivalMode && firstDepartureTime < searchTime) continue;
 
-      // Skip if first trip is cancelled
       const firstStatus = getTripStatus(firstTrip);
       if (firstStatus === 2) continue;
 
-      // Skip if first trip arrives at final destination (already covered in direct routes)
       if (arrivalPorts.includes(firstTrip.arrival)) continue;
 
-      // Second leg trips
       for (const secondTrip of timetable) {
         if (secondTrip.departure !== firstTrip.arrival) continue;
-        if (!arrivalPorts.includes(secondTrip.arrival)) continue;
 
-        // Create date objects using the first arrival time as base
-        const [secondDepHours, secondDepMinutes] = secondTrip.departureTime
-          .split(":")
-          .map(Number);
-        const [secondArrHours, secondArrMinutes] = secondTrip.arrivalTime
-          .split(":")
-          .map(Number);
+        const chainResult = collectTripChain(secondTrip);
+        if (!chainResult) continue;
 
+        const { trips: chain, maxStatus: chainStatus } = chainResult;
+        const finalTrip = chain[chain.length - 1];
+
+        const [secondDepHours, secondDepMinutes] = parseTimeParts(
+          secondTrip.departureTime
+        );
         const secondDepartureTime = new Date(firstArrivalTime);
         secondDepartureTime.setHours(secondDepHours, secondDepMinutes, 0, 0);
 
+        const [secondArrHours, secondArrMinutes] = parseTimeParts(
+          finalTrip.arrivalTime
+        );
         const secondArrivalTime = new Date(secondDepartureTime);
         secondArrivalTime.setHours(secondArrHours, secondArrMinutes, 0, 0);
 
-        // Check transfer is possible (enough time between arrival and departure)
         if (secondDepartureTime <= firstArrivalTime) continue;
 
-        // Check time constraint for arrival mode
         if (isArrivalMode && secondArrivalTime > searchTime) continue;
 
-        // Skip if second trip is cancelled
-        const secondStatus = getTripStatus(secondTrip);
-        if (secondStatus === 2) continue;
-
-        // Prevent mainland-to-mainland transfers when departing from mainland
         if (
           isMainlandPort(departure) &&
           isMainlandPort(firstTrip.arrival) &&
@@ -273,7 +330,6 @@ export const useRouteSearch = () => {
           continue;
         }
 
-        // Prevent routes that go through mainland when traveling between islands
         if (
           !isMainlandPort(departure) &&
           !isMainlandPort(arrival) &&
@@ -282,26 +338,25 @@ export const useRouteSearch = () => {
           continue;
         }
 
-        // Create route key to check for duplicates
-        const routeKey = `${firstTrip.tripId}-${secondTrip.tripId}`;
+        const routeKey = `${firstTrip.tripId}-${chain
+          .map((trip) => trip.tripId)
+          .join("_")}`;
         if (processedRoutes.has(routeKey)) continue;
         processedRoutes.add(routeKey);
 
-        // Check if trips should be normalized (connected trips on same ship)
         if (shouldNormalizeTrips(firstTrip, secondTrip)) {
-          // Create normalized single-segment route
           const segment: TransitSegment = {
             tripId: String(firstTrip.tripId),
             ship: firstTrip.name,
             departure: firstTrip.departure,
-            arrival: secondTrip.arrival,
+            arrival: finalTrip.arrival,
             departureTime: firstDepartureTime,
             arrivalTime: secondArrivalTime,
-            status: Math.max(firstStatus, secondStatus),
+            status: Math.max(firstStatus, chainStatus),
             fare: calculateFare(
               firstTrip.name,
               firstTrip.departure,
-              secondTrip.arrival,
+              finalTrip.arrival,
               firstDepartureTime
             ),
           };
@@ -314,7 +369,6 @@ export const useRouteSearch = () => {
             transferCount: 0,
           });
         } else {
-          // Create two-segment route with transfer
           const segment1: TransitSegment = {
             tripId: String(firstTrip.tripId),
             ship: firstTrip.name,
@@ -332,17 +386,20 @@ export const useRouteSearch = () => {
           };
 
           const segment2: TransitSegment = {
-            tripId: String(secondTrip.tripId),
+            tripId:
+              chain.length === 1
+                ? String(secondTrip.tripId)
+                : `${chain[0].tripId}-${finalTrip.tripId}`,
             ship: secondTrip.name,
             departure: secondTrip.departure,
-            arrival: secondTrip.arrival,
+            arrival: finalTrip.arrival,
             departureTime: secondDepartureTime,
             arrivalTime: secondArrivalTime,
-            status: secondStatus,
+            status: chainStatus,
             fare: calculateFare(
               secondTrip.name,
               secondTrip.departure,
-              secondTrip.arrival,
+              finalTrip.arrival,
               secondDepartureTime
             ),
           };

@@ -430,21 +430,33 @@ export const useFerryStore = defineStore('ferry', () => {
         $fetch(`${config.public.shipStatusApi}/status-kankou`).catch(() => null)
       ])
 
+      const toStatusNumber = (value: unknown): number => {
+        if (typeof value === 'number') {
+          return value
+        }
+        const parsed = Number(value)
+        return Number.isFinite(parsed) ? parsed : 0
+      }
+
       if (Array.isArray(statusData)) {
         // APIレスポンスをマッピング
         const [isokazeData, dozenData, ferryData] = statusData
         
         if (isokazeData) {
+          const statusValue = toStatusNumber(isokazeData.status)
           shipStatus.value.isokaze = {
             ...isokazeData,
-            hasAlert: isokazeData.status !== 0
+            status: statusValue,
+            hasAlert: statusValue !== 0
           }
         }
         
         if (dozenData) {
+          const statusValue = toStatusNumber(dozenData.status)
           shipStatus.value.dozen = {
             ...dozenData,
-            hasAlert: dozenData.status !== 0
+            status: statusValue,
+            hasAlert: statusValue !== 0
           }
         }
         

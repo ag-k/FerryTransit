@@ -1,17 +1,20 @@
 <template>
   <div class="container mx-auto px-4 py-8 max-w-4xl">
-    <h1 class="text-2xl font-bold text-gray-900 dark:text-white mb-6">
+    <h1 class="text-2xl font-bold text-gray-900 dark:text-white">
       {{ $t('news.title') }}
     </h1>
+    <p class="page-description text-gray-600 dark:text-gray-400 mb-6">
+      {{ $t('news.pageDescription') }}
+    </p>
 
     <!-- カテゴリーフィルター -->
-    <div class="mb-6 flex flex-wrap gap-2">
+    <div class="category-filter mb-6 flex flex-wrap gap-2">
       <button
         @click="selectedCategory = null"
         :class="[
           'px-4 py-2 rounded-full text-sm font-medium transition-colors',
           selectedCategory === null
-            ? 'bg-blue-600 text-white'
+            ? 'active bg-blue-600 text-white'
             : 'bg-gray-200 dark:bg-gray-700 text-gray-700 dark:text-gray-300 hover:bg-gray-300 dark:hover:bg-gray-600'
         ]"
       >
@@ -24,7 +27,7 @@
         :class="[
           'px-4 py-2 rounded-full text-sm font-medium transition-colors',
           selectedCategory === category
-            ? 'bg-blue-600 text-white'
+            ? 'active bg-blue-600 text-white'
             : 'bg-gray-200 dark:bg-gray-700 text-gray-700 dark:text-gray-300 hover:bg-gray-300 dark:hover:bg-gray-600'
         ]"
       >
@@ -40,7 +43,7 @@
     </div>
 
     <!-- エラー -->
-    <div v-else-if="error" class="text-center py-16">
+    <div v-else-if="error" class="error text-center py-16">
       <div class="text-red-600 dark:text-red-400 mb-4">
         <svg class="w-16 h-16 mx-auto" fill="none" stroke="currentColor" viewBox="0 0 24 24">
           <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
@@ -62,8 +65,12 @@
     </div>
 
     <!-- お知らせ一覧 -->
-    <div v-else class="space-y-4">
-      <TransitionGroup name="list">
+    <div v-else>
+      <TransitionGroup
+        name="list"
+        tag="div"
+        class="news-grid grid gap-4 grid-cols-1 md:grid-cols-2 lg:grid-cols-3"
+      >
         <article
           v-for="news in paginatedNews"
           :key="news.id"
@@ -126,12 +133,12 @@
     </div>
 
     <!-- ページネーション -->
-    <div v-if="totalPages > 1" class="mt-8 flex justify-center">
+    <div v-if="totalPages > 1" class="pagination mt-8 flex justify-center">
       <nav class="flex gap-2">
         <button
           @click="currentPage = Math.max(1, currentPage - 1)"
           :disabled="currentPage === 1"
-          class="px-4 py-2 rounded-md bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 disabled:opacity-50 disabled:cursor-not-allowed hover:bg-gray-50 dark:hover:bg-gray-700"
+          class="prev-button px-4 py-2 rounded-md bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 disabled:opacity-50 disabled:cursor-not-allowed hover:bg-gray-50 dark:hover:bg-gray-700"
         >
           <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7" />
@@ -155,7 +162,7 @@
         <button
           @click="currentPage = Math.min(totalPages, currentPage + 1)"
           :disabled="currentPage === totalPages"
-          class="px-4 py-2 rounded-md bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 disabled:opacity-50 disabled:cursor-not-allowed hover:bg-gray-50 dark:hover:bg-gray-700"
+          class="next-button px-4 py-2 rounded-md bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 disabled:opacity-50 disabled:cursor-not-allowed hover:bg-gray-50 dark:hover:bg-gray-700"
         >
           <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7" />

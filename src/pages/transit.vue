@@ -309,6 +309,7 @@
 </template>
 
 <script setup lang="ts">
+import { nextTick } from 'vue'
 import { useRouteSearch } from '@/composables/useRouteSearch'
 import { useHistoryStore } from '@/stores/history'
 import { useFerryStore } from '@/stores/ferry'
@@ -504,6 +505,15 @@ function showRouteMap(route: TransitRoute) {
   selectedMapRoute.value = route
   showMapModal.value = true
 }
+
+// 出発地または目的地が変更されたら、モーダルの地図上のルートを一旦クリア
+watch([departure, arrival], async () => {
+  // まずクリア
+  selectedMapRoute.value = null
+  if (showMapModal.value) {
+    await nextTick()
+  }
+})
 
 // Initialize from URL parameters
 onMounted(() => {

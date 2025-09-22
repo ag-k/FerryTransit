@@ -253,6 +253,7 @@
 </template>
 
 <script setup lang="ts">
+import { nextTick } from 'vue'
 import { useFerryStore } from '@/stores/ferry'
 import { useHistoryStore } from '@/stores/history'
 import { useSettingsStore } from '@/stores/settings'
@@ -451,20 +452,38 @@ const toggleMapDisplay = () => {
 }
 
 // Watchers
-watch([departure, arrival], ([newDeparture, newArrival]) => {
+watch([departure, arrival], async ([newDeparture, newArrival], [oldDeparture, oldArrival]) => {
+  // 両方選択されている場合は、一旦ルートをクリアしてから再描画
   if (newDeparture && newArrival) {
+    const current = selectedMapRoute.value
+    const isDifferent = !current || current.from !== newDeparture || current.to !== newArrival
+    if (isDifferent) {
+      // まず既存のルートをクリア
+      selectedMapRoute.value = undefined
+      selectedMapPort.value = ''
+      await nextTick()
+    }
+    // 新しいルートを描画
     selectedMapRoute.value = { from: newDeparture, to: newArrival }
     selectedMapPort.value = ''
-  } else if (newDeparture) {
-    selectedMapPort.value = newDeparture
-    selectedMapRoute.value = undefined
-  } else if (newArrival) {
-    selectedMapPort.value = newArrival
-    selectedMapRoute.value = undefined
-  } else {
-    selectedMapRoute.value = undefined
-    selectedMapPort.value = ''
+    return
   }
+
+  // 片方のみ選択時はルートをクリアし、選択中の港だけ強調
+  if (newDeparture) {
+    selectedMapRoute.value = undefined
+    selectedMapPort.value = newDeparture
+    return
+  }
+  if (newArrival) {
+    selectedMapRoute.value = undefined
+    selectedMapPort.value = newArrival
+    return
+  }
+
+  // どちらも未選択
+  selectedMapRoute.value = undefined
+  selectedMapPort.value = ''
 }, { immediate: true })
 
 // Initialize data on mount

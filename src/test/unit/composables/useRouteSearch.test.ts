@@ -221,6 +221,65 @@ describe('useRouteSearch', () => {
       )
       expect(mainlandRoute).toBeUndefined()
     })
+
+    it('should chain next_id segments on the same ship without counting as transfers', async () => {
+      const store = useFerryStore()
+      store.timetableData = [
+        {
+          tripId: 1,
+          startDate: '2025-08-01',
+          endDate: '2025-10-31',
+          name: 'ISOKAZE',
+          departure: 'KURI',
+          departureTime: '07:17',
+          arrival: 'HISHIURA',
+          arrivalTime: '07:35',
+          status: 0
+        },
+        {
+          tripId: 2,
+          nextId: 3,
+          startDate: '2025-08-01',
+          endDate: '2025-10-31',
+          name: 'RAINBOWJET',
+          departure: 'HISHIURA',
+          departureTime: '08:14',
+          arrival: 'SAIGO',
+          arrivalTime: '08:45',
+          status: 0
+        },
+        {
+          tripId: 3,
+          startDate: '2025-08-01',
+          endDate: '2025-10-31',
+          name: 'RAINBOWJET',
+          departure: 'SAIGO',
+          departureTime: '08:54',
+          arrival: 'HONDO_SHICHIRUI',
+          arrivalTime: '10:03',
+          status: 0
+        }
+      ]
+
+      const { searchRoutes } = useRouteSearch()
+
+      const results = await searchRoutes(
+        'KURI',
+        'HONDO',
+        new Date('2025-09-22'),
+        '00:15',
+        false
+      )
+
+      const transferRoute = results.find(r => r.transferCount === 1)
+      expect(transferRoute).toBeDefined()
+      expect(transferRoute!.segments).toHaveLength(2)
+      expect(transferRoute!.segments[0].ship).toBe('ISOKAZE')
+      expect(transferRoute!.segments[0].arrival).toBe('HISHIURA')
+      expect(transferRoute!.segments[1].ship).toBe('RAINBOWJET')
+      expect(transferRoute!.segments[1].departure).toBe('HISHIURA')
+      expect(transferRoute!.segments[1].arrival).toBe('HONDO_SHICHIRUI')
+    })
   })
 
   describe('formatTime', () => {

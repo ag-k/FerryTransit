@@ -31,6 +31,9 @@ describe('Transit Page', () => {
     return mount(Transit, {
       global: {
         plugins: [createTestingPinia()],
+        mocks: {
+          $t: (key: string) => key
+        },
         stubs: {
           PortSelector: true,
           DatePicker: true,

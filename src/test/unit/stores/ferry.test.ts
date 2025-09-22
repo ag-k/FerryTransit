@@ -3,6 +3,8 @@ import { setActivePinia, createPinia } from 'pinia'
 import { useFerryStore } from '@/stores/ferry'
 import { mockTrips, mockShipStatus, mockFerryStatus } from '@/test/mocks/mockData'
 
+const mockGetCachedJsonFile = vi.fn()
+
 // Mock fetch
 global.fetch = vi.fn()
 global.$fetch = vi.fn()
@@ -34,7 +36,8 @@ vi.mock('@/composables/useFirebase', () => ({
 
 vi.mock('@/composables/useFirebaseStorage', () => ({
   useFirebaseStorage: () => ({
-    downloadJSON: vi.fn().mockResolvedValue(mockTrips)
+    downloadJSON: vi.fn().mockResolvedValue(mockTrips),
+    getCachedJsonFile: mockGetCachedJsonFile
   })
 }))
 
@@ -43,6 +46,7 @@ describe('Ferry Store', () => {
     setActivePinia(createPinia())
     vi.clearAllMocks()
     localStorage.clear()
+    mockGetCachedJsonFile.mockReset()
   })
 
   describe('Initial State', () => {
@@ -75,7 +79,6 @@ describe('Ferry Store', () => {
     it('should fetch timetable data successfully', async () => {
       const store = useFerryStore()
       
-      // Mock successful $fetch
       const mockData = mockTrips.map(trip => ({
         trip_id: trip.tripId.toString(),
         start_date: trip.startDate,
@@ -85,24 +88,29 @@ describe('Ferry Store', () => {
         departure_time: trip.departureTime,
         arrival: trip.arrival,
         arrival_time: trip.arrivalTime,
-        status: trip.status.toString()
+        status: trip.status.toString(),
+        next_id: trip.nextId ? trip.nextId.toString() : undefined
       }))
       
-      ;(global.$fetch as any).mockResolvedValueOnce(mockData)
+      mockGetCachedJsonFile.mockResolvedValueOnce(mockData)
 
       await store.fetchTimetable()
 
       expect(store.timetableData).toHaveLength(mockTrips.length)
       expect(store.isLoading).toBe(false)
       expect(store.error).toBeNull()
-      expect(global.$fetch).toHaveBeenCalledWith('/api/timetable')
+      expect(mockGetCachedJsonFile).toHaveBeenCalledWith(
+        'data/timetable.json',
+        'rawTimetable',
+        15
+      )
     })
 
     it('should handle fetch timetable error', async () => {
       const store = useFerryStore()
       
       // Mock fetch error
-      ;(global.fetch as any).mockRejectedValueOnce(new Error('Network error'))
+      mockGetCachedJsonFile.mockRejectedValueOnce(new Error('Network error'))
 
       await store.fetchTimetable()
 
@@ -120,8 +128,8 @@ describe('Ferry Store', () => {
           return Promise.resolve(null)
         }
         return Promise.resolve([
-          mockShipStatus, // isokaze
-          mockShipStatus, // dozen
+          { ...mockShipStatus, status: 0 },
+          { ...mockShipStatus, status: 0 },
           {
             ...mockFerryStatus,
             ferry_state: '定期運航',
@@ -175,18 +183,16 @@ describe('Ferry Store', () => {
       expect(store.selectedDate).toEqual(newDate)
     })
 
-    it('should cache data in localStorage', async () => {
-      // Mock process.client
+    it('should use cached loader for timetable data on client', async () => {
       Object.defineProperty(process, 'client', {
         value: true,
         configurable: true
       })
-      
+
       const store = useFerryStore()
       const mockSetItem = vi.fn()
       ;(localStorage.setItem as any) = mockSetItem
-      
-      // Mock successful $fetch
+
       const mockData = mockTrips.map(trip => ({
         trip_id: trip.tripId.toString(),
         start_date: trip.startDate,
@@ -198,14 +204,18 @@ describe('Ferry Store', () => {
         arrival_time: trip.arrivalTime,
         status: trip.status.toString()
       }))
-      
-      ;(global.$fetch as any).mockResolvedValueOnce(mockData)
+
+      mockGetCachedJsonFile.mockResolvedValueOnce(mockData)
 
       await store.fetchTimetable()
 
-      expect(mockSetItem).toHaveBeenCalledWith('rawTimetable', JSON.stringify(mockData))
-      
-      // Restore process.client
+      expect(mockGetCachedJsonFile).toHaveBeenCalledWith(
+        'data/timetable.json',
+        'rawTimetable',
+        15
+      )
+      expect(mockSetItem).not.toHaveBeenCalled()
+
       Object.defineProperty(process, 'client', {
         value: undefined,
         configurable: true
