@@ -18,6 +18,11 @@ describe('DatePicker', () => {
       props: {
         modelValue: date,
         label: 'Select Date'
+      },
+      global: {
+        mocks: {
+          $t: (key: string) => key
+        }
       }
     })
 
@@ -31,6 +36,11 @@ describe('DatePicker', () => {
     const wrapper = mount(DatePicker, {
       props: {
         modelValue: date
+      },
+      global: {
+        mocks: {
+          $t: (key: string) => key
+        }
       }
     })
 
@@ -54,6 +64,11 @@ describe('DatePicker', () => {
     const wrapper = mount(DatePicker, {
       props: {
         modelValue: date
+      },
+      global: {
+        mocks: {
+          $t: (key: string) => key
+        }
       }
     })
 
@@ -81,6 +96,11 @@ describe('DatePicker', () => {
     const wrapper = mount(DatePicker, {
       props: {
         modelValue: date
+      },
+      global: {
+        mocks: {
+          $t: (key: string) => key
+        }
       }
     })
 
@@ -106,6 +126,11 @@ describe('DatePicker', () => {
         modelValue: date,
         minDate,
         maxDate
+      },
+      global: {
+        mocks: {
+          $t: (key: string) => key
+        }
       }
     })
 
@@ -120,6 +145,11 @@ describe('DatePicker', () => {
       props: {
         modelValue: date,
         disabled: true
+      },
+      global: {
+        mocks: {
+          $t: (key: string) => key
+        }
       }
     })
 
@@ -136,6 +166,11 @@ describe('DatePicker', () => {
       props: {
         modelValue: date,
         showTodayButton: false
+      },
+      global: {
+        mocks: {
+          $t: (key: string) => key
+        }
       }
     })
 
@@ -148,6 +183,11 @@ describe('DatePicker', () => {
       props: {
         modelValue: date,
         hint: 'Please select a date'
+      },
+      global: {
+        mocks: {
+          $t: (key: string) => key
+        }
       }
     })
 
@@ -157,10 +197,20 @@ describe('DatePicker', () => {
   it('generates unique input id for accessibility', () => {
     const date = new Date('2025-06-28T00:00:00')
     const wrapper1 = mount(DatePicker, {
-      props: { modelValue: date, label: 'Date 1' }
+      props: { modelValue: date, label: 'Date 1' },
+      global: {
+        mocks: {
+          $t: (key: string) => key
+        }
+      }
     })
     const wrapper2 = mount(DatePicker, {
-      props: { modelValue: date, label: 'Date 2' }
+      props: { modelValue: date, label: 'Date 2' },
+      global: {
+        mocks: {
+          $t: (key: string) => key
+        }
+      }
     })
 
     const id1 = wrapper1.find('input').attributes('id')

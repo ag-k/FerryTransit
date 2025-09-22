@@ -15,7 +15,12 @@ describe('PortSelector', () => {
 
   it('renders correctly', () => {
     const wrapper = mount(PortSelector, {
-      props: defaultProps
+      props: defaultProps,
+      global: {
+        mocks: {
+          $t: (key: string) => key
+        }
+      }
     })
 
     expect(wrapper.find('select').exists()).toBe(true)
@@ -24,7 +29,12 @@ describe('PortSelector', () => {
 
   it('displays port options grouped by region', () => {
     const wrapper = mount(PortSelector, {
-      props: defaultProps
+      props: defaultProps,
+      global: {
+        mocks: {
+          $t: (key: string) => key
+        }
+      }
     })
 
     const optgroups = wrapper.findAll('optgroup')
@@ -36,7 +46,12 @@ describe('PortSelector', () => {
   it('shows correct ports in each group', () => {
     const store = useFerryStore()
     const wrapper = mount(PortSelector, {
-      props: defaultProps
+      props: defaultProps,
+      global: {
+        mocks: {
+          $t: (key: string) => key
+        }
+      }
     })
 
     const optgroups = wrapper.findAll('optgroup')
@@ -56,7 +71,12 @@ describe('PortSelector', () => {
 
   it('emits update:modelValue when selection changes', async () => {
     const wrapper = mount(PortSelector, {
-      props: defaultProps
+      props: defaultProps,
+      global: {
+        mocks: {
+          $t: (key: string) => key
+        }
+      }
     })
 
     const select = wrapper.find('select')
@@ -73,6 +93,11 @@ describe('PortSelector', () => {
       props: {
         ...defaultProps,
         label: 'Select Port'
+      },
+      global: {
+        mocks: {
+          $t: (key: string) => key
+        }
       }
     })
 
@@ -84,6 +109,11 @@ describe('PortSelector', () => {
       props: {
         ...defaultProps,
         placeholder: 'Choose a port'
+      },
+      global: {
+        mocks: {
+          $t: (key: string) => key
+        }
       }
     })
 
@@ -97,6 +127,11 @@ describe('PortSelector', () => {
       props: {
         ...defaultProps,
         hint: 'Select departure port'
+      },
+      global: {
+        mocks: {
+          $t: (key: string) => key
+        }
       }
     })
 
@@ -108,6 +143,11 @@ describe('PortSelector', () => {
       props: {
         ...defaultProps,
         disabled: true
+      },
+      global: {
+        mocks: {
+          $t: (key: string) => key
+        }
       }
     })
 
@@ -120,6 +160,11 @@ describe('PortSelector', () => {
       props: {
         ...defaultProps,
         disabledPorts: ['SAIGO', 'BEPPU']
+      },
+      global: {
+        mocks: {
+          $t: (key: string) => key
+        }
       }
     })
 
@@ -135,6 +180,11 @@ describe('PortSelector', () => {
       props: {
         ...defaultProps,
         modelValue: 'HONDO_SHICHIRUI'
+      },
+      global: {
+        mocks: {
+          $t: (key: string) => key
+        }
       }
     })
 

@@ -7,28 +7,36 @@ describe('DatePicker', () => {
     modelValue: new Date('2024-01-15')
   }
 
-  it('renders correctly', () => {
-    const wrapper = mount(DatePicker, {
-      props: defaultProps
+  const mountComponent = (props = {}) => {
+    return mount(DatePicker, {
+      props: {
+        ...defaultProps,
+        ...props
+      },
+      global: {
+        mocks: {
+          $t: (key: string) => key
+        }
+      }
     })
+  }
+
+  it('renders correctly', () => {
+    const wrapper = mountComponent()
 
     expect(wrapper.find('input[type="date"]').exists()).toBe(true)
     expect(wrapper.find('button').exists()).toBe(true)
   })
 
   it('displays the correct date value', () => {
-    const wrapper = mount(DatePicker, {
-      props: defaultProps
-    })
+    const wrapper = mountComponent()
 
     const input = wrapper.find('input[type="date"]')
     expect(input.element.value).toBe('2024-01-15')
   })
 
   it('emits update:modelValue when date changes', async () => {
-    const wrapper = mount(DatePicker, {
-      props: defaultProps
-    })
+    const wrapper = mountComponent()
 
     const input = wrapper.find('input[type="date"]')
     await input.setValue('2024-02-20')
@@ -38,9 +46,7 @@ describe('DatePicker', () => {
   })
 
   it('emits today date when today button is clicked', async () => {
-    const wrapper = mount(DatePicker, {
-      props: defaultProps
-    })
+    const wrapper = mountComponent()
 
     const todayButton = wrapper.find('button')
     await todayButton.trigger('click')
@@ -52,34 +58,19 @@ describe('DatePicker', () => {
   })
 
   it('shows label when provided', () => {
-    const wrapper = mount(DatePicker, {
-      props: {
-        ...defaultProps,
-        label: 'Select Date'
-      }
-    })
+    const wrapper = mountComponent({ label: 'Select Date' })
 
     expect(wrapper.find('label').text()).toBe('Select Date')
   })
 
   it('shows hint when provided', () => {
-    const wrapper = mount(DatePicker, {
-      props: {
-        ...defaultProps,
-        hint: 'Choose a date'
-      }
-    })
+    const wrapper = mountComponent({ hint: 'Choose a date' })
 
     expect(wrapper.find('small.text-gray-500').text()).toBe('Choose a date')
   })
 
   it('disables input when disabled prop is true', () => {
-    const wrapper = mount(DatePicker, {
-      props: {
-        ...defaultProps,
-        disabled: true
-      }
-    })
+    const wrapper = mountComponent({ disabled: true })
 
     const input = wrapper.find('input[type="date"]')
     const button = wrapper.find('button')
@@ -89,23 +80,15 @@ describe('DatePicker', () => {
   })
 
   it('hides today button when showTodayButton is false', () => {
-    const wrapper = mount(DatePicker, {
-      props: {
-        ...defaultProps,
-        showTodayButton: false
-      }
-    })
+    const wrapper = mountComponent({ showTodayButton: false })
 
     expect(wrapper.find('button').exists()).toBe(false)
   })
 
   it('sets min and max date attributes', () => {
-    const wrapper = mount(DatePicker, {
-      props: {
-        ...defaultProps,
-        minDate: new Date('2024-01-01'),
-        maxDate: new Date('2024-12-31')
-      }
+    const wrapper = mountComponent({
+      minDate: new Date('2024-01-01'),
+      maxDate: new Date('2024-12-31')
     })
 
     const input = wrapper.find('input[type="date"]')

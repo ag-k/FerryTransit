@@ -386,6 +386,7 @@
     "urgent": "Urgent",
     "pinned": "Pinned",
     "notFound": "News not found",
+    "notFoundDescription": "The news item may have been removed or the URL may be incorrect.",
     "backToList": "Back to list",
     "category": {
       "announcement": "Announcement",

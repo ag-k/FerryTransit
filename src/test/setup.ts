@@ -1,6 +1,12 @@
 import { vi } from 'vitest'
 import { ref, computed, reactive, readonly, onMounted, onUnmounted, watch, watchEffect, nextTick } from 'vue'
 
+// Ensure Nuxt client flag is available during tests
+if (typeof process !== 'undefined') {
+  ;(process as any).client = true
+  ;(process as any).server = false
+}
+
 // Vue Reactivity APIをグローバルに設定
 global.ref = ref
 global.computed = computed
@@ -61,12 +67,22 @@ global.useI18n = vi.fn(() => ({
   ]),
   t: (key: string) => key
 }))
+const translate = (key: string) => {
+  if (key === 'HOURS') {
+    return '時間'
+  }
+  if (key === 'MINUTES') {
+    return '分'
+  }
+  return key
+}
+
 global.useNuxtApp = vi.fn(() => ({
   $i18n: {
     locale: ref('ja'),
-    t: (key: string) => key
+    t: translate
   },
-  $t: (key: string) => key
+  $t: translate
 }))
 global.useRuntimeConfig = vi.fn(() => ({
   public: {
