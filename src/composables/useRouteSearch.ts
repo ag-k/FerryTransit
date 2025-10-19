@@ -3,6 +3,7 @@ import { useFareStore } from "@/stores/fare";
 import { useFerryData } from "@/composables/useFerryData";
 import { useHolidayCalendar } from "@/composables/useHolidayCalendar";
 import type { Trip, TransitRoute, TransitSegment } from "@/types";
+import type { FareRoute } from "@/types/fare";
 
 export const useRouteSearch = () => {
   const ferryStore = process.client ? useFerryStore() : null;
@@ -440,20 +441,33 @@ export const useRouteSearch = () => {
       fareStore.loadFareMaster();
     }
 
-    // Map HONDO ports to their actual port names for fare lookup
-    let fareDeparture = departure;
-    let fareArrival = arrival;
+    const toFarePortVariants = (port: string): string[] => {
+      if (port === "HONDO") {
+        return ["HONDO", "HONDO_SHICHIRUI", "HONDO_SAKAIMINATO"];
+      }
+      if (port === "HONDO_SHICHIRUI" || port === "HONDO_SAKAIMINATO") {
+        return [port, "HONDO"];
+      }
+      return [port];
+    };
 
-    // For fare calculation, treat HONDO_SHICHIRUI and HONDO_SAKAIMINATO as HONDO
-    if (departure === "HONDO_SHICHIRUI" || departure === "HONDO_SAKAIMINATO") {
-      fareDeparture = "HONDO";
-    }
-    if (arrival === "HONDO_SHICHIRUI" || arrival === "HONDO_SAKAIMINATO") {
-      fareArrival = "HONDO";
-    }
+    const departureCandidates = toFarePortVariants(departure);
+    const arrivalCandidates = toFarePortVariants(arrival);
 
-    // Get fare from master data
-    const route = fareStore?.getFareByRoute(fareDeparture, fareArrival);
+    let route: FareRoute | undefined;
+
+    for (const dep of departureCandidates) {
+      for (const arr of arrivalCandidates) {
+        const candidate = fareStore?.getFareByRoute(dep, arr);
+        if (candidate) {
+          route = candidate;
+          break;
+        }
+      }
+      if (route) {
+        break;
+      }
+    }
 
     if (route) {
       let baseFare = route.fares.adult;
@@ -479,7 +493,7 @@ export const useRouteSearch = () => {
     }
 
     // Fallback for routes not found in fare master
-    console.warn(`Fare not found for route: ${fareDeparture} -> ${fareArrival}`);
+    console.warn(`Fare not found for route: ${departure} -> ${arrival}`);
     
     // Use default values based on ship type
     const isHighSpeed = ship === "RAINBOWJET";

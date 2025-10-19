@@ -101,7 +101,7 @@
           
           <!-- Time Selection -->
           <div>
-            <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">{{ $t('TIME') }}</label>
+            <label :for="timeInputId" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">{{ $t('TIME') }}</label>
             <div class="flex">
               <select 
                 v-model="isArrivalMode"
@@ -113,6 +113,7 @@
               </select>
               <input 
                 type="time"
+                :id="timeInputId"
                 v-model="time"
                 class="flex-1 px-3 py-2 border border-l-0 border-gray-300 dark:border-gray-600 rounded-r-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:text-white"
               >
@@ -140,6 +141,36 @@
     
     <!-- Search Results -->
     <div v-if="searchResults.length > 0">
+      <div class="flex flex-col md:flex-row md:items-center md:justify-between gap-3 mb-4">
+        <h3 class="text-lg font-medium text-gray-900 dark:text-gray-100">
+          {{ $t('SEARCH_RESULTS') }}
+        </h3>
+        <div class="flex flex-col md:flex-row md:items-center gap-2 md:gap-3">
+          <span class="text-sm font-medium text-gray-700 dark:text-gray-300">
+            {{ $t('SORT_ORDER') }}
+          </span>
+          <div
+            class="flex flex-wrap gap-2"
+            role="tablist"
+            :aria-label="$t('SORT_ORDER')"
+          >
+            <button
+              v-for="option in sortOptions"
+              :key="option.value"
+              type="button"
+              role="tab"
+              :aria-selected="sortOption === option.value"
+              @click="sortOption = option.value"
+              class="px-3 py-2 text-sm font-medium rounded-md border transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 flex items-center justify-center"
+              :class="sortOption === option.value
+                ? 'bg-blue-600 text-white border-blue-600 shadow-sm'
+                : 'border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-300 bg-white dark:bg-gray-800 hover:bg-blue-50 dark:hover:bg-gray-700'"
+            >
+              {{ $t(option.labelKey) }}
+            </button>
+          </div>
+        </div>
+      </div>
       <!-- Route Panels -->
       <div v-for="(route, index) in displayedResults" :key="index" class="mb-4">
         <div class="bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-blue-600 dark:border-blue-500">
@@ -182,7 +213,7 @@
               <tbody>
                 <!-- Departure -->
                 <tr class="bg-[#D8ECF3] dark:bg-blue-900/40">
-                  <td class="py-2 text-right pr-4 dark:text-gray-100">{{ formatTime(route.departureTime) }}</td>
+                  <td class="py-2 pl-4 pr-4 text-left dark:text-gray-100">{{ formatTime(route.departureTime) }}</td>
                   <td class="py-2 pl-4">
                     <a href="#" @click.prevent="showPortInfo(route.segments[0].departure)" class="text-blue-600 dark:text-blue-200 hover:underline">
                       {{ getPortDisplayName(route.segments[0].departure) }}
@@ -195,7 +226,9 @@
                 <template v-for="(segment, segIndex) in route.segments" :key="'seg-' + segIndex">
                   <!-- Ship Row -->
                   <tr class="bg-white dark:bg-gray-800">
-                    <td class="py-2 text-right pr-4 dark:text-gray-100">↓</td>
+                    <td class="py-2 pl-4 pr-4 text-right dark:text-gray-100">
+                      {{ formatSegmentDuration(segment.departureTime, segment.arrivalTime) }}
+                    </td>
                     <td class="py-2 pl-4" :style="getShipBorderStyle(segment.ship)">
                       <div class="flex items-center">
                         <span v-if="segment.status === 2" class="mr-2 text-red-600 dark:text-red-300">×</span>
@@ -211,12 +244,16 @@
                   
                   <!-- Transfer Port (if not last segment) -->
                   <tr v-if="segIndex < route.segments.length - 1" class="bg-[#D8ECF3] dark:bg-blue-900/40">
-                    <td class="py-2 text-right pr-4 dark:text-gray-100">{{ formatTime(segment.arrivalTime) }}</td>
+                    <td class="py-2 pl-4 pr-4 text-left dark:text-gray-100 whitespace-pre-line">
+                      {{ formatTransferPortTimes(segment.arrivalTime, route.segments[segIndex + 1].departureTime) }}
+                    </td>
                     <td class="py-2 pl-4">
                       <a href="#" @click.prevent="showPortInfo(segment.arrival)" class="text-blue-600 dark:text-blue-200 hover:underline">
                         {{ getPortDisplayName(segment.arrival) }}
                       </a>
-                      <span class="text-xs text-gray-600 dark:text-gray-400 ml-2">({{ $t('TRANSFER') }})</span>
+                      <span class="text-xs text-gray-600 dark:text-gray-400 ml-2">
+                        ({{ $t('TRANSFER') }}) {{ formatTransferWaitTime(segment.arrivalTime, route.segments[segIndex + 1].departureTime) }}
+                      </span>
                     </td>
                     <td class="py-2"></td>
                   </tr>
@@ -224,7 +261,7 @@
                 
                 <!-- Arrival -->
                 <tr class="bg-[#D8ECF3] dark:bg-blue-900/40">
-                  <td class="py-2 text-right pr-4 dark:text-gray-100">{{ formatTime(route.arrivalTime) }}</td>
+                  <td class="py-2 pl-4 pr-4 text-left dark:text-gray-100">{{ formatTime(route.arrivalTime) }}</td>
                   <td class="py-2 pl-4">
                     <a href="#" @click.prevent="showPortInfo(route.segments[route.segments.length - 1].arrival)" class="text-blue-600 dark:text-blue-200 hover:underline">
                       {{ getPortDisplayName(route.segments[route.segments.length - 1].arrival) }}
@@ -355,6 +392,7 @@ const departure = ref(ferryStore?.departure || '')
 const arrival = ref(ferryStore?.arrival || '')
 const date = ref(new Date())
 const time = ref('')
+const timeInputId = 'transit-time-input'
 const isArrivalMode = ref(false)
 
 // Create searchParams as a computed object for better reactivity
@@ -401,8 +439,20 @@ const displayLimit = ref(5)
 const showDetailsModal = ref(false)
 const selectedRoute = ref<TransitRoute | null>(null)
 
+type SortKey = 'recommended' | 'fast' | 'cheap' | 'easy'
+
+const sortOptions: Array<{ value: SortKey; labelKey: string }> = [
+  { value: 'recommended', labelKey: 'SORT_RECOMMENDED' },
+  { value: 'fast', labelKey: 'SORT_FAST' },
+  { value: 'cheap', labelKey: 'SORT_CHEAP' },
+  { value: 'easy', labelKey: 'SORT_EASY' }
+]
+
+const sortOption = ref<SortKey>('recommended')
+
 // Composables
 const { searchRoutes, formatTime, calculateDuration, getPortDisplayName } = useRouteSearch()
+const { t } = useI18n()
 
 // Constants
 const today = new Date()
@@ -415,8 +465,97 @@ const canSearch = computed(() => {
          departure.value !== arrival.value
 })
 
+const sortedResults = computed(() => {
+  const routes = [...searchResults.value]
+  if (routes.length <= 1) {
+    return routes
+  }
+
+  const getDurationMinutes = (route: TransitRoute): number => {
+    return (route.arrivalTime.getTime() - route.departureTime.getTime()) / (1000 * 60)
+  }
+
+  const compareByDepartureTime = (a: TransitRoute, b: TransitRoute): number => {
+    return a.departureTime.getTime() - b.departureTime.getTime()
+  }
+
+  const compareByDuration = (a: TransitRoute, b: TransitRoute): number => {
+    const diff = getDurationMinutes(a) - getDurationMinutes(b)
+    if (diff !== 0) {
+      return diff
+    }
+    const fareDiff = a.totalFare - b.totalFare
+    if (fareDiff !== 0) {
+      return fareDiff
+    }
+    return compareByDepartureTime(a, b)
+  }
+
+  const compareByFare = (a: TransitRoute, b: TransitRoute): number => {
+    const diff = a.totalFare - b.totalFare
+    if (diff !== 0) {
+      return diff
+    }
+    return compareByDuration(a, b)
+  }
+
+  const compareByTransfer = (a: TransitRoute, b: TransitRoute): number => {
+    const diff = a.transferCount - b.transferCount
+    if (diff !== 0) {
+      return diff
+    }
+    return compareByDuration(a, b)
+  }
+
+  if (sortOption.value === 'fast') {
+    return routes.sort(compareByDuration)
+  }
+  if (sortOption.value === 'cheap') {
+    return routes.sort(compareByFare)
+  }
+  if (sortOption.value === 'easy') {
+    return routes.sort(compareByTransfer)
+  }
+
+  const durations = routes.map(getDurationMinutes)
+  const fares = routes.map(route => route.totalFare)
+  const transfers = routes.map(route => route.transferCount)
+
+  const minDuration = Math.min(...durations)
+  const maxDuration = Math.max(...durations)
+  const minFare = Math.min(...fares)
+  const maxFare = Math.max(...fares)
+  const minTransfer = Math.min(...transfers)
+  const maxTransfer = Math.max(...transfers)
+
+  const normalize = (value: number, min: number, max: number): number => {
+    if (max === min) {
+      return 0
+    }
+    return (value - min) / (max - min)
+  }
+
+  const getRecommendedScore = (route: TransitRoute): number => {
+    const durationScore = normalize(getDurationMinutes(route), minDuration, maxDuration)
+    const fareScore = normalize(route.totalFare, minFare, maxFare)
+    const transferScore = normalize(route.transferCount, minTransfer, maxTransfer)
+    return durationScore * 0.4 + fareScore * 0.35 + transferScore * 0.25
+  }
+
+  return routes
+    .map(route => ({ route, score: getRecommendedScore(route) }))
+    .sort((a, b) => {
+      const diff = a.score - b.score
+      if (diff !== 0) {
+        return diff
+      }
+      return compareByDepartureTime(a.route, b.route)
+    })
+    .map(item => item.route)
+})
+
 const displayedResults = computed(() => {
-  return searchResults.value.slice(0, displayLimit.value)
+  return sortedResults.value.slice(0, displayLimit.value)
 })
 
 // Methods
@@ -444,6 +583,25 @@ function getShipBorderStyle(ship: string): string {
     'RAINBOWJET': 'border-left: double 10px #40BFB0'
   }
   return borderStyles[ship] || 'border-left: double 10px #888888'
+}
+
+const formatTransferPortTimes = (arrivalTime: Date, nextDepartureTime: Date): string => {
+  return `${formatTime(arrivalTime)}${t('TRANSFER_ARRIVAL_MARK')}
+${formatTime(nextDepartureTime)}${t('TRANSFER_DEPARTURE_MARK')}`
+}
+
+const formatTransferWaitTime = (arrivalTime: Date, nextDepartureTime: Date): string => {
+  const waitMillis = nextDepartureTime.getTime() - arrivalTime.getTime()
+  if (waitMillis <= 0) {
+    return t('TRANSFER_WAIT_TIME_SHORT')
+  }
+  const duration = calculateDuration(arrivalTime, nextDepartureTime)
+  return t('TRANSFER_WAIT_TIME', { duration })
+}
+
+const formatSegmentDuration = (departureTime: Date, arrivalTime: Date): string => {
+  const duration = calculateDuration(departureTime, arrivalTime)
+  return duration
 }
 
 // Modal state
