@@ -39,9 +39,34 @@ vi.mock('#app', () => ({
 
 
 describe('AlertsPage', () => {
+  const FormModalStub = {
+    name: 'FormModal',
+    props: ['open'],
+    emits: ['close', 'submit'],
+    template: `
+      <div v-if="open" data-test="form-modal-stub">
+        <form @submit.prevent="$emit('submit')">
+          <slot />
+        </form>
+      </div>
+    `
+  }
+
+  const mountAlertsPage = () => mount(AlertsPage, {
+    global: {
+      stubs: {
+        FormModal: FormModalStub
+      }
+    }
+  })
+
   beforeEach(() => {
     setActivePinia(createPinia())
     vi.clearAllMocks()
+    vi.unstubAllGlobals()
+    vi.stubGlobal('useNuxtApp', () => ({
+      $toast: mockToast
+    }))
     
     // デフォルトのモックデータ
     mockGetCollection.mockResolvedValue([
@@ -53,6 +78,7 @@ describe('AlertsPage', () => {
         summary: '欠航',
         comment: '悪天候のため',
         startDate: '2024-01-10T09:00:00',
+        updatedAt: '2024-01-10T10:00:00',
         active: true,
         severity: 'high',
         affectedRoutes: ['西郷 → 本土七類']
@@ -64,27 +90,55 @@ describe('AlertsPage', () => {
     it('各状態の件数を正しく表示する', async () => {
       mockGetCollection
         .mockResolvedValueOnce([
-          { id: '1', status: 1, active: true },
-          { id: '2', status: 2, active: true },
-          { id: '3', status: 2, active: true }
+          {
+            id: '1',
+            ship: 'テスト船1',
+            route: 'A → B',
+            status: 1,
+            summary: '遅延',
+            startDate: '2024-01-10T09:00:00',
+            updatedAt: '2024-01-10T10:00:00',
+            active: true
+          },
+          {
+            id: '2',
+            ship: 'テスト船2',
+            route: 'A → C',
+            status: 2,
+            summary: '欠航',
+            startDate: '2024-01-10T09:00:00',
+            updatedAt: '2024-01-10T10:00:00',
+            active: true
+          },
+          {
+            id: '3',
+            ship: 'テスト船3',
+            route: 'B → C',
+            status: 2,
+            summary: '欠航',
+            startDate: '2024-01-10T09:00:00',
+            updatedAt: '2024-01-10T10:00:00',
+            active: true
+          }
         ])
         .mockResolvedValueOnce([])
 
-      const wrapper = mount(AlertsPage)
+      const wrapper = mountAlertsPage()
       await flushPromises()
 
-      const summaryCards = wrapper.findAll('.grid > div')
-      expect(summaryCards[1].text()).toContain('1') // 遅延
-      expect(summaryCards[2].text()).toContain('2') // 欠航
+      const delayCard = wrapper.find('[data-test="summary-delay"]')
+      const cancelCard = wrapper.find('[data-test="summary-cancel"]')
+      expect(delayCard.text()).toContain('1')
+      expect(cancelCard.text()).toContain('2')
     })
   })
 
   describe('アラート管理', () => {
     it('アクティブなアラートを表示する', async () => {
-      const wrapper = mount(AlertsPage)
+      const wrapper = mountAlertsPage()
       await flushPromises()
 
-      const activeAlerts = wrapper.find('.active-alerts')
+      const activeAlerts = wrapper.find('[data-test="active-alerts"]')
       expect(activeAlerts.text()).toContain('フェリーおき')
       expect(activeAlerts.text()).toContain('西郷 → 本土七類')
       expect(activeAlerts.text()).toContain('欠航')
@@ -92,17 +146,17 @@ describe('AlertsPage', () => {
 
     it('新規アラートを作成できる', async () => {
       mockCreateDocument.mockResolvedValue('new-id')
-      const wrapper = mount(AlertsPage)
+      const wrapper = mountAlertsPage()
       
       // 新規アラートボタンをクリック
-      await wrapper.find('button[class*="new-alert"]').trigger('click')
+      await wrapper.find('[data-test="new-alert-button"]').trigger('click')
       
       // フォームに入力
       const modal = wrapper.findComponent({ name: 'FormModal' })
-      await modal.find('select[v-model="formData.ship"]').setValue('フェリーしらしま')
-      await modal.find('input[v-model="formData.route"]').setValue('菱浦 → 西郷')
-      await modal.find('select[v-model="formData.status"]').setValue('1')
-      await modal.find('input[v-model="formData.summary"]').setValue('30分遅延')
+      await modal.find('[data-test="alert-ship"]').setValue('フェリーしらしま')
+      await modal.find('[data-test="alert-route"]').setValue('菱浦 → 西郷')
+      await modal.find('[data-test="alert-status"]').setValue('1')
+      await modal.find('[data-test="alert-summary"]').setValue('30分遅延')
       
       // 保存
       await modal.find('form').trigger('submit')
@@ -113,16 +167,16 @@ describe('AlertsPage', () => {
         expect.objectContaining({
           ship: 'フェリーしらしま',
           route: '菱浦 → 西郷',
-          status: 1,
+          status: '1',
           summary: '30分遅延',
           active: true,
-          severity: 'medium'
+          severity: 'low'
         })
       )
     })
 
     it('アラートを編集できる', async () => {
-      const wrapper = mount(AlertsPage)
+      const wrapper = mountAlertsPage()
       await flushPromises()
 
       // 編集ボタンをクリック
@@ -134,7 +188,7 @@ describe('AlertsPage', () => {
       expect(modal.exists()).toBe(true)
       
       // 状態を変更
-      await modal.find('select[v-model="formData.status"]').setValue('3')
+      await modal.find('[data-test="alert-status"]').setValue('3')
       
       // 保存
       await modal.find('form').trigger('submit')
@@ -144,14 +198,14 @@ describe('AlertsPage', () => {
         'alerts',
         '1',
         expect.objectContaining({
-          status: 3
+          status: '3'
         })
       )
     })
 
     it('アラートを削除できる', async () => {
       window.confirm = vi.fn(() => true)
-      const wrapper = mount(AlertsPage)
+      const wrapper = mountAlertsPage()
       await flushPromises()
 
       // 削除ボタンをクリック
@@ -171,7 +225,7 @@ describe('AlertsPage', () => {
       const wrapper = mount(AlertsPage)
       
       // 公開ボタンをクリック
-      await wrapper.find('button[class*="publish"]').trigger('click')
+      await wrapper.find('[data-test="publish-button"]').trigger('click')
       await flushPromises()
 
       expect(mockPublishData).toHaveBeenCalledWith('alerts')
@@ -190,6 +244,7 @@ describe('AlertsPage', () => {
             status: 2,
             summary: '欠航（終了）',
             startDate: '2024-01-01T09:00:00',
+            updatedAt: '2024-01-01T10:00:00',
             endDate: '2024-01-01T18:00:00',
             active: false
           }

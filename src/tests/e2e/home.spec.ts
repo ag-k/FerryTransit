@@ -9,24 +9,45 @@ test.describe('トップページ', () => {
   test('港を選択すると時刻表が表示される', async ({ page }) => {
     await page.goto('/')
 
-    await expect(page.getByRole('heading', { level: 2, name: '時刻表' })).toBeVisible()
+    await expect(page.getByRole('heading', { level: 2, name: /時刻表|Timetable/ })).toBeVisible()
 
-    await page.getByLabel('出発地').selectOption('HONDO_SHICHIRUI')
-    await page.getByLabel('目的地').selectOption('SAIGO')
+    const visibleSelects = page.locator('select:visible')
+    await expect(visibleSelects).toHaveCount(2)
+
+    const departureSelect = visibleSelects.first()
+    const arrivalSelect = visibleSelects.nth(1)
+
+    await expect(departureSelect).toBeEnabled()
+    await expect(arrivalSelect).toBeEnabled()
+
+    await departureSelect.selectOption('HONDO_SHICHIRUI')
+    await arrivalSelect.selectOption('SAIGO')
 
     await expect(page.getByRole('table')).toBeVisible()
-    await expect(page.getByRole('row', { name: /フェリーおき/ })).toContainText(['09:00', '11:25'])
+    const ferryRow = page.getByRole('row', { name: /フェリーおき|Ferry Oki/ })
+    await expect(ferryRow).toBeVisible()
+    await expect(ferryRow).toContainText(/09:00/)
+    await expect(ferryRow).toContainText(/11:25/)
   })
 
   test('ルート入れ替えボタンで出発地と到着地が入れ替わる', async ({ page }) => {
     await page.goto('/')
 
-    await page.getByLabel('出発地').selectOption('HONDO_SHICHIRUI')
-    await page.getByLabel('目的地').selectOption('SAIGO')
+    const visibleSelects = page.locator('select:visible')
+    await expect(visibleSelects).toHaveCount(2)
 
-    await page.getByRole('button', { name: /出発地と到着地を入れ替え/ }).click()
+    const departureSelect = visibleSelects.first()
+    const arrivalSelect = visibleSelects.nth(1)
 
-    await expect(page.getByLabel('出発地')).toHaveValue('SAIGO')
-    await expect(page.getByLabel('目的地')).toHaveValue('HONDO_SHICHIRUI')
+    await expect(departureSelect).toBeEnabled()
+    await expect(arrivalSelect).toBeEnabled()
+
+    await departureSelect.selectOption('HONDO_SHICHIRUI')
+    await arrivalSelect.selectOption('SAIGO')
+
+    await page.getByRole('button', { name: /出発地と到着地を入れ替え|Reverse route/ }).click()
+
+    await expect(visibleSelects.first()).toHaveValue('SAIGO')
+    await expect(visibleSelects.nth(1)).toHaveValue('HONDO_SHICHIRUI')
   })
 })

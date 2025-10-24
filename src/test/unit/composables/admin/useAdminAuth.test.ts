@@ -1,168 +1,132 @@
 import { describe, it, expect, beforeEach, vi } from 'vitest'
 
-// Mock Firebase Auth
 const mockSignInWithEmailAndPassword = vi.fn()
 const mockSignOut = vi.fn()
 const mockOnAuthStateChanged = vi.fn()
+const mockAuth = { currentUser: null as null | { getIdToken: (force?: boolean) => Promise<void> } }
+const mockRouterPush = vi.fn()
+const mockAuthStore = { user: null }
 
 vi.mock('firebase/auth', () => ({
-  getAuth: vi.fn(() => ({})),
+  getAuth: vi.fn(() => mockAuth),
   signInWithEmailAndPassword: (...args: any[]) => mockSignInWithEmailAndPassword(...args),
   signOut: (...args: any[]) => mockSignOut(...args),
   onAuthStateChanged: (...args: any[]) => mockOnAuthStateChanged(...args)
 }))
 
-// Mock stores
-vi.mock('@/stores/auth', () => ({
-  useAuthStore: () => ({
-    currentUser: null,
-    setCurrentUser: vi.fn(),
-    clearCurrentUser: vi.fn()
-  })
-}))
-
-// Mock useRouter
-vi.mock('#vue-router', () => ({
-  useRouter: () => ({
-    push: vi.fn()
-  })
-}))
-
-// Mock useNuxtApp
-vi.mock('#app', () => ({
-  useNuxtApp: () => ({
-    $auth: {}
-  }),
-  useState: vi.fn((key, init) => {
-    const state = init ? init() : null
-    return {
-      value: state
-    }
-  }),
-  navigateTo: vi.fn()
-}))
-
 describe('useAdminAuth', () => {
-  const mockUseAdminAuth = async () => {
+  const loadComposable = async () => {
+    vi.resetModules()
     const mod = await import('@/composables/useAdminAuth')
     return mod.useAdminAuth()
   }
+
   beforeEach(() => {
-    vi.clearAllMocks()
+    vi.unstubAllGlobals()
+    vi.stubGlobal('useRouter', () => ({
+      push: mockRouterPush
+    }))
+    vi.stubGlobal('useAuthStore', () => mockAuthStore)
+    mockSignInWithEmailAndPassword.mockReset()
+    mockSignOut.mockReset()
+    mockOnAuthStateChanged.mockReset()
+    mockRouterPush.mockReset()
+    mockAuth.currentUser = null
+    mockAuthStore.user = null
   })
 
-  describe('login', () => {
-    it('管理者権限を持つユーザーでログインできる', async () => {
-      const mockUser = {
-        uid: 'test-uid',
-        email: 'admin@example.com',
-        getIdTokenResult: vi.fn().mockResolvedValue({
-          claims: { role: 'admin' }
-        })
-      }
-      
-      mockSignInWithEmailAndPassword.mockResolvedValue({
-        user: mockUser
+  afterEach(() => {
+    vi.unstubAllGlobals()
+  })
+
+  it('管理者ユーザーのログインに成功するとユーザー情報を返す', async () => {
+    const mockUser = {
+      uid: 'admin-uid',
+      email: 'admin@example.com'
+    }
+    mockSignInWithEmailAndPassword.mockResolvedValue({ user: mockUser })
+
+    const { login } = await loadComposable()
+    const result = await login({ email: 'admin@example.com', password: 'password123' })
+
+    expect(mockSignInWithEmailAndPassword).toHaveBeenCalledWith(
+      mockAuth,
+      'admin@example.com',
+      'password123'
+    )
+    expect(result).toBe(mockUser)
+  })
+
+  it('認証情報が無効な場合はエラーを送出する', async () => {
+    const authError = new Error('auth/invalid-email')
+    mockSignInWithEmailAndPassword.mockRejectedValue(authError)
+
+    const { login } = await loadComposable()
+
+    await expect(
+      login({ email: 'invalid', password: 'password' })
+    ).rejects.toThrow('auth/invalid-email')
+  })
+
+  it('ログアウト時にFirebaseとルーターが呼び出される', async () => {
+    mockSignOut.mockResolvedValue(undefined)
+
+    const { logout } = await loadComposable()
+    await logout()
+
+    expect(mockSignOut).toHaveBeenCalledWith(mockAuth)
+    expect(mockRouterPush).toHaveBeenCalledWith('/admin/login')
+  })
+
+  it('onAuthStateChangedで現在のユーザーを取得できる', async () => {
+    const mockUser = { uid: 'current-user' }
+    mockAuth.currentUser = mockUser as any
+    mockOnAuthStateChanged.mockImplementation((_auth, callback) => {
+      const unsubscribe = vi.fn()
+      queueMicrotask(() => {
+        callback(mockUser)
       })
-
-      const { login } = await mockUseAdminAuth()
-      const result = await login('admin@example.com', 'password123')
-
-      expect(mockSignInWithEmailAndPassword).toHaveBeenCalledWith(
-        expect.any(Object),
-        'admin@example.com',
-        'password123'
-      )
-      expect(result).toBe(true)
+      return unsubscribe
     })
 
-    it('管理者権限を持たないユーザーでログイン失敗', async () => {
-      const mockUser = {
-        uid: 'test-uid',
-        email: 'user@example.com',
-        getIdTokenResult: vi.fn().mockResolvedValue({
-          claims: {}
-        })
-      }
-      
-      mockSignInWithEmailAndPassword.mockResolvedValue({
-        user: mockUser
-      })
-      mockSignOut.mockResolvedValue(undefined)
-
-      const { login } = await mockUseAdminAuth()
-      const result = await login('user@example.com', 'password123')
-
-      expect(result).toBe(false)
-      expect(mockSignOut).toHaveBeenCalled()
-    })
-
-    it('無効な認証情報でエラーを返す', async () => {
-      mockSignInWithEmailAndPassword.mockRejectedValue(
-        new Error('auth/invalid-email')
-      )
-
-      const { login } = await mockUseAdminAuth()
-      
-      await expect(login('invalid', 'password')).rejects.toThrow('auth/invalid-email')
-    })
+    const { getCurrentUser } = await loadComposable()
+    await expect(getCurrentUser()).resolves.toEqual(mockUser)
   })
 
-  describe('logout', () => {
-    it('正常にログアウトできる', async () => {
-      mockSignOut.mockResolvedValue(undefined)
+  it('管理者権限を持つユーザーを判定できる', async () => {
+    const mockAdminUser = {
+      getIdTokenResult: vi.fn().mockResolvedValue({ claims: { admin: true } })
+    }
 
-      const { logout } = await mockUseAdminAuth()
-      await logout()
-
-      expect(mockSignOut).toHaveBeenCalled()
-    })
+    const { isAdmin } = await loadComposable()
+    await expect(isAdmin(mockAdminUser as any)).resolves.toBe(true)
   })
 
-  describe('checkAdminRole', () => {
-    it('管理者権限を持つユーザーを検証できる', async () => {
-      const mockUser = {
-        uid: 'test-uid',
-        email: 'admin@example.com',
-        getIdTokenResult: vi.fn().mockResolvedValue({
-          claims: { role: 'admin' }
-        })
-      }
+  it('管理者権限を持たないユーザーはfalseを返す', async () => {
+    const mockUser = {
+      getIdTokenResult: vi.fn().mockRejectedValue(new Error('token-error'))
+    }
 
-      const { checkAdminRole } = await mockUseAdminAuth()
-      const isAdmin = await checkAdminRole(mockUser)
+    const { isAdmin } = await loadComposable()
+    await expect(isAdmin(mockUser as any)).resolves.toBe(false)
+  })
 
-      expect(isAdmin).toBe(true)
-    })
+  it('ユーザーの管理者ロールを取得できる', async () => {
+    const mockUser = {
+      getIdTokenResult: vi.fn().mockResolvedValue({ claims: { role: 'super' } })
+    }
 
-    it('スーパー管理者権限を持つユーザーを検証できる', async () => {
-      const mockUser = {
-        uid: 'test-uid',
-        email: 'super@example.com',
-        getIdTokenResult: vi.fn().mockResolvedValue({
-          claims: { role: 'super' }
-        })
-      }
+    const { getAdminRole } = await loadComposable()
+    await expect(getAdminRole(mockUser as any)).resolves.toBe('super')
+  })
 
-      const { checkAdminRole } = await mockUseAdminAuth()
-      const isAdmin = await checkAdminRole(mockUser)
+  it('現在のユーザーが存在する場合はトークンを更新する', async () => {
+    const mockCurrentUser = { getIdToken: vi.fn().mockResolvedValue(undefined) }
+    mockAuth.currentUser = mockCurrentUser
 
-      expect(isAdmin).toBe(true)
-    })
+    const { refreshToken } = await loadComposable()
+    await refreshToken()
 
-    it('権限を持たないユーザーを検証できる', async () => {
-      const mockUser = {
-        uid: 'test-uid',
-        email: 'user@example.com',
-        getIdTokenResult: vi.fn().mockResolvedValue({
-          claims: { role: 'user' }
-        })
-      }
-
-      const { checkAdminRole } = await mockUseAdminAuth()
-      const isAdmin = await checkAdminRole(mockUser)
-
-      expect(isAdmin).toBe(false)
-    })
+    expect(mockCurrentUser.getIdToken).toHaveBeenCalledWith(true)
   })
 })

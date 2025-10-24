@@ -6,6 +6,10 @@ import { ref } from 'vue'
 
 // Mocks
 const mockGetStorageDownloadURL = vi.fn(async () => 'https://example.com/ferry-routes.json')
+const mockToast = {
+  success: vi.fn(),
+  error: vi.fn()
+}
 
 vi.mock('~/composables/useDataPublish', () => ({
   getJSONData: vi.fn(async () => ({
@@ -69,12 +73,14 @@ vi.mock('#app', () => ({
   useHead: vi.fn(),
   useI18n: () => ({ t: (k: string) => k, locale: ref('ja') }),
   useRuntimeConfig: () => ({ public: { googleMapsApiKey: '' } }),
-  useNuxtApp: () => ({ $toast: { success: vi.fn(), error: vi.fn() } })
+  useNuxtApp: () => ({ $toast: mockToast })
 }))
 
 describe('Admin Routes Page - 現在の航路詳細表示', () => {
   beforeEach(() => {
     vi.clearAllMocks()
+    vi.unstubAllGlobals()
+    vi.stubGlobal('useNuxtApp', () => ({ $toast: mockToast }))
   })
 
   it('現在の航路一覧が表示される', async () => {

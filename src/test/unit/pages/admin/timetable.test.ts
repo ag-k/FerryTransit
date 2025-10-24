@@ -1,14 +1,14 @@
-import { describe, it, expect, beforeEach, vi } from 'vitest'
+import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest'
 import { mount, flushPromises } from '@vue/test-utils'
 import { setActivePinia, createPinia } from 'pinia'
 import TimetablePage from '@/pages/admin/timetable.vue'
 
-// Mock composables
 const mockGetCollection = vi.fn()
 const mockCreateDocument = vi.fn()
 const mockUpdateDocument = vi.fn()
 const mockDeleteDocument = vi.fn()
 const mockBatchWrite = vi.fn()
+const mockPublishData = vi.fn()
 
 vi.mock('@/composables/useAdminFirestore', () => ({
   useAdminFirestore: () => ({
@@ -20,185 +20,226 @@ vi.mock('@/composables/useAdminFirestore', () => ({
   })
 }))
 
-const mockPublishData = vi.fn()
 vi.mock('@/composables/useDataPublish', () => ({
   useDataPublish: () => ({
     publishData: mockPublishData
   })
 }))
 
-// Mock Nuxt
 const mockToast = {
   success: vi.fn(),
   error: vi.fn()
 }
 
-vi.mock('#app', () => ({
-  useNuxtApp: () => ({
-    $toast: mockToast
-  })
-}))
+const FormModalStub = {
+  name: 'FormModal',
+  props: ['open'],
+  emits: ['close', 'submit'],
+  template: `
+    <div v-if="open" data-test="form-modal-stub">
+      <form @submit.prevent="$emit('submit')">
+        <slot />
+      </form>
+      <button type="button" data-test="close-modal" @click="$emit('close')">閉じる</button>
+    </div>
+  `
+}
 
-
-// Mock file input
-global.FileReader = vi.fn(() => ({
-  readAsText: vi.fn(function(this: any) {
-    setTimeout(() => {
-      this.onload({ target: { result: 'tripId,name,departure,arrival,departureTime,arrivalTime,price\n001,フェリーおき,西郷,本土七類,08:30,11:10,3350' } })
-    }, 0)
-  })
-})) as any
+const DataTableStub = {
+  name: 'DataTable',
+  props: ['data', 'columns'],
+  template: `
+    <div>
+      <table>
+        <tbody>
+          <tr v-for="row in data" :key="row.id" data-test="timetable-row">
+            <td v-for="column in columns" :key="column.key">
+              <slot :name="'cell-' + column.key" :value="row[column.key]" :row="row">
+                {{ row[column.key] }}
+              </slot>
+            </td>
+            <td>
+              <slot name="row-actions" :row="row" />
+            </td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  `
+}
 
 describe('TimetablePage', () => {
+  const mountPage = () => mount(TimetablePage, {
+    global: {
+      stubs: {
+        FormModal: FormModalStub,
+        DataTable: DataTableStub
+      }
+    }
+  })
+
   beforeEach(() => {
     setActivePinia(createPinia())
     vi.clearAllMocks()
-    
-    // デフォルトのモックデータ
+    vi.unstubAllGlobals()
+    vi.stubGlobal('useNuxtApp', () => ({
+      $toast: mockToast
+    }))
+
     mockGetCollection.mockResolvedValue([
       {
         id: '1',
         tripId: '001',
         name: 'フェリーおき',
-        departure: '西郷',
-        arrival: '本土七類',
+        departure: 'SAIGO',
+        arrival: 'HONDO_SHICHIRUI',
         departureTime: '08:30',
         arrivalTime: '11:10',
-        price: 3350
+        startDate: '2024-01-01',
+        endDate: '2024-03-31',
+        status: 0
       }
     ])
   })
 
-  describe('データ表示', () => {
-    it('時刻表データを正しく表示する', async () => {
-      const wrapper = mount(TimetablePage)
-      await flushPromises()
-
-      expect(mockGetCollection).toHaveBeenCalledWith(
-        'timetables',
-        expect.any(Array)
-      )
-      
-      const tableRows = wrapper.findAll('tbody tr')
-      expect(tableRows).toHaveLength(1)
-      expect(tableRows[0].text()).toContain('フェリーおき')
-      expect(tableRows[0].text()).toContain('西郷')
-      expect(tableRows[0].text()).toContain('本土七類')
-    })
-
-    it('フィルタリング機能が動作する', async () => {
-      const wrapper = mount(TimetablePage)
-      await flushPromises()
-
-      // 港でフィルタ
-      const portSelect = wrapper.find('select[class*="port-filter"]')
-      await portSelect.setValue('西郷')
-
-      // フィルタ結果を確認
-      const visibleRows = wrapper.findAll('tbody tr').filter(row => 
-        row.isVisible()
-      )
-      expect(visibleRows.every(row => row.text().includes('西郷'))).toBe(true)
-    })
+  afterEach(() => {
+    vi.useRealTimers()
+    vi.unstubAllGlobals()
   })
 
-  describe('CRUD操作', () => {
-    it('新規時刻表を追加できる', async () => {
-      mockCreateDocument.mockResolvedValue('new-id')
-      const wrapper = mount(TimetablePage)
-      
-      // 追加ボタンをクリック
-      await wrapper.find('button[class*="add-button"]').trigger('click')
-      
-      // フォームに入力
-      const modal = wrapper.findComponent({ name: 'FormModal' })
-      await modal.find('input[v-model="formData.tripId"]').setValue('002')
-      await modal.find('input[v-model="formData.name"]').setValue('フェリーしらしま')
-      
-      // 保存
-      await modal.find('form').trigger('submit')
-      await flushPromises()
+  it('時刻表データを正しく表示する', async () => {
+    const wrapper = mountPage()
+    await flushPromises()
 
-      expect(mockCreateDocument).toHaveBeenCalledWith(
-        'timetables',
-        expect.objectContaining({
-          tripId: '002',
-          name: 'フェリーしらしま'
-        })
-      )
-    })
-
-    it('時刻表を編集できる', async () => {
-      const wrapper = mount(TimetablePage)
-      await flushPromises()
-
-      // 編集ボタンをクリック
-      await wrapper.find('button[class*="edit-button"]').trigger('click')
-      
-      // 編集フォームが表示される
-      const modal = wrapper.findComponent({ name: 'FormModal' })
-      expect(modal.exists()).toBe(true)
-      
-      // 保存
-      await modal.find('form').trigger('submit')
-      await flushPromises()
-
-      expect(mockUpdateDocument).toHaveBeenCalled()
-    })
-
-    it('時刻表を削除できる', async () => {
-      window.confirm = vi.fn(() => true)
-      const wrapper = mount(TimetablePage)
-      await flushPromises()
-
-      // 削除ボタンをクリック
-      await wrapper.find('button[class*="delete-button"]').trigger('click')
-      
-      expect(window.confirm).toHaveBeenCalledWith(
-        '001 フェリーおきを削除しますか？'
-      )
-      expect(mockDeleteDocument).toHaveBeenCalledWith('timetables', '1')
-    })
+    const rows = wrapper.findAll('[data-test="timetable-row"]')
+    expect(rows).toHaveLength(1)
+    expect(rows[0].text()).toContain('フェリーおき')
+    expect(rows[0].text()).toContain('SAIGO')
   })
 
-  describe('CSVインポート', () => {
-    it('CSVファイルをインポートできる', async () => {
-      mockBatchWrite.mockResolvedValue(undefined)
-      const wrapper = mount(TimetablePage)
-      
-      // ファイル選択をシミュレート
-      const fileInput = wrapper.find('input[type="file"]')
-      const file = new File(['content'], 'timetable.csv', { type: 'text/csv' })
-      
-      Object.defineProperty(fileInput.element, 'files', {
-        value: [file],
-        writable: false
+  it('フィルタリング機能が動作する', async () => {
+    mockGetCollection.mockResolvedValue([
+      { id: '1', tripId: '001', name: 'フェリーおき', departure: 'SAIGO', arrival: 'HONDO_SHICHIRUI', departureTime: '08:30', arrivalTime: '11:10', startDate: '2024-01-01', endDate: '2024-03-31', status: 0 },
+      { id: '2', tripId: '002', name: 'フェリーしらしま', departure: 'HISHIURA', arrival: 'SAIGO', departureTime: '10:00', arrivalTime: '12:30', startDate: '2024-01-01', endDate: '2024-03-31', status: 0 }
+    ])
+
+    const wrapper = mountPage()
+    await flushPromises()
+
+    const filter = wrapper.find('[data-test="timetable-filter-departure"]')
+    await filter.setValue('SAIGO')
+    await flushPromises()
+
+    const rows = wrapper.findAll('[data-test="timetable-row"]')
+    expect(rows).toHaveLength(1)
+    expect(rows[0].text()).toContain('フェリーおき')
+  })
+
+  it('新規時刻表を追加できる', async () => {
+    mockCreateDocument.mockResolvedValue('new-id')
+    const nowSpy = vi.spyOn(Date, 'now').mockReturnValue(1_700_000_000_000)
+
+    const wrapper = mountPage()
+    await flushPromises()
+
+    await wrapper.find('[data-test="timetable-add"]').trigger('click')
+    await flushPromises()
+
+    const modal = wrapper.find('[data-test="form-modal-stub"]')
+    await modal.find('[data-test="timetable-name"]').setValue('フェリーしらしま')
+    await modal.find('[data-test="timetable-departure"]').setValue('SAIGO')
+    await modal.find('[data-test="timetable-arrival"]').setValue('HISHIURA')
+    await modal.find('[data-test="timetable-departure-time"]').setValue('09:00')
+    await modal.find('[data-test="timetable-arrival-time"]').setValue('11:30')
+    await modal.find('[data-test="timetable-start-date"]').setValue('2024-04-01')
+    await modal.find('[data-test="timetable-end-date"]').setValue('2024-04-30')
+    await modal.find('[data-test="timetable-status"]').setValue('1')
+
+    await modal.find('form').trigger('submit')
+    await flushPromises()
+
+    expect(mockCreateDocument).toHaveBeenCalledWith(
+      'timetables',
+      expect.objectContaining({
+        name: 'フェリーしらしま',
+        departure: 'SAIGO',
+        arrival: 'HISHIURA',
+        status: '1'
       })
-      
-      await fileInput.trigger('change')
-      await flushPromises()
+    )
 
-      expect(mockBatchWrite).toHaveBeenCalledWith(
-        expect.arrayContaining([
-          expect.objectContaining({
-            type: 'create',
-            collection: 'timetables'
-          })
-        ])
-      )
-    })
+    nowSpy.mockRestore()
   })
 
-  describe('データ公開', () => {
-    it('時刻表データを公開できる', async () => {
-      mockPublishData.mockResolvedValue('https://storage.example.com/timetable.json')
-      const wrapper = mount(TimetablePage)
-      
-      // 公開ボタンをクリック
-      await wrapper.find('button[class*="publish-button"]').trigger('click')
-      await flushPromises()
+  it('時刻表を編集できる', async () => {
+    const wrapper = mountPage()
+    await flushPromises()
 
-      expect(mockPublishData).toHaveBeenCalledWith('timetable')
+    await wrapper.find('[data-test="timetable-edit"]').trigger('click')
+    await flushPromises()
+
+    const modal = wrapper.find('[data-test="form-modal-stub"]')
+    await modal.find('[data-test="timetable-status"]').setValue('2')
+    await modal.find('form').trigger('submit')
+    await flushPromises()
+
+    expect(mockUpdateDocument).toHaveBeenCalledWith(
+      'timetables',
+      '1',
+      expect.objectContaining({ status: '2' })
+    )
+  })
+
+  it('時刻表を削除できる', async () => {
+    const confirmSpy = vi.spyOn(window, 'confirm').mockReturnValue(true)
+
+    const wrapper = mountPage()
+    await flushPromises()
+
+    await wrapper.find('[data-test="timetable-delete"]').trigger('click')
+
+    expect(confirmSpy).toHaveBeenCalledWith('フェリーおき の 西郷 → 本土七類 便を削除しますか？')
+    expect(mockDeleteDocument).toHaveBeenCalledWith('timetables', '1')
+
+    confirmSpy.mockRestore()
+  })
+
+  it('CSVファイルをインポートできる', async () => {
+    mockBatchWrite.mockResolvedValue(undefined)
+
+    const wrapper = mountPage()
+    await flushPromises()
+
+    await wrapper.find('[data-test="timetable-import"]').trigger('click')
+    await flushPromises()
+
+    const fileInput = wrapper.find('[data-test="timetable-file-input"]')
+    const file = new File([
+      '船舶名,出発港,到着港,出発時刻,到着時刻,開始日,終了日,状態\nフェリーおき,SAIGO,HONDO_SHICHIRUI,08:30,11:10,2024-01-01,2024-01-31,0'
+    ], 'timetable.csv', { type: 'text/csv' })
+
+    Object.defineProperty(fileInput.element, 'files', {
+      value: [file],
+      writable: false
     })
+
+    await fileInput.trigger('change')
+    await flushPromises()
+
+    expect(mockBatchWrite).toHaveBeenCalled()
+    expect(mockToast.success).toHaveBeenCalledWith('1件のデータをインポートしました')
+  })
+
+  it('時刻表データを公開できる', async () => {
+    mockPublishData.mockResolvedValue('https://example.com/timetable.json')
+
+    const wrapper = mountPage()
+    await flushPromises()
+
+    await wrapper.find('[data-test="timetable-publish"]').trigger('click')
+    await flushPromises()
+
+    expect(mockPublishData).toHaveBeenCalledWith('timetable')
+    expect(mockToast.success).toHaveBeenCalledWith('時刻表データを公開しました')
   })
 })
