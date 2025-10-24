@@ -1,11 +1,3 @@
-export interface Analytics {
-  pageViews: PageViewStats[]
-  userStats: UserStats
-  deviceStats: DeviceStats
-  locationStats: LocationStats[]
-  searchStats: SearchStats[]
-}
-
 export interface PageViewStats {
   date: string
   views: number
@@ -41,4 +33,12 @@ export interface SearchStats {
   searchCount: number
   conversionRate: number
   lastSearched: Date
+}
+
+export interface Analytics {
+  pageViews: PageViewStats[]
+  userStats: UserStats
+  deviceStats: DeviceStats
+  locationStats: LocationStats[]
+  searchStats: SearchStats[]
 }

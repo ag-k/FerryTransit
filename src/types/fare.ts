@@ -13,11 +13,11 @@ export interface VehicleFare {
 }
 
 export interface SeatClassFare {
-  class2: number        // 2等
+  class2: number // 2等
   class2Special: number // 特2等
-  class1: number        // 1等
-  classSpecial: number  // 特等
-  specialRoom: number   // 特別室
+  class1: number // 1等
+  classSpecial: number // 特等
+  specialRoom: number // 特別室
 }
 
 export interface RouteFare {
