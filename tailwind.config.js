@@ -2,13 +2,13 @@
 export default {
   darkMode: 'class',
   content: [
-    "./src/components/**/*.{js,vue,ts}",
-    "./src/layouts/**/*.vue",
-    "./src/pages/**/*.vue",
-    "./src/plugins/**/*.{js,ts}",
-    "./src/app.vue",
-    "./src/error.vue",
-    "./nuxt.config.{js,ts}"
+    './src/components/**/*.{js,vue,ts}',
+    './src/layouts/**/*.vue',
+    './src/pages/**/*.vue',
+    './src/plugins/**/*.{js,ts}',
+    './src/app.vue',
+    './src/error.vue',
+    './nuxt.config.{js,ts}'
   ],
   safelist: [
     // Force include dark mode classes for navigation
@@ -84,7 +84,7 @@ export default {
     'dark:hover:bg-gray-600/50'
   ],
   theme: {
-    extend: {},
+    extend: {}
   },
-  plugins: [],
+  plugins: []
 }

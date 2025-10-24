@@ -1,12 +1,3 @@
-export interface DashboardStats {
-  dailyAccess: number
-  monthlyAccess: number
-  activeUsers: number
-  popularRoutes: PopularRoute[]
-  favoriteStats: FavoriteStats
-  errorCount: number
-}
-
 export interface PopularRoute {
   fromPort: string
   toPort: string
@@ -18,6 +9,15 @@ export interface FavoriteStats {
   totalFavorites: number
   routeFavorites: number
   portFavorites: number
+}
+
+export interface DashboardStats {
+  dailyAccess: number
+  monthlyAccess: number
+  activeUsers: number
+  popularRoutes: PopularRoute[]
+  favoriteStats: FavoriteStats
+  errorCount: number
 }
 
 export interface AccessLog {

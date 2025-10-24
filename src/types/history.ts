@@ -15,14 +15,14 @@ export interface SearchHistoryItem {
 export interface SearchHistoryStore {
   // State
   history: SearchHistoryItem[]
-  
+
   // Getters
   recentSearches: SearchHistoryItem[]
   routeHistory: SearchHistoryItem[]
   timetableHistory: SearchHistoryItem[]
   getHistoryItem: (id: string) => SearchHistoryItem | undefined
   hasRecentSearch: (type: 'route' | 'timetable', departure?: string, arrival?: string) => boolean
-  
+
   // Actions
   addSearchHistory: (item: Omit<SearchHistoryItem, 'id' | 'searchedAt'>) => void
   removeSearchHistory: (id: string) => void

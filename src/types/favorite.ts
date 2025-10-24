@@ -22,7 +22,7 @@ export interface FavoriteStore {
   // State
   routes: FavoriteRoute[]
   ports: FavoritePort[]
-  
+
   // Getters
   favoriteRoutesByRecent: FavoriteRoute[]
   favoriteRoutesByOrder: FavoriteRoute[]
@@ -32,7 +32,7 @@ export interface FavoriteStore {
   isFavoritePort: (portCode: string) => boolean
   getFavoriteRoute: (id: string) => FavoriteRoute | undefined
   getFavoritePort: (id: string) => FavoritePort | undefined
-  
+
   // Actions
   addFavoriteRoute: (route: Omit<FavoriteRoute, 'id' | 'createdAt' | 'sortOrder'>) => void
   addFavoritePort: (port: Omit<FavoritePort, 'id' | 'createdAt' | 'sortOrder'>) => void

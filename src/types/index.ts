@@ -1,18 +1,3 @@
-// Port definitions
-export interface Port {
-  id: string
-  name: string
-  nameEn: string
-  location: {
-    lat: number
-    lng: number
-  }
-  type: 'mainland' | 'dozen' | 'dogo'
-  mapIframe?: string
-  facilities?: PortFacilities
-  access?: PortAccess
-}
-
 export interface PortFacilities {
   parking?: boolean
   restaurant?: boolean
@@ -30,6 +15,21 @@ export interface PortAccess {
   byCarEn?: string
   walking?: string
   walkingEn?: string
+}
+
+// Port definitions
+export interface Port {
+  id: string
+  name: string
+  nameEn: string
+  location: {
+    lat: number
+    lng: number
+  }
+  type: 'mainland' | 'dozen' | 'dogo'
+  mapIframe?: string
+  facilities?: PortFacilities
+  access?: PortAccess
 }
 
 // Ship definitions
@@ -116,18 +116,18 @@ export interface FerryStatus {
   updated_at?: string
 }
 
+export interface SightseeingTrip {
+  departureTime: string
+  sightseeingStatus: number
+  comment: string
+}
+
 export interface SightseeingStatus {
   hasAlert: boolean
   success: boolean
   lastUpdate: string | null
   courseA: SightseeingTrip[]
   courseB: SightseeingTrip[]
-}
-
-export interface SightseeingTrip {
-  departureTime: string
-  sightseeingStatus: number
-  comment: string
 }
 
 // Search result interfaces
@@ -190,7 +190,7 @@ export type ShipId = typeof SHIPS[keyof typeof SHIPS]
 // Utility types
 export type Locale = 'ja' | 'en'
 
-// Timetable interface  
+// Timetable interface
 export interface Timetable {
   tripId: string
   name: string
@@ -236,7 +236,7 @@ export interface News {
   isPinned: boolean
   author?: string
   viewCount?: number
-  hasDetail?: boolean  // 詳細ページの有無
-  detailContent?: string  // 詳細ページのコンテンツ（Markdown形式）
-  detailContentEn?: string  // 詳細ページのコンテンツ（英語版）
+  hasDetail?: boolean // 詳細ページの有無
+  detailContent?: string // 詳細ページのコンテンツ（Markdown形式）
+  detailContentEn?: string // 詳細ページのコンテンツ（英語版）
 }
