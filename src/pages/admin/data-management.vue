@@ -232,6 +232,7 @@ import {
 } from '@heroicons/vue/24/outline'
 import { useFirebaseStorage } from '~/composables/useFirebaseStorage'
 import DataTable from '~/components/admin/DataTable.vue'
+import { createLogger } from '~/utils/logger'
 
 definePageMeta({
   layout: 'admin',
@@ -239,6 +240,7 @@ definePageMeta({
 })
 
 const { uploadFile, downloadFile, deleteFile } = useFirebaseStorage()
+const logger = createLogger('AdminDataManagementPage')
 
 interface DataType {
   id: string
@@ -386,7 +388,10 @@ const exportData = async () => {
   isExporting.value = true
   try {
     // TODO: Firestoreからデータを取得してエクスポート
-    console.log('Exporting data:', selectedDataType.value.id, selectedFormat.value)
+    logger.info('Exporting data', {
+      type: selectedDataType.value.id,
+      format: selectedFormat.value
+    })
     
     // ダミーデータを作成
     const exportData = {
@@ -419,7 +424,7 @@ const exportData = async () => {
     
     backupHistory.value.unshift(backup)
   } catch (error) {
-    console.error('Export failed:', error)
+    logger.error('Export failed', error)
   } finally {
     isExporting.value = false
   }
@@ -431,11 +436,11 @@ const validateImport = async () => {
   isValidating.value = true
   try {
     // TODO: ファイルの内容を検証
-    console.log('Validating file:', selectedFile.value.name)
+    logger.info('Validating file', selectedFile.value.name)
     await new Promise(resolve => setTimeout(resolve, 1500))
     isValidated.value = true
   } catch (error) {
-    console.error('Validation failed:', error)
+    logger.error('Validation failed', error)
     isValidated.value = false
   } finally {
     isValidating.value = false
@@ -448,13 +453,13 @@ const importData = async () => {
   isImporting.value = true
   try {
     // TODO: ファイルをFirestoreにインポート
-    console.log('Importing data:', selectedFile.value.name)
+    logger.info('Importing data', selectedFile.value.name)
     await new Promise(resolve => setTimeout(resolve, 2000))
     
     selectedFile.value = null
     isValidated.value = false
   } catch (error) {
-    console.error('Import failed:', error)
+    logger.error('Import failed', error)
   } finally {
     isImporting.value = false
   }
@@ -468,14 +473,14 @@ const downloadBackup = async (backup: Backup) => {
     a.download = backup.fileName
     a.click()
   } catch (error) {
-    console.error('Download failed:', error)
+    logger.error('Download failed', error)
   }
 }
 
 const restoreBackup = (backup: Backup) => {
   if (confirm(`${backup.fileName} からデータを復元しますか？\n現在のデータは上書きされます。`)) {
     // TODO: バックアップからデータを復元
-    console.log('Restoring backup:', backup.fileName)
+    logger.info('Restoring backup', backup.fileName)
   }
 }
 
@@ -485,7 +490,7 @@ const deleteBackup = async (backup: Backup) => {
       await deleteFile(`backups/${backup.fileName}`)
       backupHistory.value = backupHistory.value.filter(b => b.id !== backup.id)
     } catch (error) {
-      console.error('Delete failed:', error)
+      logger.error('Delete failed', error)
     }
   }
 }

@@ -1,3 +1,4 @@
+/* eslint-disable no-console */
 import admin from 'firebase-admin'
 
 // Initialize Firebase Admin

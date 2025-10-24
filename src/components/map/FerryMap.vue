@@ -42,6 +42,7 @@ import PortDetailsModal from './PortDetailsModal.vue'
 import type { Port } from '~/types'
 import type { RouteData, RoutesDataFile } from '~/types/route'
 import { getJSONData } from '~/composables/useDataPublish'
+import { createLogger } from '~/utils/logger'
 
 // Props
 interface Props {
@@ -55,6 +56,8 @@ const props = withDefaults(defineProps<Props>(), {
   height: '400px',
   showPortDetails: true
 })
+
+const logger = createLogger('FerryMap')
 
 // Emits
 const emit = defineEmits<{
@@ -207,11 +210,11 @@ const loadRoutesFromStorage = async () => {
     const data = await getJSONData<RoutesDataFile>('routes/ferry-routes.json')
     if (data && data.routes) {
       routesFromStorage.value = data.routes
-      console.log(`Loaded ${data.routes.length} routes from Firebase Storage (v${data.metadata.version})`)
+      logger.info(`Loaded ${data.routes.length} routes from Firebase Storage (v${data.metadata.version})`)
       return true
     }
   } catch (error) {
-    console.log('No route data found in Firebase Storage, using fallback routes')
+    logger.warn('No route data found in Firebase Storage, using fallback routes')
   }
   return false
 }
@@ -221,7 +224,7 @@ const initializeMap = async () => {
 
   // APIキーがない場合は警告を表示
   if (!GOOGLE_MAPS_API_KEY) {
-    console.warn('Google Maps API key is not configured. Map features will be limited.')
+    logger.warn('Google Maps API key is not configured. Map features will be limited.')
     isLoading.value = false
     return
   }
@@ -278,13 +281,13 @@ const initializeMap = async () => {
     
     // Firebase Storageから航路データを読み込み
     await loadRoutesFromStorage()
-    console.log('[FerryMap] init: selectedRoute=', props.selectedRoute)
+    logger.debug('init selectedRoute', props.selectedRoute)
     // 現在の選択状態に合わせて描画（未選択なら消去）
     renderActiveRoute()
 
     isLoading.value = false
   } catch (error) {
-    console.error('Failed to load Google Maps:', error)
+    logger.error('Failed to load Google Maps', error)
     isLoading.value = false
   }
 }
@@ -297,7 +300,10 @@ const renderActiveRoute = () => {
     try { infoWindow.value.close() } catch {}
   }
 
-  console.log('[FerryMap] renderActiveRoute selectedRoute=', props.selectedRoute, 'storageRoutes=', routesFromStorage.value.length)
+  logger.debug('renderActiveRoute', {
+    selectedRoute: props.selectedRoute,
+    storageRoutes: routesFromStorage.value.length
+  })
   if (props.selectedRoute) {
     // 出発地と目的地が同じ場合はルートを表示せず、当該港へズーム
     if (props.selectedRoute.from === props.selectedRoute.to) {
@@ -307,9 +313,9 @@ const renderActiveRoute = () => {
     }
     // ストレージに存在するルートのみ描画（フォールバックは行わない）
     const drawn = drawRoutesFromStorage()
-    console.log('[FerryMap] drawRoutesFromStorage drawn=', drawn)
+    logger.debug('drawRoutesFromStorage drawn', drawn)
     if (!drawn) {
-      console.log('[FerryMap] storage route not found; skipping fallback rendering')
+      logger.warn('Storage route not found; skipping fallback rendering')
     }
   } else {
     // 未選択なら非表示のまま
@@ -322,7 +328,7 @@ const renderActiveRoute = () => {
 const addPortMarkers = () => {
   if (!map.value || !window.google) return
 
-  console.log('Adding port markers...')
+  logger.debug('Adding port markers')
   
   Object.values(PORTS_DATA).forEach(port => {
     // デフォルト（非アクティブ）のスタイルでマーカーを作成
@@ -344,7 +350,11 @@ const addPortMarkers = () => {
     })
 
     markers.value.set(port.id, marker)
-    console.log(`Marker added for ${port.id} at lat:${port.location.lat}, lng:${port.location.lng}`)
+    logger.debug('Marker added', {
+      id: port.id,
+      lat: port.location.lat,
+      lng: port.location.lng
+    })
   })
 }
 
@@ -520,7 +530,7 @@ const drawRoutesFromStorage = (): boolean => {
   }
 
   if (props.selectedRoute && targetRoutes.length === 0) {
-    console.log('[FerryMap] storage: no target route for', props.selectedRoute)
+    logger.debug('Storage has no target route', props.selectedRoute)
     // ストレージに該当ルートが存在しない
     return false
   }
@@ -796,7 +806,7 @@ const highlightRoute = (from: string, to: string) => {
 const fetchDirectionsRoutes = async () => {
   if (!directionsService.value) return
 
-  console.log('Fetching ferry routes from Google Directions API...')
+  logger.info('Fetching ferry routes from Google Directions API...')
 
   // 主要なフェリー航路をDirections APIで取得
   const routeRequests = [
@@ -818,13 +828,13 @@ const fetchDirectionsRoutes = async () => {
         }
       }
 
-      console.log(`Trying TRANSIT mode for ${route.name}...`)
+      logger.debug(`Trying TRANSIT mode for ${route.name}...`)
       
       try {
         const result = await directionsService.value.route(request)
         
         if (result.routes && result.routes.length > 0) {
-          console.log(`✓ Found ferry route for ${route.name} (TRANSIT):`, result.routes[0])
+          logger.info(`Found ferry route for ${route.name} (TRANSIT)`, result.routes[0])
           
           // 取得した航路データから経路を抽出
           const path = result.routes[0].overview_path
@@ -852,7 +862,7 @@ const fetchDirectionsRoutes = async () => {
           }
         }
       } catch (transitError) {
-        console.log(`✗ TRANSIT mode failed for ${route.name}:`, transitError)
+        logger.warn(`TRANSIT mode failed for ${route.name}`, transitError)
       }
 
       // TRANSITが失敗したらDRIVINGモードで試す（海上ルート取得用）
@@ -865,13 +875,13 @@ const fetchDirectionsRoutes = async () => {
         avoidFerries: false // フェリーを避けない
       }
 
-      console.log(`Trying DRIVING mode for ${route.name}...`)
+      logger.debug(`Trying DRIVING mode for ${route.name}...`)
       
       try {
         const result = await directionsService.value.route(request)
         
         if (result.routes && result.routes.length > 0) {
-          console.log(`✓ Found route for ${route.name} (DRIVING):`, result.routes[0])
+          logger.info(`Found route for ${route.name} (DRIVING)`, result.routes[0])
           
           // 取得した航路データから経路を抽出
           const path = result.routes[0].overview_path
@@ -901,16 +911,16 @@ const fetchDirectionsRoutes = async () => {
           }
         }
       } catch (drivingError) {
-        console.log(`✗ DRIVING mode also failed for ${route.name}:`, drivingError)
-        console.log(`Will use custom waypoints for ${route.name}`)
+        logger.warn(`DRIVING mode failed for ${route.name}`, drivingError)
+        logger.warn(`Using custom waypoints for ${route.name}`)
       }
 
     } catch (error) {
-      console.error(`Unexpected error fetching route ${route.name}:`, error)
+      logger.error(`Unexpected error fetching route ${route.name}`, error)
     }
   }
 
-  console.log('Directions API fetch complete.')
+  logger.info('Directions API fetch complete.')
 }
 
 const focusPort = (portId: string) => {

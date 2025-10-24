@@ -289,6 +289,7 @@ import { doc, getDoc, setDoc } from 'firebase/firestore'
 import ToggleSwitch from '~/components/common/ToggleSwitch.vue'
 import { useToast } from '~/composables/useToast'
 import { useAdminFirebase } from '~/composables/useAdminFirebase'
+import { createLogger } from '~/utils/logger'
 
 definePageMeta({
   middleware: 'admin',
@@ -297,6 +298,7 @@ definePageMeta({
 
 const { success: showSuccess, error: showError } = useToast()
 const saving = ref(false)
+const logger = createLogger('AdminSettingsPage')
 
 // Get Firebase instance
 let db: any = null
@@ -304,7 +306,7 @@ try {
   const firebase = useAdminFirebase()
   db = firebase.db
 } catch (error) {
-  console.error('Failed to get Firebase:', error)
+  logger.error('Failed to get Firebase', error)
 }
 
 // サイト設定
@@ -346,7 +348,7 @@ const securitySettings = ref({
 // 設定を読み込む
 const loadSettings = async () => {
   if (!db) {
-    console.error('Firebase db not available')
+    logger.error('Firebase db not available')
     showError('Firebaseが初期化されていません')
     return
   }
@@ -363,7 +365,7 @@ const loadSettings = async () => {
       if (data.security) securitySettings.value = { ...securitySettings.value, ...data.security }
     }
   } catch (error) {
-    console.error('Failed to load settings:', error)
+    logger.error('Failed to load settings', error)
     showError('設定の読み込みに失敗しました')
   }
 }
@@ -371,7 +373,7 @@ const loadSettings = async () => {
 // 設定を保存する
 const saveSettings = async () => {
   if (!db) {
-    console.error('Firebase db not available')
+    logger.error('Firebase db not available')
     showError('Firebaseが初期化されていません')
     return
   }
@@ -390,7 +392,7 @@ const saveSettings = async () => {
     
     showSuccess('設定を保存しました')
   } catch (error) {
-    console.error('Failed to save settings:', error)
+    logger.error('Failed to save settings', error)
     showError('設定の保存に失敗しました')
   } finally {
     saving.value = false

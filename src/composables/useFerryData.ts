@@ -1,11 +1,13 @@
 import { useFerryStore } from '@/stores/ferry'
 import { useUIStore } from '@/stores/ui'
+import { createLogger } from '~/utils/logger'
 
 export const useFerryData = () => {
   // Initialize stores only on client side
   const ferryStore = process.client ? useFerryStore() : null
   const uiStore = process.client ? useUIStore() : null
   const { $i18n } = useNuxtApp()
+  const logger = createLogger('useFerryData')
 
   // 時刻文字列の比較関数
   const compareTimeStrings = (time1: string, time2: string): number => {
@@ -37,7 +39,7 @@ export const useFerryData = () => {
         ferryStore.fetchShipStatus()
       ])
     } catch (error) {
-      console.error('Failed to initialize ferry data:', error)
+      logger.error('Failed to initialize ferry data', error)
       uiStore.addAlert('danger', $i18n.t('LOAD_TIMETABLE_ERROR'))
     } finally {
       uiStore.setLoading(false)

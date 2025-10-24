@@ -46,11 +46,13 @@ import { useHistoryStore } from '~/stores/history'
 import { useI18n } from 'vue-i18n'
 import HistoryItem from './HistoryItem.vue'
 import type { SearchHistoryItem } from '~/types/history'
+import { createLogger } from '~/utils/logger'
 
 const router = useRouter()
 const historyStore = process.client ? useHistoryStore() : null
 const { locale } = useI18n()
 const localePath = useLocalePath()
+const logger = createLogger('HistoryList')
 
 // Group history by date
 const groupedHistory = computed(() => {
@@ -67,7 +69,7 @@ const groupedHistory = computed(() => {
       
       // Validate date
       if (isNaN(dateObj.getTime())) {
-        console.warn('Invalid date in search history:', item)
+        logger.warn('Invalid date in search history', item)
         return
       }
       
@@ -77,7 +79,7 @@ const groupedHistory = computed(() => {
       }
       groupMap.get(dateKey)!.push(item)
     } catch (error) {
-      console.error('Error processing history item:', error, item)
+      logger.error('Error processing history item', error, item)
     }
   })
 
@@ -89,7 +91,7 @@ const groupedHistory = computed(() => {
       
       // Validate date
       if (isNaN(firstItemDate.getTime())) {
-        console.warn('Invalid date for group:', dateKey)
+        logger.warn('Invalid date for group', dateKey)
         return
       }
       
@@ -126,7 +128,7 @@ const groupedHistory = computed(() => {
         })
       })
     } catch (error) {
-      console.error('Error formatting group:', error, dateKey)
+      logger.error('Error formatting group', error, dateKey)
     }
   })
 

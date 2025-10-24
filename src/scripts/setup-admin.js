@@ -7,6 +7,8 @@
  * 3. node scripts/setup-admin.js を実行
  */
 
+/* eslint-disable no-console */
+
 import { readFileSync } from 'fs';
 import { initializeApp, cert } from 'firebase-admin/app';
 import { getAuth } from 'firebase-admin/auth';

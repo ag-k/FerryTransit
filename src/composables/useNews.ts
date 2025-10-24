@@ -1,10 +1,12 @@
 import { ref, computed } from "vue";
 import type { News } from "~/types";
+import { createLogger } from "~/utils/logger";
 
 export const useNews = () => {
   const newsList = ref<News[]>([]);
   const isLoading = ref(false);
   const error = ref<string | null>(null);
+  const logger = createLogger("useNews");
 
   // お知らせの取得
   const fetchNews = async () => {
@@ -41,7 +43,7 @@ export const useNews = () => {
             }
           } else if (response.status === 404) {
             // データが未公開の場合
-            console.log("News data not published yet");
+            logger.debug("News data not published yet");
             newsList.value = [];
             error.value = null;
           } else {
@@ -49,12 +51,12 @@ export const useNews = () => {
           }
         } catch (fetchError: any) {
           // ネットワークエラーなどの場合
-          console.error("Failed to fetch from Storage:", fetchError);
+          logger.error("Failed to fetch from Storage", fetchError);
           throw fetchError;
         }
       }
     } catch (err) {
-      console.error("Failed to fetch news:", err);
+      logger.error("Failed to fetch news", err);
       error.value = "お知らせの取得に失敗しました";
 
       // エラー時はキャッシュから取得
@@ -142,7 +144,7 @@ export const useNews = () => {
       }
       return null;
     } catch (error) {
-      console.error("Failed to get cached news:", error);
+      logger.error("Failed to get cached news", error);
       return null;
     }
   };
@@ -155,14 +157,14 @@ export const useNews = () => {
         localStorage.setItem("ferry_news_cache_time", Date.now().toString());
       }
     } catch (error) {
-      console.error("Failed to cache news:", error);
+      logger.error("Failed to cache news", error);
     }
   };
 
   // お知らせの閲覧数をカウント（クライアント側では実装しない）
   const incrementViewCount = (newsId: string): void => {
     // 閲覧数のカウントは管理画面側で実装
-    console.log("View news:", newsId);
+    logger.debug("View news", newsId);
   };
 
   // カテゴリーのラベルを取得

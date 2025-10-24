@@ -1,3 +1,5 @@
+import { createLogger } from '~/utils/logger'
+
 export interface OfflineStorageItem {
   key: string
   data: any
@@ -6,6 +8,7 @@ export interface OfflineStorageItem {
 }
 
 export const useOfflineStorage = () => {
+  const logger = createLogger('useOfflineStorage')
   
   // ストレージキーのプレフィックス
   const STORAGE_PREFIX = 'ferry-transit:'
@@ -37,7 +40,7 @@ export const useOfflineStorage = () => {
       localStorage.setItem(STORAGE_PREFIX + key, JSON.stringify(item))
       return true
     } catch (e) {
-      console.error('Failed to save to localStorage:', e)
+      logger.error('Failed to save to localStorage', e)
       return false
     }
   }
@@ -60,7 +63,7 @@ export const useOfflineStorage = () => {
       
       return item.data as T
     } catch (e) {
-      console.error('Failed to read from localStorage:', e)
+      logger.error('Failed to read from localStorage', e)
       return null
     }
   }

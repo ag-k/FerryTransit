@@ -382,10 +382,12 @@ import CommonShipModal from '@/components/common/ShipModal.vue'
 import FavoriteButton from '@/components/favorites/FavoriteButton.vue'
 import RouteMapModal from '@/components/map/RouteMapModal.vue'
 import type { TransitRoute } from '@/types'
+import { createLogger } from '~/utils/logger'
 
 // Stores
 const ferryStore = process.client ? useFerryStore() : null
 const historyStore = process.client ? useHistoryStore() : null
+const logger = createLogger('TransitPage')
 
 // Search parameters - use refs for better reactivity
 const departure = ref(ferryStore?.departure || '')
@@ -620,17 +622,17 @@ function showPortInfo(portName: string) {
 
 async function handleSearch() {
   if (!canSearch.value) {
-    console.log('Cannot search - missing required fields')
+    logger.warn('Cannot search - missing required fields')
     return
   }
   
-  console.log('Starting search with params:', {
-    departure: departure.value,
-    arrival: arrival.value,
-    date: date.value,
-    time: time.value,
-    isArrivalMode: isArrivalMode.value
-  })
+logger.debug('Starting search', {
+  departure: departure.value,
+  arrival: arrival.value,
+  date: date.value,
+  time: time.value,
+  isArrivalMode: isArrivalMode.value
+})
   isSearching.value = true
   hasSearched.value = true
   displayLimit.value = 5
@@ -644,7 +646,7 @@ async function handleSearch() {
       isArrivalMode.value
     )
     
-    console.log('Search results:', results)
+    logger.debug('Search results', results)
     searchResults.value = results
     
     // Add to search history
@@ -659,7 +661,7 @@ async function handleSearch() {
       })
     }
   } catch (error) {
-    console.error('Search error:', error)
+    logger.error('Search error', error)
     searchResults.value = []
   } finally {
     isSearching.value = false

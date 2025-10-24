@@ -73,6 +73,7 @@
 import { useFerryStore } from '~/stores/ferry'
 import { useI18n } from 'vue-i18n'
 import type { SearchHistoryItem } from '~/types/history'
+import { createLogger } from '~/utils/logger'
 
 interface Props {
   history: SearchHistoryItem
@@ -86,6 +87,7 @@ const emit = defineEmits<{
 
 const ferryStore = useFerryStore()
 const { locale } = useI18n()
+const logger = createLogger('HistoryItem')
 
 const getPortName = (portId?: string) => {
   if (!portId) return '-'
@@ -107,7 +109,7 @@ const formatDateTime = (date: Date | string) => {
       minute: '2-digit'
     }).format(dateObj)
   } catch (error) {
-    console.error('Error formatting datetime:', error)
+    logger.error('Error formatting datetime', error)
     return '-'
   }
 }
@@ -125,7 +127,7 @@ const formatDate = (date: Date | string) => {
       weekday: 'short'
     }).format(dateObj)
   } catch (error) {
-    console.error('Error formatting date:', error)
+    logger.error('Error formatting date', error)
     return '-'
   }
 }
@@ -139,7 +141,7 @@ const formatTime = (time?: Date | string) => {
     }
     return timeObj.toTimeString().slice(0, 5)
   } catch (error) {
-    console.error('Error formatting time:', error)
+    logger.error('Error formatting time', error)
     return '-'
   }
 }

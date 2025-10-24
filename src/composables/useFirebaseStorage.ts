@@ -1,5 +1,6 @@
 import { ref as storageRef, getDownloadURL, getMetadata, getBytes } from 'firebase/storage'
 import { useFirebase } from './useFirebase'
+import { createLogger } from '~/utils/logger'
 
 export interface StorageFile {
   url: string
@@ -12,6 +13,7 @@ export interface StorageFile {
 
 export const useFirebaseStorage = () => {
   const { storage } = useFirebase()
+  const logger = createLogger('useFirebaseStorage')
   
   /**
    * Firebase Storage からファイルのダウンロード URL を取得
@@ -22,7 +24,7 @@ export const useFirebaseStorage = () => {
       const url = await getDownloadURL(fileRef)
       return url
     } catch (error) {
-      console.error(`Failed to get download URL for ${path}:`, error)
+      logger.error(`Failed to get download URL for ${path}`, error)
       throw error
     }
   }
@@ -40,7 +42,7 @@ export const useFirebaseStorage = () => {
         updated: new Date(metadata.updated)
       }
     } catch (error) {
-      console.error(`Failed to get metadata for ${path}:`, error)
+      logger.error(`Failed to get metadata for ${path}`, error)
       throw error
     }
   }
@@ -61,7 +63,7 @@ export const useFirebaseStorage = () => {
       const data = JSON.parse(jsonString) as T
       return data
     } catch (error) {
-      console.error(`Failed to get JSON file from ${path}:`, error)
+      logger.error(`Failed to get JSON file from ${path}`, error)
       throw error
     }
   }
@@ -85,12 +87,12 @@ export const useFirebaseStorage = () => {
           const maxAge = cacheMinutes * 60 * 1000
           
           if (cacheAge < maxAge) {
-            console.log(`Using cached data for ${path}`)
+            logger.debug(`Using cached data for ${path}`)
             return JSON.parse(cached) as T
           }
-        }
+      }
       } catch (e) {
-        console.warn('Failed to read from cache:', e)
+        logger.warn('Failed to read from cache', e)
       }
     }
     
@@ -103,7 +105,7 @@ export const useFirebaseStorage = () => {
         localStorage.setItem(cacheKey, JSON.stringify(data))
         localStorage.setItem(`${cacheKey}_time`, Date.now().toString())
       } catch (e) {
-        console.warn('Failed to save to cache:', e)
+        logger.warn('Failed to save to cache', e)
       }
     }
     

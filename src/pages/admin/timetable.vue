@@ -342,6 +342,7 @@ import { useAdminFirestore } from '~/composables/useAdminFirestore'
 import { useDataPublish } from '~/composables/useDataPublish'
 import DataTable from '~/components/admin/DataTable.vue'
 import FormModal from '~/components/admin/FormModal.vue'
+import { createLogger } from '~/utils/logger'
 
 definePageMeta({
   layout: 'admin',
@@ -351,6 +352,7 @@ definePageMeta({
 const { getCollection, createDocument, updateDocument, deleteDocument, batchWrite } = useAdminFirestore()
 const { publishData } = useDataPublish()
 const { $toast } = useNuxtApp()
+const logger = createLogger('AdminTimetablePage')
 
 // 港データ
 const ports = ref<Port[]>([
@@ -461,8 +463,8 @@ const deleteTimetable = async (item: Trip & { id?: string }) => {
       await deleteDocument('timetables', item.id)
       await refreshData()
       $toast.success('時刻表を削除しました')
-    } catch (error) {
-      console.error('Failed to delete timetable:', error)
+  } catch (error) {
+    logger.error('Failed to delete timetable', error)
       $toast.error('削除に失敗しました')
     }
   }
@@ -504,7 +506,7 @@ const saveTimetable = async () => {
     closeModal()
     await refreshData()
   } catch (error) {
-    console.error('Failed to save timetable:', error)
+    logger.error('Failed to save timetable', error)
     $toast.error('保存に失敗しました')
   } finally {
     isSaving.value = false
@@ -517,7 +519,7 @@ const refreshData = async () => {
     const data = await getCollection<Trip & { id: string }>('timetables', constraints)
     timetables.value = data
   } catch (error) {
-    console.error('Failed to fetch timetables:', error)
+    logger.error('Failed to fetch timetables', error)
     $toast.error('データの取得に失敗しました')
   }
 }
@@ -602,7 +604,7 @@ const importCSVFile = async (file: File) => {
     await batchWrite(operations)
     $toast.success(`${operations.length}件のデータをインポートしました`)
   } catch (error) {
-    console.error('Failed to import CSV:', error)
+    logger.error('Failed to import CSV', error)
     $toast.error('CSVのインポートに失敗しました')
   }
 }
@@ -613,7 +615,7 @@ const importData = async () => {
     showImportModal.value = false
     await refreshData()
   } catch (error) {
-    console.error('Failed to import data:', error)
+    logger.error('Failed to import data', error)
   } finally {
     isImporting.value = false
   }
@@ -625,7 +627,7 @@ const publishTimetableData = async () => {
     await publishData('timetable')
     $toast.success('時刻表データを公開しました')
   } catch (error) {
-    console.error('Failed to publish data:', error)
+    logger.error('Failed to publish data', error)
     $toast.error('データの公開に失敗しました')
   } finally {
     isPublishing.value = false

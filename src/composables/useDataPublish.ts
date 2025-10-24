@@ -2,12 +2,14 @@ import { ref as storageRef, uploadBytes, getDownloadURL } from 'firebase/storage
 import { Timestamp } from 'firebase/firestore'
 import { useAdminAuth } from '~/composables/useAdminAuth'
 import { useAdminFirestore } from '~/composables/useAdminFirestore'
+import { createLogger } from '~/utils/logger'
 
 /**
  * 公開用のJSONデータを Hosting から取得（ユーザー向け）
  * 参照URL例: /data/routes/ferry-routes.json
  */
 export const getJSONData = async <T>(path: string): Promise<T | null> => {
+  const logger = createLogger('getJSONData')
   try {
     const localUrl = `/data/${path}`
     const res = await fetch(localUrl, { cache: 'no-cache' })
@@ -15,10 +17,10 @@ export const getJSONData = async <T>(path: string): Promise<T | null> => {
       throw new Error(`Local fetch failed: ${res.status} ${res.statusText}`)
     }
     const json = (await res.json()) as T
-    if (process.dev) console.log(`[getJSONData] loaded from local: ${localUrl}`)
+    logger.debug(`Loaded JSON from local path: ${localUrl}`)
     return json
   } catch (e) {
-    if (process.dev) console.error(`[getJSONData] failed to load local JSON for ${path}:`, e)
+    logger.error(`Failed to load local JSON for ${path}`, e)
     return null
   }
 }
@@ -28,6 +30,7 @@ export const getJSONData = async <T>(path: string): Promise<T | null> => {
  */
 export const uploadJSON = async (path: string, data: any, userInfo?: { uid: string }): Promise<string> => {
   const { $firebase } = useNuxtApp()
+  const logger = createLogger('uploadJSON')
   
   try {
     const jsonBlob = new Blob([JSON.stringify(data, null, 2)], {
@@ -45,7 +48,7 @@ export const uploadJSON = async (path: string, data: any, userInfo?: { uid: stri
 
     return await getDownloadURL(snapshot.ref)
   } catch (error) {
-    console.error('JSON upload failed:', error)
+    logger.error('JSON upload failed', error)
     throw error
   }
 }
@@ -55,11 +58,12 @@ export const uploadJSON = async (path: string, data: any, userInfo?: { uid: stri
  */
 export const getStorageDownloadURL = async (path: string): Promise<string> => {
   const { $firebase } = useNuxtApp()
+  const logger = createLogger('getStorageDownloadURL')
   try {
     const fileRef = storageRef($firebase.storage, `data/${path}`)
     return await getDownloadURL(fileRef)
   } catch (error) {
-    console.error('Failed to get download URL:', error)
+    logger.error('Failed to get download URL', error)
     throw error
   }
 }
@@ -68,6 +72,7 @@ export const useDataPublish = () => {
   const { $firebase } = useNuxtApp()
   const { user } = useAdminAuth()
   const { logAdminAction, getCollection } = useAdminFirestore()
+  const logger = createLogger('useDataPublish')
 
   // ========================================
   // データ公開管理
@@ -151,7 +156,7 @@ export const useDataPublish = () => {
 
       return downloadURL
     } catch (error) {
-      console.error('Data publish failed:', error)
+      logger.error('Data publish failed', error)
       throw error
     }
   }
@@ -390,7 +395,7 @@ export const useDataPublish = () => {
       })
 
     } catch (error) {
-      console.error('Rollback failed:', error)
+      logger.error('Rollback failed', error)
       throw error
     }
   }
@@ -455,7 +460,7 @@ export const useDataPublish = () => {
 
       return downloadURL
     } catch (error) {
-      console.error('Backup creation failed:', error)
+      logger.error('Backup creation failed', error)
       throw error
     }
   }

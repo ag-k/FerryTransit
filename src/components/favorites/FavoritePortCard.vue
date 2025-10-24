@@ -96,6 +96,7 @@ import { useFavoriteStore } from '~/stores/favorite'
 import { useI18n } from 'vue-i18n'
 import FavoriteButton from './FavoriteButton.vue'
 import ConfirmDialog from '~/components/ui/ConfirmDialog.vue'
+import { createLogger } from '~/utils/logger'
 
 interface Props {
   portId: string
@@ -112,6 +113,7 @@ const ferryStore = process.client ? useFerryStore() : null
 const favoriteStore = process.client ? useFavoriteStore() : null
 const { locale } = useI18n()
 const localePath = useLocalePath()
+const logger = createLogger('FavoritePortCard')
 
 // State
 const isConfirmOpen = ref(false)
@@ -130,7 +132,7 @@ const portInfo = computed(() => {
   try {
     return ferryStore.ports.find(p => p.PORT_ID === props.portId)
   } catch (e) {
-    console.error('Error getting port info:', e)
+    logger.error('Error getting port info', e)
     return null
   }
 })
@@ -141,7 +143,7 @@ const getPortName = (portId: string) => {
     const port = ferryStore.ports.find(p => p.PORT_ID === portId)
     return port ? (locale.value === 'ja' ? port.PLACE_NAME_JA : port.PLACE_NAME_EN) : portId
   } catch (e) {
-    console.error('Error getting port name:', e)
+    logger.error('Error getting port name', e)
     return portId
   }
 }

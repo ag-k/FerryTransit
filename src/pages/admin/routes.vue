@@ -347,6 +347,7 @@ import { PORTS_DATA, ROUTES_DATA } from '~/data/ports'
 import type { RouteData, RoutesDataFile, RoutesMetadata } from '~/types/route'
 import { uploadJSON, getJSONData, getStorageDownloadURL } from '~/composables/useDataPublish'
 import { useAdminAuth } from '~/composables/useAdminAuth'
+import { createLogger } from '~/utils/logger'
 import DataTable from '~/components/admin/DataTable.vue'
 
 definePageMeta({
@@ -354,6 +355,7 @@ definePageMeta({
 })
 
 const { $toast } = useNuxtApp()
+const logger = createLogger('AdminRoutesPage')
 
 // Firebase Auth の現在のユーザーを直接取得
 const auth = getAuth()
@@ -737,7 +739,7 @@ const fetchRouteViaRoutesAPI = async (from: string, to: string): Promise<RouteDa
 
       if (!response.ok) {
         const errorText = await response.text()
-        console.error(`Routes API Error Response:`, errorText)
+        logger.error('Routes API error response', errorText)
         throw new Error(`Routes API Error: ${response.status}`)
       }
 
@@ -837,7 +839,7 @@ const fetchRouteViaRoutesAPI = async (from: string, to: string): Promise<RouteDa
       }
     } catch (error) {
       addLog('warning', `${fromPort.name} → ${toPort.name}: 海上ルートAPI失敗 - ${error}`)
-      console.error('Sea Route API Error:', error)
+      logger.error('Sea Route API Error', error)
     }
   }
 
@@ -898,7 +900,7 @@ const fetchRouteViaRoutesAPI = async (from: string, to: string): Promise<RouteDa
 
     if (!response.ok) {
       const errorText = await response.text()
-      console.error(`Routes API Error Response:`, errorText)
+      logger.error('Routes API error response', errorText)
       
       // エラーレスポンスをパースしてより詳細な情報を取得
       try {
@@ -906,7 +908,7 @@ const fetchRouteViaRoutesAPI = async (from: string, to: string): Promise<RouteDa
         if (errorJson.error) {
           addLog('error', `Routes API エラー: ${errorJson.error.message || errorJson.error.status}`)
           if (errorJson.error.details) {
-            console.error('Error details:', errorJson.error.details)
+            logger.error('Routes API error details', errorJson.error.details)
           }
         }
       } catch (e) {
@@ -1041,7 +1043,7 @@ const fetchRouteViaRoutesAPI = async (from: string, to: string): Promise<RouteDa
     }
   } catch (error) {
     addLog('error', `${fromPort.name} → ${toPort.name}: Routes API失敗 - ${error}`)
-    console.error('Routes API Error:', error)
+    logger.error('Routes API Error', error)
   }
 
   return null
@@ -1468,7 +1470,7 @@ const downloadFromStorage = async () => {
     addLog('success', 'Storageから航路データをダウンロードしました')
     $toast.success('Storageから航路データをダウンロードしました')
   } catch (error) {
-    console.error('Download failed:', error)
+    logger.error('Download failed', error)
     addLog('error', 'Storageからのダウンロードに失敗しました')
     $toast.error('Storageからのダウンロードに失敗しました')
   } finally {

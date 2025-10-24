@@ -315,6 +315,7 @@ import { useAdminFirestore } from '~/composables/useAdminFirestore'
 import { useDataPublish } from '~/composables/useDataPublish'
 import DataTable from '~/components/admin/DataTable.vue'
 import FormModal from '~/components/admin/FormModal.vue'
+import { createLogger } from '~/utils/logger'
 
 interface Alert {
   ship: string
@@ -339,6 +340,7 @@ definePageMeta({
 const { getCollection, createDocument, updateDocument, deleteDocument } = useAdminFirestore()
 const { publishData } = useDataPublish()
 const { $toast } = useNuxtApp()
+const logger = createLogger('AdminAlertsPage')
 
 const showAddModal = ref(false)
 const showEditModal = ref(false)
@@ -431,8 +433,8 @@ const deleteAlert = async (alert: Alert & { id: string }) => {
       await deleteDocument('alerts', alert.id)
       await refreshData()
       $toast.success('アラートを削除しました')
-    } catch (error) {
-      console.error('Failed to delete alert:', error)
+  } catch (error) {
+    logger.error('Failed to delete alert', error)
       $toast.error('削除に失敗しました')
     }
   }
@@ -484,7 +486,7 @@ const saveAlert = async () => {
     closeModal()
     await refreshData()
   } catch (error) {
-    console.error('Failed to save alert:', error)
+    logger.error('Failed to save alert', error)
     $toast.error('保存に失敗しました')
   } finally {
     isSaving.value = false
@@ -516,7 +518,7 @@ const refreshData = async () => {
     
     alertHistory.value = [...historyData, ...expiredAlerts]
   } catch (error) {
-    console.error('Failed to fetch alerts:', error)
+    logger.error('Failed to fetch alerts', error)
     $toast.error('データの取得に失敗しました')
   } finally {
     isLoading.value = false
@@ -529,7 +531,7 @@ const publishAlertData = async () => {
     await publishData('alerts')
     $toast.success('アラートデータを公開しました')
   } catch (error) {
-    console.error('Failed to publish alert data:', error)
+    logger.error('Failed to publish alert data', error)
     $toast.error('データの公開に失敗しました')
   } finally {
     isPublishing.value = false

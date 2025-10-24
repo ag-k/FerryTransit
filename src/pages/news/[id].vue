@@ -137,10 +137,12 @@ import { ref, computed, watch, onMounted, getCurrentInstance } from 'vue'
 import { marked } from 'marked'
 import type { News } from '~/types'
 import { useNews } from '~/composables/useNews'
+import { createLogger } from '~/utils/logger'
 
 const route = useRoute()
 const { $i18n } = useNuxtApp()
 const vm = getCurrentInstance()
+const logger = createLogger('NewsDetailPage')
 
 // useNewsコンポザブルを使用
 const { publishedNews, fetchNews, getCategoryLabel, formatDate } = useNews()
@@ -198,7 +200,7 @@ const fetchNewsItem = async () => {
       error.value = 'お知らせが見つかりませんでした'
     }
   } catch (err) {
-    console.error('Failed to fetch news item:', err)
+    logger.error('Failed to fetch news item', err)
     error.value = 'お知らせの取得に失敗しました'
   } finally {
     isLoading.value = false

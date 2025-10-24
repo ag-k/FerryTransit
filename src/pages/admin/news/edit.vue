@@ -268,6 +268,7 @@ import { useAdminFirestore } from '~/composables/useAdminFirestore'
 import { useAdminAuth } from '~/composables/useAdminAuth'
 import FormModal from '~/components/admin/FormModal.vue'
 import type { News } from '~/types'
+import { createLogger } from '~/utils/logger'
 
 definePageMeta({
   layout: 'admin',
@@ -278,6 +279,7 @@ const route = useRoute()
 const { getDocument, createDocument, updateDocument } = useAdminFirestore()
 const adminAuth = useAdminAuth()
 const { $toast } = useNuxtApp()
+const logger = createLogger('AdminNewsEditPage')
 
 const showPreviewModal = ref(false)
 const isSaving = ref(false)
@@ -387,7 +389,7 @@ const saveNews = async () => {
     
     await navigateTo('/admin/news')
   } catch (error) {
-    console.error('Failed to save news:', error)
+    logger.error('Failed to save news', error)
     $toast.error('保存に失敗しました')
   } finally {
     isSaving.value = false
@@ -412,7 +414,7 @@ const loadNews = async () => {
       await navigateTo('/admin/news')
     }
   } catch (error) {
-    console.error('Failed to load news:', error)
+    logger.error('Failed to load news', error)
     $toast.error('データの取得に失敗しました')
     await navigateTo('/admin/news')
   } finally {

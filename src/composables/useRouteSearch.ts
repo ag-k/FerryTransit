@@ -4,12 +4,14 @@ import { useFerryData } from "@/composables/useFerryData";
 import { useHolidayCalendar } from "@/composables/useHolidayCalendar";
 import type { Trip, TransitRoute, TransitSegment } from "@/types";
 import type { FareRoute } from "@/types/fare";
+import { createLogger } from "~/utils/logger";
 
 export const useRouteSearch = () => {
   const ferryStore = process.client ? useFerryStore() : null;
   const fareStore = process.client ? useFareStore() : null;
   const { getTripStatus, initializeData } = useFerryData();
   const { isPeakSeason, getPeakSeason } = useHolidayCalendar();
+  const logger = createLogger("useRouteSearch");
 
   // Initialize fare data
   onMounted(async () => {
@@ -40,14 +42,14 @@ export const useRouteSearch = () => {
     searchDateTime.setHours(hours, minutes, 0, 0);
 
     // Debug logging
-    console.log("Search params:", {
+    logger.debug("Search params", {
       departure,
       arrival,
       searchDate,
       searchTime,
       isArrivalMode,
     });
-    console.log("Total timetable data:", ferryStore?.timetableData.length || 0);
+    logger.debug("Total timetable data", ferryStore?.timetableData.length || 0);
 
     // Get filtered timetable for the date based on start_date and end_date
     // Format date as YYYY-MM-DD in JST
@@ -65,12 +67,10 @@ export const useRouteSearch = () => {
       return searchDateStr >= startDate && searchDateStr <= endDate;
     });
 
-    console.log(
-      "Filtered timetable for date range:",
-      dayTimetable.length,
-      "searchDate:",
-      searchDateStr
-    );
+    logger.debug("Filtered timetable for date range", {
+      count: dayTimetable.length,
+      searchDate: searchDateStr,
+    });
 
     // Find direct routes
     const directRoutes = findDirectRoutes(
@@ -127,14 +127,14 @@ export const useRouteSearch = () => {
         ? ["HONDO_SHICHIRUI", "HONDO_SAKAIMINATO"]
         : [arrival];
 
-    console.log("Direct route search:", { departurePorts, arrivalPorts });
+    logger.debug("Direct route search", { departurePorts, arrivalPorts });
 
     for (const trip of timetable) {
       if (
         departurePorts.includes(trip.departure) &&
         arrivalPorts.includes(trip.arrival)
       ) {
-        console.log("Found matching trip:", trip);
+        logger.debug("Found matching trip", trip);
         // Create date objects using the search date and trip times
         const [depHours, depMinutes] = trip.departureTime
           .split(":")
@@ -493,7 +493,7 @@ export const useRouteSearch = () => {
     }
 
     // Fallback for routes not found in fare master
-    console.warn(`Fare not found for route: ${departure} -> ${arrival}`);
+    logger.warn(`Fare not found for route: ${departure} -> ${arrival}`);
     
     // Use default values based on ship type
     const isHighSpeed = ship === "RAINBOWJET";
