@@ -1,7 +1,7 @@
+import { useRouter } from 'vue-router'
 import { useFavoriteStore } from '@/stores/favorite'
 import { useFerryStore } from '@/stores/ferry'
 import { useUIStore } from '@/stores/ui'
-import { useRouter } from 'vue-router'
 import type { FavoriteRoute, FavoritePort } from '@/types/favorite'
 
 export const useFavorites = () => {
@@ -13,11 +13,11 @@ export const useFavorites = () => {
   const localePath = useLocalePath()
 
   // ルートのお気に入り切り替え
-  const toggleFavoriteRoute = async (
+  const toggleFavoriteRoute = (
     departure: string, 
     arrival: string, 
     nickname?: string
-  ): Promise<boolean> => {
+  ): boolean => {
     try {
       const isFavorited = favoriteStore.isRouteFavorited(departure, arrival)
       
@@ -57,10 +57,10 @@ export const useFavorites = () => {
   }
 
   // 港のお気に入り切り替え
-  const toggleFavoritePort = async (
+  const toggleFavoritePort = (
     portCode: string, 
     nickname?: string
-  ): Promise<boolean> => {
+  ): boolean => {
     try {
       const isFavorited = favoriteStore.isPortFavorited(portCode)
       
@@ -153,7 +153,7 @@ export const useFavorites = () => {
   }
 
   // お気に入りルートのニックネーム更新
-  const updateFavoriteRouteNickname = async (id: string, nickname: string) => {
+  const updateFavoriteRouteNickname = (id: string, nickname: string): void => {
     try {
       favoriteStore.updateFavoriteRoute(id, { nickname: nickname || undefined })
       uiStore.addAlert('info', $i18n.t('FAVORITE_NICKNAME_UPDATED'))
@@ -163,7 +163,7 @@ export const useFavorites = () => {
   }
 
   // お気に入り港のニックネーム更新
-  const updateFavoritePortNickname = async (id: string, nickname: string) => {
+  const updateFavoritePortNickname = (id: string, nickname: string): void => {
     try {
       favoriteStore.updateFavoritePort(id, { nickname: nickname || undefined })
       uiStore.addAlert('info', $i18n.t('FAVORITE_NICKNAME_UPDATED'))
@@ -173,7 +173,7 @@ export const useFavorites = () => {
   }
 
   // お気に入りリストの並び替え
-  const reorderFavoriteRoutes = async (ids: string[]) => {
+  const reorderFavoriteRoutes = (ids: string[]): void => {
     try {
       favoriteStore.reorderFavoriteRoutes(ids)
       uiStore.addAlert('info', $i18n.t('FAVORITE_ORDER_UPDATED'))
@@ -182,7 +182,7 @@ export const useFavorites = () => {
     }
   }
 
-  const reorderFavoritePorts = async (ids: string[]) => {
+  const reorderFavoritePorts = (ids: string[]): void => {
     try {
       favoriteStore.reorderFavoritePorts(ids)
       uiStore.addAlert('info', $i18n.t('FAVORITE_ORDER_UPDATED'))
@@ -192,7 +192,7 @@ export const useFavorites = () => {
   }
 
   // すべてのお気に入りをクリア（確認付き）
-  const clearAllFavorites = async (): Promise<boolean> => {
+  const clearAllFavorites = (): boolean => {
     const confirmed = window.confirm($i18n.t('FAVORITE_CLEAR_CONFIRM'))
     if (confirmed) {
       favoriteStore.clearAllFavorites()

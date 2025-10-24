@@ -150,8 +150,8 @@ export const useRouteSearch = () => {
         // Check time constraints
         if (isArrivalMode) {
           if (arrivalTime > searchTime) continue;
-        } else {
-          if (departureTime < searchTime) continue;
+        } else if (departureTime < searchTime) {
+          continue;
         }
 
         // Check if trip is cancelled

@@ -2,8 +2,7 @@ import Papa from 'papaparse'
 import * as XLSX from 'xlsx'
 
 export const useDataManagement = () => {
-  const { createDocument, updateDocument, batchWrite } = useAdminFirestore()
-  const { logAdminAction } = useAdminFirestore()
+  const { batchWrite, logAdminAction, getCollection } = useAdminFirestore()
 
   // ========================================
   // インポート機能
@@ -12,7 +11,7 @@ export const useDataManagement = () => {
   /**
    * CSVファイルのインポート
    */
-  const importCSV = async (
+  const importCSV = (
     file: File,
     dataType: 'timetable' | 'fare' | 'holidays'
   ): Promise<{ success: number; failed: number; errors: string[] }> => {
@@ -136,7 +135,7 @@ export const useDataManagement = () => {
       const data = JSON.parse(text)
       
       if (!Array.isArray(data)) {
-        throw new Error('JSONファイルは配列形式である必要があります')
+        throw new TypeError('JSONファイルは配列形式である必要があります')
       }
 
       const errors: string[] = []
@@ -188,7 +187,6 @@ export const useDataManagement = () => {
     dataType: 'timetable' | 'fare' | 'holidays' | 'alerts' | 'announcements',
     format: 'json' | 'csv' | 'excel'
   ): Promise<Blob> => {
-    const { getCollection } = useAdminFirestore()
     const data = await getCollection(`${dataType}s`)
 
     let blob: Blob
@@ -200,14 +198,15 @@ export const useDataManagement = () => {
         })
         break
 
-      case 'csv':
+      case 'csv': {
         const csv = Papa.unparse(data)
         blob = new Blob([csv], {
           type: 'text/csv;charset=utf-8;'
         })
         break
+      }
 
-      case 'excel':
+      case 'excel': {
         const ws = XLSX.utils.json_to_sheet(data)
         const wb = XLSX.utils.book_new()
         XLSX.utils.book_append_sheet(wb, ws, dataType)
@@ -216,6 +215,7 @@ export const useDataManagement = () => {
           type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'
         })
         break
+      }
 
       default:
         throw new Error(`Unsupported format: ${format}`)

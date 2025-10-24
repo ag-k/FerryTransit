@@ -112,34 +112,16 @@ export const useHolidayCalendar = () => {
     const dateObj = typeof date === 'string' ? new Date(date) : date
     
     if (locale.value === 'ja') {
-      if (format === 'short') {
-        return new Intl.DateTimeFormat('ja-JP', {
-          month: 'short',
-          day: 'numeric'
-        }).format(dateObj)
-      } else {
-        return new Intl.DateTimeFormat('ja-JP', {
-          year: 'numeric',
-          month: 'long',
-          day: 'numeric',
-          weekday: 'long'
-        }).format(dateObj)
-      }
-    } else {
-      if (format === 'short') {
-        return new Intl.DateTimeFormat('en-US', {
-          month: 'short',
-          day: 'numeric'
-        }).format(dateObj)
-      } else {
-        return new Intl.DateTimeFormat('en-US', {
-          weekday: 'long',
-          year: 'numeric',
-          month: 'long',
-          day: 'numeric'
-        }).format(dateObj)
-      }
+      const options = format === 'short'
+        ? { month: 'short', day: 'numeric' }
+        : { year: 'numeric', month: 'long', day: 'numeric', weekday: 'long' }
+      return new Intl.DateTimeFormat('ja-JP', options).format(dateObj)
     }
+
+    const options = format === 'short'
+      ? { month: 'short', day: 'numeric' }
+      : { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' }
+    return new Intl.DateTimeFormat('en-US', options).format(dateObj)
   }
 
   // 月の祝日一覧を取得

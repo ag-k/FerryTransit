@@ -45,7 +45,6 @@ export const useFareStore = defineStore('fare', () => {
         error.value = 'FARE_LOAD_ERROR'
       }
     } catch (e) {
-      console.error('Failed to load fare master data:', e)
       error.value = 'FARE_LOAD_ERROR'
     } finally {
       isLoading.value = false

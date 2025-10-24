@@ -395,16 +395,6 @@ const time = ref('')
 const timeInputId = 'transit-time-input'
 const isArrivalMode = ref(false)
 
-// Create searchParams as a computed object for better reactivity
-const searchParams = computed(() => ({
-  departure: departure.value,
-  arrival: arrival.value,
-  date: date.value,
-  time: time.value,
-  isArrivalMode: isArrivalMode.value
-}))
-
-
 // Watch for changes in departure/arrival and update ferryStore
 watch(departure, (newVal) => {
   if (ferryStore) {
@@ -678,11 +668,6 @@ async function handleSearch() {
 
 function showMore() {
   displayLimit.value += 10
-}
-
-function showRouteDetails(route: TransitRoute) {
-  selectedRoute.value = route
-  showDetailsModal.value = true
 }
 
 function showRouteMap(route: TransitRoute) {

@@ -95,7 +95,7 @@ export const cleanupOldBackups = onSchedule(
     timeZone: 'Asia/Tokyo',
     region: 'asia-northeast1',
   },
-  async (event) => {
+  async (_event) => {
     const thirtyDaysAgo = new Date()
     thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30)
 

@@ -472,7 +472,7 @@ const downloadBackup = async (backup: Backup) => {
   }
 }
 
-const restoreBackup = async (backup: Backup) => {
+const restoreBackup = (backup: Backup) => {
   if (confirm(`${backup.fileName} からデータを復元しますか？\n現在のデータは上書きされます。`)) {
     // TODO: バックアップからデータを復元
     console.log('Restoring backup:', backup.fileName)

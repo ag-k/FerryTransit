@@ -220,7 +220,7 @@ const displayPages = computed(() => {
   const halfDisplay = Math.floor(maxDisplay / 2)
   
   let start = Math.max(1, currentPage.value - halfDisplay)
-  let end = Math.min(totalPages.value, start + maxDisplay - 1)
+  const end = Math.min(totalPages.value, start + maxDisplay - 1)
   
   if (end - start + 1 < maxDisplay) {
     start = Math.max(1, end - maxDisplay + 1)

@@ -9,10 +9,10 @@ export const useGoogleMaps = () => {
   const isLoaded = ref(false)
   const loadError = ref<Error | null>(null)
 
-  const loadGoogleMaps = async (): Promise<void> => {
+  const loadGoogleMaps = (): Promise<void> => {
     if (isLoaded.value) {
       console.log('Google Maps already loaded')
-      return
+      return Promise.resolve()
     }
 
     const config = useRuntimeConfig()
@@ -22,13 +22,13 @@ export const useGoogleMaps = () => {
 
     if (!apiKey) {
       loadError.value = new Error('Google Maps API key is not configured')
-      return
+      return Promise.resolve()
     }
 
     if (typeof window.google !== 'undefined' && window.google.maps) {
       console.log('Google Maps already available in window')
       isLoaded.value = true
-      return
+      return Promise.resolve()
     }
 
     return new Promise((resolve, reject) => {

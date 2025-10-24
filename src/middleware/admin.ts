@@ -1,4 +1,4 @@
-export default defineNuxtRouteMiddleware(async (to, from) => {
+export default defineNuxtRouteMiddleware(async (to, _from) => {
   const authStore = useAuthStore()
   const { canAccess } = useAdminPermissions()
   

@@ -217,22 +217,19 @@ import {
   MegaphoneIcon,
   CloudArrowUpIcon
 } from '@heroicons/vue/24/outline'
-import { orderBy, where, Timestamp } from 'firebase/firestore'
+import { orderBy, Timestamp } from 'firebase/firestore'
 import { useAdminFirestore } from '~/composables/useAdminFirestore'
-import { useAdminAuth } from '~/composables/useAdminAuth'
 import { useDataPublish } from '~/composables/useDataPublish'
 import DataTable from '~/components/admin/DataTable.vue'
 import FormModal from '~/components/admin/FormModal.vue'
+import type { News } from '~/types'
 
 definePageMeta({
   layout: 'admin',
   middleware: 'admin'
 })
 
-import type { News } from '~/types'
-
 const { getCollection, deleteDocument, batchWrite } = useAdminFirestore()
-const { user } = useAdminAuth()
 const { publishData } = useDataPublish()
 const { $toast } = useNuxtApp()
 
@@ -393,7 +390,7 @@ const updateNewsStatus = async () => {
 const publishNewsData = async () => {
   isPublishing.value = true
   try {
-    const url = await publishData('news')
+    await publishData('news')
     $toast.success('お知らせデータを公開しました')
     
     // 成功時のリアクション

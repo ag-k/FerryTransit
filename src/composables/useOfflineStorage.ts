@@ -6,7 +6,6 @@ export interface OfflineStorageItem {
 }
 
 export const useOfflineStorage = () => {
-  const { locale } = useI18n()
   
   // ストレージキーのプレフィックス
   const STORAGE_PREFIX = 'ferry-transit:'

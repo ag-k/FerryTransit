@@ -69,8 +69,6 @@ export const useFerryData = () => {
   // 欠航・変更の判定
   const getTripStatus = (trip: any): number => {
     if (!ferryStore) return 0
-    
-    const dateStr = ferryStore.selectedDate.toISOString().split('T')[0]
     const { isokaze, dozen, ferry } = ferryStore.shipStatus
 
     if (trip.name === 'RAINBOWJET') {

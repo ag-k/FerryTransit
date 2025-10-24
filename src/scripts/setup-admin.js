@@ -7,10 +7,10 @@
  * 3. node scripts/setup-admin.js を実行
  */
 
+import { readFileSync } from 'fs';
 import { initializeApp, cert } from 'firebase-admin/app';
 import { getAuth } from 'firebase-admin/auth';
 import { getFirestore, FieldValue } from 'firebase-admin/firestore';
-import { readFileSync } from 'fs';
 
 // 環境変数からサービスアカウントキーのパスを取得
 const serviceAccountPath = process.env.GOOGLE_APPLICATION_CREDENTIALS;

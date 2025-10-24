@@ -40,7 +40,7 @@ export const useAdminApi = () => {
   /**
    * 管理者認証の確認
    */
-  const verifyAuth = async () => {
+  const verifyAuth = () => {
     return apiRequest('/api/admin/auth', { method: 'POST' })
   }
 
@@ -51,7 +51,7 @@ export const useAdminApi = () => {
   /**
    * ユーザー一覧の取得
    */
-  const getUsers = async (params?: {
+  const getUsers = (params?: {
     page?: number
     limit?: number
     role?: string
@@ -69,7 +69,7 @@ export const useAdminApi = () => {
   /**
    * ユーザー情報の更新
    */
-  const updateUser = async (
+  const updateUser = (
     uid: string,
     data: {
       disabled?: boolean
@@ -93,7 +93,7 @@ export const useAdminApi = () => {
   /**
    * 時刻表一覧の取得
    */
-  const getTimetables = async (params?: {
+  const getTimetables = (params?: {
     limit?: number
     offset?: number
     route?: string
@@ -111,7 +111,7 @@ export const useAdminApi = () => {
   /**
    * 時刻表の作成
    */
-  const createTimetable = async (data: {
+  const createTimetable = (data: {
     name: string
     departure: string
     arrival: string
@@ -132,7 +132,7 @@ export const useAdminApi = () => {
   /**
    * 時刻表の更新
    */
-  const updateTimetable = async (id: string, data: any) => {
+  const updateTimetable = (id: string, data: any) => {
     return apiRequest(`/api/admin/timetables/${id}`, {
       method: 'PATCH',
       body: JSON.stringify(data)
@@ -142,7 +142,7 @@ export const useAdminApi = () => {
   /**
    * 時刻表の削除
    */
-  const deleteTimetable = async (id: string) => {
+  const deleteTimetable = (id: string) => {
     return apiRequest(`/api/admin/timetables/${id}`, {
       method: 'DELETE'
     })
@@ -155,7 +155,7 @@ export const useAdminApi = () => {
   /**
    * アナリティクス概要の取得
    */
-  const getAnalyticsOverview = async (period?: 'day' | 'week' | 'month') => {
+  const getAnalyticsOverview = (period?: 'day' | 'week' | 'month') => {
     const query = new URLSearchParams()
     if (period) query.append('period', period)
 
@@ -169,7 +169,7 @@ export const useAdminApi = () => {
   /**
    * データのプレビュー
    */
-  const previewPublish = async (dataType: 'timetable' | 'fare' | 'holidays') => {
+  const previewPublish = (dataType: 'timetable' | 'fare' | 'holidays') => {
     return apiRequest('/api/admin/publish/preview', {
       method: 'POST',
       body: JSON.stringify({ dataType })
@@ -179,7 +179,7 @@ export const useAdminApi = () => {
   /**
    * データの公開
    */
-  const publishData = async (dataType: 'timetable' | 'fare' | 'holidays') => {
+  const publishData = (dataType: 'timetable' | 'fare' | 'holidays') => {
     return apiRequest('/api/admin/publish', {
       method: 'POST',
       body: JSON.stringify({ dataType })
@@ -193,7 +193,7 @@ export const useAdminApi = () => {
   /**
    * 管理操作ログの取得
    */
-  const getAdminLogs = async (params?: {
+  const getAdminLogs = (params?: {
     limit?: number
     action?: string
     target?: string

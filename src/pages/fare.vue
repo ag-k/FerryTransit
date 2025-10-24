@@ -319,10 +319,9 @@
 </template>
 
 <script setup lang="ts">
-import type { VehicleFare } from '@/types/fare'
 
 // Composables
-const { formatCurrency, getVehicleSizeName, getAllFares } = useFareDisplay()
+const { formatCurrency, getAllFares } = useFareDisplay()
 const fareStore = process.client ? useFareStore() : null
 
 // State
@@ -352,8 +351,6 @@ const tabs = [
 ]
 
 // Vehicle sizes (for old format compatibility)
-const vehicleSizes: (keyof VehicleFare)[] = ['under3m', 'under4m', 'under5m', 'under6m', 'over6m']
-
 // Vehicle size list for new format
 const vehicleSizeList = [
   { key: 'under3m', label: '3m未満' },
@@ -372,24 +369,6 @@ const vehicleSizeList = [
 // Computed
 const isLoading = computed(() => fareStore?.isLoading ?? false)
 const error = computed(() => fareStore?.error ?? null)
-
-// Get route display name
-const getRouteDisplayName = (route: any) => {
-  const { $i18n } = useNuxtApp()
-  return `${$i18n.t(route.departure)} → ${$i18n.t(route.arrival)}`
-}
-
-// Get mainland route fare for a specific destination
-const getMainlandRouteFare = (destination: string, seatClass: string) => {
-  let fare = null
-  const routeId = `hondo-${destination}`
-  const reverseRouteId = `${destination}-hondo`
-  
-  const route = okiKisenFares.value.find(r => r.id === routeId || r.id === reverseRouteId)
-  fare = route?.fares?.seatClass?.[seatClass]
-  
-  return fare ? formatCurrency(fare) : '—'
-}
 
 // Get seat class fare for a specific route
 const getSeatClassFare = (routeType: string, seatClass: string) => {
@@ -462,7 +441,7 @@ const getVehicleFare = (routeType: string, sizeKey: string) => {
   
   // For over12m, use over12mPer1m field
   if (sizeKey === 'over12m') {
-    fare = route?.fares?.vehicle?.['over12mPer1m']
+    fare = route?.fares?.vehicle?.over12mPer1m
   } else {
     fare = route?.fares?.vehicle?.[sizeKey]
   }

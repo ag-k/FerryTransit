@@ -342,18 +342,17 @@ import {
   TransitionRoot,
 } from '@headlessui/vue'
 import { Loader } from '@googlemaps/js-api-loader'
+import { getAuth } from 'firebase/auth'
 import { PORTS_DATA, ROUTES_DATA } from '~/data/ports'
 import type { RouteData, RoutesDataFile, RoutesMetadata } from '~/types/route'
 import { uploadJSON, getJSONData, getStorageDownloadURL } from '~/composables/useDataPublish'
 import { useAdminAuth } from '~/composables/useAdminAuth'
-import { getAuth } from 'firebase/auth'
 import DataTable from '~/components/admin/DataTable.vue'
 
 definePageMeta({
   layout: 'admin',
 })
 
-const { user } = useAdminAuth()
 const { $toast } = useNuxtApp()
 
 // Firebase Auth の現在のユーザーを直接取得
@@ -513,19 +512,6 @@ const fetchRouteViaOverpass = async (from: string, to: string): Promise<RouteDat
   const toPort = PORTS_DATA[to]
   if (!fromPort || !toPort) return null
 
-  // 港名のバリエーション（日本語/英語、末尾の「港」を除外した形も）
-  const normalize = (s?: string) => s ? s.replace(/港$/u, '').trim() : ''
-  const fromJa = normalize(fromPort.name)
-  const toJa = normalize(toPort.name)
-  const fromEn = normalize((fromPort as any).nameEn || '').replace(/\s*Port$/i, '')
-  const toEn = normalize((toPort as any).nameEn || '').replace(/\s*Port$/i, '')
-
-  const escapeRe = (s: string) => s.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')
-  const jaOpt = (s: string) => s ? `${escapeRe(s)}(?:港)?` : ''
-  const enOpt = (s: string) => s ? `${escapeRe(s)}(?:\\s*Port)?` : ''
-  const fromRe = new RegExp(`^(?:${[jaOpt(fromJa), enOpt(fromEn)].filter(Boolean).join('|')})$`, 'i')
-  const toRe = new RegExp(`^(?:${[jaOpt(toJa), enOpt(toEn)].filter(Boolean).join('|')})$`, 'i')
-
   // バウンディングボックス（両港を含む矩形に余白を持たせる）
   const minLat = Math.min(fromPort.location.lat, toPort.location.lat) - 0.6
   const maxLat = Math.max(fromPort.location.lat, toPort.location.lat) + 0.6
@@ -557,7 +543,6 @@ const fetchRouteViaOverpass = async (from: string, to: string): Promise<RouteDat
     const data = await res.json()
 
     const elements = data?.elements || []
-    const rels = elements.filter((el: any) => el.type === 'relation')
     let ways = elements.filter((el: any) => el.type === 'way' && Array.isArray(el.geometry))
     if (ways.length === 0) {
       addLog('warning', `${fromPort.name} → ${toPort.name}: Overpassでフェリー形状が見つかりませんでした`)
@@ -663,7 +648,7 @@ const initGoogleMaps = async () => {
 
   try {
     const loader = new Loader({
-      apiKey: apiKey,
+      apiKey,
       version: 'weekly',
       libraries: ['routes']
     })

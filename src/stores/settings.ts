@@ -201,7 +201,7 @@ export const useSettingsStore = defineStore('settings', {
           const settings = JSON.parse(saved)
           this.$patch(settings)
         } catch (error) {
-          console.error('Failed to load settings:', error)
+          // 保存データの破損時は初期設定を維持
         }
       }
     },
@@ -210,7 +210,7 @@ export const useSettingsStore = defineStore('settings', {
       try {
         localStorage.setItem('ferryTransitSettings', JSON.stringify(this.$state))
       } catch (error) {
-        console.error('Failed to save settings:', error)
+        // ストレージ書き込みが失敗してもアプリ動作を継続
       }
     },
 

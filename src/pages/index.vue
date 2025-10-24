@@ -427,10 +427,6 @@ const showPortInfo = (portName: string) => {
   modalVisible.value = true
 }
 
-const closeModal = () => {
-  modalVisible.value = false
-}
-
 const handleMapPortClick = (port: any) => {
   // 地図上の港がクリックされたら、その港を出発地または到着地に設定
   if (!departure.value) {
@@ -452,7 +448,7 @@ const toggleMapDisplay = () => {
 }
 
 // Watchers
-watch([departure, arrival], async ([newDeparture, newArrival], [oldDeparture, oldArrival]) => {
+watch([departure, arrival], async ([newDeparture, newArrival], [_oldDeparture, _oldArrival]) => {
   // 両方選択されている場合は、一旦ルートをクリアしてから再描画
   if (newDeparture && newArrival) {
     const current = selectedMapRoute.value

@@ -1,5 +1,3 @@
-import type { AdminUser } from '~/types/auth'
-
 export const useAdminPermissions = () => {
   const authStore = useAuthStore()
   

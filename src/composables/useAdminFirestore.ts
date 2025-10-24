@@ -1,5 +1,4 @@
-import { collection, doc, setDoc, updateDoc, deleteDoc, getDoc, getDocs, query, where, orderBy, limit, startAfter, Timestamp, type DocumentData, type QueryConstraint, serverTimestamp, writeBatch } from 'firebase/firestore'
-import type { AdminUser } from '~/types/auth'
+import { collection, doc, setDoc, updateDoc, deleteDoc, getDoc, getDocs, query, limit, startAfter, type DocumentData, type QueryConstraint, serverTimestamp, writeBatch } from 'firebase/firestore'
 import type { Alert } from '~/types'
 
 export const useAdminFirestore = () => {
@@ -257,28 +256,28 @@ export const useAdminFirestore = () => {
   /**
    * 時刻表データの保存
    */
-  const saveTimetable = async (timetableData: any): Promise<string> => {
+  const saveTimetable = (timetableData: any): Promise<string> => {
     return createDocument('timetables', timetableData)
   }
 
   /**
    * 料金データの保存
    */
-  const saveFare = async (fareData: any): Promise<string> => {
+  const saveFare = (fareData: any): Promise<string> => {
     return createDocument('fares', fareData)
   }
 
   /**
    * アラートの保存
    */
-  const saveAlert = async (alertData: Partial<Alert>): Promise<string> => {
+  const saveAlert = (alertData: Partial<Alert>): Promise<string> => {
     return createDocument('alerts', alertData)
   }
 
   /**
    * お知らせの保存
    */
-  const saveAnnouncement = async (announcementData: any): Promise<string> => {
+  const saveAnnouncement = (announcementData: any): Promise<string> => {
     return createDocument('announcements', announcementData)
   }
 

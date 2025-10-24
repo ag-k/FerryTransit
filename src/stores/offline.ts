@@ -1,5 +1,5 @@
 import { defineStore } from 'pinia'
-import { ref, readonly } from 'vue'
+import { ref, readonly, onMounted } from 'vue'
 import { useOfflineStorage } from '@/composables/useOfflineStorage'
 import type { TimetableData } from '@/types/timetable'
 import type { FerryStatus } from '@/types/ferry'
@@ -63,15 +63,12 @@ export const useOfflineStore = defineStore('offline', () => {
         return data
       }
     } catch (e) {
-      console.error('Failed to fetch timetable data:', e)
+      /* ignore network failures and fallback to cached data */
     }
     
     // オフラインまたはエラーの場合はローカルから取得
     const localData = getTimetableData()
-    if (localData) {
-      console.info('Using offline timetable data')
-      return localData
-    }
+    if (localData) return localData
     
     return null
   }
@@ -91,15 +88,12 @@ export const useOfflineStore = defineStore('offline', () => {
         return data
       }
     } catch (e) {
-      console.error('Failed to fetch status data:', e)
+      /* ignore network failures and fallback to cached data */
     }
     
     // オフラインまたはエラーの場合はローカルから取得
     const localData = getStatusData()
-    if (localData) {
-      console.info('Using offline status data')
-      return localData
-    }
+    if (localData) return localData
     
     return null
   }
@@ -125,15 +119,12 @@ export const useOfflineStore = defineStore('offline', () => {
         return data
       }
     } catch (e) {
-      console.error('Failed to fetch fare data:', e)
+      /* ignore network failures and fallback to cached data */
     }
     
     // オフラインまたはエラーの場合はローカルから取得
     const localData = getFareData()
-    if (localData) {
-      console.info('Using offline fare data')
-      return localData
-    }
+    if (localData) return localData
     
     return null
   }
@@ -159,15 +150,12 @@ export const useOfflineStore = defineStore('offline', () => {
         return data
       }
     } catch (e) {
-      console.error('Failed to fetch holiday data:', e)
+      /* ignore network failures and fallback to cached data */
     }
     
     // オフラインまたはエラーの場合はローカルから取得
     const localData = getHolidayData()
-    if (localData) {
-      console.info('Using offline holiday data')
-      return localData
-    }
+    if (localData) return localData
     
     return null
   }
