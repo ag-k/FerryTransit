@@ -360,10 +360,6 @@ const { $toast } = useNuxtApp()
 const auth = getAuth()
 const currentUser = ref(auth.currentUser)
 
-// デバッグ用
-console.log('Admin Routes - User from composable:', user.value)
-console.log('Admin Routes - Current user from auth:', auth.currentUser)
-
 // State
 const isFetching = ref(false)
 const isSaving = ref(false)
@@ -740,7 +736,6 @@ const fetchRouteViaRoutesAPI = async (from: string, to: string): Promise<RouteDa
         units: 'METRIC'
       }
 
-      console.log(`Routes API Request (SEA ROUTE) for ${fromPort.name} → ${toPort.name}:`, JSON.stringify(requestBody, null, 2))
       addLog('info', `海上ルートAPI リクエスト: ${fromPort.name} → ${toPort.name}`)
 
       const response = await fetch(
@@ -762,7 +757,6 @@ const fetchRouteViaRoutesAPI = async (from: string, to: string): Promise<RouteDa
       }
 
       const data = await response.json()
-      console.log(`Routes API Response (SEA):`, data)
 
       if (data.routes && data.routes.length > 0) {
         const route = data.routes[0]
@@ -902,8 +896,6 @@ const fetchRouteViaRoutesAPI = async (from: string, to: string): Promise<RouteDa
       units: 'METRIC'
     }
 
-    // デバッグログ: リクエスト内容を出力
-    console.log(`Routes API Request for ${fromPort.name} → ${toPort.name}:`, JSON.stringify(requestBody, null, 2))
     addLog('info', `Routes API リクエスト: ${fromPort.name} (${fromPort.location.lat}, ${fromPort.location.lng}) → ${toPort.name} (${toPort.location.lat}, ${toPort.location.lng})`)
 
     // Routes APIを呼び出し（詳細なレスポンスを要求）
@@ -940,7 +932,6 @@ const fetchRouteViaRoutesAPI = async (from: string, to: string): Promise<RouteDa
     }
 
     const data = await response.json()
-    console.log(`Routes API Response:`, data)
 
     if (data.routes && data.routes.length > 0) {
       const route = data.routes[0]
@@ -955,15 +946,6 @@ const fetchRouteViaRoutesAPI = async (from: string, to: string): Promise<RouteDa
         for (const leg of route.legs) {
           if (leg.steps) {
             for (const step of leg.steps) {
-              // デバッグ: 各ステップの詳細を出力
-              if (step.transitDetails) {
-                console.log('Transit step found:', {
-                  vehicleType: step.transitDetails?.transitLine?.vehicle?.type,
-                  lineName: step.transitDetails?.transitLine?.name,
-                  vehicleName: step.transitDetails?.transitLine?.vehicle?.name
-                })
-              }
-              
               // transitDetailsがあり、vehicle.typeがFERRYのステップのみ採用
               if (step.transitDetails?.transitLine?.vehicle?.type === 'FERRY') {
                 if (step.polyline?.encodedPolyline) {
@@ -1434,8 +1416,6 @@ const fetchAllRoutes = async () => {
 const saveToStorage = async () => {
   // 現在のユーザーを確認
   const authUser = currentUser.value || auth.currentUser
-  console.log('Save - Current user:', authUser)
-  
   if (!authUser) {
     addLog('error', '認証が必要です。ログインしてください。')
     $toast.error('認証が必要です。ログインしてください。')
@@ -1517,8 +1497,6 @@ onMounted(async () => {
   const { getCurrentUser } = useAdminAuth()
   const authUser = await getCurrentUser()
   currentUser.value = authUser
-  console.log('Mounted - Current user:', authUser)
-  
   await loadCurrentData()
   await initGoogleMaps()
 })
