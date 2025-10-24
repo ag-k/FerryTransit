@@ -290,13 +290,15 @@ describe('History Store', () => {
     })
 
     it('ストレージから履歴を読み込む', () => {
+      const now = new Date()
+      const recentDate = new Date(now.getTime() - 5 * 24 * 60 * 60 * 1000)
       const mockHistory: SearchHistoryItem[] = [{
         id: 'test-id',
         type: 'route',
         departure: 'hongo',
         arrival: 'saigo',
-        date: new Date('2025-06-23'),
-        searchedAt: new Date('2025-06-23T10:00:00'),
+        date: recentDate,
+        searchedAt: new Date(recentDate.getTime()),
         isArrivalMode: false
       }]
 

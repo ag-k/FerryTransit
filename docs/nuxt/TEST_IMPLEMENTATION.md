@@ -154,6 +154,30 @@ npm run test:ui
 npm run test:coverage
 ```
 
+## 2. E2Eテスト環境
+
+### 使用技術
+- **Playwright**: 主要ブラウザでのE2Eテスト自動化
+
+### ディレクトリ構成
+```
+src/tests/e2e/
+├── home.spec.ts          # トップページの表示確認
+```
+
+### 設定ファイル
+- `playwright.config.ts`
+  - `webServer`: `npm run dev` を自動起動（CIでは自動再利用なし）
+  - `use.baseURL`: `http://127.0.0.1:3000`（環境変数で上書き可）
+  - マルチブラウザ（Chromium/Firefox/WebKit）での実行を定義
+
+### 実行方法
+```bash
+npx playwright install     # 初回のみブラウザインストール
+npm run test:e2e           # 全ブラウザでのE2Eテスト
+npm run test:e2e -- --ui   # UIモード
+```
+
 ## 今後の展開
 
 1. **CI/CD連携**

@@ -8,8 +8,8 @@
     </div>
 
     <!-- 現在の運航状況サマリー -->
-    <div class="mb-6 grid grid-cols-1 md:grid-cols-4 gap-4">
-      <div class="bg-green-50 dark:bg-green-900/20 rounded-lg p-4">
+    <div class="mb-6 grid grid-cols-1 md:grid-cols-4 gap-4" data-test="status-summary">
+      <div class="bg-green-50 dark:bg-green-900/20 rounded-lg p-4" data-test="summary-normal">
         <div class="flex items-center">
           <CheckCircleIcon class="h-8 w-8 text-green-600 dark:text-green-400" />
           <div class="ml-3">
@@ -18,7 +18,7 @@
           </div>
         </div>
       </div>
-      <div class="bg-yellow-50 dark:bg-yellow-900/20 rounded-lg p-4">
+      <div class="bg-yellow-50 dark:bg-yellow-900/20 rounded-lg p-4" data-test="summary-delay">
         <div class="flex items-center">
           <ExclamationTriangleIcon class="h-8 w-8 text-yellow-600 dark:text-yellow-400" />
           <div class="ml-3">
@@ -27,7 +27,7 @@
           </div>
         </div>
       </div>
-      <div class="bg-red-50 dark:bg-red-900/20 rounded-lg p-4">
+      <div class="bg-red-50 dark:bg-red-900/20 rounded-lg p-4" data-test="summary-cancel">
         <div class="flex items-center">
           <XCircleIcon class="h-8 w-8 text-red-600 dark:text-red-400" />
           <div class="ml-3">
@@ -36,7 +36,7 @@
           </div>
         </div>
       </div>
-      <div class="bg-blue-50 dark:bg-blue-900/20 rounded-lg p-4">
+      <div class="bg-blue-50 dark:bg-blue-900/20 rounded-lg p-4" data-test="summary-other">
         <div class="flex items-center">
           <InformationCircleIcon class="h-8 w-8 text-blue-600 dark:text-blue-400" />
           <div class="ml-3">
@@ -62,6 +62,7 @@
           @click="publishAlertData"
           :disabled="isPublishing"
           class="px-4 py-2 bg-purple-600 text-white rounded-md hover:bg-purple-700 disabled:bg-gray-400"
+          data-test="publish-button"
         >
           <CloudArrowUpIcon class="h-5 w-5 inline mr-1" />
           {{ isPublishing ? '公開中...' : 'データ公開' }}
@@ -70,6 +71,7 @@
       <button
         @click="showAddModal = true"
         class="px-4 py-2 bg-red-600 text-white rounded-md hover:bg-red-700"
+        data-test="new-alert-button"
       >
         <PlusIcon class="h-5 w-5 inline mr-1" />
         新規アラート
@@ -87,7 +89,7 @@
         <div v-if="activeAlerts.length === 0" class="text-center py-8 text-gray-500 dark:text-gray-400">
           現在アクティブなアラートはありません
         </div>
-        <div v-else class="space-y-4">
+        <div v-else class="space-y-4" data-test="active-alerts">
           <div
             v-for="alert in activeAlerts"
             :key="alert.id"
@@ -124,12 +126,14 @@
                 <button
                   @click="editAlert(alert)"
                   class="text-blue-600 hover:text-blue-900 dark:text-blue-400"
+                  aria-label="edit-alert"
                 >
                   <PencilIcon class="h-5 w-5" />
                 </button>
                 <button
                   @click="deleteAlert(alert)"
                   class="text-red-600 hover:text-red-900 dark:text-red-400"
+                  aria-label="delete-alert"
                 >
                   <TrashIcon class="h-5 w-5" />
                 </button>
@@ -181,6 +185,7 @@
           <select
             v-model="formData.ship"
             class="mt-1 w-full rounded-md border border-gray-300 dark:border-gray-600 dark:bg-gray-700 focus:border-blue-500 dark:focus:border-blue-400 focus:ring-2 focus:ring-blue-500 focus:ring-opacity-30 transition-colors"
+            data-test="alert-ship"
             required
           >
             <option value="">選択してください</option>
@@ -201,6 +206,7 @@
             type="text"
             placeholder="例: 西郷 → 本土七類"
             class="mt-1 w-full rounded-md border border-gray-300 dark:border-gray-600 dark:bg-gray-700 focus:border-blue-500 dark:focus:border-blue-400 focus:ring-2 focus:ring-blue-500 focus:ring-opacity-30 transition-colors"
+            data-test="alert-route"
             required
           >
         </div>
@@ -211,6 +217,7 @@
           <select
             v-model="formData.status"
             class="mt-1 w-full rounded-md border border-gray-300 dark:border-gray-600 dark:bg-gray-700 focus:border-blue-500 dark:focus:border-blue-400 focus:ring-2 focus:ring-blue-500 focus:ring-opacity-30 transition-colors"
+            data-test="alert-status"
             required
           >
             <option value="1">遅延</option>
@@ -227,6 +234,7 @@
             v-model="formData.summary"
             type="text"
             class="mt-1 w-full rounded-md border border-gray-300 dark:border-gray-600 dark:bg-gray-700 focus:border-blue-500 dark:focus:border-blue-400 focus:ring-2 focus:ring-blue-500 focus:ring-opacity-30 transition-colors"
+            data-test="alert-summary"
             required
           >
         </div>
@@ -400,8 +408,10 @@ const formatDate = (date: string | Date) => {
   })
 }
 
-const formatTime = (date: Date) => {
-  return date.toLocaleTimeString('ja-JP', {
+const formatTime = (date: Date | string | null | undefined) => {
+  if (!date) return ''
+  const dateObj = typeof date === 'string' ? new Date(date) : date
+  return dateObj.toLocaleTimeString('ja-JP', {
     hour: '2-digit',
     minute: '2-digit'
   })

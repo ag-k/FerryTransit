@@ -1,4 +1,4 @@
-import { describe, it, expect } from 'vitest'
+import { describe, it, expect, vi } from 'vitest'
 import { mount } from '@vue/test-utils'
 import DatePicker from '@/components/common/DatePicker.vue'
 
@@ -46,15 +46,35 @@ describe('DatePicker', () => {
   })
 
   it('emits today date when today button is clicked', async () => {
-    const wrapper = mountComponent()
+    vi.useFakeTimers()
+    const fixedNow = new Date('2025-10-14T12:34:56Z')
+    vi.setSystemTime(fixedNow)
 
-    const todayButton = wrapper.find('button')
-    await todayButton.trigger('click')
+    try {
+      const wrapper = mountComponent()
 
-    expect(wrapper.emitted('update:modelValue')).toBeTruthy()
-    const emittedDate = wrapper.emitted('update:modelValue')[0][0] as Date
-    const today = new Date()
-    expect(emittedDate.toDateString()).toBe(today.toDateString())
+      const todayButton = wrapper.find('button')
+      await todayButton.trigger('click')
+
+      expect(wrapper.emitted('update:modelValue')).toBeTruthy()
+      const emittedDate = wrapper.emitted('update:modelValue')[0][0] as Date
+      const now = new Date()
+      const jstOffsetMinutes = 9 * 60
+      const utcTime = now.getTime() + now.getTimezoneOffset() * 60000
+      const jstTime = new Date(utcTime + jstOffsetMinutes * 60000)
+      const expectedToday = new Date(
+        jstTime.getFullYear(),
+        jstTime.getMonth(),
+        jstTime.getDate(),
+        0,
+        0,
+        0,
+        0
+      )
+      expect(emittedDate.getTime()).toBe(expectedToday.getTime())
+    } finally {
+      vi.useRealTimers()
+    }
   })
 
   it('shows label when provided', () => {

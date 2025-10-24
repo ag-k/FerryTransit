@@ -16,6 +16,7 @@
           </label>
           <select
             v-model="filters.departure"
+            data-test="timetable-filter-departure"
             class="w-full rounded-md border border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white focus:border-blue-500 dark:focus:border-blue-400 focus:ring-2 focus:ring-blue-500 focus:ring-opacity-30 transition-colors px-3 py-2"
           >
             <option value="">すべて</option>
@@ -30,6 +31,7 @@
           </label>
           <select
             v-model="filters.arrival"
+            data-test="timetable-filter-arrival"
             class="w-full rounded-md border border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white focus:border-blue-500 dark:focus:border-blue-400 focus:ring-2 focus:ring-blue-500 focus:ring-opacity-30 transition-colors px-3 py-2"
           >
             <option value="">すべて</option>
@@ -44,6 +46,7 @@
           </label>
           <select
             v-model="filters.ship"
+            data-test="timetable-filter-ship"
             class="w-full rounded-md border border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white focus:border-blue-500 dark:focus:border-blue-400 focus:ring-2 focus:ring-blue-500 focus:ring-opacity-30 transition-colors px-3 py-2"
           >
             <option value="">すべて</option>
@@ -58,6 +61,7 @@
           </label>
           <select
             v-model="filters.status"
+            data-test="timetable-filter-status"
             class="w-full rounded-md border border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white focus:border-blue-500 dark:focus:border-blue-400 focus:ring-2 focus:ring-blue-500 focus:ring-opacity-30 transition-colors px-3 py-2"
           >
             <option value="">すべて</option>
@@ -76,6 +80,7 @@
       <div class="flex flex-col sm:flex-row gap-2">
         <button
           @click="refreshData"
+          data-test="timetable-refresh"
           class="w-full sm:w-auto px-4 py-2 bg-gray-600 text-white rounded-md hover:bg-gray-700 transition-colors"
         >
           <ArrowPathIcon class="h-5 w-5 inline mr-1" />
@@ -84,6 +89,7 @@
         <button
           @click="publishTimetableData"
           :disabled="isPublishing"
+          data-test="timetable-publish"
           class="w-full sm:w-auto px-4 py-2 bg-purple-600 text-white rounded-md hover:bg-purple-700 disabled:bg-gray-400 transition-colors"
         >
           <CloudArrowUpIcon class="h-5 w-5 inline mr-1" />
@@ -93,6 +99,7 @@
       <div class="flex flex-col sm:flex-row gap-2">
         <button
           @click="showImportModal = true"
+          data-test="timetable-import"
           class="w-full sm:w-auto px-4 py-2 bg-green-600 text-white rounded-md hover:bg-green-700 transition-colors"
         >
           <ArrowUpTrayIcon class="h-5 w-5 inline mr-1" />
@@ -100,6 +107,7 @@
         </button>
         <button
           @click="showAddModal = true"
+          data-test="timetable-add"
           class="w-full sm:w-auto px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 transition-colors"
         >
           <PlusIcon class="h-5 w-5 inline mr-1" />
@@ -135,15 +143,19 @@
         <div class="flex items-center gap-1">
           <button
             @click="editTimetable(row)"
+            data-test="timetable-edit"
             class="p-2 text-blue-600 hover:text-blue-900 dark:text-blue-400 dark:hover:text-blue-300 hover:bg-blue-50 dark:hover:bg-blue-900/20 rounded transition-colors"
             title="編集"
+            aria-label="時刻表を編集"
           >
             <PencilIcon class="h-5 w-5" />
           </button>
           <button
             @click="deleteTimetable(row)"
+            data-test="timetable-delete"
             class="p-2 text-red-600 hover:text-red-900 dark:text-red-400 dark:hover:text-red-300 hover:bg-red-50 dark:hover:bg-red-900/20 rounded transition-colors"
             title="削除"
+            aria-label="時刻表を削除"
           >
             <TrashIcon class="h-5 w-5" />
           </button>
@@ -166,6 +178,7 @@
           </label>
           <select
             v-model="formData.name"
+            data-test="timetable-name"
             class="mt-1 w-full rounded-md border border-gray-300 dark:border-gray-600 dark:bg-gray-700 focus:border-blue-500 dark:focus:border-blue-400 focus:ring-2 focus:ring-blue-500 focus:ring-opacity-30 transition-colors"
             required
           >
@@ -182,6 +195,7 @@
             </label>
             <select
               v-model="formData.departure"
+              data-test="timetable-departure"
               class="mt-1 w-full rounded-md border border-gray-300 dark:border-gray-600 dark:bg-gray-700 focus:border-blue-500 dark:focus:border-blue-400 focus:ring-2 focus:ring-blue-500 focus:ring-opacity-30 transition-colors"
               required
             >
@@ -197,6 +211,7 @@
             </label>
             <select
               v-model="formData.arrival"
+              data-test="timetable-arrival"
               class="mt-1 w-full rounded-md border border-gray-300 dark:border-gray-600 dark:bg-gray-700 focus:border-blue-500 dark:focus:border-blue-400 focus:ring-2 focus:ring-blue-500 focus:ring-opacity-30 transition-colors"
               required
             >
@@ -215,6 +230,7 @@
             <input
               v-model="formData.departureTime"
               type="time"
+              data-test="timetable-departure-time"
               class="mt-1 w-full rounded-md border border-gray-300 dark:border-gray-600 dark:bg-gray-700 focus:border-blue-500 dark:focus:border-blue-400 focus:ring-2 focus:ring-blue-500 focus:ring-opacity-30 transition-colors"
               required
             >
@@ -226,6 +242,7 @@
             <input
               v-model="formData.arrivalTime"
               type="time"
+              data-test="timetable-arrival-time"
               class="mt-1 w-full rounded-md border border-gray-300 dark:border-gray-600 dark:bg-gray-700 focus:border-blue-500 dark:focus:border-blue-400 focus:ring-2 focus:ring-blue-500 focus:ring-opacity-30 transition-colors"
               required
             >
@@ -239,6 +256,7 @@
             <input
               v-model="formData.startDate"
               type="date"
+              data-test="timetable-start-date"
               class="mt-1 w-full rounded-md border border-gray-300 dark:border-gray-600 dark:bg-gray-700 focus:border-blue-500 dark:focus:border-blue-400 focus:ring-2 focus:ring-blue-500 focus:ring-opacity-30 transition-colors"
               required
             >
@@ -250,6 +268,7 @@
             <input
               v-model="formData.endDate"
               type="date"
+              data-test="timetable-end-date"
               class="mt-1 w-full rounded-md border border-gray-300 dark:border-gray-600 dark:bg-gray-700 focus:border-blue-500 dark:focus:border-blue-400 focus:ring-2 focus:ring-blue-500 focus:ring-opacity-30 transition-colors"
               required
             >
@@ -261,6 +280,7 @@
           </label>
           <select
             v-model="formData.status"
+            data-test="timetable-status"
             class="mt-1 w-full rounded-md border border-gray-300 dark:border-gray-600 dark:bg-gray-700 focus:border-blue-500 dark:focus:border-blue-400 focus:ring-2 focus:ring-blue-500 focus:ring-opacity-30 transition-colors"
           >
             <option value="0">通常運航</option>
@@ -290,6 +310,7 @@
             type="file"
             accept=".csv"
             @change="handleFileSelect"
+            data-test="timetable-file-input"
             class="mt-1 w-full"
           >
         </div>

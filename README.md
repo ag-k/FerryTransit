@@ -90,7 +90,7 @@ npm run dev
 - **認証**: Firebase Authentication
 - **データベース**: Firebase Firestore
 - **ストレージ**: Firebase Storage
-- **テスト**: Vitest + Vue Test Utils
+- **テスト**: Vitest + Vue Test Utils（ユニット）、Playwright（E2E）
 - **モバイル**: Capacitor 7.4.1
 
 ## 主な機能
@@ -128,6 +128,7 @@ npm run preview
 ### テスト実行
 ```bash
 npm run test:unit        # ユニットテスト
+npm run test:e2e         # E2Eテスト（要: npx playwright install）
 npm run typecheck       # 型チェック
 npm run lint           # コードリント
 ```
