@@ -333,7 +333,7 @@ definePageMeta({
   middleware: 'admin'
 })
 
-const { getCollection, createDocument, updateDocument, deleteDocument, batchWrite, getDocument } = useAdminFirestore()
+const { getCollection, updateDocument, batchWrite, getDocument } = useAdminFirestore()
 const { publishData } = useDataPublish()
 const { $toast } = useNuxtApp()
 

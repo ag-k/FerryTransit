@@ -1,5 +1,4 @@
-import { ref as storageRef, uploadBytes, getDownloadURL, deleteObject } from 'firebase/storage'
-import type { DocumentData } from 'firebase/firestore'
+import { ref as storageRef, uploadBytes, getDownloadURL } from 'firebase/storage'
 import { Timestamp } from 'firebase/firestore'
 import { useAdminAuth } from '~/composables/useAdminAuth'
 import { useAdminFirestore } from '~/composables/useAdminFirestore'
@@ -464,9 +463,9 @@ export const useDataPublish = () => {
   /**
    * バックアップからの復元
    */
-  const restoreFromBackup = async (backupId: string) => {
+  const restoreFromBackup = (backupId: string): Promise<never> => {
     // 実装は省略（セキュリティ上、慎重に実装する必要がある）
-    throw new Error('Not implemented')
+    return Promise.reject(new Error(`Not implemented: restore from backup ${backupId}`))
   }
 
   // ========================================

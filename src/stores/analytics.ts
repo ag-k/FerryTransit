@@ -1,7 +1,7 @@
 import { defineStore } from 'pinia'
-import type { Analytics, PageViewStats, SearchStats } from '~/types/analytics'
 import { collection, addDoc, getDocs, query, where, orderBy, limit, Timestamp, updateDoc, doc, increment } from 'firebase/firestore'
 import { logEvent } from 'firebase/analytics'
+import type { Analytics, PageViewStats } from '~/types/analytics'
 
 interface AnalyticsState {
   analytics: Analytics | null
@@ -184,7 +184,6 @@ export const useAnalyticsStore = defineStore('analytics', {
           searchStats: searchStats.length > 0 ? searchStats : this.generateDummySearchStats()
         }
       } catch (error: any) {
-        console.error('Failed to fetch analytics:', error)
         this.error = error.message || '分析データの取得に失敗しました'
         // エラー時はダミーデータを使用
         this.loadDummyData()
@@ -312,9 +311,9 @@ export const useAnalyticsStore = defineStore('analytics', {
             page_title: document.title
           })
         }
-      } catch (error) {
-        console.error('Failed to track page view:', error)
-        await this.trackError(error)
+      } catch (error: any) {
+        this.error = error?.message || 'ページビューの記録に失敗しました'
+        await this.trackError(error, { action: 'track_page_view', page })
       }
     },
 
@@ -364,9 +363,9 @@ export const useAnalyticsStore = defineStore('analytics', {
             to_port: toPort
           })
         }
-      } catch (error) {
-        console.error('Failed to track search:', error)
-        await this.trackError(error)
+      } catch (error: any) {
+        this.error = error?.message || '検索記録に失敗しました'
+        await this.trackError(error, { action: 'track_search' })
       }
     },
 
@@ -408,8 +407,10 @@ export const useAnalyticsStore = defineStore('analytics', {
             fatal: false
           })
         }
-      } catch (err) {
-        console.error('Failed to track error:', err)
+      } catch (err: any) {
+        if (!this.error) {
+          this.error = err?.message || 'エラーログの記録に失敗しました'
+        }
       }
     },
     
@@ -431,8 +432,8 @@ export const useAnalyticsStore = defineStore('analytics', {
         if ($firebase?.analytics) {
           logEvent($firebase.analytics, eventName, parameters)
         }
-      } catch (error) {
-        console.error('Failed to track user event:', error)
+      } catch (error: any) {
+        this.error = error?.message || 'イベントの記録に失敗しました'
       }
     },
     
@@ -456,8 +457,8 @@ export const useAnalyticsStore = defineStore('analytics', {
             })
           }
         }
-      } catch (error) {
-        console.error('Failed to update user stats:', error)
+      } catch (error: any) {
+        this.error = error?.message || '利用統計の更新に失敗しました'
       }
     },
     
@@ -482,8 +483,8 @@ export const useAnalyticsStore = defineStore('analytics', {
           
           await updateDoc(statsDoc, updates)
         }
-      } catch (error) {
-        console.error('Failed to update device stats:', error)
+      } catch (error: any) {
+        this.error = error?.message || 'デバイス統計の更新に失敗しました'
       }
     },
     
@@ -509,8 +510,8 @@ export const useAnalyticsStore = defineStore('analytics', {
             averageSessionDuration: increment(Math.floor(duration / 1000))
           })
         }
-      } catch (error) {
-        console.error('Failed to track session end:', error)
+      } catch (error: any) {
+        this.error = error?.message || 'セッション終了の記録に失敗しました'
       }
     },
     

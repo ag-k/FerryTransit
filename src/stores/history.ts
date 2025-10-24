@@ -6,7 +6,7 @@ import { HISTORY_STORAGE_KEY, HISTORY_SETTINGS } from '@/types/history'
 
 export const useHistoryStore = defineStore('history', () => {
   // Composables
-  const { saveData, getData, removeData } = useOfflineStorage()
+  const { saveData, getData } = useOfflineStorage()
   
   // State
   const history = ref<SearchHistoryItem[]>([])
@@ -128,33 +128,25 @@ export const useHistoryStore = defineStore('history', () => {
   }
   
   const loadFromStorage = (): void => {
-    try {
-      const savedHistory = getData<SearchHistoryItem[]>(HISTORY_STORAGE_KEY)
-      if (savedHistory && Array.isArray(savedHistory)) {
-        // 日付を復元
-        history.value = savedHistory.map(item => ({
-          ...item,
-          date: new Date(item.date),
-          time: item.time ? new Date(item.time) : undefined,
-          searchedAt: new Date(item.searchedAt)
-        }))
-        
-        // 古いエントリを自動削除
-        removeOldEntries()
-      }
-    } catch (error) {
-      console.error('Failed to load search history from storage:', error)
+    const savedHistory = getData<SearchHistoryItem[]>(HISTORY_STORAGE_KEY)
+    if (savedHistory && Array.isArray(savedHistory)) {
+      // 日付を復元
+      history.value = savedHistory.map(item => ({
+        ...item,
+        date: new Date(item.date),
+        time: item.time ? new Date(item.time) : undefined,
+        searchedAt: new Date(item.searchedAt)
+      }))
+      
+      // 古いエントリを自動削除
+      removeOldEntries()
     }
   }
   
   const saveToStorage = (): void => {
-    try {
-      // 30日間の有効期限で保存
-      const ttl = HISTORY_SETTINGS.DEFAULT_DAYS_TO_KEEP * 24 * 60 * 60 * 1000
-      saveData(HISTORY_STORAGE_KEY, history.value, ttl)
-    } catch (error) {
-      console.error('Failed to save search history to storage:', error)
-    }
+    // 30日間の有効期限で保存
+    const ttl = HISTORY_SETTINGS.DEFAULT_DAYS_TO_KEEP * 24 * 60 * 60 * 1000
+    saveData(HISTORY_STORAGE_KEY, history.value, ttl)
   }
   
   // ストレージの変更を監視（他のタブからの変更を反映）

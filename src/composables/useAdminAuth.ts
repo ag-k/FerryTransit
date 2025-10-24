@@ -7,16 +7,12 @@ export const useAdminAuth = () => {
   const authStore = useAuthStore()
 
   const login = async (credentials: LoginCredentials) => {
-    try {
-      const userCredential = await signInWithEmailAndPassword(
-        auth,
-        credentials.email,
-        credentials.password
-      )
-      return userCredential.user
-    } catch (error) {
-      throw error
-    }
+    const userCredential = await signInWithEmailAndPassword(
+      auth,
+      credentials.email,
+      credentials.password
+    )
+    return userCredential.user
   }
 
   const logout = async () => {

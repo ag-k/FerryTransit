@@ -284,21 +284,17 @@
 </template>
 
 <script setup lang="ts">
+import { ref, onMounted } from 'vue'
+import { doc, getDoc, setDoc } from 'firebase/firestore'
+import ToggleSwitch from '~/components/common/ToggleSwitch.vue'
+import { useToast } from '~/composables/useToast'
+import { useAdminFirebase } from '~/composables/useAdminFirebase'
+
 definePageMeta({
   middleware: 'admin',
   layout: 'admin'
 })
 
-import { ref, onMounted } from 'vue'
-import { useRouter } from 'vue-router'
-import { doc, getDoc, setDoc } from 'firebase/firestore'
-import ToggleSwitch from '~/components/common/ToggleSwitch.vue'
-import { useToast } from '~/composables/useToast'
-import { useAdminFirebase } from '~/composables/useAdminFirebase'
-import { useI18n } from 'vue-i18n'
-
-const router = useRouter()
-const { t } = useI18n()
 const { success: showSuccess, error: showError } = useToast()
 const saving = ref(false)
 

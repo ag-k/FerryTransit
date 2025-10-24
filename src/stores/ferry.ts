@@ -1,15 +1,10 @@
 import { defineStore } from 'pinia'
-import { httpsCallable } from 'firebase/functions'
-import { useFirebase } from '@/composables/useFirebase'
 import { useFirebaseStorage } from '@/composables/useFirebaseStorage'
-import type { 
-  Trip, 
-  TripStatus, 
-  ShipStatus, 
-  FerryStatus, 
-  SightseeingStatus,
-  PORTS,
-  SHIPS
+import type {
+  Trip,
+  ShipStatus,
+  FerryStatus,
+  SightseeingStatus
 } from '@/types'
 
 // Port and Ship interfaces
@@ -273,7 +268,6 @@ export const useFerryStore = defineStore('ferry', () => {
     
     remainingTrips.forEach(trip => {
       if (trip.nextId) {
-        let currentTrip = trip
         let nextId = trip.nextId
         
         for (let i = 0; i < MAX_NEXT_CHAIN; i++) {
@@ -359,8 +353,6 @@ export const useFerryStore = defineStore('ferry', () => {
         data = await $fetch<any[]>(functionsUrl)
       }
       
-      console.log('Fetched timetable data:', data.length, 'items')
-      
       // Map API response fields to expected format
       timetableData.value = data.map(trip => ({
         tripId: parseInt(trip.trip_id), // Convert string IDs to numbers
@@ -383,12 +375,11 @@ export const useFerryStore = defineStore('ferry', () => {
           localStorage.setItem('rawTimetable', JSON.stringify(data))
           localStorage.setItem('lastFetchTime', lastFetchTime.value.toISOString())
         } catch (e) {
-          console.warn('Failed to cache timetable data:', e)
+          // ローカルキャッシュの書き込みが失敗しても処理を継続
         }
       }
     } catch (e) {
       error.value = 'LOAD_TIMETABLE_ERROR'
-      console.error('Failed to fetch timetable:', e)
       
       // オフラインの場合はキャッシュから読み込み
       if (process.client) {
@@ -412,7 +403,7 @@ export const useFerryStore = defineStore('ferry', () => {
             error.value = 'OFFLINE_TIMETABLE_ERROR'
           }
         } catch (e) {
-          console.error('Failed to load cached data:', e)
+          // ローカルキャッシュの読み込みが失敗した場合は既存データを保持
         }
       }
     } finally {
@@ -492,7 +483,6 @@ export const useFerryStore = defineStore('ferry', () => {
       processExtraShips()
       
     } catch (e) {
-      console.error('Failed to fetch ship status:', e)
       error.value = 'LOAD_STATUS_ERROR'
     } finally {
       isLoading.value = false
@@ -605,7 +595,7 @@ export const useFerryStore = defineStore('ferry', () => {
         lastFetchTime.value = new Date(savedTime)
       }
     } catch (e) {
-      console.warn('Failed to load from localStorage:', e)
+      // ローカルストレージ読み込みに失敗した場合は既存状態を維持
     }
   }
 

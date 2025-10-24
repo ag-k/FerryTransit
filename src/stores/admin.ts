@@ -19,7 +19,7 @@ export const useAdminStore = defineStore('admin', {
   }),
 
   actions: {
-    async fetchDashboardStats() {
+    fetchDashboardStats() {
       this.isLoading = true
       this.error = null
       
@@ -52,11 +52,11 @@ export const useAdminStore = defineStore('admin', {
       }
     },
 
-    async fetchRecentLogs(limit: number = 10) {
+    fetchRecentLogs(limit: number = 10) {
       try {
         // TODO: Firestoreから管理者ログを取得
         // 現在はダミーデータ
-        this.recentLogs = [
+        const logs: AdminLog[] = [
           {
             id: '1',
             adminId: 'admin1',
@@ -86,13 +86,14 @@ export const useAdminStore = defineStore('admin', {
             timestamp: new Date(Date.now() - 1000 * 60 * 60)
           }
         ]
+        this.recentLogs = logs.slice(0, limit)
       } catch (error: any) {
         this.error = error.message || 'ログの取得に失敗しました'
         throw error
       }
     },
 
-    async fetchSystemSettings() {
+    fetchSystemSettings() {
       try {
         // TODO: Firestoreからシステム設定を取得
         // 現在はダミーデータ
@@ -109,7 +110,7 @@ export const useAdminStore = defineStore('admin', {
       }
     },
 
-    async updateSystemSettings(settings: Partial<SystemSettings>) {
+    updateSystemSettings(settings: Partial<SystemSettings>) {
       try {
         // TODO: Firestoreにシステム設定を保存
         this.systemSettings = {
@@ -122,7 +123,7 @@ export const useAdminStore = defineStore('admin', {
       }
     },
 
-    async logAdminAction(action: Omit<AdminLog, 'id' | 'timestamp'>) {
+    logAdminAction(action: Omit<AdminLog, 'id' | 'timestamp'>) {
       try {
         // TODO: Firestoreに管理者アクションログを記録
         const log: AdminLog = {
@@ -135,7 +136,8 @@ export const useAdminStore = defineStore('admin', {
           this.recentLogs.pop()
         }
       } catch (error: any) {
-        console.error('Failed to log admin action:', error)
+        this.error = error.message || '管理者アクションの記録に失敗しました'
+        throw error
       }
     }
   }

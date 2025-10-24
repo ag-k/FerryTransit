@@ -67,7 +67,7 @@ export const useAuthStore = defineStore('auth', {
       }
     },
 
-    async checkAuth() {
+    checkAuth() {
       const { $adminAuth } = useNuxtApp()
       
       return new Promise<AdminUser | null>((resolve) => {

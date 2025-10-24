@@ -126,7 +126,7 @@ export const useNews = () => {
   };
 
   // キャッシュからお知らせを取得
-  const getCachedNews = async (): Promise<News[] | null> => {
+  const getCachedNews = (): News[] | null => {
     try {
       if (import.meta.client) {
         const cached = localStorage.getItem("ferry_news_cache");
@@ -148,7 +148,7 @@ export const useNews = () => {
   };
 
   // お知らせをキャッシュに保存
-  const setCachedNews = async (news: News[]) => {
+  const setCachedNews = (news: News[]): void => {
     try {
       if (import.meta.client) {
         localStorage.setItem("ferry_news_cache", JSON.stringify(news));
@@ -160,7 +160,7 @@ export const useNews = () => {
   };
 
   // お知らせの閲覧数をカウント（クライアント側では実装しない）
-  const incrementViewCount = async (newsId: string) => {
+  const incrementViewCount = (newsId: string): void => {
     // 閲覧数のカウントは管理画面側で実装
     console.log("View news:", newsId);
   };

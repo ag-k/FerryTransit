@@ -1,12 +1,11 @@
 import { initializeApp } from 'firebase/app'
 import { getFirestore } from 'firebase/firestore'
-import { getAuth, signInWithEmailAndPassword, signOut, onAuthStateChanged } from 'firebase/auth'
+import { getAuth, signInWithEmailAndPassword, signOut } from 'firebase/auth'
 import { getStorage } from 'firebase/storage'
 import { getAnalytics } from 'firebase/analytics'
 import { getFunctions } from 'firebase/functions'
 
-// Export db for direct imports
-export let db: ReturnType<typeof getFirestore>
+let db: ReturnType<typeof getFirestore>
 
 export default defineNuxtPlugin(() => {
   const config = useRuntimeConfig()

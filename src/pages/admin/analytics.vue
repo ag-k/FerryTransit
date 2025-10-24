@@ -173,16 +173,16 @@
 </template>
 
 <script setup lang="ts">
+import { subDays } from 'date-fns'
 import { ArrowPathIcon } from '@heroicons/vue/24/outline'
 import { useAnalytics } from '~/composables/useAnalytics'
-import { startOfDay, endOfDay, subDays, format } from 'date-fns'
 
 definePageMeta({
   layout: 'admin',
   middleware: 'admin'
 })
 
-const { getPageViewStats, getAccessTrends, getPopularPages, getReferrerStats, getRouteSearchStats, getErrorStats } = useAnalytics()
+const { getAccessTrends, getPopularPages, getReferrerStats, getRouteSearchStats, getErrorStats } = useAnalytics()
 const { $toast } = useNuxtApp()
 
 const isLoading = ref(false)
@@ -314,8 +314,8 @@ const loadAnalyticsData = async () => {
     errorStats.value = [
       { type: '404', label: 'ページが見つからない', count: errors['404'] || 0, percentage: Math.round(((errors['404'] || 0) / errorTotal) * 100), color: 'bg-yellow-500' },
       { type: '500', label: 'サーバーエラー', count: errors['500'] || 0, percentage: Math.round(((errors['500'] || 0) / errorTotal) * 100), color: 'bg-red-500' },
-      { type: 'network', label: 'ネットワークエラー', count: errors['network'] || 0, percentage: Math.round(((errors['network'] || 0) / errorTotal) * 100), color: 'bg-orange-500' },
-      { type: 'other', label: 'その他', count: errors['other'] || 0, percentage: Math.round(((errors['other'] || 0) / errorTotal) * 100), color: 'bg-gray-500' }
+      { type: 'network', label: 'ネットワークエラー', count: errors.network || 0, percentage: Math.round(((errors.network || 0) / errorTotal) * 100), color: 'bg-orange-500' },
+      { type: 'other', label: 'その他', count: errors.other || 0, percentage: Math.round(((errors.other || 0) / errorTotal) * 100), color: 'bg-gray-500' }
     ]
   } catch (error) {
     console.error('Failed to load analytics data:', error)

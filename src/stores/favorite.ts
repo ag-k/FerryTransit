@@ -9,7 +9,7 @@ import { FAVORITE_STORAGE_KEYS, MAX_FAVORITES } from '@/types/favorite'
 
 export const useFavoriteStore = defineStore('favorite', () => {
   // Composables
-  const { saveData, getData, removeData } = useOfflineStorage()
+  const { saveData, getData } = useOfflineStorage()
   
   // State
   const routes = ref<FavoriteRoute[]>([])
@@ -220,7 +220,7 @@ export const useFavoriteStore = defineStore('favorite', () => {
         }))
       }
     } catch (error) {
-      console.error('Failed to load favorites from storage:', error)
+      // ストレージから取得できない場合は既存の状態を維持
     }
   }
   
@@ -232,7 +232,7 @@ export const useFavoriteStore = defineStore('favorite', () => {
       // 港を保存（無期限）
       saveData(FAVORITE_STORAGE_KEYS.PORTS, ports.value)
     } catch (error) {
-      console.error('Failed to save favorites to storage:', error)
+      // ストレージ保存に失敗しても処理を継続
     }
   }
   

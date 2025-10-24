@@ -336,7 +336,7 @@ import {
   ArrowUpTrayIcon,
   CloudArrowUpIcon
 } from '@heroicons/vue/24/outline'
-import { orderBy, where } from 'firebase/firestore'
+import { orderBy } from 'firebase/firestore'
 import type { Trip, Port, Ship } from '~/types'
 import { useAdminFirestore } from '~/composables/useAdminFirestore'
 import { useDataPublish } from '~/composables/useDataPublish'
