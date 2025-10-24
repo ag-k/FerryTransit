@@ -327,6 +327,7 @@ import { useAdminFirestore } from '~/composables/useAdminFirestore'
 import { useDataPublish } from '~/composables/useDataPublish'
 import type { FareData, Discount, PeakPeriod } from '~/types'
 import FormModal from '~/components/admin/FormModal.vue'
+import { createLogger } from '~/utils/logger'
 
 definePageMeta({
   layout: 'admin',
@@ -336,6 +337,7 @@ definePageMeta({
 const { getCollection, updateDocument, batchWrite, getDocument } = useAdminFirestore()
 const { publishData } = useDataPublish()
 const { $toast } = useNuxtApp()
+const logger = createLogger('AdminFarePage')
 
 const tabs = [
   { id: 'ferry', name: 'フェリー料金' },
@@ -409,7 +411,7 @@ const loadFareData = async () => {
     editingHighspeedFares.value = [...highspeedFares.value]
     editingPeakSurchargeRate.value = peakSurchargeRate.value
   } catch (error) {
-    console.error('Failed to load fare data:', error)
+    logger.error('Failed to load fare data', error)
     // エラー時は初期データを設定
     setDefaultData()
   } finally {
@@ -502,7 +504,7 @@ const saveFareData = async () => {
     
     showEditModal.value = false
   } catch (error) {
-    console.error('Failed to save fare data:', error)
+    logger.error('Failed to save fare data', error)
     $toast.error('保存に失敗しました')
   } finally {
     isSaving.value = false
@@ -515,7 +517,7 @@ const publishFareData = async () => {
     await publishData('fare')
     $toast.success('料金データを公開しました')
   } catch (error) {
-    console.error('Failed to publish fare data:', error)
+    logger.error('Failed to publish fare data', error)
     $toast.error('データの公開に失敗しました')
   } finally {
     isPublishing.value = false

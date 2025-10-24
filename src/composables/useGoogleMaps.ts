@@ -1,3 +1,5 @@
+import { createLogger } from '~/utils/logger'
+
 interface GoogleMapsOptions {
   center?: { lat: number; lng: number }
   zoom?: number
@@ -6,27 +8,30 @@ interface GoogleMapsOptions {
 }
 
 export const useGoogleMaps = () => {
+  const logger = createLogger('useGoogleMaps')
   const isLoaded = ref(false)
   const loadError = ref<Error | null>(null)
 
   const loadGoogleMaps = (): Promise<void> => {
     if (isLoaded.value) {
-      console.log('Google Maps already loaded')
+      logger.debug('Google Maps already loaded')
       return Promise.resolve()
     }
 
     const config = useRuntimeConfig()
     const apiKey = config.public.googleMapsApiKey
 
-    console.log('Loading Google Maps with API key:', apiKey ? 'configured' : 'missing')
+    logger.debug(`Loading Google Maps (api key ${apiKey ? 'configured' : 'missing'})`)
 
     if (!apiKey) {
-      loadError.value = new Error('Google Maps API key is not configured')
+      const error = new Error('Google Maps API key is not configured')
+      loadError.value = error
+      logger.error(error.message)
       return Promise.resolve()
     }
 
     if (typeof window.google !== 'undefined' && window.google.maps) {
-      console.log('Google Maps already available in window')
+      logger.debug('Google Maps already available in window')
       isLoaded.value = true
       return Promise.resolve()
     }
@@ -38,13 +43,13 @@ export const useGoogleMaps = () => {
       script.defer = true
 
       script.onload = () => {
-        console.log('Google Maps script loaded successfully')
+        logger.info('Google Maps script loaded successfully')
         isLoaded.value = true
         resolve()
       }
 
       script.onerror = (error) => {
-        console.error('Failed to load Google Maps script:', error)
+        logger.error('Failed to load Google Maps script', error)
         loadError.value = new Error('Failed to load Google Maps')
         reject(loadError.value)
       }
@@ -57,17 +62,17 @@ export const useGoogleMaps = () => {
     container: globalThis.Ref<HTMLElement | null>,
     options: GoogleMapsOptions = {}
   ): Promise<any | null> => {
-    console.log('Creating map, container:', !!container.value)
+    logger.debug('Creating map', { hasContainer: !!container.value })
     
     if (!container.value) {
-      console.error('No container element for map')
+      logger.error('No container element for map')
       return null
     }
 
     await loadGoogleMaps()
 
     if (!isLoaded.value || loadError.value) {
-      console.error('Google Maps is not loaded', loadError.value)
+      logger.error('Google Maps is not loaded', loadError.value)
       return null
     }
 
@@ -85,14 +90,14 @@ export const useGoogleMaps = () => {
       ...options
     }
 
-    console.log('Creating Google Map with options:', defaultOptions)
+    logger.debug('Creating Google Map with options', defaultOptions)
     
     try {
       const mapInstance = new window.google.maps.Map(container.value, defaultOptions)
-      console.log('Map created successfully')
+      logger.info('Map created successfully')
       return mapInstance
     } catch (error) {
-      console.error('Error creating map:', error)
+      logger.error('Error creating map', error)
       return null
     }
   }

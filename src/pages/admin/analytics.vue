@@ -176,6 +176,7 @@
 import { subDays } from 'date-fns'
 import { ArrowPathIcon } from '@heroicons/vue/24/outline'
 import { useAnalytics } from '~/composables/useAnalytics'
+import { createLogger } from '~/utils/logger'
 
 definePageMeta({
   layout: 'admin',
@@ -184,6 +185,7 @@ definePageMeta({
 
 const { getAccessTrends, getPopularPages, getReferrerStats, getRouteSearchStats, getErrorStats } = useAnalytics()
 const { $toast } = useNuxtApp()
+const logger = createLogger('AdminAnalyticsPage')
 
 const isLoading = ref(false)
 
@@ -318,7 +320,7 @@ const loadAnalyticsData = async () => {
       { type: 'other', label: 'その他', count: errors.other || 0, percentage: Math.round(((errors.other || 0) / errorTotal) * 100), color: 'bg-gray-500' }
     ]
   } catch (error) {
-    console.error('Failed to load analytics data:', error)
+    logger.error('Failed to load analytics data', error)
     $toast.error('アナリティクスデータの取得に失敗しました')
   } finally {
     isLoading.value = false

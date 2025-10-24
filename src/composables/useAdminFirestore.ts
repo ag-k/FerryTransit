@@ -1,10 +1,12 @@
 import { collection, doc, setDoc, updateDoc, deleteDoc, getDoc, getDocs, query, limit, startAfter, type DocumentData, type QueryConstraint, serverTimestamp, writeBatch } from 'firebase/firestore'
 import type { Alert } from '~/types'
+import { createLogger } from '~/utils/logger'
 
 export const useAdminFirestore = () => {
   const { $firebase } = useNuxtApp()
   const db = $firebase.db
   const { getCurrentUser } = useAdminAuth()
+  const logger = createLogger('useAdminFirestore')
 
   // ========================================
   // 汎用CRUD操作
@@ -41,7 +43,7 @@ export const useAdminFirestore = () => {
 
       return docRef.id
     } catch (error) {
-      console.error('Document creation failed:', error)
+      logger.error('Document creation failed', error)
       throw error
     }
   }
@@ -71,7 +73,7 @@ export const useAdminFirestore = () => {
       // 操作ログを記録
       await logAdminAction('update', collectionName, documentId, { data: updateData })
     } catch (error) {
-      console.error('Document update failed:', error)
+      logger.error('Document update failed', error)
       throw error
     }
   }
@@ -98,7 +100,7 @@ export const useAdminFirestore = () => {
       // 操作ログを記録
       await logAdminAction('delete', collectionName, documentId, { deletedData })
     } catch (error) {
-      console.error('Document deletion failed:', error)
+      logger.error('Document deletion failed', error)
       throw error
     }
   }
@@ -119,7 +121,7 @@ export const useAdminFirestore = () => {
       }
       return null
     } catch (error) {
-      console.error('Document fetch failed:', error)
+      logger.error('Document fetch failed', error)
       throw error
     }
   }
@@ -140,7 +142,7 @@ export const useAdminFirestore = () => {
         ...doc.data()
       })) as T[]
     } catch (error) {
-      console.error('Collection fetch failed:', error)
+      logger.error('Collection fetch failed', error)
       throw error
     }
   }
@@ -179,7 +181,7 @@ export const useAdminFirestore = () => {
         lastDoc: lastDocument
       }
     } catch (error) {
-      console.error('Paginated collection fetch failed:', error)
+      logger.error('Paginated collection fetch failed', error)
       throw error
     }
   }
@@ -244,7 +246,7 @@ export const useAdminFirestore = () => {
         }))
       })
     } catch (error) {
-      console.error('Batch operation failed:', error)
+      logger.error('Batch operation failed', error)
       throw error
     }
   }
@@ -314,7 +316,7 @@ export const useAdminFirestore = () => {
       const docRef = doc(collection(db, 'adminLogs'))
       await setDoc(docRef, logData)
     } catch (error) {
-      console.error('Failed to log admin action:', error)
+      logger.error('Failed to log admin action', error)
       // ログの失敗は本処理を止めない
     }
   }
@@ -327,7 +329,8 @@ export const useAdminFirestore = () => {
       const response = await fetch('https://api.ipify.org?format=json')
       const data = await response.json()
       return data.ip
-    } catch {
+    } catch (error) {
+      logger.warn('Failed to retrieve client IP', error)
       return 'unknown'
     }
   }
@@ -370,7 +373,7 @@ export const useAdminFirestore = () => {
 
       return data
     } catch (error) {
-      console.error('Export failed:', error)
+      logger.error('Export failed', error)
       throw error
     }
   }

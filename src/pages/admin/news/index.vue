@@ -223,6 +223,7 @@ import { useDataPublish } from '~/composables/useDataPublish'
 import DataTable from '~/components/admin/DataTable.vue'
 import FormModal from '~/components/admin/FormModal.vue'
 import type { News } from '~/types'
+import { createLogger } from '~/utils/logger'
 
 definePageMeta({
   layout: 'admin',
@@ -232,6 +233,7 @@ definePageMeta({
 const { getCollection, deleteDocument, batchWrite } = useAdminFirestore()
 const { publishData } = useDataPublish()
 const { $toast } = useNuxtApp()
+const logger = createLogger('AdminNewsPage')
 
 const showPreviewModal = ref(false)
 const isLoading = ref(false)
@@ -336,7 +338,7 @@ const deleteNews = async (news: News & { id: string }) => {
       await refreshData()
       $toast.success('お知らせを削除しました')
     } catch (error) {
-      console.error('Failed to delete news:', error)
+      logger.error('Failed to delete news', error)
       $toast.error('削除に失敗しました')
     }
   }
@@ -350,9 +352,9 @@ const refreshData = async () => {
     const constraints = [orderBy('publishDate', 'desc')]
     const data = await getCollection<News & { id: string }>('news', constraints)
     newsList.value = data
-    console.log('Fetched news data:', data)
+    logger.debug('Fetched news data', data)
   } catch (error) {
-    console.error('Failed to fetch news:', error)
+    logger.error('Failed to fetch news', error)
     loadError.value = 'お知らせデータの取得に失敗しました。権限を確認してください。'
     $toast.error('データの取得に失敗しました')
   } finally {
@@ -407,7 +409,7 @@ const publishNewsData = async () => {
       refreshData()
     }, 1000)
   } catch (error) {
-    console.error('Failed to publish news data:', error)
+    logger.error('Failed to publish news data', error)
     $toast.error('データの公開に失敗しました')
   } finally {
     isPublishing.value = false

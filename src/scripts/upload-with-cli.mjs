@@ -1,5 +1,7 @@
 #!/usr/bin/env node
 
+/* eslint-disable no-console */
+
 /**
  * Firebase Storage へのデータアップロード（Firebase CLI認証使用）
  * 

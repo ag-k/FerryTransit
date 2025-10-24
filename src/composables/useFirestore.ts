@@ -16,9 +16,11 @@ import {
   type WhereFilterOp
 } from 'firebase/firestore'
 import { useFirebase } from './useFirebase'
+import { createLogger } from '~/utils/logger'
 
 export const useFirestore = () => {
   const { db } = useFirebase()
+  const logger = createLogger('useFirestore')
   
   // Get a single document
   const getDocument = async <T = DocumentData>(
@@ -34,7 +36,7 @@ export const useFirestore = () => {
       }
       return null
     } catch (error) {
-      console.error('Error getting document:', error)
+      logger.error('Error getting document', error)
       throw error
     }
   }
@@ -53,7 +55,7 @@ export const useFirestore = () => {
         ...doc.data()
       })) as T[]
     } catch (error) {
-      console.error('Error getting documents:', error)
+      logger.error('Error getting documents', error)
       throw error
     }
   }
@@ -71,7 +73,7 @@ export const useFirestore = () => {
       })
       return docRef.id
     } catch (error) {
-      console.error('Error adding document:', error)
+      logger.error('Error adding document', error)
       throw error
     }
   }
@@ -89,7 +91,7 @@ export const useFirestore = () => {
         updatedAt: serverTimestamp()
       })
     } catch (error) {
-      console.error('Error updating document:', error)
+      logger.error('Error updating document', error)
       throw error
     }
   }
@@ -102,7 +104,7 @@ export const useFirestore = () => {
     try {
       await deleteDoc(doc(db, collectionName, documentId))
     } catch (error) {
-      console.error('Error deleting document:', error)
+      logger.error('Error deleting document', error)
       throw error
     }
   }

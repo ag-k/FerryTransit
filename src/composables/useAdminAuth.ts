@@ -1,10 +1,12 @@
 import { getAuth, signInWithEmailAndPassword, signOut, onAuthStateChanged, type User } from 'firebase/auth'
+import { createLogger } from '~/utils/logger'
 import type { LoginCredentials } from '~/types/auth'
 
 export const useAdminAuth = () => {
   const auth = getAuth()
   const router = useRouter()
   const authStore = useAuthStore()
+  const logger = createLogger('useAdminAuth')
 
   const login = async (credentials: LoginCredentials) => {
     const userCredential = await signInWithEmailAndPassword(
@@ -20,7 +22,7 @@ export const useAdminAuth = () => {
       await signOut(auth)
       await router.push('/admin/login')
     } catch (error) {
-      console.error('Logout error:', error)
+      logger.error('Logout error', error)
       throw error
     }
   }
@@ -39,7 +41,7 @@ export const useAdminAuth = () => {
       const idTokenResult = await user.getIdTokenResult()
       return idTokenResult.claims.admin === true
     } catch (error) {
-      console.error('Error checking admin status:', error)
+      logger.error('Error checking admin status', error)
       return false
     }
   }
@@ -49,7 +51,7 @@ export const useAdminAuth = () => {
       const idTokenResult = await user.getIdTokenResult()
       return idTokenResult.claims.role as string || null
     } catch (error) {
-      console.error('Error getting admin role:', error)
+      logger.error('Error getting admin role', error)
       return null
     }
   }
@@ -60,7 +62,7 @@ export const useAdminAuth = () => {
       try {
         await user.getIdToken(true)
       } catch (error) {
-        console.error('Error refreshing token:', error)
+        logger.error('Error refreshing token', error)
         throw error
       }
     }

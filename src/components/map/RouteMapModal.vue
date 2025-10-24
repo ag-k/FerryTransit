@@ -81,6 +81,7 @@ import type { TransitRoute } from '@/types'
 import { useRouteSearch } from '@/composables/useRouteSearch'
 import { useGoogleMaps } from '@/composables/useGoogleMaps'
 import { PORTS_DATA } from '@/data/ports'
+import { createLogger } from '~/utils/logger'
 
 interface Props {
   visible: boolean
@@ -94,6 +95,7 @@ const emit = defineEmits<{
 
 const { calculateDuration, getPortDisplayName } = useRouteSearch()
 const { createMap, createMarker, createPolyline, fitBounds, isLoaded, loadError } = useGoogleMaps()
+const logger = createLogger('RouteMapModal')
 
 // Refs
 const mapContainer = ref<HTMLElement | null>(null)
@@ -106,7 +108,7 @@ const isLoading = ref(true)
 const mapError = computed(() => {
   const hasError = loadError.value !== null
   if (hasError) {
-    console.error('Map load error:', loadError.value)
+    logger.error('Map load error', loadError.value)
   }
   return hasError
 })
@@ -157,11 +159,11 @@ function clearMapElements() {
 // Draw route on map
 async function drawRoute() {
   if (!map.value || !props.route) {
-    console.log('Cannot draw route:', { hasMap: !!map.value, hasRoute: !!props.route })
+    logger.warn('Cannot draw route', { hasMap: !!map.value, hasRoute: !!props.route })
     return
   }
   
-  console.log('Drawing route with segments:', props.route.segments.length)
+  logger.debug('Drawing route with segments', props.route.segments.length)
   
   clearMapElements()
   
@@ -229,16 +231,16 @@ watch(() => props.visible, async (newVal) => {
     
     // Always recreate map when modal opens
     if (mapContainer.value) {
-      console.log('Initializing map...', { 
-        visible: newVal, 
+      logger.debug('Initializing map', {
+        visible: newVal,
         hasContainer: !!mapContainer.value,
-        hasMap: !!map.value 
+        hasMap: !!map.value
       })
       isLoading.value = true
       try {
         // Clear existing map if any
         if (map.value) {
-          console.log('Clearing existing map')
+          logger.debug('Clearing existing map')
           clearMapElements()
           map.value = null
         }
@@ -249,13 +251,13 @@ watch(() => props.visible, async (newVal) => {
           mapTypeId: 'terrain'
         })
         
-        console.log('Map created:', !!map.value)
+        logger.info('Map created', { created: !!map.value })
         
         if (map.value) {
           await drawRoute()
         }
       } catch (error) {
-        console.error('Failed to create map:', error)
+        logger.error('Failed to create map', error)
       } finally {
         isLoading.value = false
       }
@@ -263,7 +265,7 @@ watch(() => props.visible, async (newVal) => {
   } else {
     // Clean up when modal closes
     if (map.value) {
-      console.log('Cleaning up map on modal close')
+      logger.debug('Cleaning up map on modal close')
       clearMapElements()
       map.value = null
     }

@@ -1,9 +1,11 @@
 import { readonly } from 'vue'
 import type { Holiday, PeakSeason, SpecialOperation, HolidayMaster } from '@/types/holiday'
 import { useOfflineStore } from '@/stores/offline'
+import { createLogger } from '~/utils/logger'
 
 export const useHolidayCalendar = () => {
   const { locale } = useI18n()
+  const logger = createLogger('useHolidayCalendar')
   
   // 祝日データ
   const holidayMaster = ref<HolidayMaster | null>(null)
@@ -28,7 +30,7 @@ export const useHolidayCalendar = () => {
         error.value = 'HOLIDAY_LOAD_ERROR'
       }
     } catch (e) {
-      console.error('Failed to load holiday data:', e)
+      logger.error('Failed to load holiday data', e)
       error.value = 'HOLIDAY_LOAD_ERROR'
     } finally {
       isLoading.value = false

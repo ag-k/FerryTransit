@@ -244,6 +244,8 @@
 </template>
 
 <script setup lang="ts">
+import { createLogger } from '~/utils/logger'
+
 interface User {
   uid: string
   email?: string
@@ -264,6 +266,7 @@ definePageMeta({
 const { user: currentUser } = useAdminAuth()
 const { getCollection, updateDocument } = useAdminFirestore()
 const { setAdminClaim, setUserDisabled, deleteUser: deleteUserFunc } = useCloudFunctions()
+const logger = createLogger('AdminUsersPage')
 
 const tabs = [
   { id: 'users', name: 'ユーザー一覧' },
@@ -339,7 +342,7 @@ const fetchUsers = async () => {
     const userDocs = await getCollection<User>('users')
     users.value = userDocs
   } catch (err) {
-    console.error('Failed to fetch users:', err)
+    logger.error('Failed to fetch users', err)
     error.value = 'ユーザー一覧の取得に失敗しました'
   } finally {
     loading.value = false
@@ -388,7 +391,7 @@ const updateUser = async () => {
     await fetchUsers()
     editingUser.value = null
   } catch (err) {
-    console.error('Failed to update user:', err)
+    logger.error('Failed to update user', err)
     error.value = 'ユーザーの更新に失敗しました'
   } finally {
     loading.value = false
@@ -413,7 +416,7 @@ const deleteUser = async () => {
     await fetchUsers()
     deletingUser.value = null
   } catch (err) {
-    console.error('Failed to delete user:', err)
+    logger.error('Failed to delete user', err)
     error.value = 'ユーザーの削除に失敗しました'
   } finally {
     loading.value = false
