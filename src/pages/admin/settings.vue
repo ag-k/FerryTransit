@@ -59,9 +59,9 @@
             </label>
             <ToggleSwitch
               :checked="siteSettings.maintenanceMode"
-              @update:checked="siteSettings.maintenanceMode = $event"
               label="メンテナンスモードを有効にする"
               description="有効にすると、管理者以外はサイトにアクセスできなくなります"
+              @update:checked="siteSettings.maintenanceMode = $event"
             />
           </div>
         </div>
@@ -105,9 +105,9 @@
             </label>
             <ToggleSwitch
               :checked="apiSettings.cacheEnabled"
-              @update:checked="apiSettings.cacheEnabled = $event"
               label="APIキャッシュを有効にする"
               description="APIレスポンスをキャッシュしてパフォーマンスを向上させます"
+              @update:checked="apiSettings.cacheEnabled = $event"
             />
           </div>
 
@@ -147,18 +147,18 @@
           <div>
             <ToggleSwitch
               :checked="notificationSettings.emailOnError"
-              @update:checked="notificationSettings.emailOnError = $event"
               label="エラー通知"
               description="システムエラー発生時にメール通知を送信します"
+              @update:checked="notificationSettings.emailOnError = $event"
             />
           </div>
 
           <div>
             <ToggleSwitch
               :checked="notificationSettings.emailOnDataUpdate"
-              @update:checked="notificationSettings.emailOnDataUpdate = $event"
               label="データ更新通知"
               description="データ更新時にメール通知を送信します"
+              @update:checked="notificationSettings.emailOnDataUpdate = $event"
             />
           </div>
         </div>
@@ -187,9 +187,9 @@
           <div>
             <ToggleSwitch
               :checked="dataSettings.autoBackup"
-              @update:checked="dataSettings.autoBackup = $event"
               label="自動バックアップ"
               description="データの自動バックアップを有効にします"
+              @update:checked="dataSettings.autoBackup = $event"
             />
           </div>
 
@@ -233,9 +233,9 @@
           <div>
             <ToggleSwitch
               :checked="securitySettings.twoFactorEnabled"
-              @update:checked="securitySettings.twoFactorEnabled = $event"
               label="二要素認証"
               description="管理者アカウントの二要素認証を有効にします"
+              @update:checked="securitySettings.twoFactorEnabled = $event"
             />
           </div>
 
@@ -257,17 +257,17 @@
       <!-- 保存ボタン -->
       <div class="flex justify-end space-x-3">
         <button
-          @click="resetSettings"
           type="button"
           class="px-4 py-2 border border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-300 rounded-md hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors duration-200 font-medium"
+          @click="resetSettings"
         >
           リセット
         </button>
         <button
-          @click="saveSettings"
           type="button"
           class="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 transition-colors duration-200 font-medium"
           :disabled="saving"
+          @click="saveSettings"
         >
           <span v-if="!saving">保存</span>
           <span v-else class="flex items-center">

@@ -64,8 +64,8 @@
 
           <div v-if="error?.statusCode !== 404">
             <button
-              @click="handleRefresh"
               class="text-blue-600 hover:text-blue-700 transition-colors duration-200"
+              @click="handleRefresh"
             >
               {{ $t('error.tryAgain') }}
             </button>

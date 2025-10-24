@@ -10,26 +10,26 @@
     <!-- カテゴリーフィルター -->
     <div class="category-filter mb-6 flex flex-wrap gap-2">
       <button
-        @click="selectedCategory = null"
         :class="[
           'px-4 py-2 rounded-full text-sm font-medium transition-colors',
           selectedCategory === null
             ? 'active bg-blue-600 text-white'
             : 'bg-gray-200 dark:bg-gray-700 text-gray-700 dark:text-gray-300 hover:bg-gray-300 dark:hover:bg-gray-600'
         ]"
+        @click="selectedCategory = null"
       >
         {{ $t('news.allCategories') }}
       </button>
       <button
         v-for="category in categories"
         :key="category"
-        @click="selectedCategory = category"
         :class="[
           'px-4 py-2 rounded-full text-sm font-medium transition-colors',
           selectedCategory === category
             ? 'active bg-blue-600 text-white'
             : 'bg-gray-200 dark:bg-gray-700 text-gray-700 dark:text-gray-300 hover:bg-gray-300 dark:hover:bg-gray-600'
         ]"
+        @click="selectedCategory = category"
       >
         {{ getCategoryLabel(category) }}
       </button>
@@ -136,9 +136,9 @@
     <div v-if="totalPages > 1" class="pagination mt-8 flex justify-center">
       <nav class="flex gap-2">
         <button
-          @click="currentPage = Math.max(1, currentPage - 1)"
           :disabled="currentPage === 1"
           class="prev-button px-4 py-2 rounded-md bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 disabled:opacity-50 disabled:cursor-not-allowed hover:bg-gray-50 dark:hover:bg-gray-700"
+          @click="currentPage = Math.max(1, currentPage - 1)"
         >
           <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7" />
@@ -148,21 +148,21 @@
         <button
           v-for="page in displayPages"
           :key="page"
-          @click="currentPage = page"
           :class="[
             'px-4 py-2 rounded-md border transition-colors',
             currentPage === page
               ? 'bg-blue-600 text-white border-blue-600'
               : 'bg-white dark:bg-gray-800 border-gray-300 dark:border-gray-600 hover:bg-gray-50 dark:hover:bg-gray-700'
           ]"
+          @click="currentPage = page"
         >
           {{ page }}
         </button>
         
         <button
-          @click="currentPage = Math.min(totalPages, currentPage + 1)"
           :disabled="currentPage === totalPages"
           class="next-button px-4 py-2 rounded-md bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 disabled:opacity-50 disabled:cursor-not-allowed hover:bg-gray-50 dark:hover:bg-gray-700"
+          @click="currentPage = Math.min(totalPages, currentPage + 1)"
         >
           <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7" />

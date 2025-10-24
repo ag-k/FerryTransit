@@ -79,18 +79,18 @@
     <div class="mb-4 flex flex-col sm:flex-row gap-3 justify-between">
       <div class="flex flex-col sm:flex-row gap-2">
         <button
-          @click="refreshData"
           data-test="timetable-refresh"
           class="w-full sm:w-auto px-4 py-2 bg-gray-600 text-white rounded-md hover:bg-gray-700 transition-colors"
+          @click="refreshData"
         >
           <ArrowPathIcon class="h-5 w-5 inline mr-1" />
           更新
         </button>
         <button
-          @click="publishTimetableData"
           :disabled="isPublishing"
           data-test="timetable-publish"
           class="w-full sm:w-auto px-4 py-2 bg-purple-600 text-white rounded-md hover:bg-purple-700 disabled:bg-gray-400 transition-colors"
+          @click="publishTimetableData"
         >
           <CloudArrowUpIcon class="h-5 w-5 inline mr-1" />
           {{ isPublishing ? '公開中...' : 'データ公開' }}
@@ -98,17 +98,17 @@
       </div>
       <div class="flex flex-col sm:flex-row gap-2">
         <button
-          @click="showImportModal = true"
           data-test="timetable-import"
           class="w-full sm:w-auto px-4 py-2 bg-green-600 text-white rounded-md hover:bg-green-700 transition-colors"
+          @click="showImportModal = true"
         >
           <ArrowUpTrayIcon class="h-5 w-5 inline mr-1" />
           インポート
         </button>
         <button
-          @click="showAddModal = true"
           data-test="timetable-add"
           class="w-full sm:w-auto px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 transition-colors"
+          @click="showAddModal = true"
         >
           <PlusIcon class="h-5 w-5 inline mr-1" />
           新規追加
@@ -142,20 +142,20 @@
       <template #row-actions="{ row }">
         <div class="flex items-center gap-1">
           <button
-            @click="editTimetable(row)"
             data-test="timetable-edit"
             class="p-2 text-blue-600 hover:text-blue-900 dark:text-blue-400 dark:hover:text-blue-300 hover:bg-blue-50 dark:hover:bg-blue-900/20 rounded transition-colors"
             title="編集"
             aria-label="時刻表を編集"
+            @click="editTimetable(row)"
           >
             <PencilIcon class="h-5 w-5" />
           </button>
           <button
-            @click="deleteTimetable(row)"
             data-test="timetable-delete"
             class="p-2 text-red-600 hover:text-red-900 dark:text-red-400 dark:hover:text-red-300 hover:bg-red-50 dark:hover:bg-red-900/20 rounded transition-colors"
             title="削除"
             aria-label="時刻表を削除"
+            @click="deleteTimetable(row)"
           >
             <TrashIcon class="h-5 w-5" />
           </button>
@@ -167,9 +167,9 @@
     <FormModal
       :open="showAddModal || showEditModal"
       :title="showAddModal ? '時刻表の追加' : '時刻表の編集'"
+      :loading="isSaving"
       @close="closeModal"
       @submit="saveTimetable"
-      :loading="isSaving"
     >
       <div class="space-y-4">
         <div>
@@ -297,9 +297,9 @@
     <FormModal
       :open="showImportModal"
       title="時刻表データのインポート"
+      :loading="isImporting"
       @close="showImportModal = false"
       @submit="importData"
-      :loading="isImporting"
     >
       <div class="space-y-4">
         <div>
@@ -309,9 +309,9 @@
           <input
             type="file"
             accept=".csv"
-            @change="handleFileSelect"
             data-test="timetable-file-input"
             class="mt-1 w-full"
+            @change="handleFileSelect"
           >
         </div>
         <div class="text-sm text-gray-500 dark:text-gray-400">

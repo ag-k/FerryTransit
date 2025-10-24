@@ -15,7 +15,7 @@
         :title="stat.name"
         :value="stat.value"
         :change="stat.change"
-        :changeType="stat.changeType"
+        :change-type="stat.changeType"
         :icon="stat.icon"
       />
     </div>

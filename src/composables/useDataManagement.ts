@@ -1,4 +1,4 @@
-import Papa from 'papaparse'
+import { parse as parseCSV, unparse as unparseCSV } from 'papaparse'
 import * as XLSX from 'xlsx'
 
 export const useDataManagement = () => {
@@ -20,7 +20,7 @@ export const useDataManagement = () => {
       let success = 0
       let failed = 0
 
-      Papa.parse(file, {
+      parseCSV(file, {
         header: true,
         skipEmptyLines: true,
         complete: async (results) => {
@@ -199,7 +199,7 @@ export const useDataManagement = () => {
         break
 
       case 'csv': {
-        const csv = Papa.unparse(data)
+        const csv = unparseCSV(data)
         blob = new Blob([csv], {
           type: 'text/csv;charset=utf-8;'
         })

@@ -15,13 +15,13 @@
         <button
           v-for="tab in tabs"
           :key="tab.id"
-          @click="activeTab = tab.id"
           :class="[
             activeTab === tab.id
               ? 'bg-blue-100 text-blue-700 dark:bg-blue-900 dark:text-blue-200'
               : 'text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200',
             'px-3 py-2 font-medium text-sm rounded-md'
           ]"
+          @click="activeTab = tab.id"
         >
           {{ tab.name }}
         </button>
@@ -145,16 +145,16 @@
                   </td>
                   <td class="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
                     <button
-                      @click="editUser(user)"
                       class="text-blue-600 hover:text-blue-900 dark:text-blue-400 dark:hover:text-blue-300 mr-3"
                       :disabled="!canEditUser(user)"
+                      @click="editUser(user)"
                     >
                       編集
                     </button>
                     <button
                       v-if="canDeleteUser(user)"
-                      @click="confirmDeleteUser(user)"
                       class="text-red-600 hover:text-red-900 dark:text-red-400 dark:hover:text-red-300"
+                      @click="confirmDeleteUser(user)"
                     >
                       削除
                     </button>

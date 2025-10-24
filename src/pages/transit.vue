@@ -33,9 +33,9 @@
             <button
               type="button"
               class="p-3 md:px-4 md:py-2 text-base border border-blue-600 dark:border-blue-400 text-blue-600 dark:text-blue-200 rounded-md hover:bg-blue-50 dark:hover:bg-blue-900/20 transition-colors flex-shrink-0 touch-manipulation"
-              @click="reverseRoute"
               title="出発地と到着地を入れ替え"
               aria-label="Reverse route"
+              @click="reverseRoute"
             >
               <svg
                 class="md:hidden"
@@ -112,9 +112,9 @@
                 <option :value="true">{{ $t('ARRIVE_BY') }}</option>
               </select>
               <input 
-                type="time"
                 :id="timeInputId"
                 v-model="time"
+                type="time"
                 class="flex-1 px-3 py-2 border border-l-0 border-gray-300 dark:border-gray-600 rounded-r-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:text-white"
               >
             </div>
@@ -160,11 +160,11 @@
               type="button"
               role="tab"
               :aria-selected="sortOption === option.value"
-              @click="sortOption = option.value"
               class="px-3 py-2 text-sm font-medium rounded-md border transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 flex items-center justify-center"
               :class="sortOption === option.value
                 ? 'bg-blue-600 text-white border-blue-600 shadow-sm'
                 : 'border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-300 bg-white dark:bg-gray-800 hover:bg-blue-50 dark:hover:bg-gray-700'"
+              @click="sortOption = option.value"
             >
               {{ $t(option.labelKey) }}
             </button>
@@ -186,9 +186,9 @@
             </h3>
             <div class="flex items-center gap-2">
               <button
-                @click="showRouteMap(route)"
                 class="text-white hover:text-yellow-300 focus:outline-none focus:ring-2 focus:ring-yellow-300 rounded p-1"
                 :title="$t('SHOW_ON_MAP')"
+                @click="showRouteMap(route)"
               >
                 <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                   <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 20l-5.447-2.724A1 1 0 013 16.382V5.618a1 1 0 011.447-.894L9 7m0 13l6-3m-6 3V7m6 10l4.553 2.276A1 1 0 0021 18.382V7.618a1 1 0 00-.553-.894L15 4m0 13V4m0 0L9 7" />
@@ -215,7 +215,7 @@
                 <tr class="bg-[#D8ECF3] dark:bg-blue-900/40">
                   <td class="py-2 pl-4 pr-4 text-left dark:text-gray-100">{{ formatTime(route.departureTime) }}</td>
                   <td class="py-2 pl-4">
-                    <a href="#" @click.prevent="showPortInfo(route.segments[0].departure)" class="text-blue-600 dark:text-blue-200 hover:underline">
+                    <a href="#" class="text-blue-600 dark:text-blue-200 hover:underline" @click.prevent="showPortInfo(route.segments[0].departure)">
                       {{ getPortDisplayName(route.segments[0].departure) }}
                     </a>
                   </td>
@@ -234,7 +234,7 @@
                         <span v-if="segment.status === 2" class="mr-2 text-red-600 dark:text-red-300">×</span>
                         <span v-else-if="segment.status === 3" class="mr-2 text-yellow-600 dark:text-yellow-300">⚠</span>
                         <span v-else-if="segment.status === 4" class="mr-2 text-green-600 dark:text-green-300">+</span>
-                        <a href="#" @click.prevent="showShipInfo(segment.ship)" class="text-blue-600 dark:text-blue-200 hover:underline">
+                        <a href="#" class="text-blue-600 dark:text-blue-200 hover:underline" @click.prevent="showShipInfo(segment.ship)">
                           {{ $t(segment.ship) }}
                         </a>
                       </div>
@@ -248,7 +248,7 @@
                       {{ formatTransferPortTimes(segment.arrivalTime, route.segments[segIndex + 1].departureTime) }}
                     </td>
                     <td class="py-2 pl-4">
-                      <a href="#" @click.prevent="showPortInfo(segment.arrival)" class="text-blue-600 dark:text-blue-200 hover:underline">
+                      <a href="#" class="text-blue-600 dark:text-blue-200 hover:underline" @click.prevent="showPortInfo(segment.arrival)">
                         {{ getPortDisplayName(segment.arrival) }}
                       </a>
                       <span class="text-xs text-gray-600 dark:text-gray-400 ml-2">
@@ -263,7 +263,7 @@
                 <tr class="bg-[#D8ECF3] dark:bg-blue-900/40">
                   <td class="py-2 pl-4 pr-4 text-left dark:text-gray-100">{{ formatTime(route.arrivalTime) }}</td>
                   <td class="py-2 pl-4">
-                    <a href="#" @click.prevent="showPortInfo(route.segments[route.segments.length - 1].arrival)" class="text-blue-600 dark:text-blue-200 hover:underline">
+                    <a href="#" class="text-blue-600 dark:text-blue-200 hover:underline" @click.prevent="showPortInfo(route.segments[route.segments.length - 1].arrival)">
                       {{ getPortDisplayName(route.segments[route.segments.length - 1].arrival) }}
                     </a>
                   </td>
@@ -280,8 +280,8 @@
       <!-- Show More Button -->
       <div v-if="searchResults.length > displayLimit" class="mt-4">
         <button 
-          @click="showMore"
           class="w-full py-3 bg-blue-600 hover:bg-blue-700 dark:bg-blue-500 dark:hover:bg-blue-600 text-white font-medium rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 dark:focus:ring-offset-gray-900 transform active:scale-[0.98] transition-all duration-150 shadow-sm hover:shadow-md"
+          @click="showMore"
         >
           {{ $t('MORE_BUTTON') }}
         </button>

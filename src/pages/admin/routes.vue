@@ -89,8 +89,8 @@
           </template>
           <template #row-actions="{ row }">
             <button
-              @click.stop="openDetails(row)"
               class="text-blue-600 hover:text-blue-900 dark:text-blue-400 dark:hover:text-blue-300"
+              @click.stop="openDetails(row)"
             >
               詳細
             </button>
@@ -106,9 +106,9 @@
         
         <div class="space-y-4">
           <button
-            @click="fetchAllRoutes"
             :disabled="isFetching"
             class="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md shadow-sm text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 disabled:opacity-50 disabled:cursor-not-allowed"
+            @click="fetchAllRoutes"
           >
             <Icon
               :name="isFetching ? 'heroicons:arrow-path' : 'heroicons:cloud-arrow-down'"
@@ -120,9 +120,9 @@
 
           <button
             v-if="fetchedRoutes.length > 0"
-            @click="saveToStorage"
             :disabled="isSaving"
             class="ml-4 inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md shadow-sm text-white bg-green-600 hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500 disabled:opacity-50 disabled:cursor-not-allowed"
+            @click="saveToStorage"
           >
             <Icon
               :name="isSaving ? 'heroicons:arrow-path' : 'heroicons:cloud-arrow-up'"
@@ -133,9 +133,9 @@
           </button>
 
           <button
-            @click="downloadFromStorage"
             :disabled="isDownloading"
             class="ml-4 inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md shadow-sm text-white bg-gray-700 hover:bg-gray-800 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-gray-500 disabled:opacity-50 disabled:cursor-not-allowed"
+            @click="downloadFromStorage"
           >
             <Icon
               :name="isDownloading ? 'heroicons:arrow-path' : 'heroicons:arrow-down-tray'"
@@ -263,7 +263,7 @@
           <div class="fixed inset-0 bg-black/40" />
         </TransitionChild>
 
-        <div class="fixed inset-0 z-10 overflow-y-auto" v-if="selectedRoute">
+        <div v-if="selectedRoute" class="fixed inset-0 z-10 overflow-y-auto">
           <div class="flex min-h-full items-end justify-center p-4 text-center sm:items-center sm:p-0">
             <TransitionChild
               as="template"
@@ -317,8 +317,8 @@
                 <div class="bg-gray-50 dark:bg-gray-700 px-6 py-4 sm:flex sm:flex-row-reverse">
                   <button
                     type="button"
-                    @click="closeDetails"
                     class="w-full inline-flex justify-center rounded-md border border-transparent shadow-sm px-4 py-2 text-base font-medium text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 sm:ml-3 sm:w-auto sm:text-sm"
+                    @click="closeDetails"
                   >
                     閉じる
                   </button>

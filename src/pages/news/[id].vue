@@ -113,7 +113,7 @@
         class="prose prose-lg dark:prose-invert max-w-none"
         data-testid="detail-content"
       >
-        <div v-html="renderedContent"></div>
+        <div v-safe-html="renderedContent"></div>
       </div>
 
       <!-- 戻るボタン -->
@@ -133,11 +133,12 @@
 </template>
 
 <script setup lang="ts">
-import { ref, computed, watch, onMounted, getCurrentInstance } from 'vue'
+import { ref, computed, watch, onMounted, getCurrentInstance, type Directive } from 'vue'
 import { marked } from 'marked'
 import type { News } from '~/types'
 import { useNews } from '~/composables/useNews'
 import { createLogger } from '~/utils/logger'
+import { sanitizeHtml } from '~/utils/sanitizeHtml'
 
 const route = useRoute()
 const { $i18n } = useNuxtApp()
@@ -242,11 +243,26 @@ const renderedContent = computed(() => {
   if (!content) return ''
   
   // Markdownをパース
-  return marked(content, {
+  const rawHtml = marked(content, {
     gfm: true,
     breaks: true
   })
+
+  return sanitizeHtml(rawHtml)
 })
+
+const renderSafeHtml = (el: HTMLElement, html: string) => {
+  el.innerHTML = sanitizeHtml(html)
+}
+
+const vSafeHtml: Directive<HTMLElement, string> = {
+  mounted(el, binding) {
+    renderSafeHtml(el, binding.value ?? '')
+  },
+  updated(el, binding) {
+    renderSafeHtml(el, binding.value ?? '')
+  }
+}
 
 // カテゴリーのスタイルクラスを取得
 const getCategoryClass = (category: string) => {

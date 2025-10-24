@@ -104,8 +104,8 @@
         <!-- 地図表示/非表示ボタン -->
         <div class="flex justify-end mb-2">
           <button
-            @click="toggleMapDisplay"
             class="flex items-center px-3 py-1.5 text-sm text-gray-600 dark:text-gray-300 bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 rounded-md hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors"
+            @click="toggleMapDisplay"
           >
             <svg v-if="settingsStore.mapEnabled" xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="mr-1.5" viewBox="0 0 16 16">
               <path d="M3.612 15.443c-.386.198-.824-.149-.746-.592l.83-4.73L.173 6.765c-.329-.314-.158-.888.283-.95l4.898-.696L7.538.792c.197-.39.73-.39.927 0l2.184 4.327 4.898.696c.441.062.612.636.282.95l-3.522 3.356.83 4.73c.078.443-.36.79-.746.592L8 13.187l-4.389 2.256z"/>
@@ -174,12 +174,12 @@
                 <tr>
                   <th class="px-3 sm:px-4 py-3 text-left font-medium text-gray-700 dark:text-gray-100">{{ $t('SHIP') }}</th>
                   <th class="px-3 sm:px-4 py-3 text-right font-medium text-gray-700 dark:text-gray-100">
-                    <a href="#" @click.prevent="showPortInfo(departure)" class="text-blue-600 dark:text-blue-200 hover:underline font-semibold inline-block py-1 -my-1 px-2 -mx-2 touch-manipulation">
+                    <a href="#" class="text-blue-600 dark:text-blue-200 hover:underline font-semibold inline-block py-1 -my-1 px-2 -mx-2 touch-manipulation" @click.prevent="showPortInfo(departure)">
                       {{ $t(departure) }}
                     </a>
                   </th>
                   <th class="px-3 sm:px-4 py-3 text-right font-medium text-gray-700 dark:text-gray-100">
-                    <a href="#" @click.prevent="showPortInfo(arrival)" class="text-blue-600 dark:text-blue-200 hover:underline font-semibold inline-block py-1 -my-1 px-2 -mx-2 touch-manipulation">
+                    <a href="#" class="text-blue-600 dark:text-blue-200 hover:underline font-semibold inline-block py-1 -my-1 px-2 -mx-2 touch-manipulation" @click.prevent="showPortInfo(arrival)">
                       {{ $t(arrival) }}
                     </a>
                   </th>
@@ -208,7 +208,7 @@
                         <path d="M16 8A8 8 0 1 1 0 8a8 8 0 0 1 16 0zM8.5 4.5a.5.5 0 0 0-1 0v3h-3a.5.5 0 0 0 0 1h3v3a.5.5 0 0 0 1 0v-3h3a.5.5 0 0 0 0-1h-3v-3z"/>
                       </svg>
                     </span>
-                    <a href="#" @click.prevent="showShipInfo(trip.name)" class="text-blue-600 dark:text-blue-200 hover:underline font-medium inline-block py-1 -my-1 px-2 -mx-2 touch-manipulation">
+                    <a href="#" class="text-blue-600 dark:text-blue-200 hover:underline font-medium inline-block py-1 -my-1 px-2 -mx-2 touch-manipulation" @click.prevent="showShipInfo(trip.name)">
                       {{ $t(trip.name) }}
                     </a>
                   </td>

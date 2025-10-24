@@ -51,27 +51,27 @@
     <div class="mb-4 flex justify-between items-center">
       <div class="flex space-x-2">
         <button
-          @click="refreshData"
           :disabled="isLoading"
           class="px-4 py-2 bg-gray-600 text-white rounded-md hover:bg-gray-700 disabled:bg-gray-400"
+          @click="refreshData"
         >
           <ArrowPathIcon class="h-5 w-5 inline mr-1" />
           {{ isLoading ? '読み込み中...' : '更新' }}
         </button>
         <button
-          @click="publishAlertData"
           :disabled="isPublishing"
           class="px-4 py-2 bg-purple-600 text-white rounded-md hover:bg-purple-700 disabled:bg-gray-400"
           data-test="publish-button"
+          @click="publishAlertData"
         >
           <CloudArrowUpIcon class="h-5 w-5 inline mr-1" />
           {{ isPublishing ? '公開中...' : 'データ公開' }}
         </button>
       </div>
       <button
-        @click="showAddModal = true"
         class="px-4 py-2 bg-red-600 text-white rounded-md hover:bg-red-700"
         data-test="new-alert-button"
+        @click="showAddModal = true"
       >
         <PlusIcon class="h-5 w-5 inline mr-1" />
         新規アラート
@@ -124,16 +124,16 @@
               </div>
               <div class="flex space-x-2 ml-4">
                 <button
-                  @click="editAlert(alert)"
                   class="text-blue-600 hover:text-blue-900 dark:text-blue-400"
                   aria-label="edit-alert"
+                  @click="editAlert(alert)"
                 >
                   <PencilIcon class="h-5 w-5" />
                 </button>
                 <button
-                  @click="deleteAlert(alert)"
                   class="text-red-600 hover:text-red-900 dark:text-red-400"
                   aria-label="delete-alert"
+                  @click="deleteAlert(alert)"
                 >
                   <TrashIcon class="h-5 w-5" />
                 </button>
@@ -172,10 +172,10 @@
     <FormModal
       :open="showAddModal || showEditModal"
       :title="showAddModal ? 'アラートの追加' : 'アラートの編集'"
-      @close="closeModal"
-      @submit="saveAlert"
       :loading="isSaving"
       size="lg"
+      @close="closeModal"
+      @submit="saveAlert"
     >
       <div class="space-y-4">
         <div>
