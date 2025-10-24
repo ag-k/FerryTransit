@@ -21,13 +21,13 @@
           <button
             v-for="tab in tabs"
             :key="tab.id"
-            @click="activeTab = tab.id"
             :class="[
               activeTab === tab.id
                 ? 'border-blue-500 text-blue-600 dark:text-blue-400'
                 : 'border-transparent text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-300 hover:border-gray-300 dark:hover:border-gray-600',
               'whitespace-nowrap py-4 px-1 border-b-2 font-medium text-sm transition-colors'
             ]"
+            @click="activeTab = tab.id"
           >
             {{ $t(tab.nameKey) }}
           </button>
@@ -303,7 +303,8 @@
       <div v-if="activeTab !== 'naikoSen'" class="mb-8">
         <h3 class="text-xl font-medium mb-4 dark:text-white">{{ $t('DISCOUNTS') }}</h3>
         <div class="grid md:grid-cols-2 gap-4">
-          <div v-for="(discount, key) in discounts" :key="key" 
+          <div
+v-for="(discount, key) in discounts" :key="key" 
                class="border border-gray-200 dark:border-gray-700 rounded-lg p-4 dark:bg-gray-800">
             <h4 class="font-medium mb-2 dark:text-white">{{ $t(discount.nameKey) }}</h4>
             <p class="text-gray-600 dark:text-gray-400">{{ $t(discount.descriptionKey) }}</p>

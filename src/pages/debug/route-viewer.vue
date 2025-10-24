@@ -11,11 +11,11 @@
         </p>
 
         <div class="flex flex-col md:flex-row md:items-center gap-3">
-          <input type="file" accept="application/json" @change="onFileChange" class="block" />
-          <button @click="loadFromTextarea" class="px-3 py-2 rounded bg-blue-600 text-white text-sm disabled:opacity-50" :disabled="!textInput">
+          <input type="file" accept="application/json" class="block" @change="onFileChange" />
+          <button class="px-3 py-2 rounded bg-blue-600 text-white text-sm disabled:opacity-50" :disabled="!textInput" @click="loadFromTextarea">
             テキストから読み込み
           </button>
-          <button @click="clearRoute" class="px-3 py-2 rounded bg-gray-200 dark:bg-gray-700 text-sm">クリア</button>
+          <button class="px-3 py-2 rounded bg-gray-200 dark:bg-gray-700 text-sm" @click="clearRoute">クリア</button>
         </div>
 
         <textarea v-model="textInput" rows="6" placeholder="JSONを貼り付け（RouteData 形式）" class="w-full rounded border dark:bg-gray-900 dark:border-gray-700 p-2 text-sm"></textarea>

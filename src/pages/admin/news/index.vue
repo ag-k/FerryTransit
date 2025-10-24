@@ -36,24 +36,24 @@
       <!-- アクションボタン（モバイル：縦並び＋フル幅、デスクトップ：横並び） -->
       <div class="flex flex-col sm:flex-row gap-2 sm:justify-end">
         <button
-          @click="refreshData"
           :disabled="isLoading"
           class="w-full sm:w-auto px-4 py-2 bg-gray-600 text-white rounded-md hover:bg-gray-700 disabled:bg-gray-400 transition-colors"
+          @click="refreshData"
         >
           <ArrowPathIcon class="h-5 w-5 inline mr-1" />
           更新
         </button>
         <button
-          @click="publishNewsData"
           :disabled="isPublishing"
           class="w-full sm:w-auto px-4 py-2 bg-purple-600 text-white rounded-md hover:bg-purple-700 disabled:bg-gray-400 transition-colors"
+          @click="publishNewsData"
         >
           <CloudArrowUpIcon class="h-5 w-5 inline mr-1" />
           {{ isPublishing ? '公開中...' : 'データ公開' }}
         </button>
         <button
-          @click="navigateTo('/admin/news/edit')"
           class="w-full sm:w-auto px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 transition-colors"
+          @click="navigateTo('/admin/news/edit')"
         >
           <PlusIcon class="h-5 w-5 inline mr-1" />
           新規作成
@@ -81,8 +81,8 @@
       </div>
       <p class="text-gray-600 dark:text-gray-400 mb-4">{{ loadError }}</p>
       <button
-        @click="refreshData"
         class="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700"
+        @click="refreshData"
       >
         <ArrowPathIcon class="h-5 w-5 inline mr-1" />
         再試行
@@ -97,8 +97,8 @@
       </p>
       <button
         v-if="!filterCategory && !filterStatus"
-        @click="navigateTo('/admin/news/edit')"
         class="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700"
+        @click="navigateTo('/admin/news/edit')"
       >
         <PlusIcon class="h-5 w-5 inline mr-1" />
         最初のお知らせを作成
@@ -139,23 +139,23 @@
         <template #row-actions="{ row }">
           <div class="flex items-center gap-1">
             <button
-              @click="previewNews(row)"
               class="p-2 text-gray-600 hover:text-gray-900 dark:text-gray-400 dark:hover:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-700 rounded transition-colors"
               title="プレビュー"
+              @click="previewNews(row)"
             >
               <EyeIcon class="h-5 w-5" />
             </button>
             <button
-              @click="editNews(row)"
               class="p-2 text-blue-600 hover:text-blue-900 dark:text-blue-400 dark:hover:text-blue-300 hover:bg-blue-50 dark:hover:bg-blue-900/20 rounded transition-colors"
               title="編集"
+              @click="editNews(row)"
             >
               <PencilIcon class="h-5 w-5" />
             </button>
             <button
-              @click="deleteNews(row)"
               class="p-2 text-red-600 hover:text-red-900 dark:text-red-400 dark:hover:text-red-300 hover:bg-red-50 dark:hover:bg-red-900/20 rounded transition-colors"
               title="削除"
+              @click="deleteNews(row)"
             >
               <TrashIcon class="h-5 w-5" />
             </button>
@@ -169,9 +169,9 @@
     <FormModal
       :open="showPreviewModal"
       title="お知らせプレビュー"
-      @close="showPreviewModal = false"
-      :showSubmit="false"
+      :show-submit="false"
       size="lg"
+      @close="showPreviewModal = false"
     >
       <div v-if="previewData" class="space-y-4">
         <div class="flex items-center justify-between">

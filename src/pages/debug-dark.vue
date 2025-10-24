@@ -43,23 +43,23 @@
       <!-- Theme switcher -->
       <div class="flex gap-4">
         <button 
-          @click="setTheme('light')" 
-          class="px-4 py-2 bg-gray-200 hover:bg-gray-300 dark:bg-gray-700 dark:hover:bg-gray-600 rounded"
+          class="px-4 py-2 bg-gray-200 hover:bg-gray-300 dark:bg-gray-700 dark:hover:bg-gray-600 rounded" 
           :class="{ 'ring-2 ring-blue-500': theme === 'light' }"
+          @click="setTheme('light')"
         >
           Light
         </button>
         <button 
-          @click="setTheme('dark')" 
-          class="px-4 py-2 bg-gray-200 hover:bg-gray-300 dark:bg-gray-700 dark:hover:bg-gray-600 rounded"
+          class="px-4 py-2 bg-gray-200 hover:bg-gray-300 dark:bg-gray-700 dark:hover:bg-gray-600 rounded" 
           :class="{ 'ring-2 ring-blue-500': theme === 'dark' }"
+          @click="setTheme('dark')"
         >
           Dark
         </button>
         <button 
-          @click="setTheme('system')" 
-          class="px-4 py-2 bg-gray-200 hover:bg-gray-300 dark:bg-gray-700 dark:hover:bg-gray-600 rounded"
+          class="px-4 py-2 bg-gray-200 hover:bg-gray-300 dark:bg-gray-700 dark:hover:bg-gray-600 rounded" 
           :class="{ 'ring-2 ring-blue-500': theme === 'system' }"
+          @click="setTheme('system')"
         >
           System
         </button>

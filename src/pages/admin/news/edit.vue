@@ -11,7 +11,7 @@
 
     <!-- フォーム -->
     <div class="bg-white dark:bg-gray-800 rounded-lg shadow p-6">
-      <form @submit.prevent="saveNews" class="space-y-6">
+      <form class="space-y-6" @submit.prevent="saveNews">
         <div class="grid grid-cols-2 gap-4">
           <div>
             <label class="block text-sm font-medium text-gray-700 dark:text-gray-300">
@@ -189,8 +189,8 @@
         <div class="flex justify-between pt-6">
           <button
             type="button"
-            @click="navigateTo('/admin/news')"
             class="px-4 py-2 bg-gray-300 text-gray-700 rounded-md hover:bg-gray-400"
+            @click="navigateTo('/admin/news')"
           >
             キャンセル
           </button>
@@ -198,9 +198,9 @@
             <button
               v-if="formData.hasDetail"
               type="button"
-              @click="previewNews"
               class="px-4 py-2 bg-gray-600 text-white rounded-md hover:bg-gray-700"
               :disabled="!formData.title || !formData.content"
+              @click="previewNews"
             >
               <EyeIcon class="h-5 w-5 inline mr-1" />
               プレビュー
@@ -223,9 +223,9 @@
     <FormModal
       :open="showPreviewModal"
       title="お知らせプレビュー"
-      @close="showPreviewModal = false"
-      :showSubmit="false"
+      :show-submit="false"
       size="lg"
+      @close="showPreviewModal = false"
     >
       <div class="space-y-4">
         <div class="flex items-center justify-between">
@@ -249,7 +249,7 @@
         </div>
         <div v-if="formData.detailContent" class="pt-4 border-t dark:border-gray-700">
           <h4 class="text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">詳細内容プレビュー</h4>
-          <div class="prose dark:prose-invert max-w-none" v-html="markdownToHtml(formData.detailContent)"></div>
+          <div v-safe-html="markdownToHtml(formData.detailContent)" class="prose dark:prose-invert max-w-none"></div>
         </div>
       </div>
     </FormModal>
@@ -257,18 +257,20 @@
 </template>
 
 <script setup lang="ts">
+import type { Directive } from 'vue'
+import { marked } from 'marked'
+import { Timestamp } from 'firebase/firestore'
 import {
   EyeIcon,
   CheckIcon,
   ArrowPathIcon
 } from '@heroicons/vue/24/outline'
-import { Timestamp } from 'firebase/firestore'
-import { marked } from 'marked'
+import FormModal from '~/components/admin/FormModal.vue'
 import { useAdminFirestore } from '~/composables/useAdminFirestore'
 import { useAdminAuth } from '~/composables/useAdminAuth'
-import FormModal from '~/components/admin/FormModal.vue'
 import type { News } from '~/types'
 import { createLogger } from '~/utils/logger'
+import { sanitizeHtml } from '~/utils/sanitizeHtml'
 
 definePageMeta({
   layout: 'admin',
@@ -349,8 +351,22 @@ const formatDateTimeLocal = (date: Date | string) => {
   return `${year}-${month}-${day}T${hours}:${minutes}`
 }
 
-const markdownToHtml = (markdown: string) => {
-  return marked(markdown)
+const markdownToHtml = (markdown?: string) => {
+  if (!markdown) return ''
+  return sanitizeHtml(marked(markdown))
+}
+
+const applySafeHtml = (el: HTMLElement, html: string) => {
+  el.innerHTML = sanitizeHtml(html)
+}
+
+const vSafeHtml: Directive<HTMLElement, string | undefined> = {
+  mounted(el, binding) {
+    applySafeHtml(el, binding.value ?? '')
+  },
+  updated(el, binding) {
+    applySafeHtml(el, binding.value ?? '')
+  }
 }
 
 const previewNews = () => {

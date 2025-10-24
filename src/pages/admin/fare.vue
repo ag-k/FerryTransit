@@ -13,13 +13,13 @@
         <button
           v-for="tab in tabs"
           :key="tab.id"
-          @click="activeTab = tab.id"
           :class="[
             activeTab === tab.id
               ? 'bg-blue-100 text-blue-700 dark:bg-blue-900 dark:text-blue-200'
               : 'text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200',
             'px-3 py-2 font-medium text-sm rounded-md'
           ]"
+          @click="activeTab = tab.id"
         >
           {{ tab.name }}
         </button>
@@ -30,17 +30,17 @@
     <div class="mb-4 flex justify-between items-center">
       <div class="flex space-x-2">
         <button
-          @click="refreshData"
           :disabled="isLoading"
           class="px-4 py-2 bg-gray-600 text-white rounded-md hover:bg-gray-700 disabled:bg-gray-400"
+          @click="refreshData"
         >
           <ArrowPathIcon class="h-5 w-5 inline mr-1" />
           {{ isLoading ? '読み込み中...' : '更新' }}
         </button>
         <button
-          @click="publishFareData"
           :disabled="isPublishing"
           class="px-4 py-2 bg-purple-600 text-white rounded-md hover:bg-purple-700 disabled:bg-gray-400"
+          @click="publishFareData"
         >
           <CloudArrowUpIcon class="h-5 w-5 inline mr-1" />
           {{ isPublishing ? '公開中...' : 'データ公開' }}
@@ -56,8 +56,8 @@
             {{ activeTabData.title }}
           </h2>
           <button
-            @click="showEditModal = true"
             class="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700"
+            @click="showEditModal = true"
           >
             <PencilIcon class="h-5 w-5 inline mr-1" />
             料金編集
@@ -220,10 +220,10 @@
     <FormModal
       :open="showEditModal"
       :title="`${activeTabData.title}の編集`"
-      @close="showEditModal = false"
-      @submit="saveFareData"
       :loading="isSaving"
       size="xl"
+      @close="showEditModal = false"
+      @submit="saveFareData"
     >
       <div class="space-y-4">
         <!-- フェリー料金編集 -->

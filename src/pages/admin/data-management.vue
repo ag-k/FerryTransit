@@ -48,10 +48,10 @@
         </h2>
         <div class="space-y-4">
           <div
+            class="border-2 border-dashed border-gray-300 dark:border-gray-600 rounded-lg p-8 text-center hover:border-blue-500 transition-colors"
             @drop="handleDrop"
             @dragover.prevent
             @dragenter.prevent
-            class="border-2 border-dashed border-gray-300 dark:border-gray-600 rounded-lg p-8 text-center hover:border-blue-500 transition-colors"
           >
             <CloudArrowUpIcon class="h-12 w-12 mx-auto text-gray-400 mb-4" />
             <p class="text-gray-600 dark:text-gray-400 mb-2">
@@ -64,8 +64,8 @@
               <input
                 type="file"
                 :accept="acceptedFormats"
-                @change="handleFileSelect"
                 class="hidden"
+                @change="handleFileSelect"
               >
             </label>
           </div>
@@ -84,8 +84,8 @@
                 </div>
               </div>
               <button
-                @click="selectedFile = null"
                 class="text-red-600 hover:text-red-800"
+                @click="selectedFile = null"
               >
                 <XMarkIcon class="h-5 w-5" />
               </button>
@@ -101,16 +101,16 @@
 
           <div class="flex justify-end space-x-4">
             <button
-              @click="validateImport"
               :disabled="!selectedFile || isValidating"
               class="px-6 py-2 bg-gray-600 text-white rounded-md hover:bg-gray-700 disabled:bg-gray-400"
+              @click="validateImport"
             >
               {{ isValidating ? '検証中...' : 'データ検証' }}
             </button>
             <button
-              @click="importData"
               :disabled="!selectedFile || !isValidated || isImporting"
               class="px-6 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 disabled:bg-gray-400"
+              @click="importData"
             >
               <CloudArrowUpIcon class="h-5 w-5 inline mr-1" />
               {{ isImporting ? 'インポート中...' : 'インポート実行' }}
@@ -133,13 +133,13 @@
               <button
                 v-for="format in exportFormats"
                 :key="format.id"
-                @click="selectedFormat = format.id"
                 :class="[
                   'px-4 py-2 rounded-md border',
                   selectedFormat === format.id
                     ? 'border-blue-500 bg-blue-50 dark:bg-blue-900/20 text-blue-600 dark:text-blue-400'
                     : 'border-gray-300 dark:border-gray-600 hover:bg-gray-50 dark:hover:bg-gray-700'
                 ]"
+                @click="selectedFormat = format.id"
               >
                 {{ format.name }}
               </button>
@@ -155,9 +155,9 @@
 
           <div class="flex justify-end">
             <button
-              @click="exportData"
               :disabled="isExporting"
               class="px-6 py-2 bg-green-600 text-white rounded-md hover:bg-green-700 disabled:bg-gray-400"
+              @click="exportData"
             >
               <ArrowDownTrayIcon class="h-5 w-5 inline mr-1" />
               {{ isExporting ? 'エクスポート中...' : 'エクスポート実行' }}
@@ -188,20 +188,20 @@
             </template>
             <template #row-actions="{ row }">
               <button
-                @click="downloadBackup(row)"
                 class="text-blue-600 hover:text-blue-900 dark:text-blue-400 dark:hover:text-blue-300 mr-3"
+                @click="downloadBackup(row)"
               >
                 <ArrowDownTrayIcon class="h-5 w-5" />
               </button>
               <button
-                @click="restoreBackup(row)"
                 class="text-green-600 hover:text-green-900 dark:text-green-400 dark:hover:text-green-300 mr-3"
+                @click="restoreBackup(row)"
               >
                 <ArrowPathIcon class="h-5 w-5" />
               </button>
               <button
-                @click="deleteBackup(row)"
                 class="text-red-600 hover:text-red-900 dark:text-red-400 dark:hover:text-red-300"
+                @click="deleteBackup(row)"
               >
                 <TrashIcon class="h-5 w-5" />
               </button>

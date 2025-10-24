@@ -67,7 +67,8 @@
             </colgroup>
             <thead>
               <tr class="bg-gray-100 dark:bg-gray-800">
-                <th v-for="day in weekDays" :key="day" 
+                <th
+v-for="day in weekDays" :key="day" 
                     class="border border-gray-300 dark:border-gray-600 px-2 py-3 text-center font-medium dark:text-gray-100"
                     :class="{ 'text-red-600 dark:text-red-400': day === weekDays[0] }">
                   {{ day }}
@@ -76,7 +77,8 @@
             </thead>
             <tbody>
               <tr v-for="(week, weekIndex) in calendarData" :key="weekIndex">
-                <td v-for="(day, dayIndex) in week" :key="dayIndex"
+                <td
+v-for="(day, dayIndex) in week" :key="dayIndex"
                     class="border border-gray-300 dark:border-gray-600 p-0 h-24 align-top relative"
                     :class="getCellClass(day)">
                   <div v-if="day" class="p-2 h-full overflow-hidden">
@@ -115,7 +117,8 @@
         <div v-if="monthHolidays.length > 0" class="mt-8">
           <h4 class="text-lg font-medium mb-4 dark:text-white">{{ $t('HOLIDAYS_THIS_MONTH') }}</h4>
           <div class="grid md:grid-cols-2 gap-4">
-            <div v-for="holiday in monthHolidays" :key="holiday.date" 
+            <div
+v-for="holiday in monthHolidays" :key="holiday.date" 
                  class="border border-gray-200 dark:border-gray-700 rounded-lg p-4 dark:bg-gray-800">
               <div class="font-medium dark:text-white">{{ formatDate(holiday.date, 'long') }}</div>
               <div class="text-gray-600 dark:text-gray-400">{{ $t(holiday.nameKey) }}</div>
@@ -127,7 +130,8 @@
         <div v-if="monthSpecialOperations.length > 0" class="mt-8">
           <h4 class="text-lg font-medium mb-4 dark:text-white">{{ $t('SPECIAL_OPERATIONS_THIS_MONTH') }}</h4>
           <div class="space-y-2">
-            <div v-for="op in monthSpecialOperations" :key="op.date" 
+            <div
+v-for="op in monthSpecialOperations" :key="op.date" 
                  class="bg-blue-50 dark:bg-blue-900/40 border border-blue-200 dark:border-blue-700 rounded-lg p-4">
               <div class="font-medium dark:text-white">{{ formatDate(op.date, 'long') }}</div>
               <div class="text-blue-700 dark:text-blue-300">{{ $t(op.descriptionKey) }}</div>
