@@ -5,7 +5,4 @@ export default defineNuxtPlugin(() => {
   
   // クライアントサイドでのみテーマを初期化
   uiStore.initializeTheme()
-  
-  // デバッグ用ログ
-  console.log('Theme plugin initialized, current theme:', uiStore.theme)
 })

@@ -1,8 +1,6 @@
 import { useFerryData } from '@/composables/useFerryData'
 
 export default defineNuxtPlugin((nuxtApp) => {
-  console.log('Ferry data plugin starting...')
-  
   // onMountedで実行（コンポーネントのマウント後）
   nuxtApp.hook('app:mounted', async () => {
     // クライアントサイドでのみ実行
@@ -10,9 +8,7 @@ export default defineNuxtPlugin((nuxtApp) => {
     
     try {
       // アプリケーション起動時にデータを初期化
-      console.log('Initializing ferry data...')
       await initializeData()
-      console.log('Ferry data initialized successfully')
     } catch (error) {
       console.error('Failed to initialize ferry data:', error)
     }
