@@ -49,3 +49,4 @@ typings
 # Config directories
 /config
 .firebase
+test-results

@@ -8,6 +8,17 @@ export default defineConfig({
     globals: true,
     environment: 'happy-dom',
     setupFiles: ['./src/test/setup.ts'],
+    include: [
+      'src/**/*.{test,spec}.{js,ts,jsx,tsx}',
+      'src/**/__tests__/**/*.{js,ts,jsx,tsx}'
+    ],
+    exclude: [
+      '**/node_modules/**',
+      '.nuxt',
+      'dist',
+      'src/tests/e2e/**',
+      'src/functions/node_modules/**'
+    ],
     coverage: {
       provider: 'v8',
       reporter: ['text', 'json', 'html'],
