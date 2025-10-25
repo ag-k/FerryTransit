@@ -202,6 +202,10 @@ export const useSettingsStore = defineStore('settings', {
           this.$patch(settings)
         } catch (error) {
           // 保存データの破損時は初期設定を維持
+          if (process.env.NODE_ENV !== 'production') {
+            /* eslint-disable-next-line no-console */
+            console.error('Failed to load settings from localStorage', error)
+          }
         }
       }
     },
