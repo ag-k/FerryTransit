@@ -124,7 +124,6 @@ const seedData = async () => {
     for (const holiday of holidays) {
       await db.collection('holidays').add({
         ...holiday,
-        isPeakSeason: holiday.date.startsWith('2025-05'),
         createdAt: admin.firestore.FieldValue.serverTimestamp()
       })
       console.log(`Added holiday: ${holiday.date}`)

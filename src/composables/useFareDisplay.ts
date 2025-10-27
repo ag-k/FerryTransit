@@ -1,4 +1,4 @@
-import type { FareRoute, VehicleFare } from '@/types/fare'
+import type { FareRoute, VehicleFare, VesselType } from '@/types/fare'
 import { useFareStore } from '@/stores/fare'
 
 export const useFareDisplay = () => {
@@ -51,10 +51,17 @@ export const useFareDisplay = () => {
   }
 
   // 料金の一括取得（料金表用）
-  const getAllFares = async (): Promise<FareRoute[]> => {
+  const getAllFares = async (
+    options: { date?: Date; vesselTypes?: VesselType[] } = {}
+  ): Promise<FareRoute[]> => {
     if (!fareStore) return []
     await fareStore.loadFareMaster()
-    return fareStore.fareMaster?.routes || []
+    const targetTypes = options.vesselTypes ?? ['ferry', 'highspeed', 'local']
+    const date = options.date
+
+    return targetTypes.flatMap((type) =>
+      fareStore.getRoutesByVesselType(type, { date })
+    )
   }
 
   return {

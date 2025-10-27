@@ -33,14 +33,6 @@ const setupDefaultHolidayComposable = () => {
         type: 'national'
       }
     ],
-    peakSeasons: [
-      {
-        startDate: '2024-12-28',
-        endDate: '2025-01-05',
-        nameKey: 'PEAK_NEW_YEAR',
-        surchargeRate: 1.2
-      }
-    ],
     specialOperations: [
       {
         date: '2025-01-01',
@@ -60,8 +52,6 @@ const setupDefaultHolidayComposable = () => {
         date: '2025-01-01',
         isHoliday: true,
         holiday: mockHolidayMaster.holidays[0],
-        isPeakSeason: true,
-        peakSeason: mockHolidayMaster.peakSeasons[0],
         specialOperation: mockHolidayMaster.specialOperations[0],
         dayOfWeek: '水'
       },
@@ -70,8 +60,6 @@ const setupDefaultHolidayComposable = () => {
         date: '2025-01-02',
         isHoliday: false,
         holiday: null,
-        isPeakSeason: true,
-        peakSeason: mockHolidayMaster.peakSeasons[0],
         specialOperation: null,
         dayOfWeek: '木'
       },
@@ -80,8 +68,6 @@ const setupDefaultHolidayComposable = () => {
         date: '2025-01-03',
         isHoliday: false,
         holiday: null,
-        isPeakSeason: true,
-        peakSeason: mockHolidayMaster.peakSeasons[0],
         specialOperation: null,
         dayOfWeek: '金'
       },
@@ -90,8 +76,6 @@ const setupDefaultHolidayComposable = () => {
         date: '2025-01-04',
         isHoliday: false,
         holiday: null,
-        isPeakSeason: true,
-        peakSeason: mockHolidayMaster.peakSeasons[0],
         specialOperation: null,
         dayOfWeek: '土'
       }
@@ -113,12 +97,6 @@ const setupDefaultHolidayComposable = () => {
     }),
     getHoliday: vi.fn((date: string) => {
       return mockHolidayMaster.holidays.find(h => h.date === date)
-    }),
-    isPeakSeason: vi.fn((date: string) => {
-      return mockHolidayMaster.peakSeasons.some(p => date >= p.startDate && date <= p.endDate)
-    }),
-    getPeakSeason: vi.fn((date: string) => {
-      return mockHolidayMaster.peakSeasons.find(p => date >= p.startDate && date <= p.endDate)
     }),
     getSpecialOperations: vi.fn((date: string) => {
       return mockHolidayMaster.specialOperations.filter(o => o.date === date)
@@ -163,8 +141,6 @@ describe('calendar.vue', () => {
         formatDate: vi.fn(),
         isHoliday: vi.fn(),
         getHoliday: vi.fn(),
-        isPeakSeason: vi.fn(),
-        getPeakSeason: vi.fn(),
         getSpecialOperations: vi.fn(),
         isLoading: ref(false),
         error: ref(null),
@@ -230,8 +206,6 @@ describe('calendar.vue', () => {
         formatDate: vi.fn((date: string) => '2025年1月1日 水曜日'),
         isHoliday: vi.fn().mockReturnValue(false),
         getHoliday: vi.fn().mockReturnValue(null),
-        isPeakSeason: vi.fn().mockReturnValue(false),
-        getPeakSeason: vi.fn().mockReturnValue(null),
         getSpecialOperations: vi.fn().mockReturnValue([]),
         isLoading: ref(true),
         error: ref(null),
@@ -258,8 +232,6 @@ describe('calendar.vue', () => {
         formatDate: vi.fn((date: string) => '2025年1月1日 水曜日'),
         isHoliday: vi.fn().mockReturnValue(false),
         getHoliday: vi.fn().mockReturnValue(null),
-        isPeakSeason: vi.fn().mockReturnValue(false),
-        getPeakSeason: vi.fn().mockReturnValue(null),
         getSpecialOperations: vi.fn().mockReturnValue([]),
         isLoading: ref(false),
         error: ref('HOLIDAY_LOAD_ERROR'),
@@ -312,7 +284,6 @@ describe('calendar.vue', () => {
       await new Promise(resolve => setTimeout(resolve, 100))
 
       expect(wrapper.text()).toContain('HOLIDAY_NEW_YEAR')
-      expect(wrapper.text()).toContain('PEAK_NEW_YEAR')
       expect(wrapper.text()).toContain('REDUCED_OPERATION')
     })
 
@@ -329,7 +300,6 @@ describe('calendar.vue', () => {
       await new Promise(resolve => setTimeout(resolve, 100))
 
       expect(wrapper.text()).toContain('HOLIDAY')
-      expect(wrapper.text()).toContain('PEAK_SEASON_NOTICE')
       expect(wrapper.text()).toContain('SPECIAL_OPERATION')
     })
 
@@ -350,8 +320,6 @@ describe('calendar.vue', () => {
               date: `${currentYear}-${currentMonth}-01`,
               isHoliday: true,
               holiday: { date: `${currentYear}-${currentMonth}-01`, nameKey: 'HOLIDAY_NEW_YEAR', type: 'national' },
-              isPeakSeason: false,
-              peakSeason: null,
               specialOperation: null,
               dayOfWeek: '水'
             }
@@ -363,8 +331,6 @@ describe('calendar.vue', () => {
         formatDate: vi.fn((date: string) => '2025年1月1日 水曜日'),
         isHoliday: vi.fn().mockReturnValue(false),
         getHoliday: vi.fn().mockReturnValue(null),
-        isPeakSeason: vi.fn().mockReturnValue(false),
-        getPeakSeason: vi.fn().mockReturnValue(null),
         getSpecialOperations: vi.fn().mockReturnValue([]),
         isLoading: ref(false),
         error: ref(null),
@@ -372,7 +338,6 @@ describe('calendar.vue', () => {
           holidays: [
             { date: `${currentYear}-${currentMonth}-01`, nameKey: 'HOLIDAY_NEW_YEAR', type: 'national' }
           ],
-          peakSeasons: [],
           specialOperations: [
             { date: `${currentYear}-${currentMonth}-01`, operationType: 'reduced', descriptionKey: 'OPERATION_NEW_YEAR' }
           ]
@@ -405,8 +370,6 @@ describe('calendar.vue', () => {
             date: '2025-01-01',
             isHoliday: true,
             holiday: { date: '2025-01-01', nameKey: 'HOLIDAY_NEW_YEAR', type: 'national' },
-            isPeakSeason: true,
-            peakSeason: { startDate: '2024-12-28', endDate: '2025-01-05', nameKey: 'PEAK_NEW_YEAR', surchargeRate: 1.2 },
             specialOperation: { date: '2025-01-01', operationType: 'reduced', descriptionKey: 'OPERATION_NEW_YEAR' },
             dayOfWeek: '水'
           }
@@ -422,14 +385,11 @@ describe('calendar.vue', () => {
         formatDate: vi.fn((date: string) => '2025年1月1日 水曜日'),
         isHoliday: vi.fn().mockReturnValue(false),
         getHoliday: vi.fn().mockReturnValue(null),
-        isPeakSeason: vi.fn().mockReturnValue(false),
-        getPeakSeason: vi.fn().mockReturnValue(null),
         getSpecialOperations: vi.fn().mockReturnValue([]),
         isLoading: ref(false),
         error: ref(null),
         holidayMaster: ref({
           holidays: [],
-          peakSeasons: [],
           specialOperations: []
         })
       }))

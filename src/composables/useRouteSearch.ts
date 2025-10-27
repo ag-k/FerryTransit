@@ -1,16 +1,14 @@
 import { useFerryStore } from "@/stores/ferry";
 import { useFareStore } from "@/stores/fare";
 import { useFerryData } from "@/composables/useFerryData";
-import { useHolidayCalendar } from "@/composables/useHolidayCalendar";
 import type { Trip, TransitRoute, TransitSegment } from "@/types";
-import type { FareRoute } from "@/types/fare";
+import type { FareRoute, VesselType } from "@/types/fare";
 import { createLogger } from "~/utils/logger";
 
 export const useRouteSearch = () => {
   const ferryStore = process.client ? useFerryStore() : null;
   const fareStore = process.client ? useFareStore() : null;
   const { getTripStatus, initializeData } = useFerryData();
-  const { isPeakSeason, getPeakSeason } = useHolidayCalendar();
   const logger = createLogger("useRouteSearch");
 
   // Initialize fare data
@@ -455,10 +453,15 @@ export const useRouteSearch = () => {
     const arrivalCandidates = toFarePortVariants(arrival);
 
     let route: FareRoute | undefined;
+    const vesselType: VesselType =
+      ship === "RAINBOWJET" ? "highspeed" : "ferry";
 
     for (const dep of departureCandidates) {
       for (const arr of arrivalCandidates) {
-        const candidate = fareStore?.getFareByRoute(dep, arr);
+        const candidate = fareStore?.getFareByRoute(dep, arr, {
+          date,
+          vesselType,
+        });
         if (candidate) {
           route = candidate;
           break;
@@ -477,16 +480,6 @@ export const useRouteSearch = () => {
       if (isHighSpeed) {
         // Rainbow Jet fare is 6,680 yen (according to official website)
         baseFare = 6680;
-      }
-
-      // Apply peak season surcharge if applicable
-      if (date) {
-        if (isPeakSeason(date)) {
-          const peakSeason = getPeakSeason(date);
-          if (peakSeason && peakSeason.surchargeRate) {
-            baseFare = Math.round(baseFare * peakSeason.surchargeRate);
-          }
-        }
       }
 
       return baseFare;

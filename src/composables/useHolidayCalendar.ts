@@ -1,5 +1,5 @@
 import { readonly } from 'vue'
-import type { Holiday, PeakSeason, SpecialOperation, HolidayMaster } from '@/types/holiday'
+import type { Holiday, SpecialOperation, HolidayMaster } from '@/types/holiday'
 import { useOfflineStore } from '@/stores/offline'
 import { createLogger } from '~/utils/logger'
 
@@ -57,32 +57,6 @@ export const useHolidayCalendar = () => {
       : date.toISOString().split('T')[0]
     
     return holidayMaster.value.holidays.find(h => h.date === dateStr)
-  }
-
-  // 繁忙期かどうか判定
-  const isPeakSeason = (date: string | Date): boolean => {
-    if (!holidayMaster.value) return false
-    
-    const dateStr = typeof date === 'string' 
-      ? date 
-      : date.toISOString().split('T')[0]
-    
-    return holidayMaster.value.peakSeasons.some(season => {
-      return dateStr >= season.startDate && dateStr <= season.endDate
-    })
-  }
-
-  // 繁忙期情報を取得
-  const getPeakSeason = (date: string | Date): PeakSeason | undefined => {
-    if (!holidayMaster.value) return undefined
-    
-    const dateStr = typeof date === 'string' 
-      ? date 
-      : date.toISOString().split('T')[0]
-    
-    return holidayMaster.value.peakSeasons.find(season => {
-      return dateStr >= season.startDate && dateStr <= season.endDate
-    })
   }
 
   // 特別運航情報を取得
@@ -155,7 +129,6 @@ export const useHolidayCalendar = () => {
     for (let day = 1; day <= daysInMonth; day++) {
       const date = `${year}-${month.toString().padStart(2, '0')}-${day.toString().padStart(2, '0')}`
       const holiday = getHoliday(date)
-      const peakSeason = getPeakSeason(date)
       const specialOperation = getSpecialOperation(date)
       
       week.push({
@@ -163,8 +136,6 @@ export const useHolidayCalendar = () => {
         date,
         isHoliday: !!holiday,
         holiday,
-        isPeakSeason: !!peakSeason,
-        peakSeason,
         specialOperation,
         dayOfWeek: getDayOfWeek(date)
       })
@@ -193,8 +164,6 @@ export const useHolidayCalendar = () => {
     loadHolidayData,
     isHoliday,
     getHoliday,
-    isPeakSeason,
-    getPeakSeason,
     getSpecialOperation,
     getDayOfWeek,
     formatDate,

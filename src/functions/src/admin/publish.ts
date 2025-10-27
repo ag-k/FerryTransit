@@ -205,19 +205,127 @@ async function prepareTimetableData() {
 }
 
 async function prepareFareData() {
-  const [faresSnapshot, discountsSnapshot, peakPeriodsSnapshot] = await Promise.all([
+  const [faresSnapshot, versionsSnapshot, discountsSnapshot] = await Promise.all([
     admin.firestore().collection('fares').get(),
-    admin.firestore().collection('discounts').where('active', '==', true).get(),
-    admin.firestore().collection('peakPeriods').get()
+    admin.firestore().collection('fareVersions').get(),
+    admin.firestore().collection('discounts').where('active', '==', true).get()
   ])
 
+  const parseTimestamp = (value) => {
+    const date = new Date(value)
+    return Number.isNaN(date.getTime()) ? 0 : date.getTime()
+  }
+
+  const fares = faresSnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }))
+  const versions = versionsSnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }))
+
+  const versionMetaMap = new Map()
+  versions.forEach((version) => {
+    versionMetaMap.set(version.id, version)
+  })
+
+  const fallbackVersions = {}
+  const ensureFallbackVersion = (vesselType) => {
+    if (!fallbackVersions[vesselType]) {
+      const fallbackId = `legacy-${vesselType}`
+      const metadata = {
+        id: fallbackId,
+        vesselType,
+        name: '既存データ',
+        effectiveFrom: '1970-01-01'
+      }
+      fallbackVersions[vesselType] = metadata
+      versionMetaMap.set(fallbackId, metadata)
+    }
+    return fallbackVersions[vesselType]
+  }
+
+  const versionFaresMap = new Map()
+
+  fares.forEach((fare) => {
+    const vesselType = fare.type || 'ferry'
+    let versionId = fare.versionId
+
+    if (!versionId || !versionMetaMap.has(versionId)) {
+      const fallback = ensureFallbackVersion(vesselType)
+      versionId = fallback.id
+    }
+
+    if (!versionFaresMap.has(versionId)) {
+      versionFaresMap.set(versionId, [])
+    }
+
+    versionFaresMap.get(versionId).push(fare)
+  })
+
+  const versionPayloads = []
+  versionFaresMap.forEach((fareList, versionId) => {
+    const meta = versionMetaMap.get(versionId) || {}
+    const vesselType = meta.vesselType || fareList[0]?.type || 'ferry'
+
+    versionPayloads.push({
+      id: versionId,
+      vesselType,
+      name: meta.name || null,
+      description: meta.description || null,
+      effectiveFrom: meta.effectiveFrom || '1970-01-01',
+      createdAt: meta.createdAt || null,
+      updatedAt: meta.updatedAt || null,
+      fares: fareList.map((fare) => ({
+        route: fare.route,
+        adult: fare.adult,
+        child: fare.child,
+        car3m: typeof fare.car3m === 'undefined' ? null : fare.car3m,
+        car4m: typeof fare.car4m === 'undefined' ? null : fare.car4m,
+        car5m: typeof fare.car5m === 'undefined' ? null : fare.car5m,
+        type: fare.type
+      }))
+    })
+  })
+
+  const versionsByType = {}
+  versionPayloads.forEach((version) => {
+    if (!versionsByType[version.vesselType]) {
+      versionsByType[version.vesselType] = []
+    }
+    versionsByType[version.vesselType].push(version)
+  })
+
+  const activeVersionIds = {}
+  const activeFares = []
+  const now = Date.now()
+
+  Object.entries(versionsByType).forEach(([vesselType, list]) => {
+    const sorted = list.sort((a, b) => parseTimestamp(b.effectiveFrom) - parseTimestamp(a.effectiveFrom))
+    const active = sorted.find((version) => parseTimestamp(version.effectiveFrom) <= now) || sorted[sorted.length - 1]
+    if (active) {
+      activeVersionIds[vesselType] = active.id
+      activeFares.push(...active.fares)
+    }
+  })
+
+  if (!activeFares.length) {
+    activeFares.push(
+      ...fares.map(fare => ({
+        route: fare.route,
+        adult: fare.adult,
+        child: fare.child,
+        car3m: typeof fare.car3m === 'undefined' ? null : fare.car3m,
+        car4m: typeof fare.car4m === 'undefined' ? null : fare.car4m,
+        car5m: typeof fare.car5m === 'undefined' ? null : fare.car5m,
+        type: fare.type
+      }))
+    )
+  }
+
   return {
-    fares: faresSnapshot.docs.map(doc => doc.data()),
+    fares: activeFares,
+    versions: versionPayloads,
+    activeVersionIds,
     discounts: discountsSnapshot.docs.map(doc => ({
       id: doc.id,
       ...doc.data()
-    })),
-    peakPeriods: peakPeriodsSnapshot.docs.map(doc => doc.data())
+    }))
   }
 }
 

@@ -186,10 +186,5 @@ service cloud.firestore {
       allow write: if isAdmin();
     }
     
-    // ピーク期間設定
-    match /peakPeriods/{document=**} {
-      allow read: if true;
-      allow write: if isAdmin();
-    }
   }
 }
