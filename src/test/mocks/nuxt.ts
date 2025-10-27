@@ -62,14 +62,6 @@ export const useHolidayCalendar = vi.fn(() => {
         type: 'national'
       }
     ],
-    peakSeasons: [
-      {
-        startDate: '2024-12-28',
-        endDate: '2025-01-05',
-        nameKey: 'PEAK_NEW_YEAR',
-        surchargeRate: 1.2
-      }
-    ],
     specialOperations: [
       {
         date: '2025-01-01',
@@ -80,7 +72,7 @@ export const useHolidayCalendar = vi.fn(() => {
   }
   
   const mockCalendarData = [
-    [null, null, null, { day: 1, date: '2025-01-01', isHoliday: true, holiday: mockHolidayMaster.holidays[0], isPeakSeason: true, peakSeason: mockHolidayMaster.peakSeasons[0], specialOperation: mockHolidayMaster.specialOperations[0], dayOfWeek: '水' }, { day: 2, date: '2025-01-02', isHoliday: false, holiday: null, isPeakSeason: true, peakSeason: mockHolidayMaster.peakSeasons[0], specialOperation: null, dayOfWeek: '木' }, { day: 3, date: '2025-01-03', isHoliday: false, holiday: null, isPeakSeason: true, peakSeason: mockHolidayMaster.peakSeasons[0], specialOperation: null, dayOfWeek: '金' }, { day: 4, date: '2025-01-04', isHoliday: false, holiday: null, isPeakSeason: true, peakSeason: mockHolidayMaster.peakSeasons[0], specialOperation: null, dayOfWeek: '土' }]
+    [null, null, null, { day: 1, date: '2025-01-01', isHoliday: true, holiday: mockHolidayMaster.holidays[0], specialOperation: mockHolidayMaster.specialOperations[0], dayOfWeek: '水' }, { day: 2, date: '2025-01-02', isHoliday: false, holiday: null, specialOperation: null, dayOfWeek: '木' }, { day: 3, date: '2025-01-03', isHoliday: false, holiday: null, specialOperation: null, dayOfWeek: '金' }, { day: 4, date: '2025-01-04', isHoliday: false, holiday: null, specialOperation: null, dayOfWeek: '土' }]
   ]
   
   return {
@@ -98,16 +90,6 @@ export const useHolidayCalendar = vi.fn(() => {
     }),
     getHoliday: vi.fn((date: string) => {
       return mockHolidayMaster.holidays.find(h => h.date === date)
-    }),
-    isPeakSeason: vi.fn((date: string) => {
-      return mockHolidayMaster.peakSeasons.some(p => 
-        date >= p.startDate && date <= p.endDate
-      )
-    }),
-    getPeakSeason: vi.fn((date: string) => {
-      return mockHolidayMaster.peakSeasons.find(p => 
-        date >= p.startDate && date <= p.endDate
-      )
     }),
     getSpecialOperations: vi.fn((date: string) => {
       return mockHolidayMaster.specialOperations.filter(o => o.date === date)

@@ -4,13 +4,6 @@ export interface Holiday {
   type: 'national' | 'bank' | 'local'
 }
 
-export interface PeakSeason {
-  startDate: string
-  endDate: string
-  nameKey: string
-  surchargeRate: number
-}
-
 export interface SpecialOperation {
   date: string
   operationType: 'reduced' | 'extra' | 'cancelled'
@@ -19,6 +12,5 @@ export interface SpecialOperation {
 
 export interface HolidayMaster {
   holidays: Holiday[]
-  peakSeasons: PeakSeason[]
   specialOperations: SpecialOperation[]
 }

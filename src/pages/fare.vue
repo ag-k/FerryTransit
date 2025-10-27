@@ -34,6 +34,13 @@
         </nav>
       </div>
 
+      <p
+        v-if="activeVersionLabel"
+        class="mb-4 text-sm text-gray-600 dark:text-gray-400"
+      >
+        {{ activeVersionLabel }}
+      </p>
+
       <!-- Oki Kisen Ferry -->
       <div v-show="activeTab === 'okiKisen'" class="mb-12">
         <h3 class="text-xl font-medium mb-4 dark:text-white">{{ $t('OKI_KISEN_FERRY') }}</h3>
@@ -320,6 +327,7 @@ v-for="(discount, key) in discounts" :key="key"
 </template>
 
 <script setup lang="ts">
+import type { FareVersion } from '@/types/fare'
 
 // Composables
 const { formatCurrency, getAllFares } = useFareDisplay()
@@ -370,6 +378,36 @@ const vehicleSizeList = [
 // Computed
 const isLoading = computed(() => fareStore?.isLoading ?? false)
 const error = computed(() => fareStore?.error ?? null)
+
+const ferryVersion = computed<FareVersion | null>(() =>
+  fareStore ? fareStore.getActiveVersion('ferry') : null
+)
+const highspeedVersion = computed<FareVersion | null>(() =>
+  fareStore ? fareStore.getActiveVersion('highspeed') : null
+)
+const localVersion = computed<FareVersion | null>(() =>
+  fareStore ? fareStore.getActiveVersion('local') : null
+)
+
+const formatVersionLabel = (version: FareVersion | null): string => {
+  if (!version) return ''
+  const label = version.name || '現行版'
+  if (version.effectiveFrom === '1970-01-01') {
+    return label
+  }
+  return `${label}（適用開始日: ${version.effectiveFrom}）`
+}
+
+const activeVersionLabel = computed(() => {
+  switch (activeTab.value) {
+    case 'rainbowJet':
+      return formatVersionLabel(highspeedVersion.value)
+    case 'naikoSen':
+      return formatVersionLabel(localVersion.value)
+    default:
+      return formatVersionLabel(ferryVersion.value)
+  }
+})
 
 // Get seat class fare for a specific route
 const getSeatClassFare = (routeType: string, seatClass: string) => {

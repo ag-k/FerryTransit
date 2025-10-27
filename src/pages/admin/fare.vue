@@ -52,16 +52,57 @@
     <div class="bg-white dark:bg-gray-800 rounded-lg shadow">
       <div class="p-6">
         <div class="flex justify-between items-center mb-4">
-          <h2 class="text-lg font-medium text-gray-900 dark:text-white">
-            {{ activeTabData.title }}
-          </h2>
-          <button
-            class="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700"
-            @click="showEditModal = true"
-          >
-            <PencilIcon class="h-5 w-5 inline mr-1" />
-            料金編集
-          </button>
+          <div>
+            <h2 class="text-lg font-medium text-gray-900 dark:text-white">
+              {{ activeTabData.title }}
+            </h2>
+            <p
+              v-if="activeVersionLabel"
+              class="mt-1 text-sm text-gray-500 dark:text-gray-400"
+            >
+              {{ activeVersionLabel }}
+            </p>
+          </div>
+          <div class="flex items-center space-x-2">
+            <template v-if="activeTab === 'ferry' || activeTab === 'highspeed'">
+              <label class="text-sm text-gray-500 dark:text-gray-400">
+                版
+              </label>
+              <select
+                v-model="activeVersionId"
+                class="rounded-md border border-gray-300 dark:border-gray-600 dark:bg-gray-700 focus:border-blue-500 dark:focus:border-blue-400 focus:ring-2 focus:ring-blue-500 focus:ring-opacity-30 transition-colors text-sm"
+              >
+                <option
+                  v-if="activeVersionOptions.length === 0"
+                  disabled
+                  value=""
+                >
+                  版が未作成
+                </option>
+                <option
+                  v-for="version in activeVersionOptions"
+                  :key="version.id"
+                  :value="version.id"
+                >
+                  {{ version.name || version.effectiveFrom }}
+                </option>
+              </select>
+              <button
+                class="px-3 py-2 bg-green-600 text-white rounded-md hover:bg-green-700 text-sm"
+                @click="openCreateVersionModal(activeTab === 'ferry' ? 'ferry' : 'highspeed')"
+              >
+                <PlusIcon class="h-4 w-4 inline mr-1" />
+                新しい版
+              </button>
+            </template>
+            <button
+              class="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700"
+              @click="showEditModal = true"
+            >
+              <PencilIcon class="h-5 w-5 inline mr-1" />
+              料金編集
+            </button>
+          </div>
         </div>
 
         <!-- フェリー料金表 -->
@@ -144,45 +185,6 @@
               </tr>
             </tbody>
           </table>
-        </div>
-
-        <!-- 繁忙期料金 -->
-        <div v-else-if="activeTab === 'peak'" class="space-y-6">
-          <div>
-            <h3 class="text-md font-medium text-gray-900 dark:text-white mb-3">
-              繁忙期期間設定
-            </h3>
-            <div class="space-y-2">
-              <div v-for="(period, index) in peakPeriods" :key="index" class="flex items-center space-x-4">
-                <input
-                  :value="period.start"
-                  type="date"
-                  class="rounded-md border border-gray-300 dark:border-gray-600 dark:bg-gray-700 focus:border-blue-500 dark:focus:border-blue-400 focus:ring-2 focus:ring-blue-500 focus:ring-opacity-30 transition-colors"
-                  disabled
-                >
-                <span>〜</span>
-                <input
-                  :value="period.end"
-                  type="date"
-                  class="rounded-md border border-gray-300 dark:border-gray-600 dark:bg-gray-700 focus:border-blue-500 dark:focus:border-blue-400 focus:ring-2 focus:ring-blue-500 focus:ring-opacity-30 transition-colors"
-                  disabled
-                >
-                <span class="text-sm text-gray-600 dark:text-gray-400">
-                  {{ period.description }}
-                </span>
-              </div>
-            </div>
-          </div>
-          <div>
-            <h3 class="text-md font-medium text-gray-900 dark:text-white mb-3">
-              料金加算率
-            </h3>
-            <div class="bg-gray-50 dark:bg-gray-700 p-4 rounded-md">
-              <p class="text-sm text-gray-700 dark:text-gray-300">
-                繁忙期は通常料金の <span class="font-bold text-lg">{{ peakSurchargeRate }}%</span> 増
-              </p>
-            </div>
-          </div>
         </div>
 
         <!-- 割引設定 -->
@@ -300,20 +302,66 @@
           </div>
         </div>
 
-        <!-- 繁忙期設定編集 -->
-        <div v-else-if="activeTab === 'peak'">
-          <div class="mb-4">
-            <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-              料金加算率 (%)
-            </label>
-            <input
-              v-model.number="editingPeakSurchargeRate"
-              type="number"
-              min="0"
-              max="100"
-              class="w-32 rounded-md border border-gray-300 dark:border-gray-600 dark:bg-gray-700 focus:border-blue-500 dark:focus:border-blue-400 focus:ring-2 focus:ring-blue-500 focus:ring-opacity-30 transition-colors"
+      </div>
+    </FormModal>
+
+    <FormModal
+      :open="showVersionModal"
+      title="新しい版を作成"
+      :loading="isSavingVersion"
+      @close="closeVersionModal"
+      @submit="createVersion"
+    >
+      <div class="space-y-4">
+        <div>
+          <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+            船種
+          </label>
+          <p class="text-sm text-gray-600 dark:text-gray-400">
+            {{ versionForm.vesselType === 'ferry' ? 'フェリー' : '高速船' }}
+          </p>
+        </div>
+        <div>
+          <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+            版名称（任意）
+          </label>
+          <input
+            v-model="versionForm.name"
+            type="text"
+            class="w-full rounded-md border border-gray-300 dark:border-gray-600 dark:bg-gray-700 focus:border-blue-500 dark:focus:border-blue-400 focus:ring-2 focus:ring-blue-500 focus:ring-opacity-30 transition-colors"
+            placeholder="例: 2024年4月改定"
+          >
+        </div>
+        <div>
+          <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+            適用開始日
+          </label>
+          <input
+            v-model="versionForm.effectiveFrom"
+            type="date"
+            class="w-full rounded-md border border-gray-300 dark:border-gray-600 dark:bg-gray-700 focus:border-blue-500 dark:focus:border-blue-400 focus:ring-2 focus:ring-blue-500 focus:ring-opacity-30 transition-colors"
+            required
+          >
+        </div>
+        <div>
+          <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+            既存版からコピー（任意）
+          </label>
+          <select
+            v-model="versionForm.copyFromVersionId"
+            class="w-full rounded-md border border-gray-300 dark:border-gray-600 dark:bg-gray-700 focus:border-blue-500 dark:focus:border-blue-400 focus:ring-2 focus:ring-blue-500 focus:ring-opacity-30 transition-colors"
+          >
+            <option :value="null">
+              コピーしない
+            </option>
+            <option
+              v-for="version in copySourceVersions"
+              :key="version.id"
+              :value="version.id"
             >
-          </div>
+              {{ formatVersionLabel(version) }}
+            </option>
+          </select>
         </div>
       </div>
     </FormModal>
@@ -321,11 +369,12 @@
 </template>
 
 <script setup lang="ts">
-import { PencilIcon, CloudArrowUpIcon, ArrowPathIcon } from '@heroicons/vue/24/outline'
+import { PencilIcon, CloudArrowUpIcon, ArrowPathIcon, PlusIcon } from '@heroicons/vue/24/outline'
 import { orderBy, where } from 'firebase/firestore'
 import { useAdminFirestore } from '~/composables/useAdminFirestore'
 import { useDataPublish } from '~/composables/useDataPublish'
-import type { FareData, Discount, PeakPeriod } from '~/types'
+import type { FareData, Discount } from '~/types'
+import type { FareVersion, VesselType } from '~/types/fare'
 import FormModal from '~/components/admin/FormModal.vue'
 import { createLogger } from '~/utils/logger'
 
@@ -334,7 +383,7 @@ definePageMeta({
   middleware: 'admin'
 })
 
-const { getCollection, updateDocument, batchWrite, getDocument } = useAdminFirestore()
+const { getCollection, batchWrite, createDocument } = useAdminFirestore()
 const { publishData } = useDataPublish()
 const { $toast } = useNuxtApp()
 const logger = createLogger('AdminFarePage')
@@ -342,7 +391,6 @@ const logger = createLogger('AdminFarePage')
 const tabs = [
   { id: 'ferry', name: 'フェリー料金' },
   { id: 'highspeed', name: '高速船料金' },
-  { id: 'peak', name: '繁忙期料金' },
   { id: 'discount', name: '割引設定' }
 ]
 
@@ -352,17 +400,37 @@ const isSaving = ref(false)
 const isPublishing = ref(false)
 const isLoading = ref(false)
 
+type FareEntry = FareData & { id?: string; versionId?: string }
+
 // データ
-const ferryFares = ref<Array<FareData & { id?: string }>>([])
-const highspeedFares = ref<Array<FareData & { id?: string }>>([])
-const peakPeriods = ref<Array<PeakPeriod & { id?: string }>>([])
-const peakSurchargeRate = ref(20)
+const ferryFares = ref<FareEntry[]>([])
+const highspeedFares = ref<FareEntry[]>([])
 const discounts = ref<Array<Discount & { id?: string }>>([])
 
+const ferryVersions = ref<Array<FareVersion & { id: string }>>([])
+const highspeedVersions = ref<Array<FareVersion & { id: string }>>([])
+const selectedFerryVersionId = ref<string | null>(null)
+const selectedHighspeedVersionId = ref<string | null>(null)
+const versionsInitialized = ref(false)
+
 // 編集用データ
-const editingFerryFares = ref<Array<FareData & { id?: string }>>([])
-const editingHighspeedFares = ref<Array<FareData & { id?: string }>>([])
-const editingPeakSurchargeRate = ref(20)
+const editingFerryFares = ref<FareEntry[]>([])
+const editingHighspeedFares = ref<FareEntry[]>([])
+
+// 版作成モーダル
+const showVersionModal = ref(false)
+const isSavingVersion = ref(false)
+const versionForm = reactive<{
+  vesselType: VesselType
+  name: string
+  effectiveFrom: string
+  copyFromVersionId: string | null
+}>({
+  vesselType: 'ferry',
+  name: '',
+  effectiveFrom: '',
+  copyFromVersionId: null
+})
 
 const activeTabData = computed(() => {
   switch (activeTab.value) {
@@ -370,8 +438,6 @@ const activeTabData = computed(() => {
       return { title: 'フェリー料金表' }
     case 'highspeed':
       return { title: '高速船料金表' }
-    case 'peak':
-      return { title: '繁忙期料金設定' }
     case 'discount':
       return { title: '割引設定' }
     default:
@@ -379,37 +445,253 @@ const activeTabData = computed(() => {
   }
 })
 
+const formatVersionLabel = (version: FareVersion | null | undefined): string => {
+  if (!version) return ''
+  const label = version.name || '現行版'
+  if (version.effectiveFrom === '1970-01-01') {
+    return label
+  }
+  return `${label}（適用開始日: ${version.effectiveFrom}）`
+}
+
+const getVersionById = (versions: Array<FareVersion & { id: string }>, id: string | null) => {
+  if (!id) return null
+  return versions.find(version => version.id === id) ?? null
+}
+
+const activeVersionOptions = computed(() => {
+  if (activeTab.value === 'ferry') {
+    return ferryVersions.value
+  }
+  if (activeTab.value === 'highspeed') {
+    return highspeedVersions.value
+  }
+  return []
+})
+
+const activeVersionId = computed<string | null>({
+  get() {
+    if (activeTab.value === 'ferry') {
+      return selectedFerryVersionId.value
+    }
+    if (activeTab.value === 'highspeed') {
+      return selectedHighspeedVersionId.value
+    }
+    return null
+  },
+  set(value) {
+    if (activeTab.value === 'ferry') {
+      selectedFerryVersionId.value = value
+    } else if (activeTab.value === 'highspeed') {
+      selectedHighspeedVersionId.value = value
+    }
+  }
+})
+
+const activeVersionMetadata = computed(() => {
+  if (activeTab.value === 'ferry') {
+    return getVersionById(ferryVersions.value, selectedFerryVersionId.value)
+  }
+  if (activeTab.value === 'highspeed') {
+    return getVersionById(highspeedVersions.value, selectedHighspeedVersionId.value)
+  }
+  return null
+})
+
+const activeVersionLabel = computed(() => {
+  return formatVersionLabel(activeVersionMetadata.value)
+})
+
+const copySourceVersions = computed(() => {
+  return versionForm.vesselType === 'ferry'
+    ? ferryVersions.value
+    : highspeedVersions.value
+})
+
+const parseEffectiveTimestamp = (value: string): number => {
+  const date = new Date(value)
+  return Number.isNaN(date.getTime()) ? 0 : date.getTime()
+}
+
+const determineDefaultVersionId = (versions: Array<FareVersion & { id: string }>): string | null => {
+  if (!versions.length) return null
+  const now = Date.now()
+  const sorted = [...versions].sort((a, b) => parseEffectiveTimestamp(b.effectiveFrom) - parseEffectiveTimestamp(a.effectiveFrom))
+  const active = sorted.find(version => parseEffectiveTimestamp(version.effectiveFrom) <= now)
+  return (active ?? sorted[sorted.length - 1]).id
+}
+
+const loadFareVersions = async () => {
+  const versionDocs = await getCollection<FareVersion & { id: string }>(
+    'fareVersions',
+    [orderBy('effectiveFrom', 'desc')]
+  )
+
+  ferryVersions.value = versionDocs
+    .filter(version => version.vesselType === 'ferry')
+    .sort((a, b) => parseEffectiveTimestamp(b.effectiveFrom) - parseEffectiveTimestamp(a.effectiveFrom))
+
+  highspeedVersions.value = versionDocs
+    .filter(version => version.vesselType === 'highspeed')
+    .sort((a, b) => parseEffectiveTimestamp(b.effectiveFrom) - parseEffectiveTimestamp(a.effectiveFrom))
+
+  if (!selectedFerryVersionId.value || !getVersionById(ferryVersions.value, selectedFerryVersionId.value)) {
+    selectedFerryVersionId.value = determineDefaultVersionId(ferryVersions.value)
+  }
+
+  if (!selectedHighspeedVersionId.value || !getVersionById(highspeedVersions.value, selectedHighspeedVersionId.value)) {
+    selectedHighspeedVersionId.value = determineDefaultVersionId(highspeedVersions.value)
+  }
+}
+
+const loadFaresForType = async (vesselType: VesselType) => {
+  const constraints = [where('type', '==', vesselType), orderBy('route')]
+  const fareDocs = await getCollection<FareEntry & { id: string }>('fares', constraints)
+
+  const targetVersionId = vesselType === 'ferry' ? selectedFerryVersionId.value : selectedHighspeedVersionId.value
+
+  let filtered = fareDocs
+  if (targetVersionId) {
+    filtered = fareDocs.filter(fare => fare.versionId === targetVersionId)
+    if (!filtered.length) {
+      // 互換性のためversionIdが未設定のデータをフォールバック
+      filtered = fareDocs.filter(fare => !fare.versionId)
+    }
+  }
+
+  const sorted = filtered.sort((a, b) => a.route.localeCompare(b.route))
+
+  if (vesselType === 'ferry') {
+    ferryFares.value = sorted
+    editingFerryFares.value = sorted.map(fare => ({ ...fare }))
+  } else if (vesselType === 'highspeed') {
+    highspeedFares.value = sorted
+    editingHighspeedFares.value = sorted.map(fare => ({ ...fare }))
+  }
+}
+
+const openCreateVersionModal = (vesselType: VesselType) => {
+  versionForm.vesselType = vesselType
+  versionForm.name = ''
+  versionForm.effectiveFrom = ''
+  versionForm.copyFromVersionId = vesselType === 'ferry'
+    ? selectedFerryVersionId.value
+    : selectedHighspeedVersionId.value
+  showVersionModal.value = true
+}
+
+const closeVersionModal = () => {
+  showVersionModal.value = false
+  versionForm.name = ''
+  versionForm.effectiveFrom = ''
+  versionForm.copyFromVersionId = null
+}
+
+const mapFareEntryForCreate = (fare: FareEntry, versionId: string) => {
+  const payload: Record<string, any> = {
+    route: fare.route,
+    adult: fare.adult,
+    child: fare.child,
+    type: fare.type,
+    versionId
+  }
+
+  if (typeof fare.car3m !== 'undefined') payload.car3m = fare.car3m
+  if (typeof fare.car4m !== 'undefined') payload.car4m = fare.car4m
+  if (typeof fare.car5m !== 'undefined') payload.car5m = fare.car5m
+
+  return payload
+}
+
+const createVersion = async () => {
+  if (!versionForm.effectiveFrom) {
+    $toast.error('適用開始日を入力してください')
+    return
+  }
+
+  isSavingVersion.value = true
+  try {
+    const newVersionId = await createDocument('fareVersions', {
+      vesselType: versionForm.vesselType,
+      name: versionForm.name || null,
+      effectiveFrom: versionForm.effectiveFrom,
+      createdAt: new Date().toISOString()
+    })
+
+    const copyFromId = versionForm.copyFromVersionId && versionForm.copyFromVersionId !== 'null'
+      ? versionForm.copyFromVersionId
+      : null
+
+    if (copyFromId) {
+      const constraints = [where('type', '==', versionForm.vesselType), orderBy('route')]
+      const sourceFares = await getCollection<FareEntry & { id: string }>('fares', constraints)
+      const faresToCopy = sourceFares.filter(fare => fare.versionId === copyFromId)
+
+      if (faresToCopy.length) {
+        const operations = faresToCopy.map(fare => ({
+          type: 'create' as const,
+          collection: 'fares',
+          data: mapFareEntryForCreate(fare, newVersionId)
+        }))
+
+        await batchWrite(operations)
+      }
+    }
+
+    await loadFareVersions()
+
+    if (versionForm.vesselType === 'ferry') {
+      selectedFerryVersionId.value = newVersionId
+    } else if (versionForm.vesselType === 'highspeed') {
+      selectedHighspeedVersionId.value = newVersionId
+    }
+
+    await loadFaresForType(versionForm.vesselType)
+
+    showVersionModal.value = false
+    $toast.success('新しい版を作成しました')
+  } catch (error) {
+    logger.error('Failed to create fare version', error)
+    $toast.error('版の作成に失敗しました')
+  } finally {
+    isSavingVersion.value = false
+  }
+}
+
+watch(selectedFerryVersionId, async () => {
+  if (!versionsInitialized.value) return
+  try {
+    await loadFaresForType('ferry')
+  } catch (error) {
+    logger.error('Failed to load ferry fares for selected version', error)
+    $toast.error('フェリー料金の読み込みに失敗しました')
+  }
+})
+
+watch(selectedHighspeedVersionId, async () => {
+  if (!versionsInitialized.value) return
+  try {
+    await loadFaresForType('highspeed')
+  } catch (error) {
+    logger.error('Failed to load highspeed fares for selected version', error)
+    $toast.error('高速船料金の読み込みに失敗しました')
+  }
+})
+
 const loadFareData = async () => {
   isLoading.value = true
   try {
-    // フェリー料金
-    const ferryConstraints = [where('type', '==', 'ferry'), orderBy('route')]
-    const ferryData = await getCollection<FareData & { id: string }>('fares', ferryConstraints)
-    ferryFares.value = ferryData
-
-    // 高速船料金
-    const highspeedConstraints = [where('type', '==', 'highspeed'), orderBy('route')]
-    const highspeedData = await getCollection<FareData & { id: string }>('fares', highspeedConstraints)
-    highspeedFares.value = highspeedData
-
-    // 繁忙期設定
-    const peakData = await getCollection<PeakPeriod & { id: string }>('peakPeriods', [orderBy('start')])
-    peakPeriods.value = peakData
-
-    // 料金加算率設定を取得
-    const settingsDoc = await getDocument('settings', 'fareSettings')
-    if (settingsDoc) {
-      peakSurchargeRate.value = settingsDoc.peakSurchargeRate || 20
-    }
+    versionsInitialized.value = false
+    await loadFareVersions()
+    await Promise.all([
+      loadFaresForType('ferry'),
+      loadFaresForType('highspeed')
+    ])
+    versionsInitialized.value = true
 
     // 割引設定
     const discountData = await getCollection<Discount & { id: string }>('discounts', [orderBy('name')])
     discounts.value = discountData
-
-    // 編集用データの初期化
-    editingFerryFares.value = [...ferryFares.value]
-    editingHighspeedFares.value = [...highspeedFares.value]
-    editingPeakSurchargeRate.value = peakSurchargeRate.value
   } catch (error) {
     logger.error('Failed to load fare data', error)
     // エラー時は初期データを設定
@@ -422,28 +704,21 @@ const loadFareData = async () => {
 const setDefaultData = () => {
   // デフォルトのフェリー料金
   ferryFares.value = [
-    { route: '本土七類 ⇔ 西郷', adult: 3350, child: 1680, car3m: 12340, car4m: 15430, car5m: 18520, type: 'ferry' },
-    { route: '本土七類 ⇔ 菱浦', adult: 2540, child: 1270, car3m: 10390, car4m: 12990, car5m: 15590, type: 'ferry' },
-    { route: '本土七類 ⇔ 別府', adult: 2540, child: 1270, car3m: 10390, car4m: 12990, car5m: 15590, type: 'ferry' },
-    { route: '本土七類 ⇔ 来居', adult: 2540, child: 1270, car3m: 10390, car4m: 12990, car5m: 15590, type: 'ferry' },
-    { route: '西郷 ⇔ 菱浦', adult: 1490, child: 750, car3m: 4630, car4m: 5790, car5m: 6950, type: 'ferry' },
-    { route: '西郷 ⇔ 別府', adult: 1490, child: 750, car3m: 4630, car4m: 5790, car5m: 6950, type: 'ferry' }
+    { route: '本土七類 ⇔ 西郷', adult: 3350, child: 1680, car3m: 12340, car4m: 15430, car5m: 18520, type: 'ferry', versionId: selectedFerryVersionId.value ?? undefined },
+    { route: '本土七類 ⇔ 菱浦', adult: 2540, child: 1270, car3m: 10390, car4m: 12990, car5m: 15590, type: 'ferry', versionId: selectedFerryVersionId.value ?? undefined },
+    { route: '本土七類 ⇔ 別府', adult: 2540, child: 1270, car3m: 10390, car4m: 12990, car5m: 15590, type: 'ferry', versionId: selectedFerryVersionId.value ?? undefined },
+    { route: '本土七類 ⇔ 来居', adult: 2540, child: 1270, car3m: 10390, car4m: 12990, car5m: 15590, type: 'ferry', versionId: selectedFerryVersionId.value ?? undefined },
+    { route: '西郷 ⇔ 菱浦', adult: 1490, child: 750, car3m: 4630, car4m: 5790, car5m: 6950, type: 'ferry', versionId: selectedFerryVersionId.value ?? undefined },
+    { route: '西郷 ⇔ 別府', adult: 1490, child: 750, car3m: 4630, car4m: 5790, car5m: 6950, type: 'ferry', versionId: selectedFerryVersionId.value ?? undefined }
   ]
 
   // デフォルトの高速船料金
   highspeedFares.value = [
-    { route: '本土七類 ⇔ 西郷', adult: 6430, child: 3220, type: 'highspeed' },
-    { route: '本土七類 ⇔ 菱浦', adult: 4890, child: 2450, type: 'highspeed' },
-    { route: '本土七類 ⇔ 別府', adult: 4890, child: 2450, type: 'highspeed' },
-    { route: '西郷 ⇔ 菱浦', adult: 2890, child: 1450, type: 'highspeed' },
-    { route: '西郷 ⇔ 別府', adult: 2890, child: 1450, type: 'highspeed' }
-  ]
-
-  // デフォルトの繁忙期
-  peakPeriods.value = [
-    { start: '2024-04-27', end: '2024-05-06', description: 'ゴールデンウィーク' },
-    { start: '2024-08-10', end: '2024-08-18', description: '夏季休暇' },
-    { start: '2024-12-28', end: '2025-01-05', description: '年末年始' }
+    { route: '本土七類 ⇔ 西郷', adult: 6430, child: 3220, type: 'highspeed', versionId: selectedHighspeedVersionId.value ?? undefined },
+    { route: '本土七類 ⇔ 菱浦', adult: 4890, child: 2450, type: 'highspeed', versionId: selectedHighspeedVersionId.value ?? undefined },
+    { route: '本土七類 ⇔ 別府', adult: 4890, child: 2450, type: 'highspeed', versionId: selectedHighspeedVersionId.value ?? undefined },
+    { route: '西郷 ⇔ 菱浦', adult: 2890, child: 1450, type: 'highspeed', versionId: selectedHighspeedVersionId.value ?? undefined },
+    { route: '西郷 ⇔ 別府', adult: 2890, child: 1450, type: 'highspeed', versionId: selectedHighspeedVersionId.value ?? undefined }
   ]
 
   // デフォルトの割引設定
@@ -453,6 +728,9 @@ const setDefaultData = () => {
     { id: '3', name: '学生割引', description: '学生証の提示が必要', rate: 20, active: true, conditions: ['student'] },
     { id: '4', name: '障害者割引', description: '障害者手帳の提示が必要', rate: 50, active: true, conditions: ['disability'] }
   ]
+
+  editingFerryFares.value = ferryFares.value.map(fare => ({ ...fare }))
+  editingHighspeedFares.value = highspeedFares.value.map(fare => ({ ...fare }))
 }
 
 const saveFareData = async () => {
@@ -460,6 +738,11 @@ const saveFareData = async () => {
   try {
     if (activeTab.value === 'ferry') {
       // フェリー料金の保存
+      if (!selectedFerryVersionId.value) {
+        $toast.error('フェリー料金を保存する版を選択してください')
+        return
+      }
+
       const operations = editingFerryFares.value.map(fare => ({
         type: fare.id ? 'update' as const : 'create' as const,
         collection: 'fares',
@@ -471,14 +754,23 @@ const saveFareData = async () => {
           car3m: fare.car3m,
           car4m: fare.car4m,
           car5m: fare.car5m,
-          type: 'ferry'
+          type: 'ferry',
+          versionId: selectedFerryVersionId.value
         }
       }))
       await batchWrite(operations)
-      ferryFares.value = [...editingFerryFares.value]
+      ferryFares.value = editingFerryFares.value.map(fare => ({
+        ...fare,
+        versionId: selectedFerryVersionId.value || fare.versionId
+      }))
       $toast.success('フェリー料金を更新しました')
     } else if (activeTab.value === 'highspeed') {
       // 高速船料金の保存
+      if (!selectedHighspeedVersionId.value) {
+        $toast.error('高速船料金を保存する版を選択してください')
+        return
+      }
+
       const operations = editingHighspeedFares.value.map(fare => ({
         type: fare.id ? 'update' as const : 'create' as const,
         collection: 'fares',
@@ -487,19 +779,16 @@ const saveFareData = async () => {
           route: fare.route,
           adult: fare.adult,
           child: fare.child,
-          type: 'highspeed'
+          type: 'highspeed',
+          versionId: selectedHighspeedVersionId.value
         }
       }))
       await batchWrite(operations)
-      highspeedFares.value = [...editingHighspeedFares.value]
+      highspeedFares.value = editingHighspeedFares.value.map(fare => ({
+        ...fare,
+        versionId: selectedHighspeedVersionId.value || fare.versionId
+      }))
       $toast.success('高速船料金を更新しました')
-    } else if (activeTab.value === 'peak') {
-      // 料金加算率の保存
-      await updateDocument('settings', 'fareSettings', {
-        peakSurchargeRate: editingPeakSurchargeRate.value
-      })
-      peakSurchargeRate.value = editingPeakSurchargeRate.value
-      $toast.success('繁忙期料金設定を更新しました')
     }
     
     showEditModal.value = false
@@ -533,7 +822,6 @@ watch(showEditModal, (isOpen) => {
   if (isOpen) {
     editingFerryFares.value = [...ferryFares.value]
     editingHighspeedFares.value = [...highspeedFares.value]
-    editingPeakSurchargeRate.value = peakSurchargeRate.value
   }
 })
 

@@ -86,6 +86,8 @@ const mockFareStore = {
   isLoading: false,
   error: null,
   loadFareMaster: vi.fn().mockResolvedValue(undefined),
+  getRoutesByVesselType: vi.fn(() => []),
+  getActiveVersion: vi.fn(() => null),
   fareMaster: {
     innerIslandFare: {
       adult: 300,
@@ -132,8 +134,10 @@ describe('fare.vue', () => {
     setActivePinia(createPinia())
     vi.clearAllMocks()
     mockFareStore.isLoading = false
-    mockFareStore.error = null
+   mockFareStore.error = null
     mockFareStore.loadFareMaster.mockResolvedValue(undefined)
+    mockFareStore.getRoutesByVesselType.mockReturnValue([])
+    mockFareStore.getActiveVersion.mockReturnValue(null)
     mockFormatCurrency.mockImplementation((amount: number) => `¥${amount.toLocaleString()}`)
     mockGetAllFares.mockResolvedValue([
       {

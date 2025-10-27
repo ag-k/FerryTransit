@@ -50,10 +50,6 @@
             <span class="dark:text-gray-100">{{ $t('HOLIDAY') }}</span>
           </div>
           <div class="flex items-center gap-2">
-            <div class="w-4 h-4 bg-yellow-100 dark:bg-yellow-900/30 border border-yellow-300 dark:border-yellow-600 rounded"></div>
-            <span class="dark:text-gray-100">{{ $t('PEAK_SEASON_NOTICE') }}</span>
-          </div>
-          <div class="flex items-center gap-2">
             <div class="w-4 h-4 bg-blue-100 dark:bg-blue-900/30 border border-blue-300 dark:border-blue-600 rounded"></div>
             <span class="dark:text-gray-100">{{ $t('SPECIAL_OPERATION') }}</span>
           </div>
@@ -87,11 +83,6 @@ v-for="(day, dayIndex) in week" :key="dayIndex"
                     <!-- Holiday name -->
                     <div v-if="day.holiday" class="text-xs text-red-600 dark:text-red-400 mb-1 leading-tight">
                       {{ $t(day.holiday.nameKey) }}
-                    </div>
-                    
-                    <!-- Peak season indicator -->
-                    <div v-if="day.isPeakSeason" class="text-xs text-yellow-700 dark:text-yellow-400 mb-1 leading-tight">
-                      {{ $t(day.peakSeason.nameKey) }}
                     </div>
                     
                     <!-- Special operation -->
@@ -211,10 +202,6 @@ const getCellClass = (day: any) => {
   
   if (day.isHoliday) {
     classes.push('bg-red-100 dark:bg-red-900/20')
-  }
-  
-  if (day.isPeakSeason) {
-    classes.push('bg-yellow-50 dark:bg-yellow-900/10')
   }
   
   if (day.specialOperation) {

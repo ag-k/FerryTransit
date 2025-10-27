@@ -317,7 +317,8 @@ export const useDataManagement = () => {
       car3m: data.car3m ? parseInt(data.car3m) : null,
       car4m: data.car4m ? parseInt(data.car4m) : null,
       car5m: data.car5m ? parseInt(data.car5m) : null,
-      type: data.type || 'ferry'
+      type: data.type || 'ferry',
+      versionId: data.versionId ? String(data.versionId).trim() : null
     }
   }
 

@@ -16,14 +16,6 @@ const mockHolidayData: HolidayMaster = {
       type: 'national'
     }
   ],
-  peakSeasons: [
-    {
-      startDate: '2024-12-28',
-      endDate: '2025-01-05',
-      nameKey: 'PEAK_NEW_YEAR',
-      surchargeRate: 1.2
-    }
-  ],
   specialOperations: [
     {
       date: '2025-01-01',
@@ -46,14 +38,6 @@ vi.mock('@/composables/useHolidayCalendar', () => {
         date: '2025-05-05',
         nameKey: 'HOLIDAY_CHILDRENS_DAY',
         type: 'national'
-      }
-    ],
-    peakSeasons: [
-      {
-        startDate: '2024-12-28',
-        endDate: '2025-01-05',
-        nameKey: 'PEAK_NEW_YEAR',
-        surchargeRate: 1.2
       }
     ],
     specialOperations: [
@@ -92,20 +76,6 @@ vi.mock('@/composables/useHolidayCalendar', () => {
       const getHoliday = vi.fn((date: string | Date) => {
         const dateStr = typeof date === 'string' ? date : date.toISOString().split('T')[0]
         return holidayMaster.value?.holidays.find(h => h.date === dateStr)
-      })
-      
-      const isPeakSeason = vi.fn((date: string | Date) => {
-        const dateStr = typeof date === 'string' ? date : date.toISOString().split('T')[0]
-        return holidayMaster.value?.peakSeasons.some(p => 
-          dateStr >= p.startDate && dateStr <= p.endDate
-        ) || false
-      })
-      
-      const getPeakSeason = vi.fn((date: string | Date) => {
-        const dateStr = typeof date === 'string' ? date : date.toISOString().split('T')[0]
-        return holidayMaster.value?.peakSeasons.find(p => 
-          dateStr >= p.startDate && dateStr <= p.endDate
-        )
       })
       
       const getSpecialOperation = vi.fn((date: string | Date) => {
@@ -161,8 +131,6 @@ vi.mock('@/composables/useHolidayCalendar', () => {
             date,
             isHoliday: isHoliday(date),
             holiday: getHoliday(date) || null,
-            isPeakSeason: isPeakSeason(date),
-            peakSeason: getPeakSeason(date) || null,
             specialOperation: getSpecialOperation(date) || null,
             dayOfWeek: getDayOfWeek(date)
           }
@@ -177,14 +145,12 @@ vi.mock('@/composables/useHolidayCalendar', () => {
             const date = `${year}-${month.toString().padStart(2, '0')}-${currentDay.toString().padStart(2, '0')}`
             week[i] = {
               day: currentDay,
-              date,
-              isHoliday: isHoliday(date),
-              holiday: getHoliday(date) || null,
-              isPeakSeason: isPeakSeason(date),
-              peakSeason: getPeakSeason(date) || null,
-              specialOperation: getSpecialOperation(date) || null,
-              dayOfWeek: getDayOfWeek(date)
-            }
+            date,
+            isHoliday: isHoliday(date),
+            holiday: getHoliday(date) || null,
+            specialOperation: getSpecialOperation(date) || null,
+            dayOfWeek: getDayOfWeek(date)
+          }
             currentDay++
           }
           calendar.push(week)
@@ -197,8 +163,6 @@ vi.mock('@/composables/useHolidayCalendar', () => {
         loadHolidayData,
         isHoliday,
         getHoliday,
-        isPeakSeason,
-        getPeakSeason,
         getSpecialOperation,
         getDayOfWeek,
         formatDate,
@@ -248,21 +212,6 @@ describe('useHolidayCalendar', () => {
     const holiday = getHoliday('2025-01-01')
     expect(holiday).toBeDefined()
     expect(holiday?.nameKey).toBe('HOLIDAY_NEW_YEAR')
-  })
-
-  it('detects peak seasons correctly', async () => {
-    const { loadHolidayData, isPeakSeason, getPeakSeason } = useHolidayCalendar()
-    
-    await loadHolidayData()
-    
-    expect(isPeakSeason('2025-01-01')).toBe(true)
-    expect(isPeakSeason('2024-12-28')).toBe(true)
-    expect(isPeakSeason('2025-01-05')).toBe(true)
-    expect(isPeakSeason('2025-01-06')).toBe(false)
-    
-    const peakSeason = getPeakSeason('2025-01-01')
-    expect(peakSeason).toBeDefined()
-    expect(peakSeason?.surchargeRate).toBe(1.2)
   })
 
   it('gets special operations correctly', async () => {
@@ -334,7 +283,6 @@ describe('useHolidayCalendar', () => {
     expect(calendar[0][3]).not.toBeNull() // Wednesday (1st)
     expect(calendar[0][3]?.day).toBe(1)
     expect(calendar[0][3]?.isHoliday).toBe(true)
-    expect(calendar[0][3]?.isPeakSeason).toBe(true)
     expect(calendar[0][3]?.specialOperation).toBeDefined()
     
     // Check last day (31st is Friday)
@@ -369,8 +317,6 @@ describe('useHolidayCalendar', () => {
         loadHolidayData,
         isHoliday: vi.fn(),
         getHoliday: vi.fn(),
-        isPeakSeason: vi.fn(),
-        getPeakSeason: vi.fn(),
         getSpecialOperation: vi.fn(),
         getDayOfWeek: vi.fn(),
         formatDate: vi.fn(),

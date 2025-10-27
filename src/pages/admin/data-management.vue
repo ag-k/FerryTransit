@@ -271,7 +271,7 @@ const dataTypes: DataType[] = [
   {
     id: 'fare',
     name: '料金データ',
-    description: '運賃・割引・繁忙期設定',
+    description: '運賃・割引設定',
     icon: CurrencyYenIcon,
     lastUpdate: new Date('2024-01-14T15:20:00')
   },

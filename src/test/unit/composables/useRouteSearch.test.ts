@@ -15,10 +15,7 @@ vi.mock('@/composables/useFerryData', () => ({
 
 // Mock useHolidayCalendar
 vi.mock('@/composables/useHolidayCalendar', () => ({
-  useHolidayCalendar: () => ({
-    isPeakSeason: vi.fn(() => false),
-    getPeakSeason: vi.fn(() => null)
-  })
+  useHolidayCalendar: () => ({})
 }))
 
 describe('useRouteSearch', () => {

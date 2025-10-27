@@ -3,6 +3,7 @@ import { Timestamp } from 'firebase/firestore'
 import { useAdminAuth } from '~/composables/useAdminAuth'
 import { useAdminFirestore } from '~/composables/useAdminFirestore'
 import { createLogger } from '~/utils/logger'
+import type { VesselType } from '~/types/fare'
 
 /**
  * 公開用のJSONデータを Hosting から取得（ユーザー向け）
@@ -187,31 +188,138 @@ export const useDataPublish = () => {
    * 料金データの準備
    */
   const prepareFareData = async () => {
-    const fares = await getCollection('fares')
-    const discounts = await getCollection('discounts')
-    const peakPeriods = await getCollection('peakPeriods')
+    const [fares, versions, discounts] = await Promise.all([
+      getCollection<any>('fares'),
+      getCollection<any>('fareVersions'),
+      getCollection<any>('discounts')
+    ])
+
+    type VersionPayload = {
+      id: string
+      vesselType: VesselType
+      name?: string | null
+      description?: string | null
+      effectiveFrom: string
+      createdAt?: string | null
+      updatedAt?: string | null
+      fares: any[]
+    }
+
+    const parseTimestamp = (value: string): number => {
+      const date = new Date(value)
+      return Number.isNaN(date.getTime()) ? 0 : date.getTime()
+    }
+
+    const versionMetaMap = new Map<string, any>()
+    versions.forEach((version: any) => {
+      versionMetaMap.set(version.id, version)
+    })
+
+    const fallbackVersions: Partial<Record<VesselType, any>> = {}
+    const ensureFallbackVersion = (vesselType: VesselType) => {
+      if (!fallbackVersions[vesselType]) {
+        const fallbackId = `legacy-${vesselType}`
+        const metadata = {
+          id: fallbackId,
+          vesselType,
+          name: '既存データ',
+          effectiveFrom: '1970-01-01'
+        }
+        fallbackVersions[vesselType] = metadata
+        versionMetaMap.set(fallbackId, metadata)
+      }
+      return fallbackVersions[vesselType]!
+    }
+
+    const versionFaresMap = new Map<string, any[]>()
+
+    fares.forEach((fare: any) => {
+      const vesselType = (fare.type as VesselType) || 'ferry'
+      let versionId = fare.versionId as string | undefined
+
+      if (!versionId || !versionMetaMap.has(versionId)) {
+        const fallback = ensureFallbackVersion(vesselType)
+        versionId = fallback.id
+      }
+
+      if (!versionFaresMap.has(versionId)) {
+        versionFaresMap.set(versionId, [])
+      }
+
+      versionFaresMap.get(versionId)?.push(fare)
+    })
+
+    const versionPayloads: VersionPayload[] = Array.from(versionFaresMap.entries()).map(([versionId, versionFares]) => {
+      const meta = versionMetaMap.get(versionId) || {}
+      const vesselType = (meta.vesselType as VesselType) || (versionFares[0]?.type as VesselType) || 'ferry'
+
+      return {
+        id: versionId,
+        vesselType,
+        name: meta.name || null,
+        description: meta.description || null,
+        effectiveFrom: meta.effectiveFrom || '1970-01-01',
+        createdAt: meta.createdAt || null,
+        updatedAt: meta.updatedAt || null,
+        fares: versionFares.map((fare: any) => ({
+          route: fare.route,
+          adult: fare.adult,
+          child: fare.child,
+          car3m: fare.car3m ?? null,
+          car4m: fare.car4m ?? null,
+          car5m: fare.car5m ?? null,
+          type: fare.type
+        }))
+      }
+    })
+
+    const versionsByType: Partial<Record<VesselType, VersionPayload[]>> = {}
+    versionPayloads.forEach((version) => {
+      if (!versionsByType[version.vesselType]) {
+        versionsByType[version.vesselType] = []
+      }
+      versionsByType[version.vesselType]?.push(version)
+    })
+
+    const activeVersionIds: Partial<Record<VesselType, string>> = {}
+    const activeFares: any[] = []
+    const now = Date.now()
+
+    Object.entries(versionsByType).forEach(([vesselType, versionList]) => {
+      const sorted = versionList.sort((a, b) => parseTimestamp(b.effectiveFrom) - parseTimestamp(a.effectiveFrom))
+      const active = sorted.find(version => parseTimestamp(version.effectiveFrom) <= now) || sorted[sorted.length - 1]
+      if (active) {
+        activeVersionIds[vesselType as VesselType] = active.id
+        activeFares.push(...active.fares)
+      }
+    })
+
+    if (!activeFares.length) {
+      activeFares.push(
+        ...fares.map((fare: any) => ({
+          route: fare.route,
+          adult: fare.adult,
+          child: fare.child,
+          car3m: fare.car3m ?? null,
+          car4m: fare.car4m ?? null,
+          car5m: fare.car5m ?? null,
+          type: fare.type
+        }))
+      )
+    }
 
     return {
-      fares: fares.map(fare => ({
-        route: fare.route,
-        adult: fare.adult,
-        child: fare.child,
-        car3m: fare.car3m,
-        car4m: fare.car4m,
-        car5m: fare.car5m,
-        type: fare.type
-      })),
-      discounts: discounts.filter(d => d.active).map(discount => ({
-        id: discount.id,
-        name: discount.name,
-        rate: discount.rate,
-        conditions: discount.conditions
-      })),
-      peakPeriods: peakPeriods.map(period => ({
-        start: period.start,
-        end: period.end,
-        surchargeRate: period.surchargeRate
-      }))
+      fares: activeFares,
+      versions: versionPayloads,
+      activeVersionIds,
+      discounts: discounts
+        .filter((discount: any) => discount.active)
+        .map((discount: any) => ({
+          id: discount.id,
+          name: discount.name,
+          rate: discount.rate,
+          conditions: discount.conditions
+        }))
     }
   }
 
