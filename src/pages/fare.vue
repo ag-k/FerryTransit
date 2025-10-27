@@ -355,8 +355,8 @@ const seatClasses = [
 // Tab definitions
 const tabs = [
   { id: 'okiKisen', nameKey: 'OKI_KISEN_FERRY' },
-  { id: 'naikoSen', nameKey: 'NAIKO_SEN' },
-  { id: 'rainbowJet', nameKey: 'RAINBOWJET' }
+  { id: 'rainbowJet', nameKey: 'RAINBOWJET' },
+  { id: 'naikoSen', nameKey: 'NAIKO_SEN' }
 ]
 
 // Vehicle sizes (for old format compatibility)
