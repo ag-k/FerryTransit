@@ -23,6 +23,10 @@ export interface SeatClassFare {
 export interface RouteFare {
   adult: number
   child: number
+  disabled?: {
+    adult: number
+    child: number
+  }
   vehicle?: VehicleFare
   seatClass?: SeatClassFare
 }
