@@ -249,6 +249,39 @@ export const useDataPublish = () => {
       versionFaresMap.get(versionId)?.push(fare)
     })
 
+    const normalizeFareRecord = (fare: any) => {
+      const seatClass = fare.fares?.seatClass ?? fare.seatClass ?? null
+      const vehicle = fare.fares?.vehicle ?? fare.vehicle ?? null
+      const disabled = fare.fares?.disabled ?? fare.disabled ?? {
+        adult: typeof fare.disabledAdult === 'number' ? fare.disabledAdult : null,
+        child: typeof fare.disabledChild === 'number' ? fare.disabledChild : null
+      }
+
+      const disabledAdult = typeof (disabled?.adult ?? fare.disabledAdult) === 'number'
+        ? (disabled?.adult ?? fare.disabledAdult)
+        : null
+      const disabledChild = typeof (disabled?.child ?? fare.disabledChild) === 'number'
+        ? (disabled?.child ?? fare.disabledChild)
+        : null
+
+      return {
+        route: fare.route,
+        adult: fare.adult ?? null,
+        child: fare.child ?? null,
+        disabledAdult,
+        disabledChild,
+        car3m: vehicle?.under3m ?? fare.car3m ?? null,
+        car4m: vehicle?.under4m ?? fare.car4m ?? null,
+        car5m: vehicle?.under5m ?? fare.car5m ?? null,
+        seatClass: seatClass ?? null,
+        vehicle: vehicle ?? null,
+        disabled: disabledAdult !== null || disabledChild !== null
+          ? { adult: disabledAdult, child: disabledChild }
+          : null,
+        type: fare.type
+      }
+    }
+
     const versionPayloads: VersionPayload[] = Array.from(versionFaresMap.entries()).map(([versionId, versionFares]) => {
       const meta = versionMetaMap.get(versionId) || {}
       const vesselType = (meta.vesselType as VesselType) || (versionFares[0]?.type as VesselType) || 'ferry'
@@ -261,15 +294,7 @@ export const useDataPublish = () => {
         effectiveFrom: meta.effectiveFrom || '1970-01-01',
         createdAt: meta.createdAt || null,
         updatedAt: meta.updatedAt || null,
-        fares: versionFares.map((fare: any) => ({
-          route: fare.route,
-          adult: fare.adult,
-          child: fare.child,
-          car3m: fare.car3m ?? null,
-          car4m: fare.car4m ?? null,
-          car5m: fare.car5m ?? null,
-          type: fare.type
-        }))
+        fares: versionFares.map((fare: any) => normalizeFareRecord(fare))
       }
     })
 
@@ -296,15 +321,7 @@ export const useDataPublish = () => {
 
     if (!activeFares.length) {
       activeFares.push(
-        ...fares.map((fare: any) => ({
-          route: fare.route,
-          adult: fare.adult,
-          child: fare.child,
-          car3m: fare.car3m ?? null,
-          car4m: fare.car4m ?? null,
-          car5m: fare.car5m ?? null,
-          type: fare.type
-        }))
+        ...fares.map((fare: any) => normalizeFareRecord(fare))
       )
     }
 

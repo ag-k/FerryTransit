@@ -59,6 +59,12 @@ service cloud.firestore {
       allow read: if true;
       allow write: if isAdmin();
     }
+
+    // 料金バージョン管理（管理者のみアクセス）
+    match /fareVersions/{document=**} {
+      allow read: if isAdmin();
+      allow write: if isAdmin();
+    }
     
     // 割引設定（公開）
     match /discounts/{document=**} {
