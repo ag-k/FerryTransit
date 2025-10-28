@@ -203,6 +203,8 @@ export const useAdminFirestore = () => {
   ): Promise<void> => {
     const user = await getCurrentUser()
     if (!user) throw new Error('認証が必要です')
+    const userId = (user as any)?.uid ?? (user as any)?.value?.uid
+    if (!userId) throw new Error('認証ユーザー情報の取得に失敗しました')
 
     const batch = writeBatch(db)
 
@@ -218,15 +220,15 @@ export const useAdminFirestore = () => {
               ...op.data,
               createdAt: serverTimestamp(),
               updatedAt: serverTimestamp(),
-              createdBy: user.value.uid,
-              updatedBy: user.uid
+              createdBy: userId,
+              updatedBy: userId
             })
             break
           case 'update':
             batch.update(docRef, {
               ...op.data,
               updatedAt: serverTimestamp(),
-              updatedBy: user.uid
+              updatedBy: userId
             })
             break
           case 'delete':
