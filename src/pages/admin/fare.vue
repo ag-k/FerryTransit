@@ -201,7 +201,7 @@
             <tbody class="divide-y divide-gray-200 dark:divide-gray-700">
               <tr v-for="fare in highspeedFares" :key="fare.route">
                 <td class="px-4 py-3 text-sm font-medium text-gray-900 dark:text-gray-100">
-                  {{ fare.route }}
+                  {{ fare.routeLabel || fare.route }}
                 </td>
                 <td class="px-4 py-3 text-sm text-center text-gray-900 dark:text-gray-100">
                   {{ formatCurrency(fare.adult) }}
@@ -361,7 +361,7 @@
         <!-- 高速船料金編集 -->
         <div v-else-if="activeTab === 'highspeed'">
           <div v-for="(fare, index) in editingHighspeedFares" :key="index" class="border-b pb-4 mb-4">
-            <h4 class="font-medium mb-2">{{ fare.route }}</h4>
+            <h4 class="font-medium mb-2">{{ fare.routeLabel || fare.route }}</h4>
             <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3">
               <div>
                 <label class="text-xs text-gray-500">大人</label>
@@ -516,6 +516,7 @@ const { getCollection, batchWrite, createDocument, deleteDocument } = useAdminFi
 const { publishData } = useDataPublish()
 const { $toast } = useNuxtApp()
 const logger = createLogger('AdminFarePage')
+const { t } = useI18n()
 
 type FareDoc = Record<string, any>
 
@@ -651,6 +652,42 @@ const LEGACY_ROUTE_NAME_MAP: Record<string, string> = {
   '別府 ⇔ 来居': 'beppu-kuri'
 }
 
+const HIGHSPEED_ROUTE_TRANSLATION_KEYS: Record<string, string> = {
+  'hondo-oki': 'HONDO_OKI',
+  'dozen-dogo': 'DOZEN_DOGO',
+  'beppu-hishiura': 'BEPPU_HISHIURA',
+  'hishiura-kuri': 'HISHIURA_KURI',
+  'kuri-beppu': 'KURI_BEPPU'
+}
+
+const HIGHSPEED_CANONICAL_ROUTE_MAP: Record<string, string> = {
+  'hondo-oki': 'hondo-oki',
+  'hondo-saigo': 'hondo-oki',
+  'saigo-hondo': 'hondo-oki',
+  'hondo-hishiura': 'hondo-oki',
+  'hishiura-hondo': 'hondo-oki',
+  'hondo-beppu': 'hondo-oki',
+  'beppu-hondo': 'hondo-oki',
+  'dozen-dogo': 'dozen-dogo',
+  'saigo-beppu': 'dozen-dogo',
+  'beppu-saigo': 'dozen-dogo',
+  'saigo-hishiura': 'dozen-dogo',
+  'hishiura-saigo': 'dozen-dogo',
+  'beppu-hishiura': 'beppu-hishiura',
+  'hishiura-beppu': 'beppu-hishiura',
+  'hishiura-kuri': 'hishiura-kuri',
+  'kuri-hishiura': 'hishiura-kuri',
+  'kuri-beppu': 'kuri-beppu',
+  'beppu-kuri': 'kuri-beppu'
+}
+
+const ROUTE_LABELS: Record<string, string> = Object.entries(LEGACY_ROUTE_NAME_MAP).reduce((acc, [label, routeId]) => {
+  if (!acc[routeId]) {
+    acc[routeId] = label
+  }
+  return acc
+}, {} as Record<string, string>)
+
 const ROUTE_METADATA: Record<string, { departure: string; arrival: string }> = {
   'hondo-saigo': { departure: 'HONDO', arrival: 'SAIGO' },
   'saigo-hondo': { departure: 'SAIGO', arrival: 'HONDO' },
@@ -671,7 +708,9 @@ const ROUTE_METADATA: Record<string, { departure: string; arrival: string }> = {
   'hishiura-kuri': { departure: 'HISHIURA', arrival: 'KURI' },
   'kuri-hishiura': { departure: 'KURI', arrival: 'HISHIURA' },
   'kuri-beppu': { departure: 'KURI', arrival: 'BEPPU' },
-  'beppu-kuri': { departure: 'BEPPU', arrival: 'KURI' }
+  'beppu-kuri': { departure: 'BEPPU', arrival: 'KURI' },
+  'hondo-oki': { departure: 'HONDO', arrival: 'OKI' },
+  'dozen-dogo': { departure: 'DOZEN', arrival: 'DOGO' }
 }
 
 const normalizeRouteId = (value?: string | null): string | null => {
@@ -683,6 +722,83 @@ const normalizeRouteId = (value?: string | null): string | null => {
   if (ROUTE_METADATA[lower]) return lower
   if (LEGACY_ROUTE_NAME_MAP[trimmed]) return LEGACY_ROUTE_NAME_MAP[trimmed]
   return null
+}
+
+const resolveRouteLabel = (routeId: string | null | undefined): string | null => {
+  if (!routeId) return null
+  return ROUTE_LABELS[routeId] ?? null
+}
+
+const mapHighspeedToCanonicalRoute = (routeId: string | null | undefined): string | null => {
+  if (!routeId) return null
+  const normalized = routeId.toLowerCase()
+  return HIGHSPEED_CANONICAL_ROUTE_MAP[normalized] ?? normalized
+}
+
+const getHighspeedRouteLabel = (routeId: string | null | undefined): string | null => {
+  const canonical = mapHighspeedToCanonicalRoute(routeId)
+  if (!canonical) return null
+  const translationKey = HIGHSPEED_ROUTE_TRANSLATION_KEYS[canonical]
+  if (translationKey) {
+    return t(translationKey)
+  }
+  return ROUTE_LABELS[canonical] ?? ROUTE_LABELS[routeId ?? ''] ?? canonical
+}
+
+const resolveHighspeedRouteInfo = (fare: FareDoc): { routeId: string | null; label: string } => {
+  const routeCandidates = [
+    typeof fare.route === 'string' ? fare.route : null,
+    typeof fare.routeName === 'string' ? fare.routeName : null,
+    typeof fare.displayName === 'string' ? fare.displayName : null
+  ]
+
+  let routeId: string | null = null
+  for (const candidate of routeCandidates) {
+    if (!candidate) continue
+    const normalized = normalizeRouteId(candidate)
+    if (normalized) {
+      routeId = normalized
+      break
+    }
+  }
+
+  if (!routeId) {
+    routeId = routeCandidates.find(candidate => candidate && !candidate.includes('⇔')) ?? null
+  }
+
+  const canonicalRouteId = mapHighspeedToCanonicalRoute(routeId)
+
+  let label = getHighspeedRouteLabel(canonicalRouteId)
+  if (!label) {
+    label = routeCandidates.find(candidate => candidate && candidate.includes('⇔')) ?? null
+  }
+  if (!label && routeCandidates[2]) {
+    label = routeCandidates[2]
+  }
+  if (!label && routeCandidates[1]) {
+    label = routeCandidates[1]
+  }
+  if ((!label || !label.trim()) && canonicalRouteId) {
+    label = resolveRouteLabel(canonicalRouteId) ?? null
+  }
+  if (!label || !label.trim()) {
+    label = typeof fare.route === 'string' && fare.route.trim() ? fare.route : '未設定'
+  }
+
+  return {
+    routeId: canonicalRouteId,
+    label: label.trim()
+  }
+}
+
+const isHighspeedKuriRoute = (fare: FareDoc): boolean => {
+  const routeCandidates = [
+    typeof fare.route === 'string' ? fare.route : null,
+    typeof fare.routeName === 'string' ? fare.routeName : null,
+    typeof fare.displayName === 'string' ? fare.displayName : null
+  ]
+  const canonical = mapHighspeedToCanonicalRoute(routeCandidates.find(candidate => candidate !== null))
+  return canonical === 'hishiura-kuri' || canonical === 'kuri-beppu'
 }
 
 const buildFareDocId = (versionId: string, routeId: string) => `fare-${versionId}-${routeId}`
@@ -1086,12 +1202,19 @@ const loadFaresForType = async (vesselType: VesselType) => {
       return routeA.localeCompare(routeB)
     })
 
-    const enriched = sorted.map(fare => {
+    const withoutKuri = sorted.filter(fare => !isHighspeedKuriRoute(fare))
+
+    const enriched = withoutKuri.map(fare => {
+      const { routeId, label } = resolveHighspeedRouteInfo(fare)
       const adult = pickNumber(fare.adult)
       const child = pickNumber(fare.child) ?? calculateChildFare(adult)
       const disabled = extractDisabledFare(fare)
       return {
         ...fare,
+        route: routeId ?? (typeof fare.route === 'string' ? mapHighspeedToCanonicalRoute(fare.route) ?? fare.route : ''),
+        routeLabel: label,
+        displayName: fare.displayName ?? label,
+        routeName: fare.routeName ?? label,
         adult,
         child,
         disabledAdult: disabled.adult,
@@ -1528,19 +1651,22 @@ const setDefaultData = () => {
   editingFerryCategories.value = defaultCategories.map(category => cloneCategoryRecord(category))
 
   // デフォルトの高速船料金
-  const defaultHighspeedRoutes = [
-    '本土七類 ⇔ 西郷',
-    '本土七類 ⇔ 菱浦',
-    '本土七類 ⇔ 別府',
-    '西郷 ⇔ 菱浦',
-    '西郷 ⇔ 別府'
+  const defaultHighspeedRouteIds: Array<keyof typeof HIGHSPEED_ROUTE_TRANSLATION_KEYS> = [
+    'hondo-oki',
+    'dozen-dogo',
+    'beppu-hishiura'
   ]
-  const defaultHighspeedAdults = [6430, 4890, 4890, 2890, 2890]
-  const defaultHighspeedChildren = [3220, 2450, 2450, 1450, 1450]
+  const defaultHighspeedAdults = [6430, 4890, 4890]
+  const defaultHighspeedChildren = [3220, 2450, 2450]
 
-  highspeedFares.value = defaultHighspeedAdults.map((adult, index) => {
+  highspeedFares.value = defaultHighspeedRouteIds.map((routeId, index) => {
+    const label = getHighspeedRouteLabel(routeId) ?? routeId
+    const adult = defaultHighspeedAdults[index]
     return {
-      route: defaultHighspeedRoutes[index],
+      route: routeId,
+      routeLabel: label,
+      displayName: label,
+      routeName: label,
       adult,
       child: defaultHighspeedChildren[index] ?? calculateChildFare(adult),
       disabledAdult: null,
@@ -1652,17 +1778,23 @@ const saveFareData = async () => {
         return
       }
 
-      const operations = editingHighspeedFares.value.map(fare => {
+      const targetFares = editingHighspeedFares.value.filter(fare => !isHighspeedKuriRoute(fare))
+
+      const operations = targetFares.map(fare => {
+        const { routeId, label } = resolveHighspeedRouteInfo(fare)
         const adult = pickNumber(fare.adult)
         const child = pickNumber(fare.child)
         const disabledAdult = pickNumber(fare.disabledAdult)
         const disabledChild = pickNumber(fare.disabledChild)
+        const resolvedRoute = routeId ?? normalizeRouteId(label) ?? (typeof fare.route === 'string' ? fare.route : null)
         return {
           type: fare.id ? 'update' as const : 'create' as const,
           collection: 'fares',
           id: fare.id,
           data: {
-            route: fare.route,
+            route: resolvedRoute ?? label,
+            routeName: label,
+            displayName: label,
             adult,
             child,
             disabled: {
@@ -1687,14 +1819,8 @@ const saveFareData = async () => {
       if (operations.length) {
         await batchWrite(operations)
       }
-      highspeedFares.value = editingHighspeedFares.value.map(fare => ({
-        ...fare,
-        adult: pickNumber(fare.adult),
-        child: pickNumber(fare.child),
-        disabledAdult: pickNumber(fare.disabledAdult),
-        disabledChild: pickNumber(fare.disabledChild),
-        versionId: selectedHighspeedVersionId.value || fare.versionId
-      }))
+
+      await loadFaresForType('highspeed')
       $toast.success('高速船料金を更新しました')
     }
     
