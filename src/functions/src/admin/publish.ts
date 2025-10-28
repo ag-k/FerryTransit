@@ -2,6 +2,81 @@
 import { onCall, HttpsError } from 'firebase-functions/v2/https'
 import * as admin from 'firebase-admin'
 
+type TimestampLike = string | number | Date | { toDate: () => Date } | null | undefined
+
+interface VehicleFare {
+  under3m?: number | null
+  under4m?: number | null
+  under5m?: number | null
+  [key: string]: unknown
+}
+
+interface DisabledFare {
+  adult?: number | null
+  child?: number | null
+  [key: string]: unknown
+}
+
+interface FareDocument {
+  id: string
+  type?: string | null
+  versionId?: string | null
+  route?: string | null
+  adult?: number | null
+  child?: number | null
+  disabledAdult?: number | null
+  disabledChild?: number | null
+  car3m?: number | null
+  car4m?: number | null
+  car5m?: number | null
+  seatClass?: string | null
+  fares?: {
+    seatClass?: string | null
+    vehicle?: VehicleFare | null
+    disabled?: DisabledFare | null
+  }
+  vehicle?: VehicleFare | null
+  disabled?: DisabledFare | null
+  [key: string]: unknown
+}
+
+interface NormalizedFareRecord {
+  route: string | null
+  adult: number | null
+  child: number | null
+  disabledAdult: number | null
+  disabledChild: number | null
+  car3m: number | null
+  car4m: number | null
+  car5m: number | null
+  seatClass: string | null
+  vehicle: VehicleFare | null
+  disabled: DisabledFare | null
+  type?: string | null
+}
+
+interface VersionMetadata {
+  id: string
+  vesselType?: string | null
+  name?: string | null
+  description?: string | null
+  effectiveFrom?: TimestampLike
+  createdAt?: TimestampLike
+  updatedAt?: TimestampLike
+  [key: string]: unknown
+}
+
+interface VersionPayload {
+  id: string
+  vesselType: string
+  name: string | null
+  description: string | null
+  effectiveFrom: TimestampLike | string
+  createdAt: TimestampLike | null
+  updatedAt: TimestampLike | null
+  fares: NormalizedFareRecord[]
+}
+
 /**
  * データの本番公開（管理者のみ実行可能）
  * FirestoreからStorageへデータを公開
@@ -211,24 +286,48 @@ async function prepareFareData() {
     admin.firestore().collection('discounts').where('active', '==', true).get()
   ])
 
-  const parseTimestamp = (value) => {
-    const date = new Date(value)
-    return Number.isNaN(date.getTime()) ? 0 : date.getTime()
+  const parseTimestamp = (value: TimestampLike): number => {
+    if (typeof value === 'number') {
+      return value
+    }
+    if (value instanceof Date) {
+      return value.getTime()
+    }
+    if (value && typeof value === 'object' && 'toDate' in value && typeof (value as { toDate: () => Date }).toDate === 'function') {
+      return (value as { toDate: () => Date }).toDate().getTime()
+    }
+    if (typeof value === 'string') {
+      const date = new Date(value)
+      return Number.isNaN(date.getTime()) ? 0 : date.getTime()
+    }
+    return 0
   }
 
-  const fares = faresSnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }))
-  const versions = versionsSnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }))
+  const fares: FareDocument[] = faresSnapshot.docs.map((doc) => {
+    const data = doc.data() as Record<string, unknown>
+    return {
+      id: doc.id,
+      ...data
+    } as FareDocument
+  })
+  const versions: VersionMetadata[] = versionsSnapshot.docs.map((doc) => {
+    const data = doc.data() as Record<string, unknown>
+    return {
+      id: doc.id,
+      ...data
+    } as VersionMetadata
+  })
 
-  const versionMetaMap = new Map()
+  const versionMetaMap = new Map<string, VersionMetadata>()
   versions.forEach((version) => {
     versionMetaMap.set(version.id, version)
   })
 
-  const fallbackVersions = {}
-  const ensureFallbackVersion = (vesselType) => {
+  const fallbackVersions: Record<string, VersionMetadata> = {}
+  const ensureFallbackVersion = (vesselType: string): VersionMetadata => {
     if (!fallbackVersions[vesselType]) {
       const fallbackId = `legacy-${vesselType}`
-      const metadata = {
+      const metadata: VersionMetadata = {
         id: fallbackId,
         vesselType,
         name: '既存データ',
@@ -240,50 +339,76 @@ async function prepareFareData() {
     return fallbackVersions[vesselType]
   }
 
-  const versionFaresMap = new Map()
+  const versionFaresMap = new Map<string, FareDocument[]>()
 
   fares.forEach((fare) => {
-    const vesselType = fare.type || 'ferry'
-    let versionId = fare.versionId
+    const vesselType = fare.type ?? 'ferry'
+    let versionId = (typeof fare.versionId === 'string' ? fare.versionId : null)
 
     if (!versionId || !versionMetaMap.has(versionId)) {
       const fallback = ensureFallbackVersion(vesselType)
       versionId = fallback.id
     }
 
+    if (!versionId) {
+      return
+    }
+
     if (!versionFaresMap.has(versionId)) {
       versionFaresMap.set(versionId, [])
     }
 
-    versionFaresMap.get(versionId).push(fare)
+    versionFaresMap.get(versionId)!.push(fare)
   })
 
-  const versionPayloads = []
+  const normalizeFareRecord = (fare: FareDocument): NormalizedFareRecord => {
+    const seatClass = fare.fares?.seatClass ?? fare.seatClass ?? null
+    const vehicle = (fare.fares?.vehicle ?? fare.vehicle ?? null) as VehicleFare | null
+    const disabledSource = (fare.fares?.disabled ?? fare.disabled ?? {
+      adult: typeof fare.disabledAdult === 'number' ? fare.disabledAdult : null,
+      child: typeof fare.disabledChild === 'number' ? fare.disabledChild : null
+    }) as DisabledFare | null
+
+    const toNumberOrNull = (value: unknown): number | null => (typeof value === 'number' ? value : null)
+    const disabledAdult = toNumberOrNull(disabledSource?.adult ?? fare.disabledAdult)
+    const disabledChild = toNumberOrNull(disabledSource?.child ?? fare.disabledChild)
+
+    return {
+      route: typeof fare.route === 'string' ? fare.route : null,
+      adult: typeof fare.adult === 'number' ? fare.adult : null,
+      child: typeof fare.child === 'number' ? fare.child : null,
+      disabledAdult,
+      disabledChild,
+      car3m: typeof vehicle?.under3m === 'number' ? vehicle.under3m : (typeof fare.car3m === 'number' ? fare.car3m : null),
+      car4m: typeof vehicle?.under4m === 'number' ? vehicle.under4m : (typeof fare.car4m === 'number' ? fare.car4m : null),
+      car5m: typeof vehicle?.under5m === 'number' ? vehicle.under5m : (typeof fare.car5m === 'number' ? fare.car5m : null),
+      seatClass,
+      vehicle,
+      disabled: disabledAdult !== null || disabledChild !== null
+        ? { adult: disabledAdult, child: disabledChild }
+        : null,
+      type: fare.type ?? null
+    }
+  }
+
+  const versionPayloads: VersionPayload[] = []
   versionFaresMap.forEach((fareList, versionId) => {
-    const meta = versionMetaMap.get(versionId) || {}
-    const vesselType = meta.vesselType || fareList[0]?.type || 'ferry'
+    const meta: VersionMetadata = versionMetaMap.get(versionId) || { id: versionId }
+    const vesselType = (meta.vesselType ?? fareList[0]?.type ?? 'ferry') as string
 
     versionPayloads.push({
       id: versionId,
       vesselType,
-      name: meta.name || null,
-      description: meta.description || null,
-      effectiveFrom: meta.effectiveFrom || '1970-01-01',
-      createdAt: meta.createdAt || null,
-      updatedAt: meta.updatedAt || null,
-      fares: fareList.map((fare) => ({
-        route: fare.route,
-        adult: fare.adult,
-        child: fare.child,
-        car3m: typeof fare.car3m === 'undefined' ? null : fare.car3m,
-        car4m: typeof fare.car4m === 'undefined' ? null : fare.car4m,
-        car5m: typeof fare.car5m === 'undefined' ? null : fare.car5m,
-        type: fare.type
-      }))
+      name: typeof meta.name === 'string' ? meta.name : null,
+      description: typeof meta.description === 'string' ? meta.description : null,
+      effectiveFrom: meta.effectiveFrom ?? '1970-01-01',
+      createdAt: meta.createdAt ?? null,
+      updatedAt: meta.updatedAt ?? null,
+      fares: fareList.map((fare) => normalizeFareRecord(fare))
     })
   })
 
-  const versionsByType = {}
+  const versionsByType: Record<string, VersionPayload[]> = {}
   versionPayloads.forEach((version) => {
     if (!versionsByType[version.vesselType]) {
       versionsByType[version.vesselType] = []
@@ -291,12 +416,12 @@ async function prepareFareData() {
     versionsByType[version.vesselType].push(version)
   })
 
-  const activeVersionIds = {}
-  const activeFares = []
+  const activeVersionIds: Record<string, string> = {}
+  const activeFares: NormalizedFareRecord[] = []
   const now = Date.now()
 
   Object.entries(versionsByType).forEach(([vesselType, list]) => {
-    const sorted = list.sort((a, b) => parseTimestamp(b.effectiveFrom) - parseTimestamp(a.effectiveFrom))
+    const sorted = [...list].sort((a, b) => parseTimestamp(b.effectiveFrom) - parseTimestamp(a.effectiveFrom))
     const active = sorted.find((version) => parseTimestamp(version.effectiveFrom) <= now) || sorted[sorted.length - 1]
     if (active) {
       activeVersionIds[vesselType] = active.id
@@ -306,15 +431,7 @@ async function prepareFareData() {
 
   if (!activeFares.length) {
     activeFares.push(
-      ...fares.map(fare => ({
-        route: fare.route,
-        adult: fare.adult,
-        child: fare.child,
-        car3m: typeof fare.car3m === 'undefined' ? null : fare.car3m,
-        car4m: typeof fare.car4m === 'undefined' ? null : fare.car4m,
-        car5m: typeof fare.car5m === 'undefined' ? null : fare.car5m,
-        type: fare.type
-      }))
+      ...fares.map(fare => normalizeFareRecord(fare))
     )
   }
 
@@ -324,7 +441,7 @@ async function prepareFareData() {
     activeVersionIds,
     discounts: discountsSnapshot.docs.map(doc => ({
       id: doc.id,
-      ...doc.data()
+      ...(doc.data() as Record<string, unknown>)
     }))
   }
 }
