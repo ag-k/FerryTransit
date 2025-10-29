@@ -226,10 +226,10 @@
             <div class="flex justify-between items-start">
               <div>
                 <h4 class="font-medium text-gray-900 dark:text-white">
-                  {{ discount.name }}
+                  {{ resolveDiscountName(discount) }}
                 </h4>
                 <p class="text-sm text-gray-500 dark:text-gray-400 mt-1">
-                  {{ discount.description }}
+                  {{ resolveDiscountDescription(discount) }}
                 </p>
                 <p class="text-lg font-bold text-blue-600 dark:text-blue-400 mt-2">
                   {{ discount.rate }}% 割引
@@ -799,6 +799,37 @@ const isHighspeedKuriRoute = (fare: FareDoc): boolean => {
   ]
   const canonical = mapHighspeedToCanonicalRoute(routeCandidates.find(candidate => candidate !== null))
   return canonical === 'hishiura-kuri' || canonical === 'kuri-beppu'
+}
+
+const translateIfPossible = (value?: string | null): string | null => {
+  if (!value) return null
+  const translated = t(value)
+  if (translated !== value || /^[A-Z0-9_]+$/.test(value)) {
+    return translated
+  }
+  return value
+}
+
+const resolveDiscountName = (discount: Discount & { nameKey?: string; name?: string }): string => {
+  const candidates = [discount.nameKey, discount.name]
+  for (const candidate of candidates) {
+    const translated = translateIfPossible(candidate)
+    if (translated && translated.trim()) {
+      return translated
+    }
+  }
+  return discount.name ?? '-'
+}
+
+const resolveDiscountDescription = (discount: Discount & { descriptionKey?: string; description?: string }): string => {
+  const candidates = [discount.descriptionKey, discount.description]
+  for (const candidate of candidates) {
+    const translated = translateIfPossible(candidate)
+    if (translated && translated.trim()) {
+      return translated
+    }
+  }
+  return discount.description ?? ''
 }
 
 const buildFareDocId = (versionId: string, routeId: string) => `fare-${versionId}-${routeId}`
