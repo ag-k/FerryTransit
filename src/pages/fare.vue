@@ -71,7 +71,7 @@
               ]"
               @click="okiKisenPassengerActiveCategory = category.id"
             >
-              {{ $t(category.labelKey) }}
+              {{ translateLabel(category.labelKey, category.fallback) }}
             </button>
           </div>
           <div class="overflow-x-auto">
@@ -79,21 +79,27 @@
               <thead>
                 <tr class="bg-gray-100 dark:bg-gray-800">
                   <th class="border border-gray-300 dark:border-gray-600 px-4 py-3 text-left dark:text-gray-100">
-                    {{ $t(getPassengerCategoryLabelKey(okiKisenPassengerActiveCategory)) }}
+                  {{ translateLabel(
+                    getPassengerCategoryLabelKey(okiKisenPassengerActiveCategory),
+                    passengerCategoryMap[okiKisenPassengerActiveCategory]?.fallback
+                  ) }}
                   </th>
                   <th
                     v-for="group in okiKisenRouteGroups"
                     :key="group.id"
                     class="border border-gray-300 dark:border-gray-600 px-4 py-3 text-center dark:text-gray-100"
                   >
-                    {{ $t(group.labelKey) }}
+                    {{ translateLabel(group.labelKey) }}
                   </th>
                 </tr>
               </thead>
               <tbody>
                 <tr class="hover:bg-gray-50 dark:hover:bg-gray-700/50">
                   <td class="border border-gray-300 dark:border-gray-600 px-4 py-3 font-medium dark:text-gray-100">
-                    {{ $t(getPassengerCategoryLabelKey(okiKisenPassengerActiveCategory)) }}
+                    {{ translateLabel(
+                      getPassengerCategoryLabelKey(okiKisenPassengerActiveCategory),
+                      passengerCategoryMap[okiKisenPassengerActiveCategory]?.fallback
+                    ) }}
                   </td>
                   <td
                     v-for="group in okiKisenRouteGroups"
@@ -329,7 +335,7 @@
             ]"
             @click="rainbowJetPassengerActiveCategory = category.id"
           >
-            {{ $t(category.labelKey) }}
+            {{ translateLabel(category.labelKey, category.fallback) }}
           </button>
         </div>
         <div class="overflow-x-auto mb-8">
@@ -338,7 +344,10 @@
               <tr class="bg-gray-100 dark:bg-gray-800">
                 <th class="border border-gray-300 dark:border-gray-600 px-4 py-3 text-left dark:text-gray-100">{{ $t('ROUTE') }}</th>
                 <th class="border border-gray-300 dark:border-gray-600 px-4 py-3 text-right dark:text-gray-100">
-                  {{ $t(getPassengerCategoryLabelKey(rainbowJetPassengerActiveCategory)) }}
+                  {{ translateLabel(
+                    getPassengerCategoryLabelKey(rainbowJetPassengerActiveCategory),
+                    passengerCategoryMap[rainbowJetPassengerActiveCategory]?.fallback
+                  ) }}
                 </th>
               </tr>
             </thead>
@@ -349,7 +358,7 @@
                 class="hover:bg-gray-50 dark:hover:bg-gray-700/50"
               >
                 <td class="border border-gray-300 dark:border-gray-600 px-4 py-3 dark:text-gray-100">
-                  {{ $t(group.labelKey) }}
+                  {{ translateLabel(group.labelKey) }}
                 </td>
                 <td class="border border-gray-300 dark:border-gray-600 px-4 py-3 text-right font-mono dark:text-gray-100">
                   {{ getRainbowJetPassengerFare(group.id, rainbowJetPassengerActiveCategory) }}
@@ -372,8 +381,8 @@
           <div
 v-for="(discount, key) in discounts" :key="key" 
                class="border border-gray-200 dark:border-gray-700 rounded-lg p-4 dark:bg-gray-800">
-            <h4 class="font-medium mb-2 dark:text-white">{{ $t(discount.nameKey) }}</h4>
-            <p class="text-gray-600 dark:text-gray-400">{{ $t(discount.descriptionKey) }}</p>
+            <h4 class="font-medium mb-2 dark:text-white">{{ translateLabel(discount.nameKey, discount.name) }}</h4>
+            <p class="text-gray-600 dark:text-gray-400">{{ translateLabel(discount.descriptionKey, discount.description) }}</p>
             <p class="mt-2 text-lg font-medium text-blue-600 dark:text-blue-400">
               {{ Math.round((1 - discount.rate) * 100) }}% OFF
             </p>
@@ -391,6 +400,7 @@ import type { FareVersion } from '@/types/fare'
 // Composables
 const { formatCurrency, getAllFares } = useFareDisplay()
 const fareStore = process.client ? useFareStore() : null
+const { t, te } = useI18n()
 
 // State
 const activeTab = ref('okiKisen')
@@ -412,20 +422,20 @@ const seatClasses = [
 ]
 
 const passengerCategories = [
-  { id: 'adult', labelKey: 'PASSENGER_CATEGORY_ADULT' },
-  { id: 'child', labelKey: 'PASSENGER_CATEGORY_CHILD' },
-  { id: 'disabledAdult', labelKey: 'PASSENGER_CATEGORY_DISABLED_ADULT' },
-  { id: 'disabledChild', labelKey: 'PASSENGER_CATEGORY_DISABLED_CHILD' }
+  { id: 'adult', labelKey: 'PASSENGER_CATEGORY_ADULT', fallback: '大人' },
+  { id: 'child', labelKey: 'PASSENGER_CATEGORY_CHILD', fallback: '小人' },
+  { id: 'disabledAdult', labelKey: 'PASSENGER_CATEGORY_DISABLED_ADULT', fallback: '障がい者（大人）' },
+  { id: 'disabledChild', labelKey: 'PASSENGER_CATEGORY_DISABLED_CHILD', fallback: '障がい者（小人）' }
 ] as const
 
 type PassengerCategoryId = typeof passengerCategories[number]['id']
 
-const passengerCategoryMap = passengerCategories.reduce<Record<PassengerCategoryId, { id: PassengerCategoryId; labelKey: string }>>(
+const passengerCategoryMap = passengerCategories.reduce<Record<PassengerCategoryId, { id: PassengerCategoryId; labelKey: string; fallback: string }>>(
   (acc, category) => {
     acc[category.id] = category
     return acc
   },
-  {} as Record<PassengerCategoryId, { id: PassengerCategoryId; labelKey: string }>
+  {} as Record<PassengerCategoryId, { id: PassengerCategoryId; labelKey: string; fallback: string }>
 )
 
 const okiKisenPassengerActiveCategory = ref<PassengerCategoryId>('adult')
@@ -501,6 +511,27 @@ const rainbowJetCanonicalMap: Record<string, string> = {
 
 const PASSENGER_DISCOUNT_RATE = 0.5
 
+const LEGACY_ROUTE_NAME_MAP: Record<string, string> = {
+  '本土七類 ⇔ 西郷': 'hondo-saigo',
+  '西郷 ⇔ 本土七類': 'saigo-hondo',
+  '本土七類 ⇔ 菱浦': 'hondo-hishiura',
+  '菱浦 ⇔ 本土七類': 'hishiura-hondo',
+  '本土七類 ⇔ 別府': 'hondo-beppu',
+  '別府 ⇔ 本土七類': 'beppu-hondo',
+  '本土七類 ⇔ 来居': 'hondo-kuri',
+  '来居 ⇔ 本土七類': 'kuri-hondo',
+  '西郷 ⇔ 菱浦': 'saigo-hishiura',
+  '菱浦 ⇔ 西郷': 'hishiura-saigo',
+  '西郷 ⇔ 別府': 'saigo-beppu',
+  '別府 ⇔ 西郷': 'beppu-saigo',
+  '菱浦 ⇔ 別府': 'hishiura-beppu',
+  '別府 ⇔ 菱浦': 'beppu-hishiura',
+  '菱浦 ⇔ 来居': 'hishiura-kuri',
+  '来居 ⇔ 菱浦': 'kuri-hishiura',
+  '来居 ⇔ 別府': 'kuri-beppu',
+  '別府 ⇔ 来居': 'beppu-kuri'
+}
+
 // Tab definitions
 const tabs = [
   { id: 'okiKisen', nameKey: 'OKI_KISEN_FERRY' },
@@ -573,7 +604,8 @@ const highspeedVersionName = computed(() => formatVersionName(highspeedVersion.v
 const localVersionName = computed(() => formatVersionName(localVersion.value))
 
 const getPassengerCategoryLabelKey = (categoryId: PassengerCategoryId): string => {
-  return passengerCategoryMap[categoryId]?.labelKey ?? 'PASSENGER_CATEGORY_ADULT'
+  const entry = passengerCategoryMap[categoryId]
+  return entry?.labelKey ?? 'PASSENGER_CATEGORY_ADULT'
 }
 
 const pickNumber = (value: unknown): number | null => {
@@ -623,12 +655,13 @@ const normalizePassengerFares = (source: any): Record<PassengerCategoryId, numbe
 const findOkiKisenRoute = (groupId: string): any | null => {
   const group = okiKisenRouteGroups.find(item => item.id === groupId)
   if (!group) return null
+
+  const lookup = buildRouteLookup(okiKisenFares.value)
   for (const routeId of group.routeIds) {
-    const route = okiKisenFares.value.find(r => r.id === routeId)
-    if (route) {
-      return route
-    }
+    const route = findRouteById(lookup, routeId)
+    if (route) return route
   }
+
   return null
 }
 
@@ -644,15 +677,76 @@ const getOkiKisenPassengerFare = (groupId: string, categoryId: PassengerCategory
   return value !== null ? formatCurrency(value) : '—'
 }
 
+const normalizeRouteId = (value: string | null | undefined): string | null => {
+  if (!value) return null
+  const trimmed = value.trim()
+  if (!trimmed) return null
+  if (LEGACY_ROUTE_NAME_MAP[trimmed]) {
+    return LEGACY_ROUTE_NAME_MAP[trimmed]
+  }
+
+  const lower = trimmed.toLowerCase()
+  if (lower.startsWith('fare-')) {
+    const parts = lower.split('-')
+    if (parts.length >= 3) {
+      return `${parts[parts.length - 2]}-${parts[parts.length - 1]}`
+    }
+  }
+
+  return lower
+}
+
+const extractRouteIdentifiers = (route: any): string[] => {
+  const candidates: string[] = []
+  if (!route || typeof route !== 'object') {
+    return candidates
+  }
+
+  const possibleKeys = ['id', 'route', 'routeId', 'routeName', 'displayName', 'categoryId']
+  possibleKeys.forEach((key) => {
+    const value = route[key]
+    if (typeof value === 'string' && value.trim().length > 0) {
+      candidates.push(value)
+    }
+  })
+
+  return candidates
+}
+
+const buildRouteLookup = (routes: any[]): Map<string, any> => {
+  const lookup = new Map<string, any>()
+
+  routes.forEach((route) => {
+    const identifiers = extractRouteIdentifiers(route)
+    identifiers.forEach((identifier) => {
+      const normalized = normalizeRouteId(identifier)
+      if (normalized && !lookup.has(normalized)) {
+        lookup.set(normalized, route)
+      }
+    })
+  })
+
+  return lookup
+}
+
+const findRouteById = (lookup: Map<string, any>, routeId: string): any | null => {
+  const normalizedId = normalizeRouteId(routeId)
+  if (!normalizedId) return null
+  return lookup.get(normalizedId) ?? null
+}
+
 const findRainbowJetFareSource = (groupId: string): any | null => {
   const special = rainbowJetSpecialFares.value?.[groupId]
   if (special) {
     return special
   }
 
-  const directRoute = rainbowJetFares.value.find(route => rainbowJetCanonicalMap[route.id] === groupId)
-  if (directRoute) {
-    return directRoute
+  const lookup = buildRouteLookup(rainbowJetFares.value)
+  for (const [routeKey, route] of lookup.entries()) {
+    const canonical = rainbowJetCanonicalMap[routeKey] ?? rainbowJetCanonicalMap[normalizeRouteId(routeKey) ?? '']
+    if (canonical === groupId) {
+      return route
+    }
   }
 
   return null
@@ -668,6 +762,24 @@ const getRainbowJetPassengerFareValue = (groupId: string, categoryId: PassengerC
 const getRainbowJetPassengerFare = (groupId: string, categoryId: PassengerCategoryId): string => {
   const value = getRainbowJetPassengerFareValue(groupId, categoryId)
   return value !== null ? formatCurrency(value) : '—'
+}
+
+const isLikelyTranslationKey = (value: string): boolean => /^[A-Z0-9_]+(_[A-Z0-9_]+)*$/.test(value)
+
+const translateLabel = (labelKey?: string | null, fallback?: string | null): string => {
+  if (typeof labelKey === 'string' && labelKey.length > 0) {
+    if (typeof te === 'function' && te(labelKey)) {
+      return t(labelKey)
+    }
+    if (isLikelyTranslationKey(labelKey)) {
+      return t(labelKey)
+    }
+    return labelKey
+  }
+  if (typeof fallback === 'string' && fallback.length > 0) {
+    return fallback
+  }
+  return ''
 }
 
 // Get seat class fare for a specific route
@@ -695,8 +807,9 @@ const getVehicleFare = (routeType: string, sizeKey: string) => {
 
 // Group fares by ship type
 const groupFaresByShipType = (fares: any[]) => {
-  // Define routes for each ship type
-  const okiKisenRoutes = [
+  const lookup = buildRouteLookup(fares)
+
+  const okiKisenRouteIds = [
     'hondo-saigo', 'saigo-hondo',
     'hondo-beppu', 'beppu-hondo',
     'hondo-hishiura', 'hishiura-hondo',
@@ -708,34 +821,31 @@ const groupFaresByShipType = (fares: any[]) => {
     'beppu-kuri', 'kuri-beppu',
     'hishiura-kuri', 'kuri-hishiura'
   ]
-  const naikoSenRoutes = [
-    'beppu-hishiura', 'hishiura-beppu', 
-    'beppu-kuri', 'kuri-beppu', 
+
+  const naikoSenRouteIds = [
+    'beppu-hishiura', 'hishiura-beppu',
+    'beppu-kuri', 'kuri-beppu',
     'hishiura-kuri', 'kuri-hishiura'
   ]
-  const rainbowJetRoutes = ['hondo-saigo', 'saigo-hondo']
-  
-  const okiKisen: any[] = []
-  const naikoSen: any[] = []
-  const rainbowJet: any[] = []
-  
-  // Group by ship type
-  okiKisenRoutes.forEach(id => {
-    const route = fares.find(f => f.id === id)
-    if (route) okiKisen.push(route)
-  })
-  
-  naikoSenRoutes.forEach(id => {
-    const route = fares.find(f => f.id === id)
-    if (route) naikoSen.push(route)
-  })
-  
-  rainbowJetRoutes.forEach(id => {
-    const route = fares.find(f => f.id === id)
-    if (route) rainbowJet.push(route)
-  })
-  
-  return { okiKisen, naikoSen, rainbowJet }
+
+  const rainbowJetRouteIds = ['hondo-saigo', 'saigo-hondo']
+
+  const selectRoutes = (routeIds: string[]): any[] => {
+    const selected: any[] = []
+    routeIds.forEach((routeId) => {
+      const route = findRouteById(lookup, routeId)
+      if (route && !selected.includes(route)) {
+        selected.push(route)
+      }
+    })
+    return selected
+  }
+
+  return {
+    okiKisen: selectRoutes(okiKisenRouteIds),
+    naikoSen: selectRoutes(naikoSenRouteIds),
+    rainbowJet: selectRoutes(rainbowJetRouteIds)
+  }
 }
 
 // Load fare data
