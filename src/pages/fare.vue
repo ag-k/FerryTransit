@@ -57,6 +57,56 @@
             {{ $t('FERRY_OKI') }}, {{ $t('FERRY_SHIRASHIMA') }}, {{ $t('FERRY_KUNIGA') }}
           </p>
         </div>
+
+        <div class="mb-8">
+          <div class="flex flex-wrap gap-2 mb-3">
+            <button
+              v-for="category in passengerCategories"
+              :key="category.id"
+              :class="[
+                okiKisenPassengerActiveCategory === category.id
+                  ? 'bg-blue-600 text-white border border-blue-600'
+                  : 'bg-white text-gray-700 dark:bg-gray-800 dark:text-gray-200 border border-gray-300 dark:border-gray-600',
+                'px-3 py-1.5 rounded-full text-sm font-medium transition-colors'
+              ]"
+              @click="okiKisenPassengerActiveCategory = category.id"
+            >
+              {{ $t(category.labelKey) }}
+            </button>
+          </div>
+          <div class="overflow-x-auto">
+            <table class="w-full text-base sm:text-sm border-collapse">
+              <thead>
+                <tr class="bg-gray-100 dark:bg-gray-800">
+                  <th class="border border-gray-300 dark:border-gray-600 px-4 py-3 text-left dark:text-gray-100">
+                    {{ $t(getPassengerCategoryLabelKey(okiKisenPassengerActiveCategory)) }}
+                  </th>
+                  <th
+                    v-for="group in okiKisenRouteGroups"
+                    :key="group.id"
+                    class="border border-gray-300 dark:border-gray-600 px-4 py-3 text-center dark:text-gray-100"
+                  >
+                    {{ $t(group.labelKey) }}
+                  </th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr class="hover:bg-gray-50 dark:hover:bg-gray-700/50">
+                  <td class="border border-gray-300 dark:border-gray-600 px-4 py-3 font-medium dark:text-gray-100">
+                    {{ $t(getPassengerCategoryLabelKey(okiKisenPassengerActiveCategory)) }}
+                  </td>
+                  <td
+                    v-for="group in okiKisenRouteGroups"
+                    :key="group.id"
+                    class="border border-gray-300 dark:border-gray-600 px-4 py-3 text-center font-mono dark:text-gray-100"
+                  >
+                    {{ getOkiKisenPassengerFare(group.id, okiKisenPassengerActiveCategory) }}
+                  </td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
         
         <!-- Seat class fares -->
         <h4 class="text-lg font-medium mb-3 dark:text-white">{{ $t('SEAT_CLASS_FARE') }}</h4>
@@ -267,47 +317,42 @@
         
         <!-- Passenger fares -->
         <h4 class="text-lg font-medium mb-3 dark:text-white">{{ $t('PASSENGER_FARE') }}</h4>
+        <div class="flex flex-wrap gap-2 mb-3">
+          <button
+            v-for="category in passengerCategories"
+            :key="category.id"
+            :class="[
+              rainbowJetPassengerActiveCategory === category.id
+                ? 'bg-blue-600 text-white border border-blue-600'
+                : 'bg-white text-gray-700 dark:bg-gray-800 dark:text-gray-200 border border-gray-300 dark:border-gray-600',
+              'px-3 py-1.5 rounded-full text-sm font-medium transition-colors'
+            ]"
+            @click="rainbowJetPassengerActiveCategory = category.id"
+          >
+            {{ $t(category.labelKey) }}
+          </button>
+        </div>
         <div class="overflow-x-auto mb-8">
           <table class="w-full text-base sm:text-sm border-collapse">
             <thead>
               <tr class="bg-gray-100 dark:bg-gray-800">
                 <th class="border border-gray-300 dark:border-gray-600 px-4 py-3 text-left dark:text-gray-100">{{ $t('ROUTE') }}</th>
-                <th class="border border-gray-300 dark:border-gray-600 px-4 py-3 text-right dark:text-gray-100">{{ $t('ADULT') }}</th>
-                <th class="border border-gray-300 dark:border-gray-600 px-4 py-3 text-right dark:text-gray-100">{{ $t('CHILD') }}</th>
+                <th class="border border-gray-300 dark:border-gray-600 px-4 py-3 text-right dark:text-gray-100">
+                  {{ $t(getPassengerCategoryLabelKey(rainbowJetPassengerActiveCategory)) }}
+                </th>
               </tr>
             </thead>
             <tbody>
-              <tr v-if="rainbowJetSpecialFares?.['hondo-oki']" class="hover:bg-gray-50 dark:hover:bg-gray-700/50">
+              <tr
+                v-for="group in rainbowJetRouteGroups"
+                :key="group.id"
+                class="hover:bg-gray-50 dark:hover:bg-gray-700/50"
+              >
                 <td class="border border-gray-300 dark:border-gray-600 px-4 py-3 dark:text-gray-100">
-                  {{ $t('HONDO_OKI') }}
+                  {{ $t(group.labelKey) }}
                 </td>
                 <td class="border border-gray-300 dark:border-gray-600 px-4 py-3 text-right font-mono dark:text-gray-100">
-                  {{ formatCurrency(rainbowJetSpecialFares['hondo-oki'].adult) }}
-                </td>
-                <td class="border border-gray-300 dark:border-gray-600 px-4 py-3 text-right font-mono dark:text-gray-100">
-                  {{ formatCurrency(rainbowJetSpecialFares['hondo-oki'].child) }}
-                </td>
-              </tr>
-              <tr v-if="rainbowJetSpecialFares?.['dozen-dogo']" class="hover:bg-gray-50 dark:hover:bg-gray-700/50">
-                <td class="border border-gray-300 dark:border-gray-600 px-4 py-3 dark:text-gray-100">
-                  {{ $t('DOZEN_DOGO') }}
-                </td>
-                <td class="border border-gray-300 dark:border-gray-600 px-4 py-3 text-right font-mono dark:text-gray-100">
-                  {{ formatCurrency(rainbowJetSpecialFares['dozen-dogo'].adult) }}
-                </td>
-                <td class="border border-gray-300 dark:border-gray-600 px-4 py-3 text-right font-mono dark:text-gray-100">
-                  {{ formatCurrency(rainbowJetSpecialFares['dozen-dogo'].child) }}
-                </td>
-              </tr>
-              <tr v-if="rainbowJetSpecialFares?.['beppu-hishiura']" class="hover:bg-gray-50 dark:hover:bg-gray-700/50">
-                <td class="border border-gray-300 dark:border-gray-600 px-4 py-3 dark:text-gray-100">
-                  {{ $t('BEPPU_HISHIURA') }}
-                </td>
-                <td class="border border-gray-300 dark:border-gray-600 px-4 py-3 text-right font-mono dark:text-gray-100">
-                  {{ formatCurrency(rainbowJetSpecialFares['beppu-hishiura'].adult) }}
-                </td>
-                <td class="border border-gray-300 dark:border-gray-600 px-4 py-3 text-right font-mono dark:text-gray-100">
-                  {{ formatCurrency(rainbowJetSpecialFares['beppu-hishiura'].child) }}
+                  {{ getRainbowJetPassengerFare(group.id, rainbowJetPassengerActiveCategory) }}
                 </td>
               </tr>
             </tbody>
@@ -365,6 +410,96 @@ const seatClasses = [
   { key: 'classSpecial', nameKey: 'SEAT_CLASS_SPECIAL' },
   { key: 'specialRoom', nameKey: 'SEAT_CLASS_SPECIAL_ROOM' }
 ]
+
+const passengerCategories = [
+  { id: 'adult', labelKey: 'PASSENGER_CATEGORY_ADULT' },
+  { id: 'child', labelKey: 'PASSENGER_CATEGORY_CHILD' },
+  { id: 'disabledAdult', labelKey: 'PASSENGER_CATEGORY_DISABLED_ADULT' },
+  { id: 'disabledChild', labelKey: 'PASSENGER_CATEGORY_DISABLED_CHILD' }
+] as const
+
+type PassengerCategoryId = typeof passengerCategories[number]['id']
+
+const passengerCategoryMap = passengerCategories.reduce<Record<PassengerCategoryId, { id: PassengerCategoryId; labelKey: string }>>(
+  (acc, category) => {
+    acc[category.id] = category
+    return acc
+  },
+  {} as Record<PassengerCategoryId, { id: PassengerCategoryId; labelKey: string }>
+)
+
+const okiKisenPassengerActiveCategory = ref<PassengerCategoryId>('adult')
+const rainbowJetPassengerActiveCategory = ref<PassengerCategoryId>('adult')
+
+const okiKisenRouteGroups = [
+  {
+    id: 'hondo-oki',
+    labelKey: 'HONDO_OKI',
+    routeIds: [
+      'hondo-saigo',
+      'saigo-hondo',
+      'hondo-beppu',
+      'beppu-hondo',
+      'hondo-hishiura',
+      'hishiura-hondo',
+      'hondo-kuri',
+      'kuri-hondo'
+    ]
+  },
+  {
+    id: 'dozen-dogo',
+    labelKey: 'DOZEN_DOGO',
+    routeIds: [
+      'saigo-beppu',
+      'beppu-saigo',
+      'saigo-hishiura',
+      'hishiura-saigo',
+      'saigo-kuri',
+      'kuri-saigo'
+    ]
+  },
+  {
+    id: 'beppu-hishiura',
+    labelKey: 'BEPPU_HISHIURA',
+    routeIds: ['beppu-hishiura', 'hishiura-beppu']
+  },
+  {
+    id: 'hishiura-kuri',
+    labelKey: 'HISHIURA_KURI',
+    routeIds: ['hishiura-kuri', 'kuri-hishiura']
+  },
+  {
+    id: 'kuri-beppu',
+    labelKey: 'KURI_BEPPU',
+    routeIds: ['kuri-beppu', 'beppu-kuri']
+  }
+] as const
+
+const rainbowJetRouteGroups = [
+  { id: 'hondo-oki', labelKey: 'HONDO_OKI' },
+  { id: 'dozen-dogo', labelKey: 'DOZEN_DOGO' },
+  { id: 'beppu-hishiura', labelKey: 'BEPPU_HISHIURA' }
+] as const
+
+const rainbowJetCanonicalMap: Record<string, string> = {
+  'hondo-saigo': 'hondo-oki',
+  'saigo-hondo': 'hondo-oki',
+  'hondo-beppu': 'hondo-oki',
+  'beppu-hondo': 'hondo-oki',
+  'hondo-hishiura': 'hondo-oki',
+  'hishiura-hondo': 'hondo-oki',
+  'dozen-dogo': 'dozen-dogo',
+  'saigo-beppu': 'dozen-dogo',
+  'beppu-saigo': 'dozen-dogo',
+  'saigo-hishiura': 'dozen-dogo',
+  'hishiura-saigo': 'dozen-dogo',
+  'saigo-kuri': 'dozen-dogo',
+  'kuri-saigo': 'dozen-dogo',
+  'beppu-hishiura': 'beppu-hishiura',
+  'hishiura-beppu': 'beppu-hishiura'
+}
+
+const PASSENGER_DISCOUNT_RATE = 0.5
 
 // Tab definitions
 const tabs = [
@@ -437,83 +572,125 @@ const ferryVersionName = computed(() => formatVersionName(ferryVersion.value))
 const highspeedVersionName = computed(() => formatVersionName(highspeedVersion.value))
 const localVersionName = computed(() => formatVersionName(localVersion.value))
 
+const getPassengerCategoryLabelKey = (categoryId: PassengerCategoryId): string => {
+  return passengerCategoryMap[categoryId]?.labelKey ?? 'PASSENGER_CATEGORY_ADULT'
+}
+
+const pickNumber = (value: unknown): number | null => {
+  if (typeof value === 'number' && !Number.isNaN(value)) {
+    return value
+  }
+  if (typeof value === 'string' && value.trim() !== '') {
+    const parsed = Number(value)
+    return Number.isNaN(parsed) ? null : parsed
+  }
+  return null
+}
+
+const calculateDiscountedFare = (base: number | null | undefined): number | null => {
+  if (base === null || typeof base === 'undefined') return null
+  return Math.round(base * PASSENGER_DISCOUNT_RATE)
+}
+
+const normalizePassengerFares = (source: any): Record<PassengerCategoryId, number | null> => {
+  if (!source) {
+    return {
+      adult: null,
+      child: null,
+      disabledAdult: null,
+      disabledChild: null
+    }
+  }
+
+  const fares = source.fares ?? source
+  const disabled = fares.disabled ?? source.disabled ?? {}
+
+  const adult = pickNumber(fares.adult ?? source.adult)
+  const child = pickNumber(fares.child ?? source.child) ?? calculateDiscountedFare(adult)
+  const disabledAdult = pickNumber(disabled.adult ?? source.disabledAdult) ?? calculateDiscountedFare(adult)
+  const disabledChild =
+    pickNumber(disabled.child ?? source.disabledChild) ??
+    calculateDiscountedFare(disabledAdult ?? child)
+
+  return {
+    adult,
+    child,
+    disabledAdult,
+    disabledChild
+  }
+}
+
+const findOkiKisenRoute = (groupId: string): any | null => {
+  const group = okiKisenRouteGroups.find(item => item.id === groupId)
+  if (!group) return null
+  for (const routeId of group.routeIds) {
+    const route = okiKisenFares.value.find(r => r.id === routeId)
+    if (route) {
+      return route
+    }
+  }
+  return null
+}
+
+const getOkiKisenPassengerFareValue = (groupId: string, categoryId: PassengerCategoryId): number | null => {
+  const route = findOkiKisenRoute(groupId)
+  if (!route) return null
+  const fares = normalizePassengerFares(route)
+  return fares[categoryId] ?? null
+}
+
+const getOkiKisenPassengerFare = (groupId: string, categoryId: PassengerCategoryId): string => {
+  const value = getOkiKisenPassengerFareValue(groupId, categoryId)
+  return value !== null ? formatCurrency(value) : '—'
+}
+
+const findRainbowJetFareSource = (groupId: string): any | null => {
+  const special = rainbowJetSpecialFares.value?.[groupId]
+  if (special) {
+    return special
+  }
+
+  const directRoute = rainbowJetFares.value.find(route => rainbowJetCanonicalMap[route.id] === groupId)
+  if (directRoute) {
+    return directRoute
+  }
+
+  return null
+}
+
+const getRainbowJetPassengerFareValue = (groupId: string, categoryId: PassengerCategoryId): number | null => {
+  const source = findRainbowJetFareSource(groupId)
+  if (!source) return null
+  const fares = normalizePassengerFares(source)
+  return fares[categoryId] ?? null
+}
+
+const getRainbowJetPassengerFare = (groupId: string, categoryId: PassengerCategoryId): string => {
+  const value = getRainbowJetPassengerFareValue(groupId, categoryId)
+  return value !== null ? formatCurrency(value) : '—'
+}
+
 // Get seat class fare for a specific route
 const getSeatClassFare = (routeType: string, seatClass: string) => {
-  let fare = null
-  
-  if (routeType === 'hondo-oki') {
-    // 本土〜隠岐（すべての本土路線は同一料金）
-    const route = okiKisenFares.value.find(r => 
-      r.id === 'hondo-saigo' || r.id === 'saigo-hondo' ||
-      r.id === 'hondo-beppu' || r.id === 'beppu-hondo' ||
-      r.id === 'hondo-hishiura' || r.id === 'hishiura-hondo' ||
-      r.id === 'hondo-kuri' || r.id === 'kuri-hondo'
-    )
-    fare = route?.fares?.seatClass?.[seatClass]
-  } else if (routeType === 'dozen-dogo') {
-    // 島前〜島後（西郷〜別府/菱浦/来居）
-    const route = okiKisenFares.value.find(r => 
-      r.id === 'saigo-beppu' || r.id === 'beppu-saigo' || 
-      r.id === 'saigo-hishiura' || r.id === 'hishiura-saigo' ||
-      r.id === 'saigo-kuri' || r.id === 'kuri-saigo'
-    )
-    fare = route?.fares?.seatClass?.[seatClass]
-  } else if (routeType === 'beppu-hishiura') {
-    // 別府〜菱浦
-    const route = okiKisenFares.value.find(r => r.id === 'beppu-hishiura' || r.id === 'hishiura-beppu')
-    fare = route?.fares?.seatClass?.[seatClass]
-  } else if (routeType === 'hishiura-kuri') {
-    // 菱浦〜来居
-    const route = okiKisenFares.value.find(r => r.id === 'hishiura-kuri' || r.id === 'kuri-hishiura')
-    fare = route?.fares?.seatClass?.[seatClass]
-  } else if (routeType === 'kuri-beppu') {
-    // 来居〜別府
-    const route = okiKisenFares.value.find(r => r.id === 'kuri-beppu' || r.id === 'beppu-kuri')
-    fare = route?.fares?.seatClass?.[seatClass]
-  }
-  
-  return fare ? formatCurrency(fare) : '—'
+  const route = findOkiKisenRoute(routeType)
+  const fare = route?.fares?.seatClass?.[seatClass]
+  return typeof fare === 'number' ? formatCurrency(fare) : '—'
 }
 
 // Get vehicle fare for a specific route
 const getVehicleFare = (routeType: string, sizeKey: string) => {
-  let fare = null
-  let route = null
-  
-  if (routeType === 'hondo-oki') {
-    // 本土〜隠岐（すべての本土路線は同一料金）
-    route = okiKisenFares.value.find(r => 
-      r.id === 'hondo-saigo' || r.id === 'saigo-hondo' ||
-      r.id === 'hondo-beppu' || r.id === 'beppu-hondo' ||
-      r.id === 'hondo-hishiura' || r.id === 'hishiura-hondo' ||
-      r.id === 'hondo-kuri' || r.id === 'kuri-hondo'
-    )
-  } else if (routeType === 'dozen-dogo') {
-    // 島前〜島後（西郷〜別府/菱浦/来居）
-    route = okiKisenFares.value.find(r => 
-      r.id === 'saigo-beppu' || r.id === 'beppu-saigo' || 
-      r.id === 'saigo-hishiura' || r.id === 'hishiura-saigo' ||
-      r.id === 'saigo-kuri' || r.id === 'kuri-saigo'
-    )
-  } else if (routeType === 'beppu-hishiura') {
-    // 別府〜菱浦
-    route = okiKisenFares.value.find(r => r.id === 'beppu-hishiura' || r.id === 'hishiura-beppu')
-  } else if (routeType === 'hishiura-kuri') {
-    // 菱浦〜来居
-    route = okiKisenFares.value.find(r => r.id === 'hishiura-kuri' || r.id === 'kuri-hishiura')
-  } else if (routeType === 'kuri-beppu') {
-    // 来居〜別府
-    route = okiKisenFares.value.find(r => r.id === 'kuri-beppu' || r.id === 'beppu-kuri')
-  }
-  
-  // For over12m, use over12mPer1m field
-  if (sizeKey === 'over12m') {
-    fare = route?.fares?.vehicle?.over12mPer1m
-  } else {
-    fare = route?.fares?.vehicle?.[sizeKey]
-  }
-  
-  return fare ? formatCurrency(fare) : '—'
+  const route = findOkiKisenRoute(routeType)
+  if (!route) return '—'
+
+  const vehicle = route.fares?.vehicle
+  if (!vehicle) return '—'
+
+  const fare =
+    sizeKey === 'over12m'
+      ? vehicle.over12mPer1m
+      : vehicle[sizeKey as keyof typeof vehicle]
+
+  return typeof fare === 'number' ? formatCurrency(fare) : '—'
 }
 
 // Group fares by ship type
