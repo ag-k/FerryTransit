@@ -109,7 +109,7 @@
               @click="showEditModal = true"
             >
               <PencilIcon class="h-5 w-5 inline mr-1" />
-              料金編集
+              {{ activeTab === 'discount' ? '割引編集' : '料金編集' }}
             </button>
           </div>
         </div>
@@ -232,7 +232,7 @@
                   {{ resolveDiscountDescription(discount) }}
                 </p>
                 <p class="text-lg font-bold text-blue-600 dark:text-blue-400 mt-2">
-                  {{ discount.rate }}% 割引
+                  {{ formatDiscountPercent(discount) }}% 割引
                 </p>
               </div>
               <span
@@ -243,7 +243,7 @@
                     : 'bg-gray-100 text-gray-800 dark:bg-gray-900 dark:text-gray-200'
                 ]"
               >
-                {{ discount.active ? '有効' : '無効' }}
+                {{ isDiscountActive(discount) ? '有効' : '無効' }}
               </span>
             </div>
           </div>
@@ -403,6 +403,201 @@
           </div>
         </div>
 
+        <!-- 割引設定編集 -->
+        <div v-else-if="activeTab === 'discount'" class="space-y-6">
+          <div
+            v-if="!editingDiscounts.length"
+            class="rounded-md border border-dashed border-gray-300 dark:border-gray-600 bg-gray-50 dark:bg-gray-700/40 p-6 text-center text-sm text-gray-500 dark:text-gray-400"
+          >
+            割引設定がありません。「割引を追加」から新しい割引を作成できます。
+          </div>
+          <div
+            v-for="(discount, index) in editingDiscounts"
+            :key="discount.formKey"
+            class="rounded-lg border border-gray-200 dark:border-gray-600 bg-gray-50 dark:bg-gray-700/50 p-4 space-y-5"
+          >
+            <div class="flex flex-col gap-4 lg:flex-row lg:items-start lg:justify-between">
+              <div class="flex-1 space-y-2">
+                <label class="block text-xs font-medium text-gray-500 dark:text-gray-400">
+                  割引ID
+                </label>
+                <input
+                  v-model="discount.id"
+                  type="text"
+                  :disabled="discount.originalId !== null"
+                  class="w-full rounded-md border border-gray-300 dark:border-gray-600 dark:bg-gray-800 focus:border-blue-500 dark:focus:border-blue-400 focus:ring-2 focus:ring-blue-500 focus:ring-opacity-30 transition-colors text-sm disabled:opacity-70 disabled:cursor-not-allowed"
+                  placeholder="例: student"
+                >
+                <p class="text-xs text-gray-500 dark:text-gray-400">
+                  公開データでの識別子です。既存の割引では変更できません。
+                </p>
+              </div>
+              <div class="flex items-start justify-end">
+                <button
+                  type="button"
+                  class="inline-flex items-center rounded-md border border-red-200 dark:border-red-600 px-3 py-2 text-sm font-medium text-red-600 dark:text-red-300 hover:bg-red-50 dark:hover:bg-red-900/30 disabled:opacity-50 disabled:cursor-not-allowed"
+                  :disabled="editingDiscounts.length <= 1"
+                  @click="removeDiscount(index)"
+                >
+                  <TrashIcon class="mr-1 h-4 w-4" />
+                  削除
+                </button>
+              </div>
+            </div>
+
+            <div class="grid grid-cols-1 gap-4 lg:grid-cols-3">
+              <div>
+                <label class="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-1">
+                  表示名（日本語）
+                </label>
+                <input
+                  v-model="discount.name"
+                  type="text"
+                  class="w-full rounded-md border border-gray-300 dark:border-gray-600 dark:bg-gray-800 focus:border-blue-500 dark:focus:border-blue-400 focus:ring-2 focus:ring-blue-500 focus:ring-opacity-30 transition-colors text-sm"
+                  placeholder="例: 学生割引"
+                >
+              </div>
+              <div>
+                <label class="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-1">
+                  表示名（英語）
+                  <span class="ml-1 text-xs text-gray-400 dark:text-gray-500">(任意)</span>
+                </label>
+                <input
+                  v-model="discount.nameEn"
+                  type="text"
+                  class="w-full rounded-md border border-gray-300 dark:border-gray-600 dark:bg-gray-800 focus:border-blue-500 dark:focus:border-blue-400 focus:ring-2 focus:ring-blue-500 focus:ring-opacity-30 transition-colors text-sm"
+                  placeholder="例: Student Discount"
+                >
+              </div>
+              <div>
+                <label class="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-1">
+                  表示名 i18nキー
+                  <span class="ml-1 text-xs text-gray-400 dark:text-gray-500">(任意)</span>
+                </label>
+                <input
+                  v-model="discount.nameKey"
+                  type="text"
+                  class="w-full rounded-md border border-gray-300 dark:border-gray-600 dark:bg-gray-800 focus:border-blue-500 dark:focus:border-blue-400 focus:ring-2 focus:ring-blue-500 focus:ring-opacity-30 transition-colors text-sm"
+                  placeholder="例: DISCOUNT_STUDENT"
+                >
+              </div>
+            </div>
+
+            <div class="grid grid-cols-1 gap-4 lg:grid-cols-3">
+              <div class="lg:col-span-1">
+                <label class="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-1">
+                  説明（日本語）
+                </label>
+                <textarea
+                  v-model="discount.description"
+                  rows="2"
+                  class="w-full rounded-md border border-gray-300 dark:border-gray-600 dark:bg-gray-800 focus:border-blue-500 dark:focus:border-blue-400 focus:ring-2 focus:ring-blue-500 focus:ring-opacity-30 transition-colors text-sm"
+                  placeholder="例: 学生証の提示が必要です"
+                ></textarea>
+              </div>
+              <div class="lg:col-span-1">
+                <label class="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-1">
+                  説明（英語）
+                  <span class="ml-1 text-xs text-gray-400 dark:text-gray-500">(任意)</span>
+                </label>
+                <textarea
+                  v-model="discount.descriptionEn"
+                  rows="2"
+                  class="w-full rounded-md border border-gray-300 dark:border-gray-600 dark:bg-gray-800 focus:border-blue-500 dark:focus:border-blue-400 focus:ring-2 focus:ring-blue-500 focus:ring-opacity-30 transition-colors text-sm"
+                  placeholder="例: Student ID required"
+                ></textarea>
+              </div>
+              <div class="lg:col-span-1">
+                <label class="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-1">
+                  説明 i18nキー
+                  <span class="ml-1 text-xs text-gray-400 dark:text-gray-500">(任意)</span>
+                </label>
+                <input
+                  v-model="discount.descriptionKey"
+                  type="text"
+                  class="w-full rounded-md border border-gray-300 dark:border-gray-600 dark:bg-gray-800 focus:border-blue-500 dark:focus:border-blue-400 focus:ring-2 focus:ring-blue-500 focus:ring-opacity-30 transition-colors text-sm"
+                  placeholder="例: DISCOUNT_STUDENT_DESC"
+                >
+              </div>
+            </div>
+
+            <div class="grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-3">
+              <div>
+                <label class="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-1">
+                  割引率（%）
+                </label>
+                <input
+                  v-model.number="discount.ratePercent"
+                  type="number"
+                  min="0"
+                  max="100"
+                  step="0.1"
+                  class="w-full rounded-md border border-gray-300 dark:border-gray-600 dark:bg-gray-800 focus:border-blue-500 dark:focus:border-blue-400 focus:ring-2 focus:ring-blue-500 focus:ring-opacity-30 transition-colors text-sm"
+                  placeholder="例: 15"
+                >
+              </div>
+              <div>
+                <label class="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-1">
+                  適用後係数（自動計算）
+                </label>
+                <input
+                  :value="formatRateMultiplierValue(discount.ratePercent)"
+                  type="text"
+                  readonly
+                  class="w-full rounded-md border border-gray-300 dark:border-gray-600 dark:bg-gray-900 text-gray-500 dark:text-gray-400 focus:outline-none text-sm"
+                >
+                <p class="mt-1 text-xs text-gray-500 dark:text-gray-400">
+                  保存時にこの係数が rate / rateMultiplier として保存されます。
+                </p>
+              </div>
+              <div>
+                <label class="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-1">
+                  最低人数
+                  <span class="ml-1 text-xs text-gray-400 dark:text-gray-500">(任意)</span>
+                </label>
+                <input
+                  v-model.number="discount.minPeople"
+                  type="number"
+                  min="0"
+                  step="1"
+                  class="w-full rounded-md border border-gray-300 dark:border-gray-600 dark:bg-gray-800 focus:border-blue-500 dark:focus:border-blue-400 focus:ring-2 focus:ring-blue-500 focus:ring-opacity-30 transition-colors text-sm"
+                  placeholder="例: 15"
+                >
+              </div>
+            </div>
+
+            <div>
+              <label class="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-1">
+                適用条件タグ
+                <span class="ml-1 text-xs text-gray-400 dark:text-gray-500">(カンマまたは改行区切り)</span>
+              </label>
+              <textarea
+                v-model="discount.conditionsText"
+                rows="2"
+                class="w-full rounded-md border border-gray-300 dark:border-gray-600 dark:bg-gray-800 focus:border-blue-500 dark:focus:border-blue-400 focus:ring-2 focus:ring-blue-500 focus:ring-opacity-30 transition-colors text-sm"
+                placeholder="例: group,student"
+              ></textarea>
+            </div>
+
+            <ToggleSwitch
+              v-model:checked="discount.active"
+              label="割引を有効化"
+              description="無効化すると公開データから除外されます。"
+            />
+          </div>
+
+          <div class="pt-2">
+            <button
+              type="button"
+              class="inline-flex items-center rounded-md border border-dashed border-blue-300 dark:border-blue-500 px-3 py-2 text-sm font-medium text-blue-600 dark:text-blue-300 hover:bg-blue-50 dark:hover:bg-blue-900/20 transition"
+              @click="addDiscount()"
+            >
+              <PlusIcon class="mr-1 h-4 w-4" />
+              割引を追加
+            </button>
+          </div>
+        </div>
+
       </div>
     </FormModal>
 
@@ -503,8 +698,9 @@ import { PencilIcon, CloudArrowUpIcon, ArrowPathIcon, PlusIcon, TrashIcon } from
 import { orderBy, where } from 'firebase/firestore'
 import { useAdminFirestore } from '~/composables/useAdminFirestore'
 import { useDataPublish } from '~/composables/useDataPublish'
-import type { Discount, FareVersion, VesselType } from '~/types/fare'
+import type { FareVersion, VesselType } from '~/types/fare'
 import FormModal from '~/components/admin/FormModal.vue'
+import ToggleSwitch from '~/components/common/ToggleSwitch.vue'
 import { createLogger } from '~/utils/logger'
 
 definePageMeta({
@@ -516,7 +712,7 @@ const { getCollection, batchWrite, createDocument, deleteDocument } = useAdminFi
 const { publishData } = useDataPublish()
 const { $toast } = useNuxtApp()
 const logger = createLogger('AdminFarePage')
-const { t } = useI18n()
+const { t, locale } = useI18n()
 
 type FareDoc = Record<string, any>
 
@@ -562,6 +758,177 @@ const VEHICLE_SIZE_FIELDS: Array<{ key: VehicleSizeKey; label: string }> = [
   { key: 'under12m', label: '〜12m' },
   { key: 'over12mPer1m', label: '12m超(1m毎)' }
 ]
+
+type DiscountFormItem = {
+  formKey: string
+  id: string
+  originalId: string | null
+  name: string
+  nameEn: string
+  nameKey: string
+  description: string
+  descriptionEn: string
+  descriptionKey: string
+  ratePercent: number | null
+  minPeople: number | null
+  active: boolean
+  conditionsText: string
+}
+
+type DiscountDoc = {
+  id?: string
+  name?: string | null
+  nameEn?: string | null
+  nameKey?: string | null
+  description?: string | null
+  descriptionEn?: string | null
+  descriptionKey?: string | null
+  rate?: number | null
+  rateMultiplier?: number | null
+  ratePercent?: number | null
+  minPeople?: number | null
+  active?: boolean
+  conditions?: string[]
+}
+
+let discountFormKeySeed = 0
+
+const nextDiscountFormKey = () => `discount-${Date.now()}-${discountFormKeySeed++}`
+
+const isDiscountActive = (discount: DiscountDoc | null | undefined): boolean => {
+  if (!discount || typeof discount !== 'object') return true
+  if (typeof discount.active === 'boolean') {
+    return discount.active
+  }
+  return true
+}
+
+const clampPercent = (value: number | null | undefined): number => {
+  if (typeof value !== 'number' || Number.isNaN(value)) return 0
+  if (value < 0) return 0
+  if (value > 100) return 100
+  return value
+}
+
+const calculateMultiplierFromPercent = (percent: number | null | undefined): number => {
+  const normalized = clampPercent(percent)
+  const multiplier = 1 - normalized / 100
+  return Number(multiplier.toFixed(4))
+}
+
+const formatRateMultiplierValue = (percent: number | null | undefined): string => {
+  return calculateMultiplierFromPercent(percent).toFixed(4)
+}
+
+const resolveDiscountMultiplier = (
+  discount: DiscountDoc | null | undefined
+): number => {
+  if (!discount || typeof discount !== 'object') return 1
+
+  const multiplier = discount.rateMultiplier
+  if (typeof multiplier === 'number' && !Number.isNaN(multiplier)) {
+    if (multiplier < 0) return 0
+    if (multiplier > 1) return 1
+    return multiplier
+  }
+
+  const ratePercent = discount.ratePercent
+  if (typeof ratePercent === 'number' && !Number.isNaN(ratePercent)) {
+    return calculateMultiplierFromPercent(ratePercent)
+  }
+
+  const rate = discount.rate
+  if (typeof rate === 'number' && !Number.isNaN(rate)) {
+    if (rate >= 0 && rate <= 1) {
+      return rate
+    }
+    if (rate > 1) {
+      return calculateMultiplierFromPercent(rate)
+    }
+  }
+
+  return 1
+}
+
+const resolveDiscountPercentNumber = (
+  discount: DiscountDoc | null | undefined
+): number => {
+  if (!discount || typeof discount !== 'object') return 0
+
+  const ratePercent = discount.ratePercent
+  if (typeof ratePercent === 'number' && !Number.isNaN(ratePercent)) {
+    return clampPercent(ratePercent)
+  }
+
+  const rate = discount.rate
+  if (typeof rate === 'number' && !Number.isNaN(rate) && rate > 1) {
+    return clampPercent(rate)
+  }
+
+  const multiplier = resolveDiscountMultiplier(discount)
+  const percent = (1 - multiplier) * 100
+  return clampPercent(percent)
+}
+
+const formatDiscountPercent = (discount: DiscountDoc): string => {
+  const percent = resolveDiscountPercentNumber(discount)
+  const rounded = Math.round(percent * 10) / 10
+  if (Number.isNaN(rounded)) return '0'
+  return Number.isInteger(rounded) ? `${Math.trunc(rounded)}` : rounded.toFixed(1)
+}
+
+const createDiscountFormItem = (
+  discount: DiscountDoc | null | undefined,
+  overrides: Partial<DiscountFormItem> = {}
+): DiscountFormItem => {
+  const originalId = typeof discount?.id === 'string' ? discount.id : null
+  const percent = typeof discount !== 'undefined' && discount !== null
+    ? resolveDiscountPercentNumber(discount)
+    : null
+  const item: DiscountFormItem = {
+    formKey: nextDiscountFormKey(),
+    id: originalId ?? '',
+    originalId,
+    name: typeof discount?.name === 'string' ? discount.name : '',
+    nameEn: typeof discount?.nameEn === 'string' ? discount.nameEn : '',
+    nameKey: typeof discount?.nameKey === 'string' ? discount.nameKey : '',
+    description: typeof discount?.description === 'string' ? discount.description : '',
+    descriptionEn: typeof discount?.descriptionEn === 'string' ? discount.descriptionEn : '',
+    descriptionKey: typeof discount?.descriptionKey === 'string' ? discount.descriptionKey : '',
+    ratePercent: percent !== null ? clampPercent(percent) : null,
+    minPeople: typeof discount?.minPeople === 'number' && !Number.isNaN(discount.minPeople)
+      ? discount.minPeople
+      : null,
+    active: isDiscountActive(discount),
+    conditionsText: Array.isArray(discount?.conditions)
+      ? discount.conditions
+        .filter(condition => typeof condition === 'string' && condition.trim().length > 0)
+        .join(', ')
+      : ''
+  }
+
+  return {
+    ...item,
+    ...overrides,
+    formKey: overrides.formKey ?? item.formKey
+  }
+}
+
+const toNullableString = (value: unknown): string | null => {
+  if (typeof value !== 'string') return null
+  const trimmed = value.trim()
+  return trimmed.length ? trimmed : null
+}
+
+const parseConditionsText = (text: string | null | undefined): string[] => {
+  if (typeof text !== 'string') return []
+  const tokens = text
+    .split(/[\n,]/)
+    .map(token => token.trim())
+    .filter(token => token.length > 0)
+
+  return Array.from(new Set(tokens))
+}
 
 type FerryCategoryRecord = {
   id: string
@@ -810,26 +1177,45 @@ const translateIfPossible = (value?: string | null): string | null => {
   return value
 }
 
-const resolveDiscountName = (discount: Discount & { nameKey?: string; name?: string }): string => {
-  const candidates = [discount.nameKey, discount.name]
+const resolveDiscountName = (discount: DiscountDoc): string => {
+  const localeValue = typeof locale.value === 'string' ? locale.value.toLowerCase() : 'ja'
+  const primaryText = localeValue.startsWith('en') ? discount.nameEn : discount.name
+  const secondaryText = localeValue.startsWith('en') ? discount.name : discount.nameEn
+  const candidates = [
+    discount.nameKey,
+    primaryText,
+    secondaryText,
+    discount.name,
+    discount.nameEn,
+    discount.id
+  ]
   for (const candidate of candidates) {
     const translated = translateIfPossible(candidate)
     if (translated && translated.trim()) {
       return translated
     }
   }
-  return discount.name ?? '-'
+  return discount.id ?? '-'
 }
 
-const resolveDiscountDescription = (discount: Discount & { descriptionKey?: string; description?: string }): string => {
-  const candidates = [discount.descriptionKey, discount.description]
+const resolveDiscountDescription = (discount: DiscountDoc): string => {
+  const localeValue = typeof locale.value === 'string' ? locale.value.toLowerCase() : 'ja'
+  const primaryText = localeValue.startsWith('en') ? discount.descriptionEn : discount.description
+  const secondaryText = localeValue.startsWith('en') ? discount.description : discount.descriptionEn
+  const candidates = [
+    discount.descriptionKey,
+    primaryText,
+    secondaryText,
+    discount.description,
+    discount.descriptionEn
+  ]
   for (const candidate of candidates) {
     const translated = translateIfPossible(candidate)
     if (translated && translated.trim()) {
       return translated
     }
   }
-  return discount.description ?? ''
+  return ''
 }
 
 const buildFareDocId = (versionId: string, routeId: string) => `fare-${versionId}-${routeId}`
@@ -1029,7 +1415,7 @@ const isLoading = ref(false)
 // データ
 const ferryCategories = ref<FerryCategoryRecord[]>([])
 const highspeedFares = ref<FareDoc[]>([])
-const discounts = ref<Array<Discount & { id?: string }>>([])
+const discounts = ref<DiscountDoc[]>([])
 
 const ferryVersions = ref<Array<FareVersion & { id: string }>>([])
 const highspeedVersions = ref<Array<FareVersion & { id: string }>>([])
@@ -1040,6 +1426,7 @@ const versionsInitialized = ref(false)
 // 編集用データ
 const editingFerryCategories = ref<FerryCategoryRecord[]>([])
 const editingHighspeedFares = ref<FareDoc[]>([])
+const editingDiscounts = ref<DiscountFormItem[]>([])
 
 // 版作成モーダル
 const showVersionModal = ref(false)
@@ -1256,6 +1643,32 @@ const loadFaresForType = async (vesselType: VesselType) => {
     highspeedFares.value = enriched
     editingHighspeedFares.value = enriched.map(fare => ({ ...fare }))
   }
+}
+
+const loadDiscounts = async () => {
+  const discountData = await getCollection<DiscountDoc & { id: string }>('discounts', [orderBy('name')])
+  discounts.value = discountData
+}
+
+const addDiscount = () => {
+  editingDiscounts.value.push(
+    createDiscountFormItem(null, {
+      id: '',
+      originalId: null,
+      name: '',
+      nameEn: '',
+      description: '',
+      descriptionEn: '',
+      ratePercent: 0,
+      active: true,
+      conditionsText: ''
+    })
+  )
+}
+
+const removeDiscount = (index: number) => {
+  if (index < 0 || index >= editingDiscounts.value.length) return
+  editingDiscounts.value.splice(index, 1)
 }
 
 const openCreateVersionModal = (vesselType: VesselType) => {
@@ -1509,8 +1922,7 @@ const loadFareData = async () => {
     versionsInitialized.value = true
 
     // 割引設定
-    const discountData = await getCollection<Discount & { id: string }>('discounts', [orderBy('name')])
-    discounts.value = discountData
+    await loadDiscounts()
   } catch (error) {
     logger.error('Failed to load fare data', error)
     // エラー時は初期データを設定
@@ -1709,10 +2121,46 @@ const setDefaultData = () => {
 
   // デフォルトの割引設定
   discounts.value = [
-    { id: '1', name: '島民割引', description: '隠岐諸島に住所を有する方', rate: 30, active: true, conditions: ['residence'] },
-    { id: '2', name: '団体割引', description: '15名以上の団体', rate: 10, active: true, conditions: ['group'] },
-    { id: '3', name: '学生割引', description: '学生証の提示が必要', rate: 20, active: true, conditions: ['student'] },
-    { id: '4', name: '障害者割引', description: '障害者手帳の提示が必要', rate: 50, active: true, conditions: ['disability'] }
+    {
+      id: '1',
+      name: '島民割引',
+      nameEn: 'Resident Discount',
+      description: '隠岐諸島に住所を有する方',
+      descriptionEn: 'For residents living in the Oki Islands',
+      rate: 30,
+      active: true,
+      conditions: ['residence']
+    },
+    {
+      id: '2',
+      name: '団体割引',
+      nameEn: 'Group Discount',
+      description: '15名以上の団体',
+      descriptionEn: 'Available for groups of 15 or more passengers',
+      rate: 10,
+      active: true,
+      conditions: ['group']
+    },
+    {
+      id: '3',
+      name: '学生割引',
+      nameEn: 'Student Discount',
+      description: '学生証の提示が必要',
+      descriptionEn: 'Student ID is required at boarding',
+      rate: 20,
+      active: true,
+      conditions: ['student']
+    },
+    {
+      id: '4',
+      name: '障害者割引',
+      nameEn: 'Accessibility Discount',
+      description: '障害者手帳の提示が必要',
+      descriptionEn: 'Disability certificate required',
+      rate: 50,
+      active: true,
+      conditions: ['disability']
+    }
   ]
   editingHighspeedFares.value = highspeedFares.value.map(fare => ({ ...fare }))
 }
@@ -1853,6 +2301,88 @@ const saveFareData = async () => {
 
       await loadFaresForType('highspeed')
       $toast.success('高速船料金を更新しました')
+    } else if (activeTab.value === 'discount') {
+      const originalMap = new Map<string, DiscountDoc>()
+      discounts.value.forEach(discount => {
+        if (typeof discount.id === 'string' && discount.id.trim().length > 0) {
+          originalMap.set(discount.id.trim(), discount)
+        }
+      })
+
+      const idsToDelete = new Set(originalMap.keys())
+      const seenIds = new Set<string>()
+      const operations: Array<{
+        type: 'create' | 'update'
+        collection: string
+        id: string
+        data: Record<string, any>
+      }> = []
+
+      for (let index = 0; index < editingDiscounts.value.length; index += 1) {
+        const form = editingDiscounts.value[index]
+        const docId = typeof form.id === 'string' ? form.id.trim() : ''
+
+        if (!docId) {
+          $toast.error(`割引IDが未入力です（#${index + 1}）`)
+          return
+        }
+
+        if (seenIds.has(docId)) {
+          $toast.error(`割引ID「${docId}」が重複しています`)
+          return
+        }
+        seenIds.add(docId)
+
+        const percent = clampPercent(form.ratePercent)
+        const percentRounded = Math.round(percent * 10) / 10
+        const rateMultiplier = calculateMultiplierFromPercent(percentRounded)
+        const minPeople = typeof form.minPeople === 'number' && !Number.isNaN(form.minPeople)
+          ? Math.max(0, Math.floor(form.minPeople))
+          : null
+        const conditions = parseConditionsText(form.conditionsText)
+
+        const payload: Record<string, any> = {
+          name: toNullableString(form.name),
+          nameEn: toNullableString(form.nameEn),
+          nameKey: toNullableString(form.nameKey),
+          description: toNullableString(form.description),
+          descriptionEn: toNullableString(form.descriptionEn),
+          descriptionKey: toNullableString(form.descriptionKey),
+          rate: rateMultiplier,
+          rateMultiplier,
+          ratePercent: percentRounded,
+          minPeople,
+          active: Boolean(form.active),
+          conditions
+        }
+
+        if (form.originalId && form.originalId !== docId) {
+          idsToDelete.add(form.originalId)
+        }
+        idsToDelete.delete(docId)
+
+        const operationType: 'create' | 'update' = originalMap.has(docId) ? 'update' : 'create'
+        operations.push({
+          type: operationType,
+          collection: 'discounts',
+          id: docId,
+          data: payload
+        })
+      }
+
+      const deleteOperations = Array.from(idsToDelete).map(id => ({
+        type: 'delete' as const,
+        collection: 'discounts',
+        id
+      }))
+
+      const batched = [...operations, ...deleteOperations]
+      if (batched.length) {
+        await batchWrite(batched)
+      }
+
+      await loadDiscounts()
+      $toast.success('割引設定を更新しました')
     }
     
     showEditModal.value = false
@@ -1886,6 +2416,21 @@ watch(showEditModal, (isOpen) => {
   if (isOpen) {
     editingFerryCategories.value = ferryCategories.value.map(category => cloneCategoryRecord(category))
     editingHighspeedFares.value = highspeedFares.value.map(fare => ({ ...fare }))
+    const discountForms = discounts.value.map(discount => createDiscountFormItem(discount))
+    editingDiscounts.value = discountForms.length
+      ? discountForms
+      : [
+        createDiscountFormItem(null, {
+          id: '',
+          originalId: null,
+          name: '',
+          nameEn: '',
+          description: '',
+          descriptionEn: '',
+          ratePercent: 0,
+          active: true
+        })
+      ]
   }
 })
 
