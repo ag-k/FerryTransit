@@ -43,8 +43,20 @@
 
       <!-- Oki Kisen Ferry -->
       <div v-show="activeTab === 'okiKisen'" class="mb-12">
-        <h3 class="text-xl font-medium mb-4 dark:text-white">{{ $t('OKI_KISEN_FERRY') }}</h3>
-        <p class="text-sm text-gray-600 dark:text-gray-400 mb-4">{{ $t('FERRY_OKI') }}, {{ $t('FERRY_SHIRASHIMA') }}, {{ $t('FERRY_KUNIGA') }}</p>
+        <div class="mb-4">
+          <div class="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
+            <h3 class="text-xl font-medium dark:text-white">{{ $t('OKI_KISEN_FERRY') }}</h3>
+            <p
+              v-if="ferryVersionName"
+              class="text-sm text-gray-600 dark:text-gray-400"
+            >
+              {{ $t('VERSION') }}: {{ ferryVersionName }}
+            </p>
+          </div>
+          <p class="text-sm text-gray-600 dark:text-gray-400 mt-2 sm:mt-1">
+            {{ $t('FERRY_OKI') }}, {{ $t('FERRY_SHIRASHIMA') }}, {{ $t('FERRY_KUNIGA') }}
+          </p>
+        </div>
         
         <!-- Seat class fares -->
         <h4 class="text-lg font-medium mb-3 dark:text-white">{{ $t('SEAT_CLASS_FARE') }}</h4>
@@ -132,8 +144,20 @@
 
       <!-- Naiko Sen (Ferry Dozen / Isokaze) -->
       <div v-show="activeTab === 'naikoSen'" class="mb-12">
-        <h3 class="text-xl font-medium mb-4 dark:text-white">{{ $t('NAIKO_SEN') }}</h3>
-        <p class="text-sm text-gray-600 dark:text-gray-400 mb-4">{{ $t('FERRY_DOZEN') }}, {{ $t('ISOKAZE') }}</p>
+        <div class="mb-4">
+          <div class="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
+            <h3 class="text-xl font-medium dark:text-white">{{ $t('NAIKO_SEN') }}</h3>
+            <p
+              v-if="localVersionName"
+              class="text-sm text-gray-600 dark:text-gray-400"
+            >
+              {{ $t('VERSION') }}: {{ localVersionName }}
+            </p>
+          </div>
+          <p class="text-sm text-gray-600 dark:text-gray-400 mt-2 sm:mt-1">
+            {{ $t('FERRY_DOZEN') }}, {{ $t('ISOKAZE') }}
+          </p>
+        </div>
         
         <!-- Passenger fares -->
         <h4 class="text-lg font-medium mb-3 dark:text-white">{{ $t('PASSENGER_FARE') }}</h4>
@@ -226,8 +250,20 @@
 
       <!-- Rainbow Jet -->
       <div v-show="activeTab === 'rainbowJet'" class="mb-12">
-        <h3 class="text-xl font-medium mb-4 dark:text-white">{{ $t('RAINBOWJET') }}</h3>
-        <p class="text-sm text-gray-600 dark:text-gray-400 mb-4">{{ $t('HIGH_SPEED_FERRY') }}</p>
+        <div class="mb-4">
+          <div class="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
+            <h3 class="text-xl font-medium dark:text-white">{{ $t('RAINBOWJET') }}</h3>
+            <p
+              v-if="highspeedVersionName"
+              class="text-sm text-gray-600 dark:text-gray-400"
+            >
+              {{ $t('VERSION') }}: {{ highspeedVersionName }}
+            </p>
+          </div>
+          <p class="text-sm text-gray-600 dark:text-gray-400 mt-2 sm:mt-1">
+            {{ $t('HIGH_SPEED_FERRY') }}
+          </p>
+        </div>
         
         <!-- Passenger fares -->
         <h4 class="text-lg font-medium mb-3 dark:text-white">{{ $t('PASSENGER_FARE') }}</h4>
@@ -367,6 +403,16 @@ const localVersion = computed<FareVersion | null>(() =>
   fareStore ? fareStore.getActiveVersion('local') : null
 )
 
+const formatVersionName = (version: FareVersion | null): string | null => {
+  if (!version) return null
+  const trimmedName = typeof version.name === 'string' ? version.name.trim() : ''
+  if (trimmedName) return trimmedName
+  if (version.effectiveFrom && version.effectiveFrom !== '1970-01-01') {
+    return version.effectiveFrom
+  }
+  return version.id ?? null
+}
+
 const formatVersionLabel = (version: FareVersion | null): string => {
   if (!version) return ''
   const label = version.name || '現行版'
@@ -386,6 +432,10 @@ const activeVersionLabel = computed(() => {
       return formatVersionLabel(ferryVersion.value)
   }
 })
+
+const ferryVersionName = computed(() => formatVersionName(ferryVersion.value))
+const highspeedVersionName = computed(() => formatVersionName(highspeedVersion.value))
+const localVersionName = computed(() => formatVersionName(localVersion.value))
 
 // Get seat class fare for a specific route
 const getSeatClassFare = (routeType: string, seatClass: string) => {
