@@ -274,28 +274,6 @@
                   {{ formatCurrency(rainbowJetSpecialFares['beppu-hishiura'].child) }}
                 </td>
               </tr>
-              <tr v-if="rainbowJetSpecialFares?.['hishiura-kuri']" class="hover:bg-gray-50 dark:hover:bg-gray-700/50">
-                <td class="border border-gray-300 dark:border-gray-600 px-4 py-3 dark:text-gray-100">
-                  {{ $t('HISHIURA_KURI') }}
-                </td>
-                <td class="border border-gray-300 dark:border-gray-600 px-4 py-3 text-right font-mono dark:text-gray-100">
-                  {{ rainbowJetSpecialFares['hishiura-kuri'].adult ? formatCurrency(rainbowJetSpecialFares['hishiura-kuri'].adult) : '—' }}
-                </td>
-                <td class="border border-gray-300 dark:border-gray-600 px-4 py-3 text-right font-mono dark:text-gray-100">
-                  {{ rainbowJetSpecialFares['hishiura-kuri'].child ? formatCurrency(rainbowJetSpecialFares['hishiura-kuri'].child) : '—' }}
-                </td>
-              </tr>
-              <tr v-if="rainbowJetSpecialFares?.['kuri-beppu']" class="hover:bg-gray-50 dark:hover:bg-gray-700/50">
-                <td class="border border-gray-300 dark:border-gray-600 px-4 py-3 dark:text-gray-100">
-                  {{ $t('KURI_BEPPU') }}
-                </td>
-                <td class="border border-gray-300 dark:border-gray-600 px-4 py-3 text-right font-mono dark:text-gray-100">
-                  {{ rainbowJetSpecialFares['kuri-beppu'].adult ? formatCurrency(rainbowJetSpecialFares['kuri-beppu'].adult) : '—' }}
-                </td>
-                <td class="border border-gray-300 dark:border-gray-600 px-4 py-3 text-right font-mono dark:text-gray-100">
-                  {{ rainbowJetSpecialFares['kuri-beppu'].child ? formatCurrency(rainbowJetSpecialFares['kuri-beppu'].child) : '—' }}
-                </td>
-              </tr>
             </tbody>
           </table>
         </div>
