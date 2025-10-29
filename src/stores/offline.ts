@@ -1,12 +1,15 @@
 import { defineStore } from 'pinia'
 import { ref, readonly, onMounted } from 'vue'
 import { useOfflineStorage } from '@/composables/useOfflineStorage'
+import { getStorageDownloadURL } from '@/composables/useDataPublish'
 import type { TimetableData } from '@/types/timetable'
 import type { FerryStatus } from '@/types/ferry'
 import type { FareMaster } from '@/types/fare'
 import type { HolidayMaster } from '@/types/holiday'
+import { createLogger } from '@/utils/logger'
 
 export const useOfflineStore = defineStore('offline', () => {
+  const logger = createLogger('offlineStore')
   const { 
     isStorageAvailable,
     saveTimetableData,
@@ -100,32 +103,49 @@ export const useOfflineStore = defineStore('offline', () => {
   
   // 料金データの取得（オフライン対応）
   const fetchFareData = async (): Promise<FareMaster | null> => {
-    try {
-      // データが新しい場合はローカルから返す
-      if (isDataValid('fare', 60 * 24 * 7)) { // 1週間
-        const localData = getFareData()
-        if (localData) return localData
-      }
-      
-      // オンラインの場合は新しいデータを取得
-      if (!isOffline.value) {
-        // publicディレクトリから直接取得
-        const data = await $fetch<FareMaster>('/data/fare-master.json')
-        // 成功したらローカルに保存
-        if (data) {
-          saveFareData(data)
-          lastSync.value.fare = Date.now()
-        }
-        return data
-      }
-    } catch (e) {
-      /* ignore network failures and fallback to cached data */
-    }
-    
-    // オフラインまたはエラーの場合はローカルから取得
     const localData = getFareData()
+
+    if (!isOffline.value) {
+      try {
+        const remoteUrl = await getStorageDownloadURL('fare-master.json').catch(() => null)
+        const fallbackUrl = `/data/fare-master.json?ts=${Date.now()}`
+        const requestUrl = remoteUrl ?? fallbackUrl
+
+        const response = await fetch(requestUrl, {
+          cache: 'no-store'
+        })
+
+        if (!response.ok) {
+          logger.warn('Failed to fetch latest fare data', { status: response.status })
+        } else {
+          const data = await response.json() as FareMaster
+          if (data) {
+            saveFareData(data)
+            lastSync.value.fare = Date.now()
+            return data
+          }
+        }
+
+        // Firebase Storage に存在しないケースではローカル fallback
+        if (!remoteUrl) {
+          const fallbackResponse = await fetch(fallbackUrl, {
+            cache: 'no-store'
+          })
+          if (fallbackResponse.ok) {
+            const fallbackData = await fallbackResponse.json() as FareMaster
+            if (fallbackData) {
+              saveFareData(fallbackData)
+              lastSync.value.fare = Date.now()
+              return fallbackData
+            }
+          }
+        }
+      } catch (e) {
+        logger.warn('Failed to fetch fare data remotely', e)
+      }
+    }
+
     if (localData) return localData
-    
     return null
   }
   
