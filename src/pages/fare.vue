@@ -396,11 +396,12 @@ v-for="(discount, key) in discounts" :key="key"
 
 <script setup lang="ts">
 import type { FareVersion } from '@/types/fare'
+import { roundUpToTen } from '@/utils/currency'
 
 // Composables
 const { formatCurrency, getAllFares } = useFareDisplay()
 const fareStore = process.client ? useFareStore() : null
-const { t, te } = useI18n()
+const { t, te } = useI18n({ useScope: 'global' })
 
 // State
 const activeTab = ref('okiKisen')
@@ -621,7 +622,8 @@ const pickNumber = (value: unknown): number | null => {
 
 const calculateDiscountedFare = (base: number | null | undefined): number | null => {
   if (base === null || typeof base === 'undefined') return null
-  return Math.round(base * PASSENGER_DISCOUNT_RATE)
+  const discounted = base * PASSENGER_DISCOUNT_RATE
+  return roundUpToTen(discounted)
 }
 
 const normalizePassengerFares = (source: any): Record<PassengerCategoryId, number | null> => {
@@ -766,18 +768,27 @@ const getRainbowJetPassengerFare = (groupId: string, categoryId: PassengerCatego
 
 const isLikelyTranslationKey = (value: string): boolean => /^[A-Z0-9_]+(_[A-Z0-9_]+)*$/.test(value)
 
-const translateLabel = (labelKey?: string | null, fallback?: string | null): string => {
-  if (typeof labelKey === 'string' && labelKey.length > 0) {
-    if (typeof te === 'function' && te(labelKey)) {
-      return t(labelKey)
-    }
-    if (isLikelyTranslationKey(labelKey)) {
-      return t(labelKey)
-    }
-    return labelKey
+const translateIfPossible = (value?: string | null): string | null => {
+  if (typeof value !== 'string' || value.trim().length === 0) {
+    return null
   }
-  if (typeof fallback === 'string' && fallback.length > 0) {
-    return fallback
+  if (typeof te === 'function' && te(value)) {
+    return t(value)
+  }
+  const translated = t(value)
+  if (translated !== value || isLikelyTranslationKey(value)) {
+    return translated
+  }
+  return value
+}
+
+const translateLabel = (labelKey?: string | null, fallback?: string | null): string => {
+  const candidates = [labelKey, fallback]
+  for (const candidate of candidates) {
+    const translated = translateIfPossible(candidate)
+    if (translated && translated.trim().length > 0) {
+      return translated
+    }
   }
   return ''
 }

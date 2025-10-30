@@ -702,6 +702,7 @@ import type { FareVersion, VesselType } from '~/types/fare'
 import FormModal from '~/components/admin/FormModal.vue'
 import ToggleSwitch from '~/components/common/ToggleSwitch.vue'
 import { createLogger } from '~/utils/logger'
+import { roundUpToTen } from '~/utils/currency'
 
 definePageMeta({
   layout: 'admin',
@@ -1338,7 +1339,7 @@ const CHILD_DISCOUNT_RATE = 0.5
 const calculateChildFare = (adult: number | null | undefined): number | null => {
   if (adult === null || typeof adult === 'undefined') return null
   const value = adult * CHILD_DISCOUNT_RATE
-  return Math.round(value)
+  return roundUpToTen(value)
 }
 
 const buildFerryCategories = (fareDocs: Array<FareDoc & { id?: string }>): FerryCategoryRecord[] => {
