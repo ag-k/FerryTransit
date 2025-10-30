@@ -58,7 +58,7 @@
           </p>
         </div>
 
-        <div class="mb-8">
+        <div class="md:hidden mb-8">
           <div class="flex flex-wrap gap-2 mb-3">
             <button
               v-for="category in passengerCategories"
@@ -113,10 +113,77 @@
             </table>
           </div>
         </div>
+
+        <div class="hidden md:block mb-8 overflow-x-auto">
+          <table class="w-full text-sm border-collapse">
+            <thead>
+              <tr class="bg-gray-100 dark:bg-gray-800">
+                <th class="border border-gray-300 dark:border-gray-600 px-4 py-3 text-left dark:text-gray-100">
+                  {{ $t('PASSENGER_CATEGORY') }}
+                </th>
+                <th
+                  v-for="group in okiKisenRouteGroups"
+                  :key="`oki-kisen-desktop-header-${group.id}`"
+                  class="border border-gray-300 dark:border-gray-600 px-4 py-3 text-center dark:text-gray-100"
+                >
+                  {{ translateLabel(group.labelKey) }}
+                </th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr
+                v-for="category in passengerCategories"
+                :key="`oki-kisen-desktop-passenger-${category.id}`"
+                class="hover:bg-gray-50 dark:hover:bg-gray-700/50"
+              >
+                <td class="border border-gray-300 dark:border-gray-600 px-4 py-3 font-medium dark:text-gray-100">
+                  {{ translateLabel(category.labelKey, category.fallback) }}
+                </td>
+                <td
+                  v-for="group in okiKisenRouteGroups"
+                  :key="`oki-kisen-desktop-passenger-${group.id}-${category.id}`"
+                  class="border border-gray-300 dark:border-gray-600 px-4 py-3 text-right font-mono dark:text-gray-100"
+                >
+                  {{ getOkiKisenPassengerFare(group.id, category.id) }}
+                </td>
+              </tr>
+            </tbody>
+            <tbody>
+              <tr class="bg-gray-50 dark:bg-gray-800/70">
+                <td class="border border-gray-300 dark:border-gray-600 px-4 py-3 font-semibold text-gray-700 dark:text-gray-100">
+                  {{ $t('SEAT_CLASS_FARE') }}
+                </td>
+                <td
+                  v-for="group in okiKisenRouteGroups"
+                  :key="`oki-kisen-desktop-seat-heading-${group.id}`"
+                  class="border border-gray-300 dark:border-gray-600 px-4 py-3 text-center text-sm text-gray-600 dark:text-gray-300"
+                >
+                  {{ translateLabel(group.labelKey) }}
+                </td>
+              </tr>
+              <tr
+                v-for="seatClass in seatClasses"
+                :key="`oki-kisen-desktop-seat-${seatClass.key}`"
+                class="hover:bg-gray-50 dark:hover:bg-gray-700/50"
+              >
+                <td class="border border-gray-300 dark:border-gray-600 px-4 py-3 font-medium dark:text-gray-100">
+                  {{ $t(seatClass.nameKey) }}
+                </td>
+                <td
+                  v-for="group in okiKisenRouteGroups"
+                  :key="`oki-kisen-desktop-seat-${group.id}-${seatClass.key}`"
+                  class="border border-gray-300 dark:border-gray-600 px-4 py-3 text-right font-mono dark:text-gray-100"
+                >
+                  {{ getSeatClassFare(group.id, seatClass.key) }}
+                </td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
         
         <!-- Seat class fares -->
-        <h4 class="text-lg font-medium mb-3 dark:text-white">{{ $t('SEAT_CLASS_FARE') }}</h4>
-        <div class="overflow-x-auto mb-8">
+        <h4 class="text-lg font-medium mb-3 dark:text-white md:hidden">{{ $t('SEAT_CLASS_FARE') }}</h4>
+        <div class="overflow-x-auto mb-8 md:hidden">
           <table class="w-full text-base sm:text-sm border-collapse">
             <thead>
               <tr class="bg-gray-100 dark:bg-gray-800">
