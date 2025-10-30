@@ -818,8 +818,6 @@ const getVehicleFare = (routeType: string, sizeKey: string) => {
 
 // Group fares by ship type
 const groupFaresByShipType = (fares: any[]) => {
-  const lookup = buildRouteLookup(fares)
-
   const okiKisenRouteIds = [
     'hondo-saigo', 'saigo-hondo',
     'hondo-beppu', 'beppu-hondo',
@@ -841,10 +839,11 @@ const groupFaresByShipType = (fares: any[]) => {
 
   const rainbowJetRouteIds = ['hondo-saigo', 'saigo-hondo']
 
-  const selectRoutes = (routeIds: string[]): any[] => {
+  const selectRoutes = (routeIds: string[], sourceRoutes: any[]): any[] => {
+    const localLookup = buildRouteLookup(sourceRoutes)
     const selected: any[] = []
     routeIds.forEach((routeId) => {
-      const route = findRouteById(lookup, routeId)
+      const route = findRouteById(localLookup, routeId)
       if (route && !selected.includes(route)) {
         selected.push(route)
       }
@@ -852,10 +851,14 @@ const groupFaresByShipType = (fares: any[]) => {
     return selected
   }
 
+  const ferryRoutes = fares.filter(route => route?.vesselType === 'ferry')
+  const highspeedRoutes = fares.filter(route => route?.vesselType === 'highspeed')
+  const localRoutes = fares.filter(route => route?.vesselType === 'local')
+
   return {
-    okiKisen: selectRoutes(okiKisenRouteIds),
-    naikoSen: selectRoutes(naikoSenRouteIds),
-    rainbowJet: selectRoutes(rainbowJetRouteIds)
+    okiKisen: selectRoutes(okiKisenRouteIds, ferryRoutes.length ? ferryRoutes : fares),
+    naikoSen: selectRoutes(naikoSenRouteIds, localRoutes.length ? localRoutes : fares),
+    rainbowJet: selectRoutes(rainbowJetRouteIds, highspeedRoutes.length ? highspeedRoutes : fares)
   }
 }
 
