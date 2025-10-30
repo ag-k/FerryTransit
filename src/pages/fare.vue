@@ -493,6 +493,9 @@ const rainbowJetRouteGroups = [
 ] as const
 
 const rainbowJetCanonicalMap: Record<string, string> = {
+  'hondo-oki': 'hondo-oki',
+  'rainbowjet-hondo-oki': 'hondo-oki',
+  'rainbowjet-saigo-hondo': 'hondo-oki',
   'hondo-saigo': 'hondo-oki',
   'saigo-hondo': 'hondo-oki',
   'hondo-beppu': 'hondo-oki',
@@ -500,6 +503,8 @@ const rainbowJetCanonicalMap: Record<string, string> = {
   'hondo-hishiura': 'hondo-oki',
   'hishiura-hondo': 'hondo-oki',
   'dozen-dogo': 'dozen-dogo',
+  'rainbowjet-dozen-dogo': 'dozen-dogo',
+  'rainbowjet-saigo-beppu': 'dozen-dogo',
   'saigo-beppu': 'dozen-dogo',
   'beppu-saigo': 'dozen-dogo',
   'saigo-hishiura': 'dozen-dogo',
@@ -507,7 +512,16 @@ const rainbowJetCanonicalMap: Record<string, string> = {
   'saigo-kuri': 'dozen-dogo',
   'kuri-saigo': 'dozen-dogo',
   'beppu-hishiura': 'beppu-hishiura',
-  'hishiura-beppu': 'beppu-hishiura'
+  'rainbowjet-beppu-hishiura': 'beppu-hishiura',
+  'hishiura-beppu': 'beppu-hishiura',
+  'hishiura-kuri': 'hishiura-kuri',
+  'kuri-hishiura': 'hishiura-kuri',
+  'rainbowjet-hishiura-kuri': 'hishiura-kuri',
+  'rainbowjet-kuri-hishiura': 'hishiura-kuri',
+  'kuri-beppu': 'kuri-beppu',
+  'beppu-kuri': 'kuri-beppu',
+  'rainbowjet-kuri-beppu': 'kuri-beppu',
+  'rainbowjet-beppu-kuri': 'kuri-beppu'
 }
 
 const PASSENGER_DISCOUNT_RATE = 0.5
@@ -738,17 +752,17 @@ const findRouteById = (lookup: Map<string, any>, routeId: string): any | null =>
 }
 
 const findRainbowJetFareSource = (groupId: string): any | null => {
-  const special = rainbowJetSpecialFares.value?.[groupId]
-  if (special) {
-    return special
-  }
-
   const lookup = buildRouteLookup(rainbowJetFares.value)
   for (const [routeKey, route] of lookup.entries()) {
     const canonical = rainbowJetCanonicalMap[routeKey] ?? rainbowJetCanonicalMap[normalizeRouteId(routeKey) ?? '']
     if (canonical === groupId) {
       return route
     }
+  }
+
+  const special = rainbowJetSpecialFares.value?.[groupId]
+  if (special) {
+    return special
   }
 
   return null
@@ -855,10 +869,17 @@ const groupFaresByShipType = (fares: any[]) => {
   const highspeedRoutes = fares.filter(route => route?.vesselType === 'highspeed')
   const localRoutes = fares.filter(route => route?.vesselType === 'local')
 
+  const okiKisen = selectRoutes(okiKisenRouteIds, ferryRoutes.length ? ferryRoutes : fares)
+  const naikoSen = selectRoutes(naikoSenRouteIds, localRoutes.length ? localRoutes : fares)
+
+  const rainbowJet = highspeedRoutes.length
+    ? highspeedRoutes
+    : selectRoutes(rainbowJetRouteIds, fares)
+
   return {
-    okiKisen: selectRoutes(okiKisenRouteIds, ferryRoutes.length ? ferryRoutes : fares),
-    naikoSen: selectRoutes(naikoSenRouteIds, localRoutes.length ? localRoutes : fares),
-    rainbowJet: selectRoutes(rainbowJetRouteIds, highspeedRoutes.length ? highspeedRoutes : fares)
+    okiKisen,
+    naikoSen,
+    rainbowJet
   }
 }
 
