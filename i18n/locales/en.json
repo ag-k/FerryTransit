@@ -120,6 +120,7 @@
   "PASSENGER_CATEGORY_CHILD": "Child",
   "PASSENGER_CATEGORY_DISABLED_ADULT": "Accessible (Adult)",
   "PASSENGER_CATEGORY_DISABLED_CHILD": "Accessible (Child)",
+  "PASSENGER_CATEGORY": "Passenger Category",
   "VEHICLE_FARE": "Vehicle Fares",
   "ADULT": "Adult",
   "CHILD": "Child",

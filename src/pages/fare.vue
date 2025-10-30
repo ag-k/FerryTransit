@@ -114,7 +114,23 @@
           </div>
         </div>
 
-        <div class="hidden md:block mb-8 overflow-x-auto">
+        <div class="hidden md:flex items-center gap-2 mb-4">
+          <button
+            v-for="tab in okiKisenDesktopTabs"
+            :key="tab.id"
+            :class="[
+              okiKisenDesktopActiveSection === tab.id
+                ? 'bg-blue-600 text-white'
+                : 'bg-white text-gray-700 dark:bg-gray-800 dark:text-gray-200 border border-gray-300 dark:border-gray-600',
+              'px-4 py-2 rounded-lg text-sm font-medium transition-colors'
+            ]"
+            @click="okiKisenDesktopActiveSection = tab.id"
+          >
+            {{ $t(tab.labelKey) }}
+          </button>
+        </div>
+
+        <div v-if="okiKisenDesktopActiveSection === 'passenger'" class="hidden md:block overflow-x-auto mb-8">
           <table class="w-full text-sm border-collapse">
             <thead>
               <tr class="bg-gray-100 dark:bg-gray-800">
@@ -148,19 +164,26 @@
                 </td>
               </tr>
             </tbody>
-            <tbody>
-              <tr class="bg-gray-50 dark:bg-gray-800/70">
-                <td class="border border-gray-300 dark:border-gray-600 px-4 py-3 font-semibold text-gray-700 dark:text-gray-100">
+          </table>
+        </div>
+
+        <div v-else class="hidden md:block overflow-x-auto mb-8">
+          <table class="w-full text-sm border-collapse">
+            <thead>
+              <tr class="bg-gray-100 dark:bg-gray-800">
+                <th class="border border-gray-300 dark:border-gray-600 px-4 py-3 text-left dark:text-gray-100">
                   {{ $t('SEAT_CLASS_FARE') }}
-                </td>
-                <td
+                </th>
+                <th
                   v-for="group in okiKisenRouteGroups"
-                  :key="`oki-kisen-desktop-seat-heading-${group.id}`"
-                  class="border border-gray-300 dark:border-gray-600 px-4 py-3 text-center text-sm text-gray-600 dark:text-gray-300"
+                  :key="`oki-kisen-desktop-seat-header-${group.id}`"
+                  class="border border-gray-300 dark:border-gray-600 px-4 py-3 text-center dark:text-gray-100"
                 >
                   {{ translateLabel(group.labelKey) }}
-                </td>
+                </th>
               </tr>
+            </thead>
+            <tbody>
               <tr
                 v-for="seatClass in seatClasses"
                 :key="`oki-kisen-desktop-seat-${seatClass.key}`"
@@ -545,6 +568,7 @@ const passengerCategoryMap = passengerCategories.reduce<Record<PassengerCategory
 
 const okiKisenPassengerActiveCategory = ref<PassengerCategoryId>('adult')
 const rainbowJetPassengerActiveCategory = ref<PassengerCategoryId>('adult')
+const okiKisenDesktopActiveSection = ref<'passenger' | 'seatClass'>('passenger')
 
 const okiKisenRouteGroups = [
   {
@@ -588,6 +612,11 @@ const okiKisenRouteGroups = [
     labelKey: 'KURI_BEPPU',
     routeIds: ['kuri-beppu', 'beppu-kuri']
   }
+] as const
+
+const okiKisenDesktopTabs = [
+  { id: 'passenger', labelKey: 'PASSENGER_CATEGORY' },
+  { id: 'seatClass', labelKey: 'SEAT_CLASS_FARE' }
 ] as const
 
 const rainbowJetRouteGroups = [
