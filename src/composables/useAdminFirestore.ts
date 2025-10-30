@@ -241,11 +241,16 @@ export const useAdminFirestore = () => {
 
       // バッチ操作のログを記録
       await logAdminAction('batch', 'multiple', '', { 
-        operations: operations.map(op => ({
-          type: op.type,
-          collection: op.collection,
-          id: op.id
-        }))
+        operations: operations.map(op => {
+          const entry: Record<string, any> = {
+            type: op.type,
+            collection: op.collection
+          }
+          if (typeof op.id === 'string' && op.id.length > 0) {
+            entry.id = op.id
+          }
+          return entry
+        })
       })
     } catch (error) {
       logger.error('Batch operation failed', error)
