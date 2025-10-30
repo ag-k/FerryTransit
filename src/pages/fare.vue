@@ -135,28 +135,28 @@
             <thead>
               <tr class="bg-gray-100 dark:bg-gray-800">
                 <th class="border border-gray-300 dark:border-gray-600 px-4 py-3 text-left dark:text-gray-100">
-                  {{ $t('PASSENGER_CATEGORY') }}
+                  {{ $t('ROUTE') }}
                 </th>
                 <th
-                  v-for="group in okiKisenRouteGroups"
-                  :key="`oki-kisen-desktop-header-${group.id}`"
+                  v-for="category in passengerCategories"
+                  :key="`oki-kisen-desktop-passenger-header-${category.id}`"
                   class="border border-gray-300 dark:border-gray-600 px-4 py-3 text-center dark:text-gray-100"
                 >
-                  {{ translateLabel(group.labelKey) }}
+                  {{ translateLabel(category.labelKey, category.fallback) }}
                 </th>
               </tr>
             </thead>
             <tbody>
               <tr
-                v-for="category in passengerCategories"
-                :key="`oki-kisen-desktop-passenger-${category.id}`"
+                v-for="group in okiKisenRouteGroups"
+                :key="`oki-kisen-desktop-passenger-${group.id}`"
                 class="hover:bg-gray-50 dark:hover:bg-gray-700/50"
               >
                 <td class="border border-gray-300 dark:border-gray-600 px-4 py-3 font-medium dark:text-gray-100">
-                  {{ translateLabel(category.labelKey, category.fallback) }}
+                  {{ translateLabel(group.labelKey) }}
                 </td>
                 <td
-                  v-for="group in okiKisenRouteGroups"
+                  v-for="category in passengerCategories"
                   :key="`oki-kisen-desktop-passenger-${group.id}-${category.id}`"
                   class="border border-gray-300 dark:border-gray-600 px-4 py-3 text-right font-mono dark:text-gray-100"
                 >
@@ -172,28 +172,28 @@
             <thead>
               <tr class="bg-gray-100 dark:bg-gray-800">
                 <th class="border border-gray-300 dark:border-gray-600 px-4 py-3 text-left dark:text-gray-100">
-                  {{ $t('SEAT_CLASS_FARE') }}
+                  {{ $t('ROUTE') }}
                 </th>
                 <th
-                  v-for="group in okiKisenRouteGroups"
-                  :key="`oki-kisen-desktop-seat-header-${group.id}`"
+                  v-for="seatClass in seatClasses"
+                  :key="`oki-kisen-desktop-seat-header-${seatClass.key}`"
                   class="border border-gray-300 dark:border-gray-600 px-4 py-3 text-center dark:text-gray-100"
                 >
-                  {{ translateLabel(group.labelKey) }}
+                  {{ $t(seatClass.nameKey) }}
                 </th>
               </tr>
             </thead>
             <tbody>
               <tr
-                v-for="seatClass in seatClasses"
-                :key="`oki-kisen-desktop-seat-${seatClass.key}`"
+                v-for="group in okiKisenRouteGroups"
+                :key="`oki-kisen-desktop-seat-${group.id}`"
                 class="hover:bg-gray-50 dark:hover:bg-gray-700/50"
               >
                 <td class="border border-gray-300 dark:border-gray-600 px-4 py-3 font-medium dark:text-gray-100">
-                  {{ $t(seatClass.nameKey) }}
+                  {{ translateLabel(group.labelKey) }}
                 </td>
                 <td
-                  v-for="group in okiKisenRouteGroups"
+                  v-for="seatClass in seatClasses"
                   :key="`oki-kisen-desktop-seat-${group.id}-${seatClass.key}`"
                   class="border border-gray-300 dark:border-gray-600 px-4 py-3 text-right font-mono dark:text-gray-100"
                 >
