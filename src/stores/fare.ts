@@ -1,6 +1,7 @@
 import { defineStore } from 'pinia'
 import { ref, computed, readonly } from 'vue'
 import { useOfflineStore } from './offline'
+import { roundUpToTen } from '@/utils/currency'
 import type { FareMaster, FareRoute, FareVersion, VesselType, RouteFare, VehicleFare, SeatClassFare } from '@/types/fare'
 
 type GetFareOptions = {
@@ -78,7 +79,7 @@ const convertFaresToRoutes = (
       ) {
         routeFare = {
           adult: adult ?? (child ?? 0),
-          child: child ?? (adult !== undefined ? Math.round(adult / 2) : 0)
+          child: child ?? (adult !== undefined ? roundUpToTen(adult / 2) : 0)
         }
 
         if (disabled) {
