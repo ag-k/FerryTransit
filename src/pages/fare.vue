@@ -323,45 +323,82 @@
         
         <!-- Passenger fares -->
         <h4 class="text-lg font-medium mb-3 dark:text-white">{{ $t('PASSENGER_FARE') }}</h4>
-        <div class="flex flex-wrap gap-2 mb-3">
-          <button
-            v-for="category in passengerCategories"
-            :key="category.id"
-            :class="[
-              rainbowJetPassengerActiveCategory === category.id
-                ? 'bg-blue-600 text-white border border-blue-600'
-                : 'bg-white text-gray-700 dark:bg-gray-800 dark:text-gray-200 border border-gray-300 dark:border-gray-600',
-              'px-3 py-1.5 rounded-full text-sm font-medium transition-colors'
-            ]"
-            @click="rainbowJetPassengerActiveCategory = category.id"
-          >
-            {{ translateLabel(category.labelKey, category.fallback) }}
-          </button>
+        <div class="md:hidden">
+          <div class="flex flex-wrap gap-2 mb-3">
+            <button
+              v-for="category in passengerCategories"
+              :key="category.id"
+              :class="[
+                rainbowJetPassengerActiveCategory === category.id
+                  ? 'bg-blue-600 text-white border border-blue-600'
+                  : 'bg-white text-gray-700 dark:bg-gray-800 dark:text-gray-200 border border-gray-300 dark:border-gray-600',
+                'px-3 py-1.5 rounded-full text-sm font-medium transition-colors'
+              ]"
+              @click="rainbowJetPassengerActiveCategory = category.id"
+            >
+              {{ translateLabel(category.labelKey, category.fallback) }}
+            </button>
+          </div>
+          <div class="overflow-x-auto mb-8">
+            <table class="w-full text-base sm:text-sm border-collapse">
+              <thead>
+                <tr class="bg-gray-100 dark:bg-gray-800">
+                  <th class="border border-gray-300 dark:border-gray-600 px-4 py-3 text-left dark:text-gray-100">{{ $t('ROUTE') }}</th>
+                  <th class="border border-gray-300 dark:border-gray-600 px-4 py-3 text-right dark:text-gray-100">
+                    {{ translateLabel(
+                      getPassengerCategoryLabelKey(rainbowJetPassengerActiveCategory),
+                      passengerCategoryMap[rainbowJetPassengerActiveCategory]?.fallback
+                    ) }}
+                  </th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr
+                  v-for="group in rainbowJetRouteGroups"
+                  :key="group.id"
+                  class="hover:bg-gray-50 dark:hover:bg-gray-700/50"
+                >
+                  <td class="border border-gray-300 dark:border-gray-600 px-4 py-3 dark:text-gray-100">
+                    {{ translateLabel(group.labelKey) }}
+                  </td>
+                  <td class="border border-gray-300 dark:border-gray-600 px-4 py-3 text-right font-mono dark:text-gray-100">
+                    {{ getRainbowJetPassengerFare(group.id, rainbowJetPassengerActiveCategory) }}
+                  </td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
         </div>
-        <div class="overflow-x-auto mb-8">
-          <table class="w-full text-base sm:text-sm border-collapse">
+
+        <div class="hidden md:block overflow-x-auto mb-8">
+          <table class="w-full text-sm border-collapse">
             <thead>
               <tr class="bg-gray-100 dark:bg-gray-800">
                 <th class="border border-gray-300 dark:border-gray-600 px-4 py-3 text-left dark:text-gray-100">{{ $t('ROUTE') }}</th>
-                <th class="border border-gray-300 dark:border-gray-600 px-4 py-3 text-right dark:text-gray-100">
-                  {{ translateLabel(
-                    getPassengerCategoryLabelKey(rainbowJetPassengerActiveCategory),
-                    passengerCategoryMap[rainbowJetPassengerActiveCategory]?.fallback
-                  ) }}
+                <th
+                  v-for="category in passengerCategories"
+                  :key="`rainbow-jet-header-${category.id}`"
+                  class="border border-gray-300 dark:border-gray-600 px-4 py-3 text-center dark:text-gray-100"
+                >
+                  {{ translateLabel(category.labelKey, category.fallback) }}
                 </th>
               </tr>
             </thead>
             <tbody>
               <tr
                 v-for="group in rainbowJetRouteGroups"
-                :key="group.id"
+                :key="`rainbow-jet-row-${group.id}`"
                 class="hover:bg-gray-50 dark:hover:bg-gray-700/50"
               >
                 <td class="border border-gray-300 dark:border-gray-600 px-4 py-3 dark:text-gray-100">
                   {{ translateLabel(group.labelKey) }}
                 </td>
-                <td class="border border-gray-300 dark:border-gray-600 px-4 py-3 text-right font-mono dark:text-gray-100">
-                  {{ getRainbowJetPassengerFare(group.id, rainbowJetPassengerActiveCategory) }}
+                <td
+                  v-for="category in passengerCategories"
+                  :key="`rainbow-jet-cell-${group.id}-${category.id}`"
+                  class="border border-gray-300 dark:border-gray-600 px-4 py-3 text-right font-mono dark:text-gray-100"
+                >
+                  {{ getRainbowJetPassengerFare(group.id, category.id) }}
                 </td>
               </tr>
             </tbody>
