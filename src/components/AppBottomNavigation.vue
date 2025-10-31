@@ -1,5 +1,8 @@
 <template>
-  <nav class="lg:hidden fixed bottom-0 left-0 right-0 bg-white dark:bg-gray-900 border-t border-gray-200 dark:border-gray-700 z-30 safe-area-bottom">
+  <nav 
+    class="lg:hidden fixed bottom-0 left-0 right-0 bg-white dark:bg-gray-900 border-t border-gray-200 dark:border-gray-700 z-30 safe-area-bottom transition-all duration-200"
+    :style="{ paddingBottom: `${totalBottomPadding}px` }"
+  >
     <div class="flex justify-around">
       <NuxtLink 
         v-for="item in navItems" 
@@ -34,6 +37,38 @@
 <script setup lang="ts">
 const route = useRoute()
 const localePath = useLocalePath()
+const { isAndroid, navigationBarHeight } = useAndroidNavigation()
+
+// iOS safe area inset bottom
+const envSafeAreaBottom = ref(0)
+
+// 総合的な下部パディングを計算
+const totalBottomPadding = computed(() => {
+  const safeArea = envSafeAreaBottom.value || 0
+  const androidNav = isAndroid.value ? Math.max(navigationBarHeight.value, 30) : 0 // Androidは最低30pxを確保
+  return Math.max(safeArea, androidNav, 25) // 最低25pxを確保
+})
+
+onMounted(() => {
+  // iOS safe areaの値を取得
+  const updateSafeArea = () => {
+    const rootStyles = getComputedStyle(document.documentElement)
+    const safeAreaBottom = rootStyles.getPropertyValue('env(safe-area-inset-bottom)')
+    envSafeAreaBottom.value = safeAreaBottom ? parseInt(safeAreaBottom) : 0
+  }
+
+  updateSafeArea()
+  
+  // 画面の向き変更時に再計算
+  window.addEventListener('orientationchange', () => {
+    setTimeout(updateSafeArea, 100)
+  })
+  
+  // Visual Viewport APIが利用可能な場合
+  if ((window as any).visualViewport) {
+    ;(window as any).visualViewport.addEventListener('resize', updateSafeArea)
+  }
+})
 
 // Navigation items for bottom tab
 const navItems = computed(() => [

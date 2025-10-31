@@ -8,6 +8,19 @@ body {
   font-family: 'Noto Sans JP', 'Roboto', sans-serif;
 }
 
+// Android navigation bar height variable
+:root {
+  --android-navigation-bar-height: 20px;
+  --android-status-bar-height: 24px;
+}
+
+@media screen and (-webkit-device-pixel-ratio: 0) and (min-resolution: .001dpcm) {
+  :root {
+    --android-navigation-bar-height: 24px;
+    --android-status-bar-height: 28px;
+  }
+}
+
 // Touch device optimizations
 @media (hover: none) and (pointer: coarse) {
   // Improve touch targets
@@ -69,9 +82,60 @@ body {
   background: transparent !important;
 }
 
-// Safe area for iOS devices
+// Safe area for iOS and Android devices
 .safe-area-bottom {
+  // iOS safe area
   padding-bottom: env(safe-area-inset-bottom);
+  
+  // Android navigation bar support
+  @supports (padding: max(0px)) {
+    padding-bottom: max(env(safe-area-inset-bottom), 16px);
+  }
+}
+
+// Safe area for top (status bar)
+.safe-area-top {
+  // iOS safe area
+  padding-top: env(safe-area-inset-top);
+  
+  // Android status bar support
+  @supports (padding: max(0px)) {
+    padding-top: max(env(safe-area-inset-top), 24px);
+  }
+}
+
+// Android specific navigation bar handling
+@media screen and (-webkit-device-pixel-ratio: 0) and (min-resolution: .001dpcm) {
+  // Chrome on Android
+  .safe-area-bottom {
+    padding-bottom: max(env(safe-area-inset-bottom, 0px), 30px) !important;
+  }
+  
+  .safe-area-top {
+    padding-top: max(env(safe-area-inset-top, 0px), 28px) !important;
+  }
+}
+
+// Additional Android fallback
+@supports not (padding: max(0px)) {
+  .safe-area-bottom {
+    padding-bottom: 30px !important;
+  }
+  
+  .safe-area-top {
+    padding-top: 28px !important;
+  }
+}
+
+// Android specific styles for bottom navigation
+@media screen {
+  .platform-android .safe-area-bottom {
+    padding-bottom: max(env(safe-area-inset-bottom, 0px), 35px) !important;
+  }
+  
+  .platform-android .safe-area-top {
+    padding-top: max(env(safe-area-inset-top, 0px), 32px) !important;
+  }
 }
 
 // Dark mode fallback styles

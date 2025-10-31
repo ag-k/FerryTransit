@@ -1,5 +1,5 @@
 <template>
-  <nav class="bg-blue-600 dark:bg-gray-900 text-white relative border-b border-transparent dark:border-gray-700">
+  <nav class="bg-blue-600 dark:bg-gray-900 text-white relative border-b border-transparent dark:border-gray-700 safe-area-top" :style="{ paddingTop: `${totalTopPadding}px` }">
     <!-- Mobile menu overlay -->
     <div v-if="menuOpen" class="fixed inset-0 bg-black bg-opacity-50 dark:bg-opacity-70 z-40 lg:hidden"
       @click="closeMenu"></div>
@@ -214,6 +214,7 @@
 
 <script setup lang="ts">
 import { useNews } from '~/composables/useNews'
+import { useAndroidNavigation } from '~/composables/useAndroidNavigation'
 
 const { locale, locales, t } = useI18n()
 const route = useRoute()
@@ -221,6 +222,89 @@ const switchLocalePath = useSwitchLocalePath()
 const localePath = useLocalePath()
 const runtimeConfig = useRuntimeConfig()
 const isCalendarEnabled = computed(() => runtimeConfig.public?.features?.calendar ?? false)
+const { isAndroid } = useAndroidNavigation()
+
+// Androidステータスバーの高さを検出
+const statusBarHeight = ref(0)
+const envSafeAreaTop = ref(0)
+
+// 総合的な上部パディングを計算
+const totalTopPadding = computed(() => {
+  const safeArea = envSafeAreaTop.value || 0
+  const androidStatus = isAndroid.value ? Math.max(statusBarHeight.value, 24) : 0 // Androidは最低24pxを確保
+  return Math.max(safeArea, androidStatus, 8) // 最低8pxを確保
+})
+
+onMounted(() => {
+  // iOS safe areaの値を取得
+  const updateSafeArea = () => {
+    const rootStyles = getComputedStyle(document.documentElement)
+    const safeAreaTop = rootStyles.getPropertyValue('env(safe-area-inset-top)')
+    envSafeAreaTop.value = safeAreaTop ? parseInt(safeAreaTop) : 0
+  }
+
+  updateSafeArea()
+  
+  // Androidステータスバーの高さを検出
+  if (isAndroid.value) {
+    const calculateStatusBarHeight = () => {
+      let detectedHeight = 24 // デフォルト値
+      
+      // 方法1: スクリーンサイズとウィンドウサイズの差を計算
+      const screenHeight = screen.height
+      const windowHeight = window.innerHeight
+      const availHeight = screen.availHeight
+      const heightDiff = availHeight - windowHeight
+      
+      if (heightDiff > 0 && heightDiff < 100) {
+        detectedHeight = heightDiff
+      }
+      
+      // 方法2: デバイスピクセル比率を考慮
+      const pixelRatio = window.devicePixelRatio || 1
+      if (pixelRatio > 2) {
+        // 高解像度デバイスではステータスバーが高くなる傾向
+        detectedHeight = Math.max(detectedHeight, 28)
+      }
+      
+      // 方法3: CSS変数から取得（フォールバック）
+      const rootStyles = getComputedStyle(document.documentElement)
+      const cssStatusHeight = rootStyles.getPropertyValue('--android-status-bar-height')
+      if (cssStatusHeight) {
+        const cssHeight = parseInt(cssStatusHeight)
+        if (cssHeight > 0) {
+          detectedHeight = Math.max(detectedHeight, cssHeight)
+        }
+      }
+      
+      // 最低でも24px、最大でも80pxに制限
+      statusBarHeight.value = Math.max(24, Math.min(detectedHeight, 80))
+      
+      console.log('Android status bar height detected:', statusBarHeight.value)
+    }
+
+    // 初回計算
+    setTimeout(calculateStatusBarHeight, 100)
+    
+    // 画面サイズ変更時に再計算
+    window.addEventListener('resize', calculateStatusBarHeight)
+    
+    // 画面の向き変更時に再計算
+    window.addEventListener('orientationchange', () => {
+      setTimeout(calculateStatusBarHeight, 500)
+    })
+  }
+  
+  // 画面の向き変更時にiOS safe areaも再計算
+  window.addEventListener('orientationchange', () => {
+    setTimeout(updateSafeArea, 100)
+  })
+  
+  // Visual Viewport APIが利用可能な場合
+  if ((window as any).visualViewport) {
+    ;(window as any).visualViewport.addEventListener('resize', updateSafeArea)
+  }
+})
 
 // Current page title for mobile header
 const currentPageTitle = computed(() => {
