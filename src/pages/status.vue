@@ -12,17 +12,17 @@
     <div v-else class="grid md:grid-cols-2 gap-6">
       <!-- いそかぜ Status -->
       <div>
-        <div class="bg-white dark:bg-slate-800 rounded-lg shadow-sm border dark:border-gray-700 h-full" :class="{ 'border-red-500 dark:border-red-400 border-2': shipStatus.isokaze?.hasAlert }">
-          <div class="px-4 py-3 border-b dark:border-gray-700" :class="{ 'bg-red-600 dark:bg-red-700 text-white': shipStatus.isokaze?.hasAlert, 'dark:bg-slate-700': !shipStatus.isokaze?.hasAlert }">
-            <h3 class="text-lg font-medium" :class="{ 'dark:text-white': !shipStatus.isokaze?.hasAlert }">{{ $t('ISOKAZE') }}</h3>
+        <div class="rounded-lg shadow-sm h-full" :class="getStatusCardContainerClass(shipStatus.isokaze)">
+          <div class="px-4 py-3 border-b" :class="getStatusCardHeaderClass(shipStatus.isokaze)">
+            <h3 class="text-lg font-medium">{{ $t('ISOKAZE') }}</h3>
           </div>
           <div class="p-4">
             <div v-if="shipStatus.isokaze">
               <div class="space-y-3">
                 <p class="text-sm dark:text-gray-200">
                   <strong>{{ $t('STATUS') }}:</strong>
-                  <span :class="getStatusClass(shipStatus.isokaze.status)" class="ml-1">
-                    {{ getStatusText(shipStatus.isokaze.status) }}
+                  <span :class="getStatusClass(shipStatus.isokaze?.status)" class="ml-1">
+                    {{ getStatusText(shipStatus.isokaze?.status, 'isokaze') }}
                   </span>
                 </p>
                 <p v-if="shipStatus.isokaze.summary" class="text-sm dark:text-gray-300">
@@ -49,9 +49,9 @@
                         </thead>
                         <tbody>
                           <tr class="border-t border-gray-200 dark:border-gray-700">
-                            <td class="px-3 py-2 dark:text-gray-200">{{ shipStatus.isokaze.departure || '-' }}</td>
+                            <td class="px-3 py-2 dark:text-gray-200">{{ formatPortLabel(shipStatus.isokaze?.departure) }}</td>
                             <td class="px-3 py-2 dark:text-gray-200">{{ formatShipTime(getStartTimeValue(shipStatus.isokaze)) }}</td>
-                            <td class="px-3 py-2 dark:text-gray-200">{{ shipStatus.isokaze.arrival || '-' }}</td>
+                            <td class="px-3 py-2 dark:text-gray-200">{{ formatPortLabel(shipStatus.isokaze?.arrival) }}</td>
                           </tr>
                         </tbody>
                       </table>
@@ -78,7 +78,7 @@
                             :key="`isokaze-extra-${index}`"
                             class="border-t border-gray-200 dark:border-gray-700"
                           >
-                            <td class="px-3 py-2 dark:text-gray-200">{{ trip.departure || '-' }}</td>
+                            <td class="px-3 py-2 dark:text-gray-200">{{ formatPortLabel(trip?.departure) }}</td>
                             <td class="px-3 py-2 dark:text-gray-200">{{ getTripDepartureTime(trip) }}</td>
                             <td class="px-3 py-2 dark:text-gray-200">{{ formatTripArrival(trip) }}</td>
                           </tr>
@@ -107,7 +107,7 @@
                             :key="`isokaze-last-${index}`"
                             class="border-t border-gray-200 dark:border-gray-700"
                           >
-                            <td class="px-3 py-2 dark:text-gray-200">{{ trip.departure || '-' }}</td>
+                            <td class="px-3 py-2 dark:text-gray-200">{{ formatPortLabel(trip?.departure) }}</td>
                             <td class="px-3 py-2 dark:text-gray-200">{{ getTripDepartureTime(trip) }}</td>
                             <td class="px-3 py-2 dark:text-gray-200">{{ formatTripArrival(trip) }}</td>
                           </tr>
@@ -134,17 +134,17 @@
       
       <!-- どうぜん Status -->
       <div>
-        <div class="bg-white dark:bg-slate-800 rounded-lg shadow-sm border dark:border-gray-700 h-full" :class="{ 'border-red-500 dark:border-red-400 border-2': shipStatus.dozen?.hasAlert }">
-          <div class="px-4 py-3 border-b dark:border-gray-700" :class="{ 'bg-red-600 dark:bg-red-700 text-white': shipStatus.dozen?.hasAlert, 'dark:bg-slate-700': !shipStatus.dozen?.hasAlert }">
-            <h3 class="text-lg font-medium" :class="{ 'dark:text-white': !shipStatus.dozen?.hasAlert }">{{ $t('FERRY_DOZEN') }}</h3>
+        <div class="rounded-lg shadow-sm h-full" :class="getStatusCardContainerClass(shipStatus.dozen)">
+          <div class="px-4 py-3 border-b" :class="getStatusCardHeaderClass(shipStatus.dozen)">
+            <h3 class="text-lg font-medium">{{ $t('FERRY_DOZEN') }}</h3>
           </div>
           <div class="p-4">
             <div v-if="shipStatus.dozen">
               <div class="space-y-3">
                 <p class="text-sm dark:text-gray-200">
                   <strong>{{ $t('STATUS') }}:</strong>
-                  <span :class="getStatusClass(shipStatus.dozen.status)" class="ml-1">
-                    {{ getStatusText(shipStatus.dozen.status) }}
+                  <span :class="getStatusClass(shipStatus.dozen?.status)" class="ml-1">
+                    {{ getStatusText(shipStatus.dozen?.status, 'dozen') }}
                   </span>
                 </p>
                 <p v-if="shipStatus.dozen.summary" class="text-sm dark:text-gray-300">
@@ -171,9 +171,9 @@
                         </thead>
                         <tbody>
                           <tr class="border-t border-gray-200 dark:border-gray-700">
-                            <td class="px-3 py-2 dark:text-gray-200">{{ shipStatus.dozen.departure || '-' }}</td>
+                            <td class="px-3 py-2 dark:text-gray-200">{{ formatPortLabel(shipStatus.dozen?.departure) }}</td>
                             <td class="px-3 py-2 dark:text-gray-200">{{ formatShipTime(getStartTimeValue(shipStatus.dozen)) }}</td>
-                            <td class="px-3 py-2 dark:text-gray-200">{{ shipStatus.dozen.arrival || '-' }}</td>
+                            <td class="px-3 py-2 dark:text-gray-200">{{ formatPortLabel(shipStatus.dozen?.arrival) }}</td>
                           </tr>
                         </tbody>
                       </table>
@@ -200,7 +200,7 @@
                             :key="`dozen-extra-${index}`"
                             class="border-t border-gray-200 dark:border-gray-700"
                           >
-                            <td class="px-3 py-2 dark:text-gray-200">{{ trip.departure || '-' }}</td>
+                            <td class="px-3 py-2 dark:text-gray-200">{{ formatPortLabel(trip?.departure) }}</td>
                             <td class="px-3 py-2 dark:text-gray-200">{{ getTripDepartureTime(trip) }}</td>
                             <td class="px-3 py-2 dark:text-gray-200">{{ formatTripArrival(trip) }}</td>
                           </tr>
@@ -229,7 +229,7 @@
                             :key="`dozen-last-${index}`"
                             class="border-t border-gray-200 dark:border-gray-700"
                           >
-                            <td class="px-3 py-2 dark:text-gray-200">{{ trip.departure || '-' }}</td>
+                            <td class="px-3 py-2 dark:text-gray-200">{{ formatPortLabel(trip?.departure) }}</td>
                             <td class="px-3 py-2 dark:text-gray-200">{{ getTripDepartureTime(trip) }}</td>
                             <td class="px-3 py-2 dark:text-gray-200">{{ formatTripArrival(trip) }}</td>
                           </tr>
@@ -256,9 +256,9 @@
       
       <!-- Ferry Status -->
       <div class="md:col-span-2">
-        <div class="bg-white dark:bg-slate-800 rounded-lg shadow-sm border dark:border-gray-700" :class="{ 'border-red-500 dark:border-red-400 border-2': shipStatus.ferry?.hasAlert }">
-          <div class="px-4 py-3 border-b dark:border-gray-700" :class="{ 'bg-red-600 dark:bg-red-700 text-white': shipStatus.ferry?.hasAlert, 'dark:bg-slate-700': !shipStatus.ferry?.hasAlert }">
-            <h3 class="text-lg font-medium" :class="{ 'dark:text-white': !shipStatus.ferry?.hasAlert }">{{ $t('FERRY') }}</h3>
+        <div class="rounded-lg shadow-sm" :class="getFerryCardContainerClass(shipStatus.ferry)">
+          <div class="px-4 py-3 border-b" :class="getFerryCardHeaderClass(shipStatus.ferry)">
+            <h3 class="text-lg font-medium">{{ $t('FERRY') }}</h3>
           </div>
           <div class="p-4">
             <div v-if="shipStatus.ferry" class="grid md:grid-cols-2 gap-6">
@@ -334,7 +334,7 @@
 <script setup lang="ts">
 import { useFerryStore } from '@/stores/ferry'
 import { useFerryData } from '@/composables/useFerryData'
-import type { ShipStatus } from '~/types'
+import type { ShipStatus, FerryStatus } from '~/types'
 
 const ferryStore = process.client ? useFerryStore() : null
 const { updateShipStatus } = useFerryData()
@@ -348,27 +348,107 @@ const shipStatus = computed(() => ferryStore?.shipStatus || {})
 const lastFetchTime = computed(() => ferryStore?.lastFetchTime || null)
 
 // Methods
-const getStatusClass = (status: number) => {
+const getStatusClass = (status?: number | null) => {
+  if (status === null || status === undefined) {
+    return ''
+  }
   switch (status) {
-    case 0: return 'text-green-600 dark:text-green-300'
+    case 0: return 'text-blue-600 dark:text-blue-300'
     case 1: return 'text-red-600 dark:text-red-300'
     case 2: return 'text-yellow-600 dark:text-yellow-300'
-    case 3: return 'text-blue-600 dark:text-blue-200'
-    case 4: return 'text-purple-600 dark:text-purple-300'
+    case 3: return 'text-yellow-600 dark:text-yellow-300'
+    case 4: return 'text-green-600 dark:text-green-300'
     default: return ''
   }
 }
 
-const getStatusText = (status: number) => {
-  switch (status) {
-    case 0: return $i18n.t('NORMAL_OPERATION')
-    case 1: return $i18n.t('CANCELLED')
-    case 2: return $i18n.t('PARTIAL_CANCEL')
-    case 3: return $i18n.t('SCHEDULE_CHANGE')
-    case 4: return $i18n.t('EXTRA_SHIP')
-    default: return $i18n.t('UNKNOWN')
+type ShipType = 'isokaze' | 'dozen'
+
+const statusLabelKeyMap: Record<ShipType, Record<number, string>> = {
+  isokaze: {
+    0: 'NORMAL_SERVICE',
+    1: 'FULLY_CANCELLED',
+    2: 'PARTIALLY_CANCELLED',
+    3: 'CHANGED',
+    4: 'SERVICE_RESUMED'
+  },
+  dozen: {
+    0: 'NORMAL_SERVICE',
+    1: 'FULLY_CANCELLED',
+    2: 'PARTIALLY_CANCELLED',
+    3: 'KURI_CANCELLED',
+    4: 'SERVICE_RESUMED'
   }
 }
+
+const getStatusText = (status?: number | null, shipType: ShipType = 'isokaze') => {
+  if (status === null || status === undefined) {
+    return $i18n.t('UNKNOWN')
+  }
+  const key = statusLabelKeyMap[shipType][status]
+  return key ? $i18n.t(key) : $i18n.t('UNKNOWN')
+}
+
+type StatusVariant = 'default' | 'info' | 'danger' | 'warning' | 'success'
+
+const statusContainerClassMap: Record<StatusVariant, string> = {
+  default: 'border border-gray-200 bg-white dark:bg-slate-800 dark:border-gray-700',
+  info: 'border border-blue-200 bg-blue-50 dark:bg-blue-900/40 dark:border-blue-400',
+  danger: 'border border-red-200 bg-red-50 dark:bg-red-900/40 dark:border-red-400',
+  warning: 'border border-yellow-200 bg-yellow-50 dark:bg-yellow-900/40 dark:border-yellow-400',
+  success: 'border border-green-200 bg-green-50 dark:bg-green-900/40 dark:border-green-400'
+}
+
+const statusHeaderClassMap: Record<StatusVariant, string> = {
+  default: 'border-gray-200 bg-gray-100 text-gray-900 dark:bg-slate-700 dark:border-gray-600 dark:text-white',
+  info: 'border-blue-600 bg-blue-600 text-white dark:bg-blue-700 dark:border-blue-500',
+  danger: 'border-red-600 bg-red-600 text-white dark:bg-red-700 dark:border-red-600',
+  warning: 'border-yellow-400 bg-yellow-400 text-gray-900 dark:bg-yellow-500 dark:border-yellow-400 dark:text-gray-900',
+  success: 'border-green-600 bg-green-600 text-white dark:bg-green-700 dark:border-green-600'
+}
+
+const getStatusVariant = (ship?: ShipStatus | null): StatusVariant => {
+  if (!ship) return 'default'
+  switch (ship.status) {
+    case 0: return 'info'
+    case 1: return 'danger'
+    case 2: return 'warning'
+    case 3: return 'warning'
+    case 4: return 'success'
+    default: return 'default'
+  }
+}
+
+const getStatusCardContainerClass = (ship?: ShipStatus | null) => statusContainerClassMap[getStatusVariant(ship)]
+
+const getStatusCardHeaderClass = (ship?: ShipStatus | null) => statusHeaderClassMap[getStatusVariant(ship)]
+
+const getFerrySeverity = (state?: string | null): number => {
+  if (!state) return 0
+  const normalized = state.trim().toLowerCase()
+  if (!normalized) return 0
+  if (normalized.includes('欠航') || normalized.includes('休航') || normalized.includes('cancel')) return 3
+  if (normalized.includes('条件') || normalized.includes('conditional') || normalized.includes('変更')) return 2
+  if (normalized.includes('定期') || normalized.includes('通常') || normalized.includes('平常') || normalized.includes('normal') || normalized.includes('operation')) return 1
+  return 2
+}
+
+const getFerryVariant = (ferry?: FerryStatus | null): StatusVariant => {
+  if (!ferry) return 'default'
+  const severities = [
+    getFerrySeverity(ferry.ferryState),
+    getFerrySeverity(ferry.fastFerryState)
+  ]
+  const maxSeverity = Math.max(...severities)
+  if (maxSeverity >= 3) return 'danger'
+  if (maxSeverity === 2) return 'warning'
+  if (maxSeverity === 1) return 'info'
+  return 'default'
+}
+
+const getFerryCardContainerClass = (ferry?: FerryStatus | null) => statusContainerClassMap[getFerryVariant(ferry)]
+
+const getFerryCardHeaderClass = (ferry?: FerryStatus | null) => statusHeaderClassMap[getFerryVariant(ferry)]
 
 const getOperationClass = (state: string) => {
   // Check Japanese states
@@ -445,13 +525,20 @@ const shouldShowDetailBlock = (ship: ShipStatus | null | undefined, shipType: 'i
   return false
 }
 
+const formatPortLabel = (port?: string | null) => {
+  if (!port) return '-'
+  const translated = $i18n.t(port)
+  return translated !== port ? translated : port
+}
+
 const formatTripArrival = (trip: any) => {
   if (!trip) return '-'
-  const arrival = trip.arrival || '-'
-  if (!trip.via) return arrival
+  const arrival = formatPortLabel(trip.arrival)
+  const viaValue = formatPortLabel(trip.via)
+  if (!trip.via || viaValue === '-') return arrival
   const viaLabel = $i18n.t('VIA')
   const isJapanese = $i18n.locale.value === 'ja'
-  return isJapanese ? `${trip.via}${viaLabel}${arrival}` : `${arrival} ${viaLabel} ${trip.via}`
+  return isJapanese ? `${viaValue}${viaLabel}${arrival}` : `${arrival} ${viaLabel} ${viaValue}`
 }
 
 const formatReason = (reason?: string | null) => {

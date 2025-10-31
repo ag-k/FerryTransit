@@ -9,7 +9,9 @@
     </div>
 
     <!-- Error state -->
-    <div v-else-if="error" class="bg-red-100 dark:bg-red-900/20 border border-red-400 dark:border-red-700 text-red-700 dark:text-red-300 px-4 py-3 rounded" role="alert">
+    <div v-else-if="error"
+      class="bg-red-100 dark:bg-red-900/20 border border-red-400 dark:border-red-700 text-red-700 dark:text-red-300 px-4 py-3 rounded"
+      role="alert">
       {{ $t(error) }}
     </div>
 
@@ -18,26 +20,18 @@
       <!-- Tab navigation -->
       <div class="mb-6 border-b border-gray-200 dark:border-gray-700">
         <nav class="-mb-px flex space-x-8" aria-label="Tabs">
-          <button
-            v-for="tab in tabs"
-            :key="tab.id"
-            :class="[
-              activeTab === tab.id
-                ? 'border-blue-500 text-blue-600 dark:text-blue-400'
-                : 'border-transparent text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-300 hover:border-gray-300 dark:hover:border-gray-600',
-              'whitespace-nowrap py-4 px-1 border-b-2 font-medium text-sm transition-colors'
-            ]"
-            @click="activeTab = tab.id"
-          >
+          <button v-for="tab in tabs" :key="tab.id" :class="[
+            activeTab === tab.id
+              ? 'border-blue-500 text-blue-600 dark:text-blue-400'
+              : 'border-transparent text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-300 hover:border-gray-300 dark:hover:border-gray-600',
+            'whitespace-nowrap py-4 px-1 border-b-2 font-medium text-sm transition-colors'
+          ]" @click="activeTab = tab.id">
             {{ $t(tab.nameKey) }}
           </button>
         </nav>
       </div>
 
-      <p
-        v-if="activeVersionLabel"
-        class="mb-4 text-sm text-gray-600 dark:text-gray-400"
-      >
+      <p v-if="activeVersionLabel" class="mb-4 text-sm text-gray-600 dark:text-gray-400">
         {{ activeVersionLabel }}
       </p>
 
@@ -46,12 +40,6 @@
         <div class="mb-4">
           <div class="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
             <h3 class="text-xl font-medium dark:text-white">{{ $t('OKI_KISEN_FERRY') }}</h3>
-            <p
-              v-if="ferryVersionName"
-              class="text-sm text-gray-600 dark:text-gray-400"
-            >
-              {{ $t('VERSION') }}: {{ ferryVersionName }}
-            </p>
           </div>
           <p class="text-sm text-gray-600 dark:text-gray-400 mt-2 sm:mt-1">
             {{ $t('FERRY_OKI') }}, {{ $t('FERRY_SHIRASHIMA') }}, {{ $t('FERRY_KUNIGA') }}
@@ -62,38 +50,24 @@
         <div class="mb-8">
           <div class="flex flex-col gap-3 md:items-center md:justify-between">
             <nav class="flex flex-wrap gap-2" aria-label="Passenger categories" role="tablist">
-              <button
-                v-for="category in passengerCategories"
-                :key="category.id"
-                :class="[
-                  okiKisenPassengerActiveCategory === category.id
-                    ? 'bg-blue-600 text-white border border-blue-600'
-                    : 'bg-white text-gray-700 dark:bg-gray-800 dark:text-gray-200 border border-gray-300 dark:border-gray-600',
-                  'px-3 py-1.5 rounded-full text-sm font-medium transition-colors'
-                ]"
-                type="button"
-                role="tab"
-                :aria-selected="okiKisenPassengerActiveCategory === category.id"
-                @click="okiKisenPassengerActiveCategory = category.id"
-              >
+              <button v-for="category in passengerCategories" :key="category.id" :class="[
+                okiKisenPassengerActiveCategory === category.id
+                  ? 'bg-blue-600 text-white border border-blue-600'
+                  : 'bg-white text-gray-700 dark:bg-gray-800 dark:text-gray-200 border border-gray-300 dark:border-gray-600',
+                'px-3 py-1.5 rounded-full text-sm font-medium transition-colors'
+              ]" type="button" role="tab" :aria-selected="okiKisenPassengerActiveCategory === category.id"
+                @click="okiKisenPassengerActiveCategory = category.id">
                 {{ translateLabel(category.labelKey, category.fallback) }}
               </button>
             </nav>
             <nav class="flex flex-wrap gap-2 md:hidden" aria-label="Seat classes" role="tablist">
-              <button
-                v-for="seatClass in seatClasses"
-                :key="`seat-class-tab-${seatClass.key}`"
-                :class="[
-                  okiKisenActiveSeatClass === seatClass.key
-                    ? 'bg-blue-50 text-blue-700 border border-blue-500 dark:bg-blue-900/40 dark:text-blue-200 dark:border-blue-700'
-                    : 'bg-white text-gray-700 dark:bg-gray-800 dark:text-gray-200 border border-gray-300 dark:border-gray-600',
-                  'px-3 py-1.5 rounded-full text-sm font-medium transition-colors'
-                ]"
-                type="button"
-                role="tab"
-                :aria-selected="okiKisenActiveSeatClass === seatClass.key"
-                @click="okiKisenActiveSeatClass = seatClass.key"
-              >
+              <button v-for="seatClass in seatClasses" :key="`seat-class-tab-${seatClass.key}`" :class="[
+                okiKisenActiveSeatClass === seatClass.key
+                  ? 'bg-blue-50 text-blue-700 border border-blue-500 dark:bg-blue-900/40 dark:text-blue-200 dark:border-blue-700'
+                  : 'bg-white text-gray-700 dark:bg-gray-800 dark:text-gray-200 border border-gray-300 dark:border-gray-600',
+                'px-3 py-1.5 rounded-full text-sm font-medium transition-colors'
+              ]" type="button" role="tab" :aria-selected="okiKisenActiveSeatClass === seatClass.key"
+                @click="okiKisenActiveSeatClass = seatClass.key">
                 {{ $t(seatClass.nameKey) }}
               </button>
             </nav>
@@ -119,16 +93,15 @@
                 </tr>
               </thead>
               <tbody>
-                <tr
-                  v-for="group in okiKisenRouteGroups"
-                  :key="`mobile-seat-class-${group.id}`"
-                  class="hover:bg-gray-50 dark:hover:bg-gray-700/50"
-                >
+                <tr v-for="group in okiKisenRouteGroups" :key="`mobile-seat-class-${group.id}`"
+                  class="hover:bg-gray-50 dark:hover:bg-gray-700/50">
                   <td class="border border-gray-300 dark:border-gray-600 px-4 py-3 font-medium dark:text-gray-100">
                     {{ translateLabel(group.labelKey) }}
                   </td>
-                  <td class="border border-gray-300 dark:border-gray-600 px-4 py-3 text-right font-mono dark:text-gray-100">
-                    {{ getSeatClassFareForCategory(group.id, okiKisenActiveSeatClass, okiKisenPassengerActiveCategory) }}
+                  <td
+                    class="border border-gray-300 dark:border-gray-600 px-4 py-3 text-right font-mono dark:text-gray-100">
+                    {{ getSeatClassFareForCategory(group.id, okiKisenActiveSeatClass, okiKisenPassengerActiveCategory)
+                    }}
                   </td>
                 </tr>
               </tbody>
@@ -145,36 +118,25 @@
           <table class="w-full text-sm border-collapse">
             <thead>
               <tr class="bg-gray-100 dark:bg-gray-800">
-                <th scope="col" class="border border-gray-300 dark:border-gray-600 px-4 py-3 text-left dark:text-gray-100">
+                <th scope="col"
+                  class="border border-gray-300 dark:border-gray-600 px-4 py-3 text-left dark:text-gray-100">
                   {{ $t('ROUTE') }}
                 </th>
-                <th
-                  v-for="seatClass in seatClasses"
-                  :key="`seat-class-header-${seatClass.key}`"
-                  scope="col"
-                  class="border border-gray-300 dark:border-gray-600 px-4 py-3 text-center dark:text-gray-100"
-                >
+                <th v-for="seatClass in seatClasses" :key="`seat-class-header-${seatClass.key}`" scope="col"
+                  class="border border-gray-300 dark:border-gray-600 px-4 py-3 text-center dark:text-gray-100">
                   {{ $t(seatClass.nameKey) }}
                 </th>
               </tr>
             </thead>
             <tbody>
-              <tr
-                v-for="group in okiKisenRouteGroups"
-                :key="`seat-class-row-${group.id}`"
-                class="hover:bg-gray-50 dark:hover:bg-gray-700/50"
-              >
-                <th
-                  scope="row"
-                  class="border border-gray-300 dark:border-gray-600 px-4 py-3 text-left font-medium dark:text-gray-100"
-                >
+              <tr v-for="group in okiKisenRouteGroups" :key="`seat-class-row-${group.id}`"
+                class="hover:bg-gray-50 dark:hover:bg-gray-700/50">
+                <th scope="row"
+                  class="border border-gray-300 dark:border-gray-600 px-4 py-3 text-left font-medium dark:text-gray-100">
                   {{ translateLabel(group.labelKey) }}
                 </th>
-                <td
-                  v-for="seatClass in seatClasses"
-                  :key="`seat-class-cell-${group.id}-${seatClass.key}`"
-                  class="border border-gray-300 dark:border-gray-600 px-4 py-3 text-center font-mono dark:text-gray-100"
-                >
+                <td v-for="seatClass in seatClasses" :key="`seat-class-cell-${group.id}-${seatClass.key}`"
+                  class="border border-gray-300 dark:border-gray-600 px-4 py-3 text-center font-mono dark:text-gray-100">
                   {{ getSeatClassFareForCategory(group.id, seatClass.key, okiKisenPassengerActiveCategory) }}
                 </td>
               </tr>
@@ -186,20 +148,13 @@
         <h4 class="text-lg font-medium mb-3 dark:text-white">{{ $t('VEHICLE_FARE') }}</h4>
         <div class="md:hidden mb-8">
           <nav class="flex flex-wrap gap-2 mb-3" aria-label="Vehicle routes" role="tablist">
-            <button
-              v-for="group in okiKisenRouteGroups"
-              :key="`vehicle-route-tab-${group.id}`"
-              :class="[
-                okiKisenVehicleActiveRoute === group.id
-                  ? 'bg-blue-50 text-blue-700 border border-blue-500 dark:bg-blue-900/40 dark:text-blue-200 dark:border-blue-700'
-                  : 'bg-white text-gray-700 dark:bg-gray-800 dark:text-gray-200 border border-gray-300 dark:border-gray-600',
-                'px-3 py-1.5 rounded-full text-sm font-medium transition-colors'
-              ]"
-              type="button"
-              role="tab"
-              :aria-selected="okiKisenVehicleActiveRoute === group.id"
-              @click="okiKisenVehicleActiveRoute = group.id"
-            >
+            <button v-for="group in okiKisenRouteGroups" :key="`vehicle-route-tab-${group.id}`" :class="[
+              okiKisenVehicleActiveRoute === group.id
+                ? 'bg-blue-50 text-blue-700 border border-blue-500 dark:bg-blue-900/40 dark:text-blue-200 dark:border-blue-700'
+                : 'bg-white text-gray-700 dark:bg-gray-800 dark:text-gray-200 border border-gray-300 dark:border-gray-600',
+              'px-3 py-1.5 rounded-full text-sm font-medium transition-colors'
+            ]" type="button" role="tab" :aria-selected="okiKisenVehicleActiveRoute === group.id"
+              @click="okiKisenVehicleActiveRoute = group.id">
               {{ translateLabel(group.labelKey) }}
             </button>
           </nav>
@@ -216,11 +171,13 @@
                 </tr>
               </thead>
               <tbody>
-                <tr v-for="size in vehicleSizeList" :key="`vehicle-mobile-${size.key}`" class="hover:bg-gray-50 dark:hover:bg-gray-700/50">
+                <tr v-for="size in vehicleSizeList" :key="`vehicle-mobile-${size.key}`"
+                  class="hover:bg-gray-50 dark:hover:bg-gray-700/50">
                   <td class="border border-gray-300 dark:border-gray-600 px-4 py-3 font-medium dark:text-gray-100">
                     {{ size.label }}
                   </td>
-                  <td class="border border-gray-300 dark:border-gray-600 px-4 py-3 text-right font-mono dark:text-gray-100">
+                  <td
+                    class="border border-gray-300 dark:border-gray-600 px-4 py-3 text-right font-mono dark:text-gray-100">
                     {{ getVehicleFare(okiKisenVehicleActiveRoute, size.key) }}
                   </td>
                 </tr>
@@ -233,29 +190,19 @@
             <thead>
               <tr class="bg-gray-100 dark:bg-gray-800">
                 <th class="border border-gray-300 dark:border-gray-600 px-4 py-3 text-left dark:text-gray-100"></th>
-                <th
-                  class="border border-gray-300 dark:border-gray-600 px-4 py-3 text-center dark:text-gray-100"
-                >
+                <th class="border border-gray-300 dark:border-gray-600 px-4 py-3 text-center dark:text-gray-100">
                   {{ $t('HONDO_OKI') }}
                 </th>
-                <th
-                  class="border border-gray-300 dark:border-gray-600 px-4 py-3 text-center dark:text-gray-100"
-                >
+                <th class="border border-gray-300 dark:border-gray-600 px-4 py-3 text-center dark:text-gray-100">
                   {{ $t('DOZEN_DOGO') }}
                 </th>
-                <th
-                  class="border border-gray-300 dark:border-gray-600 px-4 py-3 text-center dark:text-gray-100"
-                >
+                <th class="border border-gray-300 dark:border-gray-600 px-4 py-3 text-center dark:text-gray-100">
                   {{ $t('BEPPU_HISHIURA') }}<br>({{ $t('DOZEN') }})
                 </th>
-                <th
-                  class="border border-gray-300 dark:border-gray-600 px-4 py-3 text-center dark:text-gray-100"
-                >
+                <th class="border border-gray-300 dark:border-gray-600 px-4 py-3 text-center dark:text-gray-100">
                   {{ $t('HISHIURA_KURI') }}<br>({{ $t('DOZEN') }})
                 </th>
-                <th
-                  class="border border-gray-300 dark:border-gray-600 px-4 py-3 text-center dark:text-gray-100"
-                >
+                <th class="border border-gray-300 dark:border-gray-600 px-4 py-3 text-center dark:text-gray-100">
                   {{ $t('KURI_BEPPU') }}<br>({{ $t('DOZEN') }})
                 </th>
               </tr>
@@ -266,28 +213,23 @@
                   {{ size.label }}
                 </td>
                 <td
-                  class="border border-gray-300 dark:border-gray-600 px-4 py-3 text-center font-mono dark:text-gray-100"
-                >
+                  class="border border-gray-300 dark:border-gray-600 px-4 py-3 text-center font-mono dark:text-gray-100">
                   {{ getVehicleFare('hondo-oki', size.key) }}
                 </td>
                 <td
-                  class="border border-gray-300 dark:border-gray-600 px-4 py-3 text-center font-mono dark:text-gray-100"
-                >
+                  class="border border-gray-300 dark:border-gray-600 px-4 py-3 text-center font-mono dark:text-gray-100">
                   {{ getVehicleFare('dozen-dogo', size.key) }}
                 </td>
                 <td
-                  class="border border-gray-300 dark:border-gray-600 px-4 py-3 text-center font-mono dark:text-gray-100"
-                >
+                  class="border border-gray-300 dark:border-gray-600 px-4 py-3 text-center font-mono dark:text-gray-100">
                   {{ getVehicleFare('beppu-hishiura', size.key) }}
                 </td>
                 <td
-                  class="border border-gray-300 dark:border-gray-600 px-4 py-3 text-center font-mono dark:text-gray-100"
-                >
+                  class="border border-gray-300 dark:border-gray-600 px-4 py-3 text-center font-mono dark:text-gray-100">
                   {{ getVehicleFare('hishiura-kuri', size.key) }}
                 </td>
                 <td
-                  class="border border-gray-300 dark:border-gray-600 px-4 py-3 text-center font-mono dark:text-gray-100"
-                >
+                  class="border border-gray-300 dark:border-gray-600 px-4 py-3 text-center font-mono dark:text-gray-100">
                   {{ getVehicleFare('kuri-beppu', size.key) }}
                 </td>
               </tr>
@@ -306,27 +248,24 @@
         <div class="mb-4">
           <div class="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
             <h3 class="text-xl font-medium dark:text-white">{{ $t('NAIKO_SEN') }}</h3>
-            <p
-              v-if="localVersionName"
-              class="text-sm text-gray-600 dark:text-gray-400"
-            >
-              {{ $t('VERSION') }}: {{ localVersionName }}
-            </p>
           </div>
           <p class="text-sm text-gray-600 dark:text-gray-400 mt-2 sm:mt-1">
             {{ $t('FERRY_DOZEN') }}, {{ $t('ISOKAZE') }}
           </p>
         </div>
-        
+
         <!-- Passenger fares -->
         <h4 class="text-lg font-medium mb-3 dark:text-white">{{ $t('PASSENGER_FARE') }}</h4>
         <div class="overflow-x-auto mb-8">
           <table class="w-full text-base sm:text-sm border-collapse">
             <thead>
               <tr class="bg-gray-100 dark:bg-gray-800">
-                <th class="border border-gray-300 dark:border-gray-600 px-4 py-3 text-left dark:text-gray-100">{{ $t('INNER_ISLAND_ROUTE_COMMON') }}</th>
-                <th class="border border-gray-300 dark:border-gray-600 px-4 py-3 text-right dark:text-gray-100">{{ $t('ADULT') }}</th>
-                <th class="border border-gray-300 dark:border-gray-600 px-4 py-3 text-right dark:text-gray-100">{{ $t('CHILD') }}</th>
+                <th class="border border-gray-300 dark:border-gray-600 px-4 py-3 text-left dark:text-gray-100">{{
+                  $t('INNER_ISLAND_ROUTE_COMMON') }}</th>
+                <th class="border border-gray-300 dark:border-gray-600 px-4 py-3 text-right dark:text-gray-100">{{
+                  $t('ADULT') }}</th>
+                <th class="border border-gray-300 dark:border-gray-600 px-4 py-3 text-right dark:text-gray-100">{{
+                  $t('CHILD') }}</th>
               </tr>
             </thead>
             <tbody>
@@ -334,10 +273,12 @@
                 <td class="border border-gray-300 dark:border-gray-600 px-4 py-3 dark:text-gray-100">
                   {{ $t('ALL_INNER_ISLAND_ROUTES') }}
                 </td>
-                <td class="border border-gray-300 dark:border-gray-600 px-4 py-3 text-right font-mono dark:text-gray-100">
+                <td
+                  class="border border-gray-300 dark:border-gray-600 px-4 py-3 text-right font-mono dark:text-gray-100">
                   {{ formatCurrency(innerIslandFare?.adult || 300) }}
                 </td>
-                <td class="border border-gray-300 dark:border-gray-600 px-4 py-3 text-right font-mono dark:text-gray-100">
+                <td
+                  class="border border-gray-300 dark:border-gray-600 px-4 py-3 text-right font-mono dark:text-gray-100">
                   {{ formatCurrency(innerIslandFare?.child || 100) }}
                 </td>
               </tr>
@@ -349,7 +290,7 @@
           <p>{{ $t('INNER_ISLAND_INFANT_FREE_NOTE') }}</p>
           <p>{{ $t('INNER_ISLAND_INFANT_PAID_NOTE') }}</p>
         </div>
-        
+
         <!-- Vehicle fares -->
         <h4 class="text-lg font-medium mb-3 dark:text-white">{{ $t('VEHICLE_FARE') }}</h4>
         <p class="text-sm text-gray-600 dark:text-gray-400 mb-3">{{ $t('FERRY_DOZEN_VEHICLE_ONLY') }}</p>
@@ -357,32 +298,42 @@
           <table class="w-full text-base sm:text-sm border-collapse">
             <thead>
               <tr class="bg-gray-100 dark:bg-gray-800">
-                <th class="border border-gray-300 dark:border-gray-600 px-4 py-3 text-left dark:text-gray-100">{{ $t('VEHICLE_SIZE') }}</th>
-                <th class="border border-gray-300 dark:border-gray-600 px-4 py-3 text-right dark:text-gray-100">{{ $t('FARE') }}</th>
+                <th class="border border-gray-300 dark:border-gray-600 px-4 py-3 text-left dark:text-gray-100">{{
+                  $t('VEHICLE_SIZE') }}</th>
+                <th class="border border-gray-300 dark:border-gray-600 px-4 py-3 text-right dark:text-gray-100">{{
+                  $t('FARE') }}</th>
               </tr>
             </thead>
             <tbody>
               <tr class="hover:bg-gray-50 dark:hover:bg-gray-700/50">
-                <td class="border border-gray-300 dark:border-gray-600 px-4 py-3 dark:text-gray-100">{{ $t('VEHICLE_UNDER_5M') }}</td>
-                <td class="border border-gray-300 dark:border-gray-600 px-4 py-3 text-right font-mono dark:text-gray-100">
+                <td class="border border-gray-300 dark:border-gray-600 px-4 py-3 dark:text-gray-100">{{
+                  $t('VEHICLE_UNDER_5M') }}</td>
+                <td
+                  class="border border-gray-300 dark:border-gray-600 px-4 py-3 text-right font-mono dark:text-gray-100">
                   {{ formatCurrency(innerIslandVehicleFare?.under5m || 1000) }}
                 </td>
               </tr>
               <tr class="hover:bg-gray-50 dark:hover:bg-gray-700/50">
-                <td class="border border-gray-300 dark:border-gray-600 px-4 py-3 dark:text-gray-100">{{ $t('VEHICLE_5M_TO_7M') }}</td>
-                <td class="border border-gray-300 dark:border-gray-600 px-4 py-3 text-right font-mono dark:text-gray-100">
+                <td class="border border-gray-300 dark:border-gray-600 px-4 py-3 dark:text-gray-100">{{
+                  $t('VEHICLE_5M_TO_7M') }}</td>
+                <td
+                  class="border border-gray-300 dark:border-gray-600 px-4 py-3 text-right font-mono dark:text-gray-100">
                   {{ formatCurrency(innerIslandVehicleFare?.under7m || 2000) }}
                 </td>
               </tr>
               <tr class="hover:bg-gray-50 dark:hover:bg-gray-700/50">
-                <td class="border border-gray-300 dark:border-gray-600 px-4 py-3 dark:text-gray-100">{{ $t('VEHICLE_7M_TO_10M') }}</td>
-                <td class="border border-gray-300 dark:border-gray-600 px-4 py-3 text-right font-mono dark:text-gray-100">
+                <td class="border border-gray-300 dark:border-gray-600 px-4 py-3 dark:text-gray-100">{{
+                  $t('VEHICLE_7M_TO_10M') }}</td>
+                <td
+                  class="border border-gray-300 dark:border-gray-600 px-4 py-3 text-right font-mono dark:text-gray-100">
                   {{ formatCurrency(innerIslandVehicleFare?.under10m || 3000) }}
                 </td>
               </tr>
               <tr class="hover:bg-gray-50 dark:hover:bg-gray-700/50">
-                <td class="border border-gray-300 dark:border-gray-600 px-4 py-3 dark:text-gray-100">{{ $t('VEHICLE_OVER_10M') }}</td>
-                <td class="border border-gray-300 dark:border-gray-600 px-4 py-3 text-right font-mono dark:text-gray-100">
+                <td class="border border-gray-300 dark:border-gray-600 px-4 py-3 dark:text-gray-100">{{
+                  $t('VEHICLE_OVER_10M') }}</td>
+                <td
+                  class="border border-gray-300 dark:border-gray-600 px-4 py-3 text-right font-mono dark:text-gray-100">
                   {{ formatCurrency(innerIslandVehicleFare?.over10m || 3000) }} {{ $t('VEHICLE_10M_PLUS_CHARGE') }}
                 </td>
               </tr>
@@ -390,15 +341,12 @@
           </table>
         </div>
         <div class="mt-4 text-center">
-          <a 
-            href="https://www.okikankou.com/fee_detail/" 
-            target="_blank" 
-            rel="noopener noreferrer"
-            class="inline-flex items-center px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white text-sm font-medium rounded-lg transition-colors duration-200"
-          >
+          <a href="https://www.okikankou.com/fee_detail/" target="_blank" rel="noopener noreferrer"
+            class="inline-flex items-center px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white text-sm font-medium rounded-lg transition-colors duration-200">
             {{ $t('INNER_ISLAND_FARE_DETAILS') }}
             <svg class="ml-2 w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14"></path>
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14"></path>
             </svg>
           </a>
         </div>
@@ -412,33 +360,22 @@
         <div class="mb-4">
           <div class="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
             <h3 class="text-xl font-medium dark:text-white">{{ $t('RAINBOWJET') }}</h3>
-            <p
-              v-if="highspeedVersionName"
-              class="text-sm text-gray-600 dark:text-gray-400"
-            >
-              {{ $t('VERSION') }}: {{ highspeedVersionName }}
-            </p>
           </div>
           <p class="text-sm text-gray-600 dark:text-gray-400 mt-2 sm:mt-1">
             {{ $t('HIGH_SPEED_FERRY') }}
           </p>
         </div>
-        
+
         <!-- Passenger fares -->
         <h4 class="text-lg font-medium mb-3 dark:text-white">{{ $t('PASSENGER_FARE') }}</h4>
         <div class="md:hidden">
           <div class="flex flex-wrap gap-2 mb-3">
-            <button
-              v-for="category in passengerCategories"
-              :key="category.id"
-              :class="[
-                rainbowJetPassengerActiveCategory === category.id
-                  ? 'bg-blue-600 text-white border border-blue-600'
-                  : 'bg-white text-gray-700 dark:bg-gray-800 dark:text-gray-200 border border-gray-300 dark:border-gray-600',
-                'px-3 py-1.5 rounded-full text-sm font-medium transition-colors'
-              ]"
-              @click="rainbowJetPassengerActiveCategory = category.id"
-            >
+            <button v-for="category in passengerCategories" :key="category.id" :class="[
+              rainbowJetPassengerActiveCategory === category.id
+                ? 'bg-blue-600 text-white border border-blue-600'
+                : 'bg-white text-gray-700 dark:bg-gray-800 dark:text-gray-200 border border-gray-300 dark:border-gray-600',
+              'px-3 py-1.5 rounded-full text-sm font-medium transition-colors'
+            ]" @click="rainbowJetPassengerActiveCategory = category.id">
               {{ translateLabel(category.labelKey, category.fallback) }}
             </button>
           </div>
@@ -446,7 +383,8 @@
             <table class="w-full text-base sm:text-sm border-collapse">
               <thead>
                 <tr class="bg-gray-100 dark:bg-gray-800">
-                  <th class="border border-gray-300 dark:border-gray-600 px-4 py-3 text-left dark:text-gray-100">{{ $t('ROUTE') }}</th>
+                  <th class="border border-gray-300 dark:border-gray-600 px-4 py-3 text-left dark:text-gray-100">{{
+                    $t('ROUTE') }}</th>
                   <th class="border border-gray-300 dark:border-gray-600 px-4 py-3 text-right dark:text-gray-100">
                     {{ translateLabel(
                       getPassengerCategoryLabelKey(rainbowJetPassengerActiveCategory),
@@ -456,15 +394,13 @@
                 </tr>
               </thead>
               <tbody>
-                <tr
-                  v-for="group in rainbowJetRouteGroups"
-                  :key="group.id"
-                  class="hover:bg-gray-50 dark:hover:bg-gray-700/50"
-                >
+                <tr v-for="group in rainbowJetRouteGroups" :key="group.id"
+                  class="hover:bg-gray-50 dark:hover:bg-gray-700/50">
                   <td class="border border-gray-300 dark:border-gray-600 px-4 py-3 dark:text-gray-100">
                     {{ translateLabel(group.labelKey) }}
                   </td>
-                  <td class="border border-gray-300 dark:border-gray-600 px-4 py-3 text-right font-mono dark:text-gray-100">
+                  <td
+                    class="border border-gray-300 dark:border-gray-600 px-4 py-3 text-right font-mono dark:text-gray-100">
                     {{ getRainbowJetPassengerFare(group.id, rainbowJetPassengerActiveCategory) }}
                   </td>
                 </tr>
@@ -477,30 +413,22 @@
           <table class="w-full text-sm border-collapse">
             <thead>
               <tr class="bg-gray-100 dark:bg-gray-800">
-                <th class="border border-gray-300 dark:border-gray-600 px-4 py-3 text-left dark:text-gray-100">{{ $t('ROUTE') }}</th>
-                <th
-                  v-for="category in passengerCategories"
-                  :key="`rainbow-jet-header-${category.id}`"
-                  class="border border-gray-300 dark:border-gray-600 px-4 py-3 text-center dark:text-gray-100"
-                >
+                <th class="border border-gray-300 dark:border-gray-600 px-4 py-3 text-left dark:text-gray-100">{{
+                  $t('ROUTE') }}</th>
+                <th v-for="category in passengerCategories" :key="`rainbow-jet-header-${category.id}`"
+                  class="border border-gray-300 dark:border-gray-600 px-4 py-3 text-center dark:text-gray-100">
                   {{ translateLabel(category.labelKey, category.fallback) }}
                 </th>
               </tr>
             </thead>
             <tbody>
-              <tr
-                v-for="group in rainbowJetRouteGroups"
-                :key="`rainbow-jet-row-${group.id}`"
-                class="hover:bg-gray-50 dark:hover:bg-gray-700/50"
-              >
+              <tr v-for="group in rainbowJetRouteGroups" :key="`rainbow-jet-row-${group.id}`"
+                class="hover:bg-gray-50 dark:hover:bg-gray-700/50">
                 <td class="border border-gray-300 dark:border-gray-600 px-4 py-3 dark:text-gray-100">
                   {{ translateLabel(group.labelKey) }}
                 </td>
-                <td
-                  v-for="category in passengerCategories"
-                  :key="`rainbow-jet-cell-${group.id}-${category.id}`"
-                  class="border border-gray-300 dark:border-gray-600 px-4 py-3 text-right font-mono dark:text-gray-100"
-                >
+                <td v-for="category in passengerCategories" :key="`rainbow-jet-cell-${group.id}-${category.id}`"
+                  class="border border-gray-300 dark:border-gray-600 px-4 py-3 text-right font-mono dark:text-gray-100">
                   {{ getRainbowJetPassengerFare(group.id, category.id) }}
                 </td>
               </tr>
@@ -518,11 +446,11 @@
       <div v-if="activeTab !== 'naikoSen'" class="mb-8">
         <h3 class="text-xl font-medium mb-4 dark:text-white">{{ $t('DISCOUNTS') }}</h3>
         <div class="grid md:grid-cols-2 gap-4">
-          <div
-v-for="(discount, key) in discounts" :key="key" 
-               class="border border-gray-200 dark:border-gray-700 rounded-lg p-4 dark:bg-gray-800">
+          <div v-for="(discount, key) in discounts" :key="key"
+            class="border border-gray-200 dark:border-gray-700 rounded-lg p-4 dark:bg-gray-800">
             <h4 class="font-medium mb-2 dark:text-white">{{ translateLabel(discount.nameKey, discount.name) }}</h4>
-            <p class="text-gray-600 dark:text-gray-400">{{ translateLabel(discount.descriptionKey, discount.description) }}</p>
+            <p class="text-gray-600 dark:text-gray-400">{{ translateLabel(discount.descriptionKey, discount.description)
+            }}</p>
             <p class="mt-2 text-lg font-medium text-blue-600 dark:text-blue-400">
               {{ Math.round((1 - discount.rate) * 100) }}% OFF
             </p>
@@ -753,7 +681,7 @@ const formatVersionLabel = (version: FareVersion | null): string => {
   if (version.effectiveFrom === '1970-01-01') {
     return label
   }
-  return `${label}（適用開始日: ${version.effectiveFrom}）`
+  return `${label}`
 }
 
 const activeVersionLabel = computed(() => {
@@ -1050,15 +978,15 @@ const groupFaresByShipType = (fares: any[]) => {
 onMounted(async () => {
   const fares = await getAllFares()
   const grouped = groupFaresByShipType(fares)
-  
+
   okiKisenFares.value = grouped.okiKisen
   naikoSenFares.value = grouped.naikoSen
   rainbowJetFares.value = grouped.rainbowJet
-  
+
   // Ensure fareStore is loaded
   if (fareStore) {
     await fareStore.loadFareMaster()
-    
+
     if (fareStore.fareMaster) {
       discounts.value = fareStore.fareMaster.discounts
       innerIslandFare.value = fareStore.fareMaster.innerIslandFare

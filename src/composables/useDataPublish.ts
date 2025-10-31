@@ -167,21 +167,74 @@ export const useDataPublish = () => {
    */
   const prepareTimetableData = async () => {
     const timetables = await getCollection('timetables')
-    
+
+    const normalizeDate = (value: unknown) => {
+      if (value === undefined || value === null) return ''
+      return String(value).trim().replace(/-/g, '/')
+    }
+
+    const normalizeTime = (value: unknown) => {
+      if (value === undefined || value === null) return ''
+      const str = String(value).trim()
+      if (!str) return ''
+      if (str.includes(':')) {
+        const [hour = '', minute = ''] = str.split(':')
+        if (!minute) return str
+        return `${hour.padStart(2, '0')}:${minute.padStart(2, '0')}`
+      }
+      if (str.length === 4) {
+        return `${str.slice(0, 2).padStart(2, '0')}:${str.slice(2).padStart(2, '0')}`
+      }
+      return str
+    }
+
+    const normalizeString = (value: unknown) => {
+      if (value === undefined || value === null) return ''
+      return String(value)
+    }
+
     // クライアント向けに必要なフィールドのみを抽出
-    return timetables.map(item => ({
-      tripId: item.tripId,
-      name: item.name,
-      departure: item.departure,
-      arrival: item.arrival,
-      departureTime: item.departureTime,
-      arrivalTime: item.arrivalTime,
-      status: item.status || 0,
-      price: item.price,
-      startDate: item.startDate,
-      endDate: item.endDate,
-      via: item.via
-    }))
+    return timetables.map(item => {
+      const statusValue = typeof item.status === 'number'
+        ? item.status
+        : Number.parseInt(item.status ?? '0', 10)
+      const status = Number.isNaN(statusValue) ? 0 : statusValue
+
+      const priceCandidate = item.price ?? item.fare
+      const hasPrice = priceCandidate !== undefined && priceCandidate !== null && priceCandidate !== ''
+      const price = hasPrice ? Number(priceCandidate) : undefined
+
+      const result: Record<string, any> = {
+        trip_id: normalizeString(item.trip_id ?? item.tripId),
+        next_id: normalizeString(item.next_id ?? item.nextId),
+        start_date: normalizeDate(item.start_date ?? item.startDate),
+        end_date: normalizeDate(item.end_date ?? item.endDate),
+        name: normalizeString(item.name),
+        departure: normalizeString(item.departure),
+        departure_time: normalizeTime(item.departure_time ?? item.departureTime),
+        arrival: normalizeString(item.arrival),
+        arrival_time: normalizeTime(item.arrival_time ?? item.arrivalTime),
+        status
+      }
+
+      if (price !== undefined && !Number.isNaN(price)) {
+        result.price = price
+      }
+
+      if (item.via) {
+        result.via = item.via
+      }
+
+      if (!result.trip_id) {
+        result.trip_id = normalizeString(item.id)
+      }
+
+      if (!result.next_id) {
+        result.next_id = ''
+      }
+
+      return result
+    })
   }
 
   /**

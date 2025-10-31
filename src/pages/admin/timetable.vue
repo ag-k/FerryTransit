@@ -123,6 +123,21 @@
       :pagination="true"
       :page-size="20"
     >
+      <template #cell-name="{ value }">
+        {{ getShipName(value) }}
+      </template>
+      <template #cell-departure="{ value }">
+        {{ getPortName(value) }}
+      </template>
+      <template #cell-arrival="{ value }">
+        {{ getPortName(value) }}
+      </template>
+      <template #cell-departure_time="{ value }">
+        {{ formatTime(value) }}
+      </template>
+      <template #cell-arrival_time="{ value }">
+        {{ formatTime(value) }}
+      </template>
       <template #cell-status="{ value }">
         <span
           :class="[
@@ -132,12 +147,6 @@
         >
           {{ getStatusLabel(value) }}
         </span>
-      </template>
-      <template #cell-departureTime="{ value }">
-        {{ formatTime(value) }}
-      </template>
-      <template #cell-arrivalTime="{ value }">
-        {{ formatTime(value) }}
       </template>
       <template #row-actions="{ row }">
         <div class="flex items-center gap-1">
@@ -172,6 +181,32 @@
       @submit="saveTimetable"
     >
       <div class="space-y-4">
+        <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+          <div>
+            <label class="block text-sm font-medium text-gray-700 dark:text-gray-300">
+              便ID (trip_id)
+            </label>
+            <input
+              v-model="formData.trip_id"
+              type="text"
+              data-test="timetable-trip-id"
+              class="mt-1 w-full rounded-md border border-gray-300 dark:border-gray-600 dark:bg-gray-700 focus:border-blue-500 dark:focus:border-blue-400 focus:ring-2 focus:ring-blue-500 focus:ring-opacity-30 transition-colors"
+              required
+            >
+          </div>
+          <div>
+            <label class="block text-sm font-medium text-gray-700 dark:text-gray-300">
+              次便ID (next_id)
+            </label>
+            <input
+              v-model="formData.next_id"
+              type="text"
+              data-test="timetable-next-id"
+              class="mt-1 w-full rounded-md border border-gray-300 dark:border-gray-600 dark:bg-gray-700 focus:border-blue-500 dark:focus:border-blue-400 focus:ring-2 focus:ring-blue-500 focus:ring-opacity-30 transition-colors"
+              placeholder="次の便IDがある場合に入力"
+            >
+          </div>
+        </div>
         <div>
           <label class="block text-sm font-medium text-gray-700 dark:text-gray-300">
             船舶名
@@ -183,7 +218,7 @@
             required
           >
             <option value="">選択してください</option>
-            <option v-for="ship in ships" :key="ship.id" :value="ship.name">
+            <option v-for="ship in ships" :key="ship.id" :value="ship.id">
               {{ ship.name }}
             </option>
           </select>
@@ -228,7 +263,7 @@
               出発時刻
             </label>
             <input
-              v-model="formData.departureTime"
+              v-model="formData.departure_time"
               type="time"
               data-test="timetable-departure-time"
               class="mt-1 w-full rounded-md border border-gray-300 dark:border-gray-600 dark:bg-gray-700 focus:border-blue-500 dark:focus:border-blue-400 focus:ring-2 focus:ring-blue-500 focus:ring-opacity-30 transition-colors"
@@ -240,7 +275,7 @@
               到着時刻
             </label>
             <input
-              v-model="formData.arrivalTime"
+              v-model="formData.arrival_time"
               type="time"
               data-test="timetable-arrival-time"
               class="mt-1 w-full rounded-md border border-gray-300 dark:border-gray-600 dark:bg-gray-700 focus:border-blue-500 dark:focus:border-blue-400 focus:ring-2 focus:ring-blue-500 focus:ring-opacity-30 transition-colors"
@@ -254,7 +289,7 @@
               開始日
             </label>
             <input
-              v-model="formData.startDate"
+              v-model="formData.start_date"
               type="date"
               data-test="timetable-start-date"
               class="mt-1 w-full rounded-md border border-gray-300 dark:border-gray-600 dark:bg-gray-700 focus:border-blue-500 dark:focus:border-blue-400 focus:ring-2 focus:ring-blue-500 focus:ring-opacity-30 transition-colors"
@@ -266,7 +301,7 @@
               終了日
             </label>
             <input
-              v-model="formData.endDate"
+              v-model="formData.end_date"
               type="date"
               data-test="timetable-end-date"
               class="mt-1 w-full rounded-md border border-gray-300 dark:border-gray-600 dark:bg-gray-700 focus:border-blue-500 dark:focus:border-blue-400 focus:ring-2 focus:ring-blue-500 focus:ring-opacity-30 transition-colors"
@@ -317,7 +352,8 @@
         <div class="text-sm text-gray-500 dark:text-gray-400">
           <p>CSVファイルの形式:</p>
           <ul class="list-disc list-inside mt-2">
-            <li>船舶名, 出発港, 到着港, 出発時刻, 到着時刻, 開始日, 終了日, 状態</li>
+            <li>trip_id, next_id, name, departure, arrival, departure_time, arrival_time, start_date, end_date, status</li>
+            <li>港・船舶・便IDはシステムID（例: HONDO_SHICHIRUI, FERRY_OKI）で入力</li>
             <li>UTF-8エンコーディング</li>
             <li>ヘッダー行あり</li>
           </ul>
@@ -337,7 +373,7 @@ import {
   CloudArrowUpIcon
 } from '@heroicons/vue/24/outline'
 import { orderBy } from 'firebase/firestore'
-import type { Trip, Port, Ship } from '~/types'
+import type { Port, Ship } from '~/types'
 import { useAdminFirestore } from '~/composables/useAdminFirestore'
 import { useDataPublish } from '~/composables/useDataPublish'
 import DataTable from '~/components/admin/DataTable.vue'
@@ -353,6 +389,23 @@ const { getCollection, createDocument, updateDocument, deleteDocument, batchWrit
 const { publishData } = useDataPublish()
 const { $toast } = useNuxtApp()
 const logger = createLogger('AdminTimetablePage')
+
+interface AdminTimetableRecord {
+  id?: string
+  trip_id: string
+  next_id: string
+  start_date: string
+  end_date: string
+  name: string
+  departure: string
+  departure_time: string
+  arrival: string
+  arrival_time: string
+  status: number
+  price?: number
+}
+
+type AdminTimetableForm = Omit<AdminTimetableRecord, 'id'>
 
 // 港データ
 const ports = ref<Port[]>([
@@ -373,7 +426,7 @@ const ships = ref<Ship[]>([
   { id: 'RAINBOWJET', name: 'レインボージェット', nameEn: 'Rainbow Jet', type: 'highspeed' }
 ])
 
-const timetables = ref<Trip[]>([])
+const timetables = ref<AdminTimetableRecord[]>([])
 const filters = ref({
   departure: '',
   arrival: '',
@@ -389,24 +442,29 @@ const isImporting = ref(false)
 const isPublishing = ref(false)
 const editingId = ref<string | null>(null)
 
-const formData = ref<Partial<Trip>>({
+const defaultFormState = (): AdminTimetableForm => ({
+  trip_id: '',
+  next_id: '',
+  start_date: '',
+  end_date: '',
   name: '',
   departure: '',
+  departure_time: '',
   arrival: '',
-  departureTime: '',
-  arrivalTime: '',
-  startDate: '',
-  endDate: '',
-  status: 0
+  arrival_time: '',
+  status: 0,
+  price: undefined
 })
 
+const formData = ref<AdminTimetableForm>(defaultFormState())
+
 const columns = [
-  { key: 'tripId', label: 'ID', sortable: true },
+  { key: 'trip_id', label: '便ID', sortable: true },
   { key: 'name', label: '船舶', sortable: true },
   { key: 'departure', label: '出発港', sortable: true },
   { key: 'arrival', label: '到着港', sortable: true },
-  { key: 'departureTime', label: '出発時刻', sortable: true },
-  { key: 'arrivalTime', label: '到着時刻', sortable: true },
+  { key: 'departure_time', label: '出発時刻', sortable: true },
+  { key: 'arrival_time', label: '到着時刻', sortable: true },
   { key: 'status', label: '状態', sortable: true }
 ]
 
@@ -414,8 +472,8 @@ const filteredTimetables = computed(() => {
   return timetables.value.filter(item => {
     if (filters.value.departure && item.departure !== filters.value.departure) return false
     if (filters.value.arrival && item.arrival !== filters.value.arrival) return false
-    if (filters.value.ship && !item.name.includes(filters.value.ship)) return false
-    if (filters.value.status !== '' && item.status !== parseInt(filters.value.status)) return false
+    if (filters.value.ship && item.name !== filters.value.ship) return false
+    if (filters.value.status !== '' && item.status !== Number.parseInt(filters.value.status, 10)) return false
     return true
   })
 })
@@ -444,21 +502,33 @@ const getStatusLabel = (status: number) => {
 
 const formatTime = (time: string | Date) => {
   if (typeof time === 'string') {
-    return time.substring(0, 5)
+    return normalizeTimeValue(time)
   }
   return new Date(time).toLocaleTimeString('ja-JP', { hour: '2-digit', minute: '2-digit' })
 }
 
-const editTimetable = (item: Trip & { id?: string }) => {
-  formData.value = { ...item }
+const editTimetable = (item: AdminTimetableRecord) => {
+  formData.value = {
+    trip_id: item.trip_id,
+    next_id: item.next_id || '',
+    start_date: formatDateForInput(item.start_date),
+    end_date: formatDateForInput(item.end_date),
+    name: item.name,
+    departure: item.departure,
+    departure_time: normalizeTimeValue(item.departure_time),
+    arrival: item.arrival,
+    arrival_time: normalizeTimeValue(item.arrival_time),
+    status: item.status ?? 0,
+    price: item.price
+  }
   editingId.value = item.id || null
   showEditModal.value = true
 }
 
-const deleteTimetable = async (item: Trip & { id?: string }) => {
+const deleteTimetable = async (item: AdminTimetableRecord) => {
   if (!item.id) return
-  
-  if (confirm(`${item.name} の ${getPortName(item.departure)} → ${getPortName(item.arrival)} 便を削除しますか？`)) {
+
+  if (confirm(`${getShipName(item.name)} の ${getPortName(item.departure)} → ${getPortName(item.arrival)} 便を削除しますか？`)) {
     try {
       await deleteDocument('timetables', item.id)
       await refreshData()
@@ -474,35 +544,36 @@ const closeModal = () => {
   showAddModal.value = false
   showEditModal.value = false
   editingId.value = null
-  formData.value = {
-    name: '',
-    departure: '',
-    arrival: '',
-    departureTime: '',
-    arrivalTime: '',
-    startDate: '',
-    endDate: '',
-    status: 0
-  }
+  formData.value = defaultFormState()
 }
 
 const saveTimetable = async () => {
   isSaving.value = true
   try {
-    const data = {
-      ...formData.value,
-      tripId: editingId.value ? formData.value.tripId : Date.now(),
-      price: formData.value.price || 0
+    const payload: AdminTimetableForm = {
+      trip_id: formData.value.trip_id || toStringSafe(Date.now()),
+      next_id: formData.value.next_id || '',
+      start_date: formatDateForStorage(formData.value.start_date),
+      end_date: formatDateForStorage(formData.value.end_date),
+      name: formData.value.name,
+      departure: formData.value.departure,
+      departure_time: normalizeTimeValue(formData.value.departure_time),
+      arrival: formData.value.arrival,
+      arrival_time: normalizeTimeValue(formData.value.arrival_time),
+      status: formData.value.status ?? 0,
+      price: formData.value.price !== undefined && formData.value.price !== null && formData.value.price !== ''
+        ? Number(formData.value.price)
+        : undefined
     }
 
     if (editingId.value) {
-      await updateDocument('timetables', editingId.value, data)
+      await updateDocument('timetables', editingId.value, payload)
       $toast.success('時刻表を更新しました')
     } else {
-      await createDocument('timetables', data)
+      await createDocument('timetables', payload)
       $toast.success('時刻表を追加しました')
     }
-    
+
     closeModal()
     await refreshData()
   } catch (error) {
@@ -515,18 +586,91 @@ const saveTimetable = async () => {
 
 const refreshData = async () => {
   try {
-    const constraints = [orderBy('departureTime', 'asc')]
-    const data = await getCollection<Trip & { id: string }>('timetables', constraints)
-    timetables.value = data
+    const primaryData = await getCollection<any>('timetables', [orderBy('departure_time', 'asc')])
+    timetables.value = primaryData.map((item: any) => normalizeTimetableRecord(item))
   } catch (error) {
-    logger.error('Failed to fetch timetables', error)
-    $toast.error('データの取得に失敗しました')
+    logger.warn('Failed to fetch timetables with snake_case ordering, retrying with camelCase', error)
+    try {
+      const fallbackData = await getCollection<any>('timetables', [orderBy('departureTime', 'asc')])
+      timetables.value = fallbackData.map((item: any) => normalizeTimetableRecord(item))
+    } catch (fallbackError) {
+      logger.error('Failed to fetch timetables', fallbackError)
+      $toast.error('データの取得に失敗しました')
+    }
   }
 }
 
 const getPortName = (portId: string) => {
   const port = ports.value.find(p => p.id === portId)
   return port?.name || portId
+}
+
+const getShipName = (shipId: string) => {
+  const ship = ships.value.find(s => s.id === shipId)
+  return ship?.name || shipId
+}
+
+const formatDateForStorage = (value: string) => {
+  if (!value) return ''
+  return value.replace(/-/g, '/').trim()
+}
+
+const formatDateForInput = (value: string) => {
+  if (!value) return ''
+  return value.replace(/\//g, '-').trim()
+}
+
+const normalizeTimeValue = (value: string) => {
+  if (!value) return ''
+  const trimmed = value.trim()
+  if (!trimmed) return ''
+  if (trimmed.includes(':')) {
+    const [hour = '', minute = ''] = trimmed.split(':')
+    if (minute === '') {
+      return trimmed
+    }
+    return `${hour.trim().padStart(2, '0')}:${minute.trim().padStart(2, '0')}`
+  }
+  if (trimmed.length === 4) {
+    const hourPart = trimmed.slice(0, 2)
+    const minutePart = trimmed.slice(2)
+    return `${hourPart.padStart(2, '0')}:${minutePart.padStart(2, '0')}`
+  }
+  return trimmed
+}
+
+const toStringSafe = (value: unknown) => {
+  if (value === undefined || value === null) {
+    return ''
+  }
+  return String(value)
+}
+
+const normalizeTimetableRecord = (item: any): AdminTimetableRecord => {
+  const rawStatus = typeof item.status === 'number'
+    ? item.status
+    : Number.parseInt(item.status ?? '0', 10)
+  const status = Number.isNaN(rawStatus) ? 0 : rawStatus
+
+  const hasPrice = item.price !== undefined && item.price !== null && item.price !== ''
+  const price = hasPrice ? Number(item.price) : undefined
+
+  const tripId = toStringSafe(item.trip_id ?? item.tripId)
+
+  return {
+    id: item.id,
+    trip_id: tripId || toStringSafe(item.id),
+    next_id: toStringSafe(item.next_id ?? item.nextId),
+    start_date: formatDateForStorage(toStringSafe(item.start_date ?? item.startDate)),
+    end_date: formatDateForStorage(toStringSafe(item.end_date ?? item.endDate)),
+    name: toStringSafe(item.name),
+    departure: toStringSafe(item.departure),
+    departure_time: normalizeTimeValue(toStringSafe(item.departure_time ?? item.departureTime)),
+    arrival: toStringSafe(item.arrival),
+    arrival_time: normalizeTimeValue(toStringSafe(item.arrival_time ?? item.arrivalTime)),
+    status,
+    price
+  }
 }
 
 const handleFileSelect = (event: Event) => {
@@ -542,65 +686,115 @@ const importCSVFile = async (file: File) => {
     const text = await file.text()
     const lines = text.split('\n').filter(line => line.trim())
     const headers = lines[0].split(',').map(h => h.trim())
-    
+
     const operations = []
-    
+
     for (let i = 1; i < lines.length; i++) {
       const values = lines[i].split(',').map(v => v.trim())
-      const data: any = {
-        tripId: Date.now() + i,
-        status: 0
-      }
-      
+      const row: Partial<AdminTimetableForm> & { status?: number } = {}
+      let status = 0
+
       headers.forEach((header, index) => {
-        const value = values[index]
+        const value = values[index]?.trim() ?? ''
         switch (header.toLowerCase()) {
-          case '船舶名':
+          case 'trip_id':
+          case 'tripid':
+          case '便id':
+          case '便ｉｄ':
+            row.trip_id = value
+            break
+          case 'next_id':
+          case 'nextid':
+          case '次便id':
+          case '次便ｉｄ':
+            row.next_id = value
+            break
+          case 'name':
           case 'ship':
-            data.name = value
+          case '船舶':
+          case '船舶名':
+            row.name = value
             break
-          case '出発港':
           case 'departure':
-            data.departure = value
+          case '出発港':
+            row.departure = value
             break
-          case '到着港':
           case 'arrival':
-            data.arrival = value
+          case '到着港':
+            row.arrival = value
             break
-          case '出発時刻':
           case 'departure_time':
-            data.departureTime = value
+          case 'departuretime':
+          case '出発時刻':
+            row.departure_time = value
             break
-          case '到着時刻':
           case 'arrival_time':
-            data.arrivalTime = value
+          case 'arrivaltime':
+          case '到着時刻':
+            row.arrival_time = value
             break
-          case '開始日':
           case 'start_date':
-            data.startDate = value
+          case 'startdate':
+          case '開始日':
+            row.start_date = value
             break
-          case '終了日':
           case 'end_date':
-            data.endDate = value
+          case 'enddate':
+          case '終了日':
+            row.end_date = value
             break
-          case '状態':
           case 'status':
-            data.status = parseInt(value) || 0
+          case '状態':
+            {
+              const parsed = Number.parseInt(value, 10)
+              if (!Number.isNaN(parsed)) {
+                status = parsed
+              }
+            }
             break
-          case '料金':
           case 'price':
-            data.price = parseInt(value) || 0
+          case '料金':
+            {
+              const parsed = Number.parseInt(value, 10)
+              if (!Number.isNaN(parsed)) {
+                row.price = parsed
+              }
+            }
             break
         }
       })
-      
+
+      const payload: AdminTimetableForm = {
+        trip_id: row.trip_id && row.trip_id !== '' ? row.trip_id : toStringSafe(Date.now() + i),
+        next_id: row.next_id || '',
+        name: row.name || '',
+        departure: row.departure || '',
+        departure_time: normalizeTimeValue(row.departure_time || ''),
+        arrival: row.arrival || '',
+        arrival_time: normalizeTimeValue(row.arrival_time || ''),
+        start_date: formatDateForStorage(row.start_date || ''),
+        end_date: formatDateForStorage(row.end_date || ''),
+        status,
+        price: row.price
+      }
+
+      if (!payload.name || !payload.departure || !payload.arrival || !payload.departure_time || !payload.arrival_time) {
+        logger.warn('Skipping CSV row due to missing required fields', { line: i + 1 })
+        continue
+      }
+
       operations.push({
         type: 'create' as const,
         collection: 'timetables',
-        data
+        data: payload
       })
     }
-    
+
+    if (operations.length === 0) {
+      $toast.info('インポート対象のデータがありません')
+      return
+    }
+
     await batchWrite(operations)
     $toast.success(`${operations.length}件のデータをインポートしました`)
   } catch (error) {
