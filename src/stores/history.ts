@@ -1,5 +1,5 @@
 import { defineStore } from 'pinia'
-import { ref, computed, readonly, nextTick } from 'vue'
+import { ref, computed, readonly, nextTick, onMounted } from 'vue'
 import { useOfflineStorage } from '@/composables/useOfflineStorage'
 import type { SearchHistoryItem } from '@/types/history'
 import { HISTORY_STORAGE_KEY, HISTORY_SETTINGS } from '@/types/history'
@@ -209,9 +209,9 @@ export const useHistoryStore = defineStore('history', () => {
   }
   
   const saveToStorage = (): void => {
-    // 30日間の有効期限で保存
-    const ttl = HISTORY_SETTINGS.DEFAULT_DAYS_TO_KEEP * 24 * 60 * 60 * 1000
-    saveData(HISTORY_STORAGE_KEY, history.value, ttl)
+    // 30日間の有効期限で保存（分単位に変換）
+    const ttlMinutes = HISTORY_SETTINGS.DEFAULT_DAYS_TO_KEEP * 24 * 60
+    saveData(HISTORY_STORAGE_KEY, history.value, ttlMinutes)
   }
   
   // ストレージの変更を監視（他のタブからの変更を反映）
@@ -246,8 +246,9 @@ export const useHistoryStore = defineStore('history', () => {
   }
   
   // マウント時に自動的に初期化
-  // Note: onMountedは省略し、コンポーネント側で明示的に初期化を呼ぶ
-  // これによりテスト環境での警告を回避
+  onMounted(() => {
+    initializeStore()
+  })
   
   return {
     // State
