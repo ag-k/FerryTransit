@@ -58,25 +58,50 @@
           </p>
         </div>
 
+        <h4 class="text-lg font-medium mb-3 dark:text-white">{{ $t('PASSENGER_FARE') }}</h4>
         <div class="mb-8">
-          <nav class="flex flex-wrap gap-2 mb-4" aria-label="Passenger categories" role="tablist">
-            <button
-              v-for="category in passengerCategories"
-              :key="category.id"
-              :class="[
-                okiKisenPassengerActiveCategory === category.id
-                  ? 'bg-blue-600 text-white border border-blue-600'
-                  : 'bg-white text-gray-700 dark:bg-gray-800 dark:text-gray-200 border border-gray-300 dark:border-gray-600',
-                'px-3 py-1.5 rounded-full text-sm font-medium transition-colors'
-              ]"
-              type="button"
-              role="tab"
-              :aria-selected="okiKisenPassengerActiveCategory === category.id"
-              @click="okiKisenPassengerActiveCategory = category.id"
-            >
-              {{ translateLabel(category.labelKey, category.fallback) }}
-            </button>
-          </nav>
+          <div class="flex flex-col gap-3 md:flex-row md:items-center md:justify-between">
+            <nav class="flex flex-wrap gap-2" aria-label="Passenger categories" role="tablist">
+              <button
+                v-for="category in passengerCategories"
+                :key="category.id"
+                :class="[
+                  okiKisenPassengerActiveCategory === category.id
+                    ? 'bg-blue-600 text-white border border-blue-600'
+                    : 'bg-white text-gray-700 dark:bg-gray-800 dark:text-gray-200 border border-gray-300 dark:border-gray-600',
+                  'px-3 py-1.5 rounded-full text-sm font-medium transition-colors'
+                ]"
+                type="button"
+                role="tab"
+                :aria-selected="okiKisenPassengerActiveCategory === category.id"
+                @click="okiKisenPassengerActiveCategory = category.id"
+              >
+                {{ translateLabel(category.labelKey, category.fallback) }}
+              </button>
+            </nav>
+            <nav class="flex flex-wrap gap-2" aria-label="Seat classes" role="tablist">
+              <button
+                v-for="seatClass in seatClasses"
+                :key="`seat-class-tab-${seatClass.key}`"
+                :class="[
+                  okiKisenActiveSeatClass === seatClass.key
+                    ? 'bg-blue-50 text-blue-700 border border-blue-500 dark:bg-blue-900/40 dark:text-blue-200 dark:border-blue-700'
+                    : 'bg-white text-gray-700 dark:bg-gray-800 dark:text-gray-200 border border-gray-300 dark:border-gray-600',
+                  'px-3 py-1.5 rounded-full text-sm font-medium transition-colors'
+                ]"
+                type="button"
+                role="tab"
+                :aria-selected="okiKisenActiveSeatClass === seatClass.key"
+                @click="okiKisenActiveSeatClass = seatClass.key"
+              >
+                {{ $t(seatClass.nameKey) }}
+              </button>
+            </nav>
+          </div>
+        </div>
+
+        <!-- Seat class fares -->
+        <div class="md:hidden mb-8">
           <div class="overflow-x-auto">
             <table class="w-full text-base sm:text-sm border-collapse">
               <thead>
@@ -85,6 +110,7 @@
                     {{ $t('ROUTE') }}
                   </th>
                   <th class="border border-gray-300 dark:border-gray-600 px-4 py-3 text-right dark:text-gray-100">
+                    {{ activeSeatClass ? $t(activeSeatClass.nameKey) : '' }} /
                     {{ translateLabel(
                       getPassengerCategoryLabelKey(okiKisenPassengerActiveCategory),
                       passengerCategoryMap[okiKisenPassengerActiveCategory]?.fallback
@@ -95,54 +121,67 @@
               <tbody>
                 <tr
                   v-for="group in okiKisenRouteGroups"
-                  :key="group.id"
+                  :key="`mobile-seat-class-${group.id}`"
                   class="hover:bg-gray-50 dark:hover:bg-gray-700/50"
                 >
                   <td class="border border-gray-300 dark:border-gray-600 px-4 py-3 font-medium dark:text-gray-100">
                     {{ translateLabel(group.labelKey) }}
                   </td>
                   <td class="border border-gray-300 dark:border-gray-600 px-4 py-3 text-right font-mono dark:text-gray-100">
-                    {{ getOkiKisenPassengerFare(group.id, okiKisenPassengerActiveCategory) }}
+                    {{ getSeatClassFareForCategory(group.id, okiKisenActiveSeatClass, okiKisenPassengerActiveCategory) }}
                   </td>
                 </tr>
               </tbody>
             </table>
           </div>
         </div>
-        
-        <!-- Seat class fares -->
-        <h4 class="text-lg font-medium mb-3 dark:text-white md:hidden">{{ $t('SEAT_CLASS_FARE') }}</h4>
-        <div class="overflow-x-auto mb-8 md:hidden">
-          <table class="w-full text-base sm:text-sm border-collapse">
+        <p class="hidden md:block text-sm text-gray-600 dark:text-gray-400 mb-2">
+          {{ translateLabel(
+            getPassengerCategoryLabelKey(okiKisenPassengerActiveCategory),
+            passengerCategoryMap[okiKisenPassengerActiveCategory]?.fallback
+          ) }} {{ $t('FARE') }}
+        </p>
+        <div class="hidden md:block overflow-x-auto mb-8">
+          <table class="w-full text-sm border-collapse">
             <thead>
               <tr class="bg-gray-100 dark:bg-gray-800">
-                <th class="border border-gray-300 dark:border-gray-600 px-4 py-3 text-left dark:text-gray-100"></th>
-                <th class="border border-gray-300 dark:border-gray-600 px-4 py-3 text-center dark:text-gray-100">{{ $t('HONDO_OKI') }}</th>
-                <th class="border border-gray-300 dark:border-gray-600 px-4 py-3 text-center dark:text-gray-100">{{ $t('DOZEN_DOGO') }}</th>
-                <th class="border border-gray-300 dark:border-gray-600 px-4 py-3 text-center dark:text-gray-100">{{ $t('BEPPU_HISHIURA') }}<br>({{ $t('DOZEN') }})</th>
-                <th class="border border-gray-300 dark:border-gray-600 px-4 py-3 text-center dark:text-gray-100">{{ $t('HISHIURA_KURI') }}<br>({{ $t('DOZEN') }})</th>
-                <th class="border border-gray-300 dark:border-gray-600 px-4 py-3 text-center dark:text-gray-100">{{ $t('KURI_BEPPU') }}<br>({{ $t('DOZEN') }})</th>
+                <th scope="col" class="border border-gray-300 dark:border-gray-600 px-4 py-3 text-left dark:text-gray-100">
+                  {{ $t('ROUTE') }}
+                </th>
+                <th
+                  v-for="seatClass in seatClasses"
+                  :key="`seat-class-header-${seatClass.key}`"
+                  scope="col"
+                  :class="[
+                    'border border-gray-300 dark:border-gray-600 px-4 py-3 text-center dark:text-gray-100',
+                    okiKisenActiveSeatClass === seatClass.key ? 'bg-blue-50 dark:bg-blue-900/20 font-semibold' : ''
+                  ]"
+                >
+                  {{ $t(seatClass.nameKey) }}
+                </th>
               </tr>
             </thead>
             <tbody>
-              <tr v-for="seatClass in seatClasses" :key="seatClass.key" class="hover:bg-gray-50 dark:hover:bg-gray-700/50">
-                <td class="border border-gray-300 dark:border-gray-600 px-4 py-3 font-medium dark:text-gray-100">
-                  {{ $t(seatClass.nameKey) }}
-                </td>
-                <td class="border border-gray-300 dark:border-gray-600 px-4 py-3 text-center font-mono dark:text-gray-100">
-                  {{ getSeatClassFare('hondo-oki', seatClass.key) }}
-                </td>
-                <td class="border border-gray-300 dark:border-gray-600 px-4 py-3 text-center font-mono dark:text-gray-100">
-                  {{ getSeatClassFare('dozen-dogo', seatClass.key) }}
-                </td>
-                <td class="border border-gray-300 dark:border-gray-600 px-4 py-3 text-center font-mono dark:text-gray-100">
-                  {{ getSeatClassFare('beppu-hishiura', seatClass.key) }}
-                </td>
-                <td class="border border-gray-300 dark:border-gray-600 px-4 py-3 text-center font-mono dark:text-gray-100">
-                  {{ getSeatClassFare('hishiura-kuri', seatClass.key) }}
-                </td>
-                <td class="border border-gray-300 dark:border-gray-600 px-4 py-3 text-center font-mono dark:text-gray-100">
-                  {{ getSeatClassFare('kuri-beppu', seatClass.key) }}
+              <tr
+                v-for="group in okiKisenRouteGroups"
+                :key="`seat-class-row-${group.id}`"
+                class="hover:bg-gray-50 dark:hover:bg-gray-700/50"
+              >
+                <th
+                  scope="row"
+                  class="border border-gray-300 dark:border-gray-600 px-4 py-3 text-left font-medium dark:text-gray-100"
+                >
+                  {{ translateLabel(group.labelKey) }}
+                </th>
+                <td
+                  v-for="seatClass in seatClasses"
+                  :key="`seat-class-cell-${group.id}-${seatClass.key}`"
+                  :class="[
+                    'border border-gray-300 dark:border-gray-600 px-4 py-3 text-center font-mono dark:text-gray-100',
+                    okiKisenActiveSeatClass === seatClass.key ? 'bg-blue-50 dark:bg-blue-900/10 font-semibold' : ''
+                  ]"
+                >
+                  {{ getSeatClassFareForCategory(group.id, seatClass.key, okiKisenPassengerActiveCategory) }}
                 </td>
               </tr>
             </tbody>
@@ -453,7 +492,12 @@ const seatClasses = [
   { key: 'class1', nameKey: 'SEAT_CLASS_1' },
   { key: 'classSpecial', nameKey: 'SEAT_CLASS_SPECIAL' },
   { key: 'specialRoom', nameKey: 'SEAT_CLASS_SPECIAL_ROOM' }
-]
+] as const
+
+type SeatClassKey = typeof seatClasses[number]['key']
+
+const okiKisenActiveSeatClass = ref<SeatClassKey>(seatClasses[0].key)
+const activeSeatClass = computed(() => seatClasses.find(item => item.key === okiKisenActiveSeatClass.value) ?? seatClasses[0])
 
 const passengerCategories = [
   { id: 'adult', labelKey: 'PASSENGER_CATEGORY_ADULT', fallback: '大人' },
@@ -711,18 +755,6 @@ const findOkiKisenRoute = (groupId: string): any | null => {
   return null
 }
 
-const getOkiKisenPassengerFareValue = (groupId: string, categoryId: PassengerCategoryId): number | null => {
-  const route = findOkiKisenRoute(groupId)
-  if (!route) return null
-  const fares = normalizePassengerFares(route)
-  return fares[categoryId] ?? null
-}
-
-const getOkiKisenPassengerFare = (groupId: string, categoryId: PassengerCategoryId): string => {
-  const value = getOkiKisenPassengerFareValue(groupId, categoryId)
-  return value !== null ? formatCurrency(value) : '—'
-}
-
 const normalizeRouteId = (value: string | null | undefined): string | null => {
   if (!value) return null
   const trimmed = value.trim()
@@ -838,10 +870,35 @@ const translateLabel = (labelKey?: string | null, fallback?: string | null): str
 }
 
 // Get seat class fare for a specific route
-const getSeatClassFare = (routeType: string, seatClass: string) => {
-  const route = findOkiKisenRoute(routeType)
-  const fare = route?.fares?.seatClass?.[seatClass]
-  return typeof fare === 'number' ? formatCurrency(fare) : '—'
+const getSeatClassBaseFareValue = (groupId: string, seatClass: SeatClassKey): number | null => {
+  const route = findOkiKisenRoute(groupId)
+  if (!route) return null
+  const rawFare = route?.fares?.seatClass?.[seatClass]
+  return pickNumber(rawFare)
+}
+
+const applySeatClassPassengerCategory = (base: number | null, categoryId: PassengerCategoryId): number | null => {
+  if (base === null) return null
+  if (categoryId === 'adult') {
+    return base
+  }
+
+  const discounted = calculateDiscountedFare(base)
+  if (categoryId === 'child' || categoryId === 'disabledAdult') {
+    return discounted
+  }
+
+  if (categoryId === 'disabledChild') {
+    return calculateDiscountedFare(discounted)
+  }
+
+  return base
+}
+
+const getSeatClassFareForCategory = (groupId: string, seatClass: SeatClassKey, categoryId: PassengerCategoryId): string => {
+  const baseFare = getSeatClassBaseFareValue(groupId, seatClass)
+  const value = applySeatClassPassengerCategory(baseFare, categoryId)
+  return value !== null ? formatCurrency(value) : '—'
 }
 
 // Get vehicle fare for a specific route
