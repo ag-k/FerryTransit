@@ -2,6 +2,9 @@
   <div class="container mx-auto px-4 py-8 max-w-[1000px]">
     <h2 class="hidden lg:block text-2xl font-semibold mb-6 dark:text-white">{{ $t('TIMETABLE') }}</h2>
     
+    <!-- Current status alerts -->
+    <StatusAlerts class="mb-6" />
+    
     <!-- 出発地・到着地選択 -->
     <ClientOnly>
       <TimetableForm
@@ -260,6 +263,7 @@ import { useSettingsStore } from '@/stores/settings'
 import { useFerryData } from '@/composables/useFerryData'
 import FavoriteButton from '@/components/favorites/FavoriteButton.vue'
 import FerryMap from '@/components/map/FerryMap.vue'
+import StatusAlerts from '@/components/common/StatusAlerts.vue'
 
 // Store and composables
 const ferryStore = process.client ? useFerryStore() : null
