@@ -61,6 +61,24 @@ const navItems = computed(() => [
 
 // Check if current route is active
 const isActive = (path: string) => {
-  return route.path === path || route.path.endsWith(path.split('/').pop() || '')
+  // For exact path match
+  if (route.path === path) {
+    return true
+  }
+  
+  // For root path (/), only match exactly, not as a suffix
+  if (path === '/' || path.endsWith('/')) {
+    const pathWithoutLocale = path.replace(/^\/[a-z]{2}/, '')
+    return route.path === pathWithoutLocale
+  }
+  
+  // For other paths, check if the current path ends with the path segment
+  // but only if it's a meaningful segment (not empty)
+  const pathSegment = path.split('/').pop()
+  if (pathSegment && pathSegment !== '') {
+    return route.path.endsWith(`/${pathSegment}`) || route.path.endsWith(`${pathSegment}`)
+  }
+  
+  return false
 }
 </script>
