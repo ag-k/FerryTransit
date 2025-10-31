@@ -1,6 +1,6 @@
 <template>
   <div class="container mx-auto px-4 py-8 max-w-6xl">
-    <h2 class="text-2xl font-semibold mb-6 dark:text-white">
+    <h2 class="hidden lg:block text-2xl font-semibold mb-6 dark:text-white">
       {{ isCalendarEnabled ? $t('CALENDAR') : $t('CALENDAR_UNAVAILABLE_TITLE') }}
     </h2>
 

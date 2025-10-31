@@ -6,10 +6,16 @@
 
     <div class="container mx-auto px-4">
       <div class="flex items-center justify-between py-3 sm:py-4">
-        <NuxtLink class="text-lg sm:text-xl font-medium hover:opacity-80 transition-opacity py-2 flex-1 lg:flex-none"
-          :to="localePath('/')">
-          {{ $t('TITLE') }}
-        </NuxtLink>
+        <div class="flex items-center">
+          <NuxtLink class="text-base sm:text-xl font-medium hover:opacity-80 transition-opacity py-2 flex-1 lg:flex-none"
+            :to="localePath('/')">
+            <span class="hidden lg:inline">{{ $t('TITLE') }}</span>
+            <span class="lg:hidden flex items-center">
+              <span class="text-sm">{{ $t('TITLE') }}</span>
+              <span v-if="currentPageTitle" class="ml-1 text-xs opacity-80">/ {{ currentPageTitle }}</span>
+            </span>
+          </NuxtLink>
+        </div>
 
         <button
           class="lg:hidden relative min-w-[44px] min-h-[44px] p-2 rounded hover:bg-blue-700 dark:hover:bg-slate-800 transition-colors z-50 touch-manipulation flex items-center justify-center"
@@ -209,12 +215,34 @@
 <script setup lang="ts">
 import { useNews } from '~/composables/useNews'
 
-const { locale, locales } = useI18n()
+const { locale, locales, t } = useI18n()
 const route = useRoute()
 const switchLocalePath = useSwitchLocalePath()
 const localePath = useLocalePath()
 const runtimeConfig = useRuntimeConfig()
 const isCalendarEnabled = computed(() => runtimeConfig.public?.features?.calendar ?? false)
+
+// Current page title for mobile header
+const currentPageTitle = computed(() => {
+  // Remove locale prefix from path (e.g., /en/fare -> /fare)
+  let path = route.path
+  if (path.startsWith('/en/')) {
+    path = path.substring(3)
+  } else if (path === '/en') {
+    path = '/'
+  }
+  
+  if (path === '/') return t('TIMETABLE')
+  if (path === '/transit') return t('TRANSIT')
+  if (path === '/status') return t('STATUS')
+  if (path === '/fare') return t('FARE_TABLE')
+  if (path === '/calendar') return t('CALENDAR')
+  if (path === '/favorites') return t('favorites.title')
+  if (path === '/history') return t('history.title')
+  if (path === '/about') return t('ABOUT_APP')
+  if (path === '/settings') return t('SETTINGS')
+  return ''
+})
 
 // Menu states
 const menuOpen = ref(false)

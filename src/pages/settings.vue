@@ -1,6 +1,6 @@
 <template>
   <div class="container mx-auto px-4 py-8 max-w-2xl">
-    <h1 class="text-2xl font-bold mb-6 dark:text-white">{{ $t('SETTINGS') }}</h1>
+    <h1 class="hidden lg:block text-2xl font-bold mb-6 dark:text-white">{{ $t('SETTINGS') }}</h1>
 
     <div class="space-y-6">
       <!-- Language Settings -->
@@ -23,10 +23,6 @@
         <DataManagement />
       </div>
 
-      <!-- System Settings -->
-      <div class="bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700 p-6">
-        <SystemSettings />
-      </div>
 
       <!-- App Information -->
       <div class="bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700 p-6">
@@ -79,7 +75,6 @@ import LanguageSelector from '~/components/settings/LanguageSelector.vue'
 import ThemeSelector from '~/components/settings/ThemeSelector.vue'
 import MapSettings from '~/components/settings/MapSettings.vue'
 import DataManagement from '~/components/settings/DataManagement.vue'
-import SystemSettings from '~/components/settings/SystemSettings.vue'
 
 definePageMeta({
   title: 'SETTINGS'

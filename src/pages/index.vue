@@ -1,6 +1,6 @@
 <template>
   <div class="container mx-auto px-4 py-8 max-w-[1000px]">
-    <h2 class="text-2xl font-semibold mb-6 dark:text-white">{{ $t('TIMETABLE') }}</h2>
+    <h2 class="hidden lg:block text-2xl font-semibold mb-6 dark:text-white">{{ $t('TIMETABLE') }}</h2>
     
     <!-- 出発地・到着地選択 -->
     <ClientOnly>

@@ -1,6 +1,6 @@
 <template>
   <div class="container max-w-[1000px] mx-auto px-4 py-8">
-    <h2 class="text-2xl font-semibold mb-6 dark:text-white">{{ $t('STATUS') }}</h2>
+    <h2 class="hidden lg:block text-2xl font-semibold mb-6 dark:text-white">{{ $t('STATUS') }}</h2>
     
     <!-- Loading state -->
     <div v-if="isLoading" class="text-center py-12">
