@@ -52,28 +52,7 @@ export const setupPublicPageStubs = async (page: Page, options: StubOptions = {}
         theme: 'system',
         language: 'ja',
         notifications: true,
-        autoUpdate: true,
-        system: {
-          notificationSound: true,
-          notificationVibration: true,
-          notificationEmail: false,
-          enableAnimations: true,
-          imageQuality: 'high',
-          reducedMotion: false,
-          offlineMode: false,
-          dataSaver: false,
-          autoDownloadUpdates: true,
-          wifiOnlyDownloads: false,
-          analyticsEnabled: true,
-          crashReportingEnabled: true,
-          locationPermission: false,
-          fontSize: 'medium',
-          highContrast: false,
-          screenReaderOptimization: false,
-          cacheSize: 100,
-          autoClearCache: false,
-          cacheClearInterval: 'monthly'
-        }
+        autoUpdate: true
       }))
       window.localStorage.setItem('ferry_news_cache', JSON.stringify([]))
       window.localStorage.setItem('ferry_news_cache_time', Date.now().toString())
