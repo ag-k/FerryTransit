@@ -114,7 +114,7 @@ describe('TimetablePage', () => {
     const rows = wrapper.findAll('[data-test="timetable-row"]')
     expect(rows).toHaveLength(1)
     expect(rows[0].text()).toContain('フェリーおき')
-    expect(rows[0].text()).toContain('SAIGO')
+    expect(rows[0].text()).toContain('西郷') // Display shows Japanese port name, not ID
   })
 
   it('フィルタリング機能が動作する', async () => {
@@ -146,7 +146,7 @@ describe('TimetablePage', () => {
     await flushPromises()
 
     const modal = wrapper.find('[data-test="form-modal-stub"]')
-    await modal.find('[data-test="timetable-name"]').setValue('フェリーしらしま')
+    await modal.find('[data-test="timetable-name"]').setValue('FERRY_SHIRASHIMA') // Form uses ship ID, not name
     await modal.find('[data-test="timetable-departure"]').setValue('SAIGO')
     await modal.find('[data-test="timetable-arrival"]').setValue('HISHIURA')
     await modal.find('[data-test="timetable-departure-time"]').setValue('09:00')
@@ -161,10 +161,10 @@ describe('TimetablePage', () => {
     expect(mockCreateDocument).toHaveBeenCalledWith(
       'timetables',
       expect.objectContaining({
-        name: 'フェリーしらしま',
+        name: 'FERRY_SHIRASHIMA', // Ship ID is stored, not Japanese name
         departure: 'SAIGO',
         arrival: 'HISHIURA',
-        status: '1'
+        status: '1' // Status is stored as string from form select
       })
     )
 
