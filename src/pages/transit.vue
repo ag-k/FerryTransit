@@ -610,12 +610,19 @@ async function handleSearch() {
 
     // Add to search history
     if (historyStore) {
+      // Create a proper Date object for the time by combining date and time
+      const searchDateTime = new Date(date.value)
+      if (time.value) {
+        const [hours, minutes] = time.value.split(':')
+        searchDateTime.setHours(parseInt(hours), parseInt(minutes), 0, 0)
+      }
+      
       historyStore.addSearchHistory({
         type: 'route',
         departure: departure.value,
         arrival: arrival.value,
         date: date.value,
-        time: time.value,
+        time: searchDateTime,
         isArrivalMode: isArrivalMode.value
       })
     }
@@ -649,15 +656,24 @@ watch([departure, arrival], async () => {
 onMounted(() => {
   const route = useRoute()
 
-  // 初期時刻を設定
-  time.value = getCurrentTimeString()
-
-  // URLパラメータから設定
+  // URLパラメータから設定 (時刻より先に他のパラメータを設定)
   if (route.query.departure) {
     departure.value = route.query.departure as string
   }
   if (route.query.arrival) {
     arrival.value = route.query.arrival as string
+  }
+  if (route.query.date) {
+    date.value = new Date(route.query.date as string)
+  }
+  if (route.query.time) {
+    time.value = route.query.time as string
+  } else {
+    // URLパラメータに時刻がない場合のみ現在時刻を設定
+    time.value = getCurrentTimeString()
+  }
+  if (route.query.isArrivalMode) {
+    isArrivalMode.value = route.query.isArrivalMode === '1'
   }
 })
 
