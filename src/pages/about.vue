@@ -2,7 +2,7 @@
   <div class="container max-w-[1000px] mx-auto px-4 py-8">
     <!-- Hero section -->
     <div class="text-center mb-8">
-      <h1 class="text-4xl md:text-5xl font-light mb-4 dark:text-white">{{ $t('ABOUT_APP') }}</h1>
+      <h1 class="hidden lg:block text-4xl md:text-5xl font-light mb-4 dark:text-white">{{ $t('ABOUT_APP') }}</h1>
       <p class="text-xl text-gray-600 dark:text-gray-300">{{ $t('TITLE') }}</p>
     </div>
 

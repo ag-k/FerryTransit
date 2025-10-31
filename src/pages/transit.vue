@@ -1,6 +1,6 @@
 <template>
   <div class="container max-w-[1000px] mx-auto px-4 py-8">
-    <h2 class="text-2xl font-semibold mb-6 dark:text-white">{{ $t('TRANSIT') }}</h2>
+    <h2 class="hidden lg:block text-2xl font-semibold mb-6 dark:text-white">{{ $t('TRANSIT') }}</h2>
     
     <!-- Search Form -->
     <div class="bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700 mb-6">
