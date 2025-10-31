@@ -17,6 +17,7 @@
   "SEAT_CLASS_1": "1等",
   "SEAT_CLASS_SPECIAL": "特等",
   "SEAT_CLASS_SPECIAL_ROOM": "特別室",
+  "SEAT_CLASS": "座席等級",
   "SEAT_CLASS_FARE": "旅客運賃",
   "TIME": "時刻",
   "FARE": "運賃",

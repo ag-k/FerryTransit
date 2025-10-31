@@ -223,6 +223,173 @@ describe('Ferry Store', () => {
     })
   })
 
+  describe('Ship Status API mapping', () => {
+    const baseFerryResponse = {
+      id: 187,
+      date: '2024-06-15 08:30 更新',
+      ferry_state: '全便通常運航',
+      ferry_comment: '気象条件により一部で遅延の可能性があります。',
+      fast_ferry_state: '1便目欠航',
+      fast_ferry_comment: '波浪の影響により午前便を欠航します。',
+      today_wave: '1.5m（波浪・うねりあり）',
+      tomorrow_wave: '1.0m（うねり弱）'
+    }
+
+    it('maps status payload according to API spec', async () => {
+      const store = useFerryStore()
+      store.selectedDate = new Date('2024-06-15T00:00:00+09:00')
+      store.timetableData = []
+
+      const apiResponse = [
+        {
+          id: 4581,
+          ship_id: 1,
+          date: '2024-06-15',
+          status: '2',
+          prev_status: 0,
+          reason: '濃霧のため視界不良',
+          last_departure_port: '別府港',
+          last_arrival_port: '菱浦港',
+          start_time: '08:30',
+          comment: '午後便以降の見通しは11時頃に再案内予定です。',
+          extraShips: [
+            {
+              id: 921,
+              departure_port_id: 1,
+              arrival_port_id: 2,
+              departure_time: '10:15',
+              departure: 'BEPPU',
+              arrival: 'HISHIURA'
+            }
+          ],
+          lastShips: [
+            {
+              name: 'ISOKAZE',
+              departure: 'BEPPU',
+              departure_time: '06:30',
+              arrival: 'HISHIURA',
+              arrival_time: '07:40',
+              via: null
+            }
+          ],
+          departure: 'BEPPU',
+          arrival: 'HISHIURA'
+        },
+        {
+          id: 4590,
+          ship_id: 2,
+          date: '2024-06-15',
+          status: 0,
+          prev_status: 0,
+          reason: null,
+          start_time: null,
+          comment: null,
+          extraShips: [],
+          lastShips: [],
+          departure: null,
+          arrival: null
+        },
+        baseFerryResponse
+      ]
+
+      ;(global.$fetch as any).mockImplementation((url: string) => {
+        if (url.includes('/status-kankou')) {
+          return Promise.resolve(null)
+        }
+        return Promise.resolve([
+          apiResponse[0],
+          apiResponse[1],
+          { ...baseFerryResponse }
+        ])
+      })
+
+      await store.fetchShipStatus()
+
+      const isokaze = store.shipStatus.isokaze
+      const dozen = store.shipStatus.dozen
+      const ferry = store.shipStatus.ferry
+
+      expect(isokaze).toBeTruthy()
+      expect(isokaze?.status).toBe(2)
+      expect(isokaze?.hasAlert).toBe(true)
+      expect(isokaze?.departure).toBe('BEPPU')
+      expect(isokaze?.arrival).toBe('HISHIURA')
+      expect(isokaze?.start_time).toBe('08:30')
+      expect(isokaze?.extraShips).toHaveLength(1)
+      expect(isokaze?.lastShips).toHaveLength(1)
+
+      expect(dozen).toBeTruthy()
+      expect(dozen?.status).toBe(0)
+      expect(dozen?.hasAlert).toBe(false)
+
+      expect(ferry).toBeTruthy()
+      expect(ferry?.ferryState).toBe('全便通常運航')
+      expect(ferry?.fastFerryState).toBe('1便目欠航')
+      expect(ferry?.todayWave).toBe('1.5m（波浪・うねりあり）')
+      expect(ferry?.hasAlert).toBe(true)
+
+      const extraTrip = store.timetableData.find(trip => trip.tripId === 1000)
+      expect(extraTrip).toBeTruthy()
+      expect(extraTrip?.name).toBe('ISOKAZE')
+      expect(extraTrip?.status).toBe(4)
+      expect(extraTrip?.departureTime).toBe('10:15')
+    })
+
+    it('handles null ship states gracefully', async () => {
+      const store = useFerryStore()
+      store.timetableData = []
+
+      ;(global.$fetch as any).mockImplementation((url: string) => {
+        if (url.includes('/status-kankou')) {
+          return Promise.resolve(null)
+        }
+        return Promise.resolve([null, null, null])
+      })
+
+      await store.fetchShipStatus()
+
+      expect(store.shipStatus.isokaze).toBeNull()
+      expect(store.shipStatus.dozen).toBeNull()
+      expect(store.shipStatus.ferry).toBeNull()
+      expect(store.timetableData.every(trip => trip.tripId < 1000)).toBe(true)
+    })
+
+    it('treats status 5 as alert payload', async () => {
+      const store = useFerryStore()
+      store.timetableData = []
+
+      ;(global.$fetch as any).mockImplementation((url: string) => {
+        if (url.includes('/status-kankou')) {
+          return Promise.resolve(null)
+        }
+        return Promise.resolve([
+          null,
+          {
+            id: 5000,
+            ship_id: 2,
+            date: '2024-06-16',
+            status: '5',
+            prev_status: 2,
+            reason: '自由記述',
+            start_time: null,
+            comment: '自由入力のテキスト',
+            extraShips: [],
+            lastShips: [],
+            departure: null,
+            arrival: null
+          },
+          { ...baseFerryResponse }
+        ])
+      })
+
+      await store.fetchShipStatus()
+
+      expect(store.shipStatus.isokaze).toBeNull()
+      expect(store.shipStatus.dozen?.status).toBe(5)
+      expect(store.shipStatus.dozen?.hasAlert).toBe(true)
+    })
+  })
+
   describe('Getters', () => {
     it('should filter timetable by selected date and ports', async () => {
       const store = useFerryStore()

@@ -65,9 +65,18 @@ describe('StatusPage', () => {
     vi.unstubAllGlobals()
     vi.stubGlobal('useHead', vi.fn())
     const locale = ref('ja')
+    const translations: Record<string, string> = {
+      BEPPU: '別府港',
+      HISHIURA: '菱浦港',
+      VIA: '経由',
+      EXTRA_SHIPS: '臨時便',
+      LAST_SHIPS: '最終便',
+      DEPARTURE: '出発',
+      ARRIVAL: '到着'
+    }
     vi.stubGlobal('useNuxtApp', () => ({
       $i18n: {
-        t: (key: string) => key,
+        t: (key: string) => translations[key] ?? key,
         locale
       }
     }))
@@ -164,5 +173,27 @@ describe('StatusPage', () => {
 
     expect(wrapper.find('[data-test="isokaze-detail"]').exists()).toBe(false)
     expect(wrapper.text()).toContain('通常運航')
+  })
+
+  it('翻訳キーの港名をローカライズして表示する', async () => {
+    mockStore.shipStatus = {
+      isokaze: createShipStatus({
+        departure: 'BEPPU',
+        arrival: 'HISHIURA',
+        extraShips: [
+          { departure: 'BEPPU', departure_time: '10:15', arrival: 'HISHIURA' }
+        ],
+        lastShips: []
+      }),
+      dozen: null,
+      ferry: null
+    }
+
+    const wrapper = mountStatusPage()
+    await flushPromises()
+
+    const cardText = wrapper.find('[data-test="isokaze-detail"]').text()
+    expect(cardText).toContain('別府港')
+    expect(cardText).toContain('菱浦港')
   })
 })
