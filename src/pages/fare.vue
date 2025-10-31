@@ -156,6 +156,8 @@ v-for="seatClass in seatClasses" :key="`seat-class-cell-${group.id}-${seatClass.
         <div class="mt-6 text-sm text-gray-600 dark:text-gray-400">
           <p>{{ $t('CHILD_AGE_NOTE') }}</p>
           <p>{{ $t('INFANT_AGE_NOTE') }}</p>
+          <p>{{ $t('NON_2ND_CLASS_RESERVATION_REQUIRED') }}</p>
+          <p>{{ $t('INTERMEDIATE_STOP_INVALIDATES_TICKET') }}</p>
         </div>
         
         <!-- Disability discount information -->
@@ -593,6 +595,8 @@ v-for="category in passengerCategories" :key="`rainbow-jet-cell-${group.id}-${ca
         <div class="mt-2 text-sm text-gray-600 dark:text-gray-400">
           <p>{{ $t('CHILD_AGE_NOTE') }}</p>
           <p>{{ $t('INFANT_AGE_NOTE') }}</p>
+          <p>{{ $t('RAINBOW_JET_ALL_SEATS_RESERVATION') }}</p>
+          <p>{{ $t('INTERMEDIATE_STOP_INVALIDATES_TICKET') }}</p>
           <p class="text-red-600 dark:text-red-400">{{ $t('RAINBOW_JET_NO_VEHICLE') }}</p>
         </div>
         
