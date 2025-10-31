@@ -350,8 +350,49 @@ stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
 
         <!-- Passenger fares -->
         <h4 class="text-2xl font-bold mb-4 text-gray-900 dark:text-white border-b border-gray-200 dark:border-gray-700 pb-2">{{ $t('PASSENGER_FARE') }}</h4>
-        <div class="overflow-x-auto mb-8">
-          <table class="w-full text-base sm:text-sm border-collapse">
+        <div class="md:hidden">
+          <div class="flex flex-wrap gap-2 mb-3">
+            <button
+v-for="category in passengerCategories" :key="category.id" :class="[
+              naikoSenPassengerActiveCategory === category.id
+                ? 'bg-blue-600 text-white border border-blue-600'
+                : 'bg-white text-gray-700 dark:bg-gray-800 dark:text-gray-200 border border-gray-300 dark:border-gray-600',
+              'px-3 py-1.5 rounded-full text-sm font-medium transition-colors'
+            ]" @click="naikoSenPassengerActiveCategory = category.id">
+              {{ translateLabel(category.labelKey, category.fallback) }}
+            </button>
+          </div>
+          <div class="overflow-x-auto mb-8">
+            <table class="w-full text-base sm:text-sm border-collapse">
+              <thead>
+                <tr class="bg-gray-100 dark:bg-gray-800">
+                  <th class="border border-gray-300 dark:border-gray-600 px-4 py-3 text-left dark:text-gray-100">{{
+                    $t('INNER_ISLAND_ROUTE_COMMON') }}</th>
+                  <th class="border border-gray-300 dark:border-gray-600 px-4 py-3 text-right dark:text-gray-100">
+                    {{ translateLabel(
+                      getPassengerCategoryLabelKey(naikoSenPassengerActiveCategory),
+                      passengerCategoryMap[naikoSenPassengerActiveCategory]?.fallback
+                    ) }}
+                  </th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr class="hover:bg-gray-50 dark:hover:bg-gray-700/50">
+                  <td class="border border-gray-300 dark:border-gray-600 px-4 py-3 dark:text-gray-100">
+                    {{ $t('ALL_INNER_ISLAND_ROUTES') }}
+                  </td>
+                  <td
+                    class="border border-gray-300 dark:border-gray-600 px-4 py-3 text-right font-mono dark:text-gray-100">
+                    {{ getNaikoSenPassengerFare(naikoSenPassengerActiveCategory) }}
+                  </td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+
+        <div class="hidden md:block overflow-x-auto mb-8">
+          <table class="w-full text-sm border-collapse">
             <thead>
               <tr class="bg-gray-100 dark:bg-gray-800">
                 <th class="border border-gray-300 dark:border-gray-600 px-4 py-3 text-left dark:text-gray-100">{{
@@ -360,6 +401,10 @@ stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                   $t('ADULT') }}</th>
                 <th class="border border-gray-300 dark:border-gray-600 px-4 py-3 text-right dark:text-gray-100">{{
                   $t('CHILD') }}</th>
+                <th class="border border-gray-300 dark:border-gray-600 px-4 py-3 text-right dark:text-gray-100">{{
+                  $t('PASSENGER_CATEGORY_DISABLED_ADULT') }}</th>
+                <th class="border border-gray-300 dark:border-gray-600 px-4 py-3 text-right dark:text-gray-100">{{
+                  $t('PASSENGER_CATEGORY_DISABLED_CHILD') }}</th>
               </tr>
             </thead>
             <tbody>
@@ -375,6 +420,14 @@ stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                   class="border border-gray-300 dark:border-gray-600 px-4 py-3 text-right font-mono dark:text-gray-100">
                   {{ formatCurrency(innerIslandFare?.child || 100) }}
                 </td>
+                <td
+                  class="border border-gray-300 dark:border-gray-600 px-4 py-3 text-right font-mono dark:text-gray-100">
+                  {{ formatCurrency(150) }}
+                </td>
+                <td
+                  class="border border-gray-300 dark:border-gray-600 px-4 py-3 text-right font-mono dark:text-gray-100">
+                  {{ formatCurrency(50) }}
+                </td>
               </tr>
             </tbody>
           </table>
@@ -383,10 +436,11 @@ stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
           <p>{{ $t('INNER_ISLAND_CHILD_AGE_NOTE') }}</p>
           <p>{{ $t('INNER_ISLAND_INFANT_FREE_NOTE') }}</p>
           <p>{{ $t('INNER_ISLAND_INFANT_PAID_NOTE') }}</p>
+          <p>{{ $t('DISABILITY_FARE_APPLIES_TO_PERSON_AND_CAREGIVER') }}</p>
         </div>
 
         <!-- Vehicle fares -->
-        <h4 class="text-2xl font-bold mt-12 mb-4 text-gray-900 dark:text-white border-b border-gray-200 dark:border-gray-700 pb-2">{{ $t('VEHICLE_FARE') }}</h4>
+        <h4 class="text-2xl font-bold mt-12 mb-4 text-gray-900 dark:text-white border-b border-gray-200 dark:border-gray-700 pb-2">{{ $t('LOCAL_FERRY_VEHICLE_FARE') }}</h4>
         <p class="text-sm text-gray-600 dark:text-gray-400 mb-3">{{ $t('FERRY_DOZEN_VEHICLE_ONLY') }}</p>
         <div class="overflow-x-auto">
           <table class="w-full text-base sm:text-sm border-collapse">
@@ -434,6 +488,9 @@ stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
             </tbody>
           </table>
         </div>
+        <div class="mt-2 text-sm text-gray-600 dark:text-gray-400">
+          <p>{{ $t('VEHICLE_LENGTH_NOTE') }}</p>
+        </div>
         <div class="mt-4 text-center">
           <a
 href="https://www.okikankou.com/fee_detail/" target="_blank" rel="noopener noreferrer"
@@ -445,9 +502,6 @@ stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                 d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14"></path>
             </svg>
           </a>
-        </div>
-        <div class="mt-2 text-sm text-gray-600 dark:text-gray-400">
-          <p>{{ $t('VEHICLE_LENGTH_NOTE') }}</p>
         </div>
       </div>
 
@@ -673,6 +727,7 @@ const passengerCategoryMap = passengerCategories.reduce<Record<PassengerCategory
 
 const okiKisenPassengerActiveCategory = ref<PassengerCategoryId>('adult')
 const rainbowJetPassengerActiveCategory = ref<PassengerCategoryId>('adult')
+const naikoSenPassengerActiveCategory = ref<PassengerCategoryId>('adult')
 
 const okiKisenRouteGroups = [
   {
@@ -989,6 +1044,21 @@ const getRainbowJetPassengerFareValue = (groupId: string, categoryId: PassengerC
 const getRainbowJetPassengerFare = (groupId: string, categoryId: PassengerCategoryId): string => {
   const value = getRainbowJetPassengerFareValue(groupId, categoryId)
   return value !== null ? formatCurrency(value) : '—'
+}
+
+const getNaikoSenPassengerFare = (categoryId: PassengerCategoryId): string => {
+  switch (categoryId) {
+    case 'adult':
+      return formatCurrency(innerIslandFare.value?.adult || 300)
+    case 'child':
+      return formatCurrency(innerIslandFare.value?.child || 100)
+    case 'disabledAdult':
+      return formatCurrency(150)
+    case 'disabledChild':
+      return formatCurrency(50)
+    default:
+      return '—'
+  }
 }
 
 const isLikelyTranslationKey = (value: string): boolean => /^[A-Z0-9_]+(_[A-Z0-9_]+)*$/.test(value)
