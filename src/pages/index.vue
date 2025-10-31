@@ -333,8 +333,7 @@ const handleDateChange = (event: Event) => {
       type: 'timetable',
       departure: departure.value,
       arrival: arrival.value,
-      date: newDate,
-      time: new Date() // Use current time as departure time reference
+      date: newDate
     })
   }
 }
@@ -350,8 +349,7 @@ const handleDepartureChange = (value: string) => {
       type: 'timetable',
       departure: value,
       arrival: arrival.value,
-      date: selectedDate.value,
-      time: new Date() // Use current time as departure time reference
+      date: selectedDate.value
     })
   }
 }
@@ -367,8 +365,7 @@ const handleArrivalChange = (value: string) => {
       type: 'timetable',
       departure: departure.value,
       arrival: value,
-      date: selectedDate.value,
-      time: new Date() // Use current time as departure time reference
+      date: selectedDate.value
     })
   }
 }
@@ -386,8 +383,7 @@ const reverseRoute = () => {
       type: 'timetable',
       departure: arrival.value,
       arrival: departure.value,
-      date: selectedDate.value,
-      time: new Date() // Use current time as departure time reference
+      date: selectedDate.value
     })
   }
 }

@@ -79,13 +79,34 @@ export const useHistoryStore = defineStore('history', () => {
       history.value.splice(existingIndex, 1)
     }
     
+    // 時刻を正しく変換
+    let convertedTime: Date | undefined
+    if (item.time) {
+      if (item.time instanceof Date) {
+        convertedTime = item.time
+      } else if (typeof item.time === 'string') {
+        // 時刻文字列の場合は、今日の日付と組み合わせてDateオブジェクトを作成
+        const today = new Date()
+        const [hours, minutes] = item.time.split(':')
+        convertedTime = new Date(today.getFullYear(), today.getMonth(), today.getDate(), 
+                                 parseInt(hours), parseInt(minutes), 0, 0)
+      } else {
+        convertedTime = new Date(item.time)
+      }
+      
+      // 無効な日付の場合はundefinedに設定
+      if (isNaN(convertedTime.getTime())) {
+        convertedTime = undefined
+      }
+    }
+    
     // 新しいエントリを追加
     const newItem: SearchHistoryItem = {
       ...item,
       id: generateId(),
       searchedAt: new Date(),
       date: item.date instanceof Date ? item.date : new Date(item.date),
-      time: item.time ? (item.time instanceof Date ? item.time : new Date(item.time)) : undefined
+      time: convertedTime
     }
     
     // 先頭に追加
@@ -131,12 +152,56 @@ export const useHistoryStore = defineStore('history', () => {
     const savedHistory = getData<SearchHistoryItem[]>(HISTORY_STORAGE_KEY)
     if (savedHistory && Array.isArray(savedHistory)) {
       // 日付を復元
-      history.value = savedHistory.map(item => ({
-        ...item,
-        date: new Date(item.date),
-        time: item.time ? new Date(item.time) : undefined,
-        searchedAt: new Date(item.searchedAt)
-      }))
+      history.value = savedHistory.map(item => {
+        // 時刻を正しく変換
+        let convertedTime: Date | undefined
+        if (item.time) {
+          if (item.time instanceof Date) {
+            convertedTime = new Date(item.time)
+          } else if (typeof item.time === 'string') {
+            // 時刻文字列の場合は、今日の日付と組み合わせてDateオブジェクトを作成
+            const today = new Date()
+            const timeMatch = item.time.match(/(\d{1,2}):(\d{2})/)
+            if (timeMatch) {
+              const [_, hours, minutes] = timeMatch
+              convertedTime = new Date(today.getFullYear(), today.getMonth(), today.getDate(), 
+                                       parseInt(hours), parseInt(minutes), 0, 0)
+            } else {
+              // その他の形式の場合は通常のDate変換を試みる
+              convertedTime = new Date(item.time)
+            }
+          } else {
+            convertedTime = new Date(item.time)
+          }
+          
+          // 無効な日付の場合はundefinedに設定
+          if (isNaN(convertedTime!.getTime())) {
+            convertedTime = undefined
+          }
+        }
+        
+        return {
+          ...item,
+          date: new Date(item.date),
+          time: convertedTime,
+          searchedAt: new Date(item.searchedAt)
+        }
+      })
+      
+      // Migrate old data: remove time from timetable entries
+      let hasMigrations = false
+      history.value = history.value.map(item => {
+        if (item.type === 'timetable' && item.time) {
+          hasMigrations = true
+          return { ...item, time: undefined }
+        }
+        return item
+      })
+      
+      // Save migrated data back to storage
+      if (hasMigrations) {
+        saveToStorage()
+      }
       
       // 古いエントリを自動削除
       removeOldEntries()

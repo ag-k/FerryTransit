@@ -41,9 +41,9 @@
 
         <div class="text-sm text-gray-600 dark:text-gray-400">
           <span>{{ formatDate(history.date) }}</span>
-          <span class="mx-2">·</span>
-          <span>{{ history.isArrivalMode ? $t('ARRIVE_BY') : $t('DEPARTURE_AFTER') }}</span>
-          <span class="font-medium dark:text-gray-300">{{ formatTime(history.time) }}</span>
+          <span v-if="history.type === 'route' && history.time" class="mx-2">·</span>
+          <span v-if="history.type === 'route' && history.time">{{ history.isArrivalMode ? $t('ARRIVE_BY') : $t('DEPARTURE_AFTER') }}</span>
+          <span v-if="history.type === 'route' && history.time" class="font-medium dark:text-gray-300">{{ formatTime(history.time) }}</span>
         </div>
 
         <div v-if="history.resultCount !== undefined" class="text-sm text-gray-500 dark:text-gray-400 mt-1">
