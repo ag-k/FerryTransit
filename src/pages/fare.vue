@@ -46,7 +46,7 @@
           </p>
         </div>
 
-        <h4 class="text-lg font-medium mb-3 dark:text-white">{{ $t('PASSENGER_FARE') }}</h4>
+        <h4 class="text-2xl font-bold mb-4 text-gray-900 dark:text-white border-b border-gray-200 dark:border-gray-700 pb-2">{{ $t('PASSENGER_FARE') }}</h4>
         <div class="mb-8">
           <div class="flex flex-col gap-3 md:items-center md:justify-between">
             <nav class="flex flex-wrap gap-2" aria-label="Passenger categories" role="tablist">
@@ -143,9 +143,12 @@
             </tbody>
           </table>
         </div>
-
+        <div class="mt-6 text-sm text-gray-600 dark:text-gray-400">
+          <p>{{ $t('CHILD_AGE_NOTE') }}</p>
+          <p>{{ $t('INFANT_AGE_NOTE') }}</p>
+        </div>
         <!-- Vehicle fares -->
-        <h4 class="text-lg font-medium mb-3 dark:text-white">{{ $t('VEHICLE_FARE') }}</h4>
+        <h4 class="text-2xl font-bold mt-12 mb-4 text-gray-900 dark:text-white border-b border-gray-200 dark:border-gray-700 pb-2">{{ $t('VEHICLE_FARE') }}</h4>
         <div class="md:hidden mb-8">
           <nav class="flex flex-wrap gap-2 mb-3" aria-label="Vehicle routes" role="tablist">
             <button v-for="group in okiKisenRouteGroups" :key="`vehicle-route-tab-${group.id}`" :class="[
@@ -237,8 +240,6 @@
           </table>
         </div>
         <div class="mt-2 text-sm text-gray-600 dark:text-gray-400">
-          <p>{{ $t('CHILD_AGE_NOTE') }}</p>
-          <p>{{ $t('INFANT_AGE_NOTE') }}</p>
           <p>{{ $t('VEHICLE_LENGTH_NOTE') }}</p>
         </div>
       </div>
@@ -255,7 +256,7 @@
         </div>
 
         <!-- Passenger fares -->
-        <h4 class="text-lg font-medium mb-3 dark:text-white">{{ $t('PASSENGER_FARE') }}</h4>
+        <h4 class="text-2xl font-bold mb-4 text-gray-900 dark:text-white border-b border-gray-200 dark:border-gray-700 pb-2">{{ $t('PASSENGER_FARE') }}</h4>
         <div class="overflow-x-auto mb-8">
           <table class="w-full text-base sm:text-sm border-collapse">
             <thead>
@@ -292,7 +293,7 @@
         </div>
 
         <!-- Vehicle fares -->
-        <h4 class="text-lg font-medium mb-3 dark:text-white">{{ $t('VEHICLE_FARE') }}</h4>
+        <h4 class="text-2xl font-bold mt-12 mb-4 text-gray-900 dark:text-white border-b border-gray-200 dark:border-gray-700 pb-2">{{ $t('VEHICLE_FARE') }}</h4>
         <p class="text-sm text-gray-600 dark:text-gray-400 mb-3">{{ $t('FERRY_DOZEN_VEHICLE_ONLY') }}</p>
         <div class="overflow-x-auto">
           <table class="w-full text-base sm:text-sm border-collapse">
@@ -367,7 +368,7 @@
         </div>
 
         <!-- Passenger fares -->
-        <h4 class="text-lg font-medium mb-3 dark:text-white">{{ $t('PASSENGER_FARE') }}</h4>
+        <h4 class="text-2xl font-bold mb-4 text-gray-900 dark:text-white border-b border-gray-200 dark:border-gray-700 pb-2">{{ $t('PASSENGER_FARE') }}</h4>
         <div class="md:hidden">
           <div class="flex flex-wrap gap-2 mb-3">
             <button v-for="category in passengerCategories" :key="category.id" :class="[
