@@ -8,9 +8,8 @@
       <!-- Month navigation -->
       <div class="flex items-center justify-between mb-6">
         <button
-          class="p-2 rounded hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors dark:text-gray-100"
-          @click="previousMonth"
-        >
+class="p-2 rounded hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors dark:text-gray-100"
+          @click="previousMonth">
           <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"></path>
           </svg>
@@ -21,9 +20,8 @@
         </h3>
 
         <button
-          class="p-2 rounded hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors dark:text-gray-100"
-          @click="nextMonth"
-        >
+class="p-2 rounded hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors dark:text-gray-100"
+          @click="nextMonth">
           <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path>
           </svg>
@@ -37,7 +35,10 @@
       </div>
 
       <!-- Error state -->
-      <div v-else-if="error" class="bg-red-100 dark:bg-red-900/20 border border-red-400 dark:border-red-700 text-red-700 dark:text-red-300 px-4 py-3 rounded" role="alert">
+      <div
+v-else-if="error"
+        class="bg-red-100 dark:bg-red-900/20 border border-red-400 dark:border-red-700 text-red-700 dark:text-red-300 px-4 py-3 rounded"
+        role="alert">
         {{ $t(error) }}
       </div>
 
@@ -50,7 +51,8 @@
             <span class="dark:text-gray-100">{{ $t('HOLIDAY') }}</span>
           </div>
           <div class="flex items-center gap-2">
-            <div class="w-4 h-4 bg-blue-100 dark:bg-blue-900/30 border border-blue-300 dark:border-blue-600 rounded"></div>
+            <div class="w-4 h-4 bg-blue-100 dark:bg-blue-900/30 border border-blue-300 dark:border-blue-600 rounded">
+            </div>
             <span class="dark:text-gray-100">{{ $t('SPECIAL_OPERATION') }}</span>
           </div>
         </div>
@@ -64,9 +66,9 @@
             <thead>
               <tr class="bg-gray-100 dark:bg-gray-800">
                 <th
-v-for="day in weekDays" :key="day" 
-                    class="border border-gray-300 dark:border-gray-600 px-2 py-3 text-center font-medium dark:text-gray-100"
-                    :class="{ 'text-red-600 dark:text-red-400': day === weekDays[0] }">
+v-for="day in weekDays" :key="day"
+                  class="border border-gray-300 dark:border-gray-600 px-2 py-3 text-center font-medium dark:text-gray-100"
+                  :class="{ 'text-red-600 dark:text-red-400': day === weekDays[0] }">
                   {{ day }}
                 </th>
               </tr>
@@ -75,16 +77,16 @@ v-for="day in weekDays" :key="day"
               <tr v-for="(week, weekIndex) in calendarData" :key="weekIndex">
                 <td
 v-for="(day, dayIndex) in week" :key="dayIndex"
-                    class="border border-gray-300 dark:border-gray-600 p-0 h-24 align-top relative"
-                    :class="getCellClass(day)">
+                  class="border border-gray-300 dark:border-gray-600 p-0 h-24 align-top relative"
+                  :class="getCellClass(day)">
                   <div v-if="day" class="p-2 h-full overflow-hidden">
                     <div class="font-medium mb-1 dark:text-gray-100">{{ day.day }}</div>
-                    
+
                     <!-- Holiday name -->
                     <div v-if="day.holiday" class="text-xs text-red-600 dark:text-red-400 mb-1 leading-tight">
                       {{ $t(day.holiday.nameKey) }}
                     </div>
-                    
+
                     <!-- Special operation -->
                     <div v-if="day.specialOperation" class="text-xs text-blue-700 dark:text-blue-400 leading-tight">
                       <span v-if="day.specialOperation.operationType === 'reduced'">
@@ -109,8 +111,8 @@ v-for="(day, dayIndex) in week" :key="dayIndex"
           <h4 class="text-lg font-medium mb-4 dark:text-white">{{ $t('HOLIDAYS_THIS_MONTH') }}</h4>
           <div class="grid md:grid-cols-2 gap-4">
             <div
-v-for="holiday in monthHolidays" :key="holiday.date" 
-                 class="border border-gray-200 dark:border-gray-700 rounded-lg p-4 dark:bg-gray-800">
+v-for="holiday in monthHolidays" :key="holiday.date"
+              class="border border-gray-200 dark:border-gray-700 rounded-lg p-4 dark:bg-gray-800">
               <div class="font-medium dark:text-white">{{ formatDate(holiday.date, 'long') }}</div>
               <div class="text-gray-600 dark:text-gray-400">{{ $t(holiday.nameKey) }}</div>
             </div>
@@ -122,8 +124,8 @@ v-for="holiday in monthHolidays" :key="holiday.date"
           <h4 class="text-lg font-medium mb-4 dark:text-white">{{ $t('SPECIAL_OPERATIONS_THIS_MONTH') }}</h4>
           <div class="space-y-2">
             <div
-v-for="op in monthSpecialOperations" :key="op.date" 
-                 class="bg-blue-50 dark:bg-blue-900/40 border border-blue-200 dark:border-blue-700 rounded-lg p-4">
+v-for="op in monthSpecialOperations" :key="op.date"
+              class="bg-blue-50 dark:bg-blue-900/40 border border-blue-200 dark:border-blue-700 rounded-lg p-4">
               <div class="font-medium dark:text-white">{{ formatDate(op.date, 'long') }}</div>
               <div class="text-blue-700 dark:text-blue-300">{{ $t(op.descriptionKey) }}</div>
             </div>
@@ -132,7 +134,9 @@ v-for="op in monthSpecialOperations" :key="op.date"
       </div>
     </div>
 
-    <div v-else class="rounded-lg border border-dashed border-gray-300 dark:border-gray-600 bg-white/80 dark:bg-gray-800/60 p-8 text-center">
+    <div
+v-else
+      class="rounded-lg border border-dashed border-gray-300 dark:border-gray-600 bg-white/80 dark:bg-gray-800/60 p-8 text-center">
       <p class="text-gray-600 dark:text-gray-300 leading-relaxed">
         {{ $t('CALENDAR_UNAVAILABLE_MESSAGE') }}
       </p>
@@ -146,9 +150,9 @@ import type { Holiday, SpecialOperation } from '@/types/holiday'
 // Composables
 const runtimeConfig = useRuntimeConfig()
 const isCalendarEnabled = computed(() => runtimeConfig.public?.features?.calendar ?? false)
-const { 
-  loadHolidayData, 
-  generateCalendarData, 
+const {
+  loadHolidayData,
+  generateCalendarData,
   getHolidaysByMonth,
   formatDate,
   isLoading,
@@ -193,21 +197,21 @@ const formatMonth = (year: number, month: number) => {
 // Get cell class
 const getCellClass = (day: any) => {
   if (!day) return ''
-  
+
   const classes = []
-  
+
   if (day.dayOfWeek === '日' || day.dayOfWeek === 'Sun') {
     classes.push('bg-red-50 dark:bg-red-900/10')
   }
-  
+
   if (day.isHoliday) {
     classes.push('bg-red-100 dark:bg-red-900/20')
   }
-  
+
   if (day.specialOperation) {
     classes.push('border-blue-400 dark:border-blue-500 border-2')
   }
-  
+
   return classes.join(' ')
 }
 
@@ -242,11 +246,11 @@ const updateCalendar = async () => {
   await loadHolidayData()
   calendarData.value = generateCalendarData(currentYear.value, currentMonth.value)
   monthHolidays.value = getHolidaysByMonth(currentYear.value, currentMonth.value)
-  
+
   // Get special operations for this month
   const monthStr = currentMonth.value.toString().padStart(2, '0')
   const yearMonthPrefix = `${currentYear.value}-${monthStr}`
-  
+
   if (holidayMaster.value) {
     monthSpecialOperations.value = holidayMaster.value.specialOperations.filter(
       op => op.date.startsWith(yearMonthPrefix)

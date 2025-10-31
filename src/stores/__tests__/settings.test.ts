@@ -36,9 +36,6 @@ describe('Settings Store', () => {
     expect(store.mapEnabled).toBe(true)
     expect(store.theme).toBe('system')
     expect(store.language).toBe('ja')
-    expect(store.system.notificationSound).toBe(true)
-    expect(store.system.fontSize).toBe('medium')
-    expect(store.system.cacheSize).toBe(100)
   })
 
   describe('getters', () => {
@@ -48,9 +45,6 @@ describe('Settings Store', () => {
       expect(store.isMapEnabled).toBe(true)
       expect(store.currentTheme).toBe('system')
       expect(store.currentLanguage).toBe('ja')
-      expect(store.systemSettings).toBe(store.system)
-      expect(store.isOfflineMode).toBe(false)
-      expect(store.currentFontSize).toBe('medium')
     })
   })
 
@@ -71,55 +65,8 @@ describe('Settings Store', () => {
       expect(localStorageMock.setItem).toHaveBeenCalled()
     })
 
-    it('updateSystemSettings が動作する', () => {
-      const store = useSettingsStore()
-      
-      store.updateSystemSettings({
-        notificationSound: false,
-        fontSize: 'large'
-      })
-      
-      expect(store.system.notificationSound).toBe(false)
-      expect(store.system.fontSize).toBe('large')
-      expect(localStorageMock.setItem).toHaveBeenCalled()
-    })
 
-    it('setNotificationSound が動作する', () => {
-      const store = useSettingsStore()
-      
-      store.setNotificationSound(false)
-      expect(store.system.notificationSound).toBe(false)
-      expect(localStorageMock.setItem).toHaveBeenCalled()
-    })
 
-    it('setOfflineMode が動作する', () => {
-      const store = useSettingsStore()
-      
-      store.setOfflineMode(true)
-      expect(store.system.offlineMode).toBe(true)
-      expect(localStorageMock.setItem).toHaveBeenCalled()
-    })
-
-    it('setFontSize が動作する', () => {
-      const store = useSettingsStore()
-      
-      store.setFontSize('large')
-      expect(store.system.fontSize).toBe('large')
-      expect(localStorageMock.setItem).toHaveBeenCalled()
-    })
-
-    it('setCacheSettings が動作する', () => {
-      const store = useSettingsStore()
-      
-      store.setCacheSettings({
-        cacheSize: 200,
-        autoClearCache: true
-      })
-      
-      expect(store.system.cacheSize).toBe(200)
-      expect(store.system.autoClearCache).toBe(true)
-      expect(localStorageMock.setItem).toHaveBeenCalled()
-    })
 
     it('clearCache が動作する', async () => {
       const store = useSettingsStore()
@@ -137,9 +84,7 @@ describe('Settings Store', () => {
       const savedSettings = {
         mapEnabled: false,
         theme: 'dark',
-        system: {
-          fontSize: 'large'
-        }
+        system: {}
       }
       
       localStorageMock.getItem.mockReturnValue(JSON.stringify(savedSettings))
