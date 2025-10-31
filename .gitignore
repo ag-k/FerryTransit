@@ -50,3 +50,6 @@ typings
 /config
 .firebase
 test-results
+
+# Test coverage
+coverage/
