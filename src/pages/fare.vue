@@ -60,7 +60,7 @@
 
         <h4 class="text-lg font-medium mb-3 dark:text-white">{{ $t('PASSENGER_FARE') }}</h4>
         <div class="mb-8">
-          <div class="flex flex-col gap-3 md:flex-row md:items-center md:justify-between">
+          <div class="flex flex-col gap-3 md:items-center md:justify-between">
             <nav class="flex flex-wrap gap-2" aria-label="Passenger categories" role="tablist">
               <button
                 v-for="category in passengerCategories"
@@ -79,7 +79,7 @@
                 {{ translateLabel(category.labelKey, category.fallback) }}
               </button>
             </nav>
-            <nav class="flex flex-wrap gap-2" aria-label="Seat classes" role="tablist">
+            <nav class="flex flex-wrap gap-2 md:hidden" aria-label="Seat classes" role="tablist">
               <button
                 v-for="seatClass in seatClasses"
                 :key="`seat-class-tab-${seatClass.key}`"
