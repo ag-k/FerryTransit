@@ -106,6 +106,14 @@
           インポート
         </button>
         <button
+          data-test="timetable-delete-all"
+          class="w-full sm:w-auto px-4 py-2 bg-red-600 text-white rounded-md hover:bg-red-700 transition-colors"
+          @click="deleteAllRecords"
+        >
+          <TrashIcon class="h-5 w-5 inline mr-1" />
+          全件削除
+        </button>
+        <button
           data-test="timetable-add"
           class="w-full sm:w-auto px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 transition-colors"
           @click="showAddModal = true"
@@ -137,6 +145,12 @@
       </template>
       <template #cell-arrival_time="{ value }">
         {{ formatTime(value) }}
+      </template>
+      <template #cell-start_date="{ value }">
+        {{ formatDateForDisplay(value) }}
+      </template>
+      <template #cell-end_date="{ value }">
+        {{ formatDateForDisplay(value) }}
       </template>
       <template #cell-status="{ value }">
         <span
@@ -338,24 +352,58 @@
     >
       <div class="space-y-4">
         <div>
+          <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+            インポート形式を選択
+          </label>
+          <div class="flex gap-4">
+            <label class="flex items-center">
+              <input
+                v-model="importFormat"
+                type="radio"
+                value="csv"
+                class="mr-2"
+              >
+              CSVファイル
+            </label>
+            <label class="flex items-center">
+              <input
+                v-model="importFormat"
+                type="radio"
+                value="json"
+                class="mr-2"
+              >
+              JSONファイル
+            </label>
+          </div>
+        </div>
+        <div>
           <label class="block text-sm font-medium text-gray-700 dark:text-gray-300">
-            CSVファイルを選択
+            {{ importFormat === 'csv' ? 'CSV' : 'JSON' }}ファイルを選択
           </label>
           <input
             type="file"
-            accept=".csv"
+            :accept="importFormat === 'csv' ? '.csv' : '.json'"
             data-test="timetable-file-input"
             class="mt-1 w-full"
             @change="handleFileSelect"
           >
         </div>
         <div class="text-sm text-gray-500 dark:text-gray-400">
-          <p>CSVファイルの形式:</p>
+          <p v-if="importFormat === 'csv'">CSVファイルの形式:</p>
+          <p v-else>JSONファイルの形式:</p>
           <ul class="list-disc list-inside mt-2">
-            <li>trip_id, next_id, name, departure, arrival, departure_time, arrival_time, start_date, end_date, status</li>
-            <li>港・船舶・便IDはシステムID（例: HONDO_SHICHIRUI, FERRY_OKI）で入力</li>
-            <li>UTF-8エンコーディング</li>
-            <li>ヘッダー行あり</li>
+            <template v-if="importFormat === 'csv'">
+              <li>trip_id, next_id, name, departure, arrival, departure_time, arrival_time, start_date, end_date, status</li>
+              <li>港・船舶・便IDはシステムID（例: HONDO_SHICHIRUI, FERRY_OKI）で入力</li>
+              <li>UTF-8エンコーディング</li>
+              <li>ヘッダー行あり</li>
+            </template>
+            <template v-else>
+              <li>配列形式のJSONファイル</li>
+              <li>各要素には trip_id, name, departure, arrival, departure_time, arrival_time, start_date, end_date を含める</li>
+              <li>港・船舶・便IDはシステムID（例: HONDO_SHICHIRUI, FERRY_OKI）で入力</li>
+              <li>UTF-8エンコーディング</li>
+            </template>
           </ul>
         </div>
       </div>
@@ -441,6 +489,7 @@ const isSaving = ref(false)
 const isImporting = ref(false)
 const isPublishing = ref(false)
 const editingId = ref<string | null>(null)
+const importFormat = ref<'csv' | 'json'>('csv')
 
 const defaultFormState = (): AdminTimetableForm => ({
   trip_id: '',
@@ -465,6 +514,8 @@ const columns = [
   { key: 'arrival', label: '到着港', sortable: true },
   { key: 'departure_time', label: '出発時刻', sortable: true },
   { key: 'arrival_time', label: '到着時刻', sortable: true },
+  { key: 'start_date', label: '開始日', sortable: true },
+  { key: 'end_date', label: '終了日', sortable: true },
   { key: 'status', label: '状態', sortable: true }
 ]
 
@@ -533,9 +584,50 @@ const deleteTimetable = async (item: AdminTimetableRecord) => {
       await deleteDocument('timetables', item.id)
       await refreshData()
       $toast.success('時刻表を削除しました')
-  } catch (error) {
-    logger.error('Failed to delete timetable', error)
+    } catch (error) {
+      logger.error('Failed to delete timetable', error)
       $toast.error('削除に失敗しました')
+    }
+  }
+}
+
+const deleteAllRecords = async () => {
+  const recordCount = timetables.value.length
+  
+  if (recordCount === 0) {
+    $toast.info('削除対象のデータがありません')
+    return
+  }
+
+  if (confirm(`本当に全${recordCount}件の時刻表データを削除しますか？\nこの操作は元に戻せません。`)) {
+    if (confirm(`最終確認：全${recordCount}件の時刻表データを完全に削除します。よろしいですか？`)) {
+      try {
+        const operations = timetables.value
+          .filter(record => record.id)
+          .map(record => ({
+            type: 'delete' as const,
+            collection: 'timetables',
+            id: record.id!
+          }))
+
+        if (operations.length > 0) {
+          await batchWrite(operations)
+          $toast.success(`${operations.length}件の時刻表データを削除しました`)
+          await refreshData()
+        } else {
+          $toast.info('削除対象のデータがありません')
+        }
+      } catch (error) {
+        // Filter out BloomFilter warnings as they're not actionable
+        if (error instanceof Error && error.message.includes('BloomFilterError')) {
+          logger.warn('BloomFilter warning (non-critical)', error)
+          $toast.success(`${operations.length}件の時刻表データを削除しました`)
+          await refreshData()
+        } else {
+          logger.error('Failed to delete all records', error)
+          $toast.error('全件削除に失敗しました')
+        }
+      }
     }
   }
 }
@@ -560,10 +652,15 @@ const saveTimetable = async () => {
       departure_time: normalizeTimeValue(formData.value.departure_time),
       arrival: formData.value.arrival,
       arrival_time: normalizeTimeValue(formData.value.arrival_time),
-      status: formData.value.status ?? 0,
-      price: formData.value.price !== undefined && formData.value.price !== null && formData.value.price !== ''
-        ? Number(formData.value.price)
-        : undefined
+      status: formData.value.status ?? 0
+    }
+
+    // Only add price if it's a valid number
+    if (formData.value.price !== undefined && formData.value.price !== null && formData.value.price !== '') {
+      const parsedPrice = Number(formData.value.price)
+      if (!Number.isNaN(parsedPrice)) {
+        payload.price = parsedPrice
+      }
     }
 
     if (editingId.value) {
@@ -617,6 +714,12 @@ const formatDateForStorage = (value: string) => {
 
 const formatDateForInput = (value: string) => {
   if (!value) return ''
+  return value.replace(/\//g, '-').trim()
+}
+
+const formatDateForDisplay = (value: string) => {
+  if (!value) return ''
+  // Convert YYYY/MM/DD to YYYY-MM-DD for consistent display
   return value.replace(/\//g, '-').trim()
 }
 
@@ -677,7 +780,11 @@ const handleFileSelect = (event: Event) => {
   const target = event.target as HTMLInputElement
   const file = target.files?.[0]
   if (file) {
-    importCSVFile(file)
+    if (importFormat.value === 'csv') {
+      importCSVFile(file)
+    } else {
+      importJSONFile(file)
+    }
   }
 }
 
@@ -774,8 +881,15 @@ const importCSVFile = async (file: File) => {
         arrival_time: normalizeTimeValue(row.arrival_time || ''),
         start_date: formatDateForStorage(row.start_date || ''),
         end_date: formatDateForStorage(row.end_date || ''),
-        status,
-        price: row.price
+        status
+      }
+
+      // Only add price if it's a valid number
+      if (row.price !== undefined && row.price !== null && row.price !== '') {
+        const parsedPrice = Number(row.price)
+        if (!Number.isNaN(parsedPrice)) {
+          payload.price = parsedPrice
+        }
       }
 
       if (!payload.name || !payload.departure || !payload.arrival || !payload.departure_time || !payload.arrival_time) {
@@ -800,6 +914,72 @@ const importCSVFile = async (file: File) => {
   } catch (error) {
     logger.error('Failed to import CSV', error)
     $toast.error('CSVのインポートに失敗しました')
+  }
+}
+
+const importJSONFile = async (file: File) => {
+  try {
+    const text = await file.text()
+    const jsonData = JSON.parse(text) as any[]
+
+    if (!Array.isArray(jsonData)) {
+      throw new Error('JSONファイルは配列形式である必要があります')
+    }
+
+    const operations = []
+
+    for (let i = 0; i < jsonData.length; i++) {
+      const item = jsonData[i]
+      
+      // Validate required fields
+      if (!item.trip_id || !item.name || !item.departure || !item.arrival || 
+          !item.departure_time || !item.arrival_time || !item.start_date || !item.end_date) {
+        logger.warn('Skipping JSON item due to missing required fields', { index: i })
+        continue
+      }
+
+      const payload: AdminTimetableForm = {
+        trip_id: toStringSafe(item.trip_id),
+        next_id: toStringSafe(item.next_id || ''),
+        name: toStringSafe(item.name),
+        departure: toStringSafe(item.departure),
+        departure_time: normalizeTimeValue(toStringSafe(item.departure_time)),
+        arrival: toStringSafe(item.arrival),
+        arrival_time: normalizeTimeValue(toStringSafe(item.arrival_time)),
+        start_date: formatDateForStorage(toStringSafe(item.start_date)),
+        end_date: formatDateForStorage(toStringSafe(item.end_date)),
+        status: Number.parseInt(item.status ?? '0', 10) || 0
+      }
+
+      // Only add price if it's a valid number
+      if (item.price !== undefined && item.price !== null && item.price !== '') {
+        const parsedPrice = Number(item.price)
+        if (!Number.isNaN(parsedPrice)) {
+          payload.price = parsedPrice
+        }
+      }
+
+      operations.push({
+        type: 'create' as const,
+        collection: 'timetables',
+        data: payload
+      })
+    }
+
+    if (operations.length === 0) {
+      $toast.info('インポート対象のデータがありません')
+      return
+    }
+
+    await batchWrite(operations)
+    $toast.success(`${operations.length}件のデータをインポートしました`)
+  } catch (error) {
+    logger.error('Failed to import JSON', error)
+    if (error instanceof SyntaxError) {
+      $toast.error('JSONファイルの形式が正しくありません')
+    } else {
+      $toast.error('JSONのインポートに失敗しました: ' + (error as Error).message)
+    }
   }
 }
 

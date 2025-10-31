@@ -47,6 +47,7 @@ export const useFerryStore = defineStore('ferry', () => {
   const isLoading = ref(false)
   const error = ref<string | null>(null)
   const lastFetchTime = ref<Date | null>(null)
+  const timetableLastUpdate = ref<Date | null>(null)
 
   // Port definitions
   const hondoPorts = ['HONDO', 'HONDO_SHICHIRUI', 'HONDO_SAKAIMINATO']

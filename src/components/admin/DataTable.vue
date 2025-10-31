@@ -268,7 +268,7 @@ defineEmits<{
   'row-click': [row: Record<string, any>]
 }>()
 
-const sortKey = ref<string | null>(null)
+const sortKey = ref<string | null>('trip_id')
 const sortOrder = ref<'asc' | 'desc'>('asc')
 const currentPage = ref(1)
 const viewMode = ref<'table' | 'card'>('card')
@@ -297,6 +297,17 @@ const sortedData = computed(() => {
       const aVal = a[sortKey.value!]
       const bVal = b[sortKey.value!]
       
+      // Special handling for trip_id - sort as numbers
+      if (sortKey.value === 'trip_id') {
+        const aNum = Number.parseInt(toStringSafe(aVal), 10)
+        const bNum = Number.parseInt(toStringSafe(bVal), 10)
+        
+        if (!Number.isNaN(aNum) && !Number.isNaN(bNum)) {
+          return sortOrder.value === 'asc' ? aNum - bNum : bNum - aNum
+        }
+      }
+      
+      // Default string comparison for other fields
       if (aVal < bVal) return sortOrder.value === 'asc' ? -1 : 1
       if (aVal > bVal) return sortOrder.value === 'asc' ? 1 : -1
       return 0
@@ -311,6 +322,14 @@ const sortedData = computed(() => {
   
   return sorted
 })
+
+// Helper function to safely convert to string
+const toStringSafe = (value: unknown) => {
+  if (value === undefined || value === null) {
+    return ''
+  }
+  return String(value)
+}
 
 const totalItems = computed(() => props.data.length)
 const totalPages = computed(() => Math.ceil(totalItems.value / props.pageSize))

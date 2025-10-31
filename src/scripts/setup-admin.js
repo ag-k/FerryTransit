@@ -16,21 +16,34 @@ import { getFirestore, FieldValue } from 'firebase-admin/firestore';
 
 // 環境変数からサービスアカウントキーのパスを取得
 const serviceAccountPath = process.env.GOOGLE_APPLICATION_CREDENTIALS;
-
-if (!serviceAccountPath) {
-  console.error('❌ エラー: GOOGLE_APPLICATION_CREDENTIALS 環境変数が設定されていません');
-  console.log('以下のコマンドで設定してください:');
-  console.log('export GOOGLE_APPLICATION_CREDENTIALS="/path/to/service-account-key.json"');
-  process.exit(1);
-}
+const authEmulatorHost = process.env.FIREBASE_AUTH_EMULATOR_HOST;
+const firestoreEmulatorHost = process.env.FIRESTORE_EMULATOR_HOST;
 
 // Firebase Admin SDK の初期化
 let auth, db;
 try {
-  const serviceAccount = JSON.parse(readFileSync(serviceAccountPath, 'utf8'));
-  initializeApp({
-    credential: cert(serviceAccount)
-  });
+  if (authEmulatorHost && firestoreEmulatorHost) {
+    // エミュレーターモードで初期化
+    console.log('🔧 Firebase エミュレーターに接続します...');
+    initializeApp({
+      projectId: 'oki-ferryguide' // .firebaserc と一致させる
+    });
+    // エミュレーターに接続するために設定を更新
+    process.env.FIREBASE_AUTH_EMULATOR_HOST = authEmulatorHost;
+    process.env.FIRESTORE_EMULATOR_HOST = firestoreEmulatorHost;
+  } else if (serviceAccountPath) {
+    // 本番モードでサービスアカウントを使用
+    const serviceAccount = JSON.parse(readFileSync(serviceAccountPath, 'utf8'));
+    initializeApp({
+      credential: cert(serviceAccount)
+    });
+  } else {
+    console.error('❌ エラー: 以下のいずれかを設定してください');
+    console.error('   - GOOGLE_APPLICATION_CREDENTIALS 環境変数 (本番モード)');
+    console.error('   - FIREBASE_AUTH_EMULATOR_HOST と FIRESTORE_EMULATOR_HOST (エミュレーターモード)');
+    process.exit(1);
+  }
+  
   auth = getAuth();
   db = getFirestore();
   console.log('✅ Firebase Admin SDK を初期化しました');

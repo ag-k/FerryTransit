@@ -36,6 +36,54 @@ export const mockTrips: Trip[] = [
     arrivalTime: '11:30:00' as any,
     status: 0,
     price: 1680
+  },
+  {
+    tripId: 4,
+    startDate: '2024-01-01',
+    endDate: '2024-12-31',
+    name: 'ISOKAZE',
+    departure: 'BEPPU',
+    departureTime: '08:00:00' as any,
+    arrival: 'HISHIURA',
+    arrivalTime: '09:00:00' as any,
+    status: 0,
+    price: 410
+  },
+  {
+    tripId: 5,
+    startDate: '2024-01-01',
+    endDate: '2024-12-31',
+    name: 'FERRY_DOZEN',
+    departure: 'BEPPU',
+    departureTime: '10:00:00' as any,
+    arrival: 'KURI',
+    arrivalTime: '11:00:00' as any,
+    status: 0,
+    price: 780
+  },
+  {
+    tripId: 6,
+    startDate: '2024-01-01',
+    endDate: '2024-12-31',
+    name: 'FERRY_SHIRASHIMA',
+    departure: 'SAIGO',
+    departureTime: '08:30:00' as any,
+    arrival: 'HISHIURA',
+    arrivalTime: '09:30:00' as any,
+    status: 0,
+    price: 1540
+  },
+  {
+    tripId: 7,
+    startDate: '2024-01-01',
+    endDate: '2024-12-31',
+    name: 'FERRY_KUNIGA',
+    departure: 'HONDO_SHICHIRUI',
+    departureTime: '09:30:00' as any,
+    arrival: 'KURI',
+    arrivalTime: '11:45:00' as any,
+    status: 0,
+    price: 3520
   }
 ]
 
