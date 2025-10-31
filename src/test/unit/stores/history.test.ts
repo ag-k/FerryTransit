@@ -285,7 +285,7 @@ describe('History Store', () => {
       expect(mockSaveData).toHaveBeenCalledWith(
         HISTORY_STORAGE_KEY,
         [],
-        HISTORY_SETTINGS.DEFAULT_DAYS_TO_KEEP * 24 * 60 * 60 * 1000
+        HISTORY_SETTINGS.DEFAULT_DAYS_TO_KEEP * 24 * 60
       )
     })
 
