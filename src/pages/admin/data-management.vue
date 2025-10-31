@@ -308,7 +308,6 @@ const dataTypes: DataType[] = [
 const exportFormats = [
   { id: 'json', name: 'JSON' },
   { id: 'csv', name: 'CSV' },
-  { id: 'xlsx', name: 'Excel' },
   { id: 'xml', name: 'XML' }
 ]
 

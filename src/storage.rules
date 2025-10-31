@@ -35,7 +35,7 @@ service firebase.storage {
     
     // 許可されたドキュメントタイプかチェック
     function isAllowedDocumentType() {
-      return request.resource.contentType.matches('application/(pdf|json|csv|vnd.ms-excel|vnd.openxmlformats-officedocument.spreadsheetml.sheet)');
+      return request.resource.contentType.matches('application/(pdf|json|csv)');
     }
     
     // ファイルサイズ制限（画像: 5MB）
