@@ -1,5 +1,4 @@
 import { parse as parseCSV, unparse as unparseCSV } from 'papaparse'
-import * as XLSX from 'xlsx'
 
 export const useDataManagement = () => {
   const { batchWrite, logAdminAction, getCollection } = useAdminFirestore()
@@ -67,61 +66,6 @@ export const useDataManagement = () => {
     })
   }
 
-  /**
-   * Excelファイルのインポート
-   */
-  const importExcel = async (
-    file: File,
-    dataType: 'timetable' | 'fare' | 'holidays'
-  ): Promise<{ success: number; failed: number; errors: string[] }> => {
-    try {
-      const arrayBuffer = await file.arrayBuffer()
-      const workbook = XLSX.read(arrayBuffer, { type: 'array' })
-      
-      // 最初のシートを取得
-      const sheetName = workbook.SheetNames[0]
-      const worksheet = workbook.Sheets[sheetName]
-      
-      // JSONに変換
-      const data = XLSX.utils.sheet_to_json(worksheet)
-      
-      const errors: string[] = []
-      let success = 0
-      let failed = 0
-      const operations = []
-
-      for (const [index, row] of data.entries()) {
-        try {
-          const validatedData = validateImportData(row, dataType)
-          operations.push({
-            type: 'create' as const,
-            collection: `${dataType}s`,
-            data: validatedData
-          })
-          success++
-        } catch (error) {
-          failed++
-          errors.push(`行 ${index + 2}: ${error.message}`)
-        }
-      }
-
-      // バッチで保存
-      if (operations.length > 0) {
-        await batchWrite(operations)
-      }
-
-      await logAdminAction('import', dataType, '', {
-        format: 'excel',
-        total: data.length,
-        success,
-        failed
-      })
-
-      return { success, failed, errors }
-    } catch (error) {
-      throw new Error(`Excelファイルの読み込みに失敗しました: ${error.message}`)
-    }
-  }
 
   /**
    * JSONファイルのインポート
@@ -185,7 +129,7 @@ export const useDataManagement = () => {
    */
   const exportData = async (
     dataType: 'timetable' | 'fare' | 'holidays' | 'alerts' | 'announcements',
-    format: 'json' | 'csv' | 'excel'
+    format: 'json' | 'csv'
   ): Promise<Blob> => {
     const data = await getCollection(`${dataType}s`)
 
@@ -206,16 +150,6 @@ export const useDataManagement = () => {
         break
       }
 
-      case 'excel': {
-        const ws = XLSX.utils.json_to_sheet(data)
-        const wb = XLSX.utils.book_new()
-        XLSX.utils.book_append_sheet(wb, ws, dataType)
-        const excelBuffer = XLSX.write(wb, { bookType: 'xlsx', type: 'array' })
-        blob = new Blob([excelBuffer], {
-          type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'
-        })
-        break
-      }
 
       default:
         throw new Error(`Unsupported format: ${format}`)
@@ -383,7 +317,6 @@ export const useDataManagement = () => {
   return {
     // インポート
     importCSV,
-    importExcel,
     importJSON,
 
     // エクスポート

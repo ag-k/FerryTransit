@@ -92,7 +92,6 @@ firebase deploy --only storage:rules
 - PDF
 - JSON
 - CSV
-- Excel (xls, xlsx)
 - ZIP (バックアップのみ)
 
 ### ファイルサイズ制限
