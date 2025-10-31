@@ -58,8 +58,8 @@
           </p>
         </div>
 
-        <div class="md:hidden mb-8">
-          <div class="flex flex-wrap gap-2 mb-3">
+        <div class="mb-8">
+          <nav class="flex flex-wrap gap-2 mb-4" aria-label="Passenger categories" role="tablist">
             <button
               v-for="category in passengerCategories"
               :key="category.id"
@@ -69,139 +69,45 @@
                   : 'bg-white text-gray-700 dark:bg-gray-800 dark:text-gray-200 border border-gray-300 dark:border-gray-600',
                 'px-3 py-1.5 rounded-full text-sm font-medium transition-colors'
               ]"
+              type="button"
+              role="tab"
+              :aria-selected="okiKisenPassengerActiveCategory === category.id"
               @click="okiKisenPassengerActiveCategory = category.id"
             >
               {{ translateLabel(category.labelKey, category.fallback) }}
             </button>
-          </div>
+          </nav>
           <div class="overflow-x-auto">
             <table class="w-full text-base sm:text-sm border-collapse">
               <thead>
                 <tr class="bg-gray-100 dark:bg-gray-800">
                   <th class="border border-gray-300 dark:border-gray-600 px-4 py-3 text-left dark:text-gray-100">
-                  {{ translateLabel(
-                    getPassengerCategoryLabelKey(okiKisenPassengerActiveCategory),
-                    passengerCategoryMap[okiKisenPassengerActiveCategory]?.fallback
-                  ) }}
+                    {{ $t('ROUTE') }}
                   </th>
-                  <th
-                    v-for="group in okiKisenRouteGroups"
-                    :key="group.id"
-                    class="border border-gray-300 dark:border-gray-600 px-4 py-3 text-center dark:text-gray-100"
-                  >
-                    {{ translateLabel(group.labelKey) }}
-                  </th>
-                </tr>
-              </thead>
-              <tbody>
-                <tr class="hover:bg-gray-50 dark:hover:bg-gray-700/50">
-                  <td class="border border-gray-300 dark:border-gray-600 px-4 py-3 font-medium dark:text-gray-100">
+                  <th class="border border-gray-300 dark:border-gray-600 px-4 py-3 text-right dark:text-gray-100">
                     {{ translateLabel(
                       getPassengerCategoryLabelKey(okiKisenPassengerActiveCategory),
                       passengerCategoryMap[okiKisenPassengerActiveCategory]?.fallback
                     ) }}
+                  </th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr
+                  v-for="group in okiKisenRouteGroups"
+                  :key="group.id"
+                  class="hover:bg-gray-50 dark:hover:bg-gray-700/50"
+                >
+                  <td class="border border-gray-300 dark:border-gray-600 px-4 py-3 font-medium dark:text-gray-100">
+                    {{ translateLabel(group.labelKey) }}
                   </td>
-                  <td
-                    v-for="group in okiKisenRouteGroups"
-                    :key="group.id"
-                    class="border border-gray-300 dark:border-gray-600 px-4 py-3 text-center font-mono dark:text-gray-100"
-                  >
+                  <td class="border border-gray-300 dark:border-gray-600 px-4 py-3 text-right font-mono dark:text-gray-100">
                     {{ getOkiKisenPassengerFare(group.id, okiKisenPassengerActiveCategory) }}
                   </td>
                 </tr>
               </tbody>
             </table>
           </div>
-        </div>
-
-        <div class="hidden md:flex items-center gap-2 mb-4">
-          <button
-            v-for="tab in okiKisenDesktopTabs"
-            :key="tab.id"
-            :class="[
-              okiKisenDesktopActiveSection === tab.id
-                ? 'bg-blue-600 text-white'
-                : 'bg-white text-gray-700 dark:bg-gray-800 dark:text-gray-200 border border-gray-300 dark:border-gray-600',
-              'px-4 py-2 rounded-lg text-sm font-medium transition-colors'
-            ]"
-            @click="okiKisenDesktopActiveSection = tab.id"
-          >
-            {{ $t(tab.labelKey) }}
-          </button>
-        </div>
-
-        <div v-if="okiKisenDesktopActiveSection === 'passenger'" class="hidden md:block overflow-x-auto mb-8">
-          <table class="w-full text-sm border-collapse">
-            <thead>
-              <tr class="bg-gray-100 dark:bg-gray-800">
-                <th class="border border-gray-300 dark:border-gray-600 px-4 py-3 text-left dark:text-gray-100">
-                  {{ $t('ROUTE') }}
-                </th>
-                <th
-                  v-for="category in passengerCategories"
-                  :key="`oki-kisen-desktop-passenger-header-${category.id}`"
-                  class="border border-gray-300 dark:border-gray-600 px-4 py-3 text-center dark:text-gray-100"
-                >
-                  {{ translateLabel(category.labelKey, category.fallback) }}
-                </th>
-              </tr>
-            </thead>
-            <tbody>
-              <tr
-                v-for="group in okiKisenRouteGroups"
-                :key="`oki-kisen-desktop-passenger-${group.id}`"
-                class="hover:bg-gray-50 dark:hover:bg-gray-700/50"
-              >
-                <td class="border border-gray-300 dark:border-gray-600 px-4 py-3 font-medium dark:text-gray-100">
-                  {{ translateLabel(group.labelKey) }}
-                </td>
-                <td
-                  v-for="category in passengerCategories"
-                  :key="`oki-kisen-desktop-passenger-${group.id}-${category.id}`"
-                  class="border border-gray-300 dark:border-gray-600 px-4 py-3 text-right font-mono dark:text-gray-100"
-                >
-                  {{ getOkiKisenPassengerFare(group.id, category.id) }}
-                </td>
-              </tr>
-            </tbody>
-          </table>
-        </div>
-
-        <div v-else class="hidden md:block overflow-x-auto mb-8">
-          <table class="w-full text-sm border-collapse">
-            <thead>
-              <tr class="bg-gray-100 dark:bg-gray-800">
-                <th class="border border-gray-300 dark:border-gray-600 px-4 py-3 text-left dark:text-gray-100">
-                  {{ $t('ROUTE') }}
-                </th>
-                <th
-                  v-for="seatClass in seatClasses"
-                  :key="`oki-kisen-desktop-seat-header-${seatClass.key}`"
-                  class="border border-gray-300 dark:border-gray-600 px-4 py-3 text-center dark:text-gray-100"
-                >
-                  {{ $t(seatClass.nameKey) }}
-                </th>
-              </tr>
-            </thead>
-            <tbody>
-              <tr
-                v-for="group in okiKisenRouteGroups"
-                :key="`oki-kisen-desktop-seat-${group.id}`"
-                class="hover:bg-gray-50 dark:hover:bg-gray-700/50"
-              >
-                <td class="border border-gray-300 dark:border-gray-600 px-4 py-3 font-medium dark:text-gray-100">
-                  {{ translateLabel(group.labelKey) }}
-                </td>
-                <td
-                  v-for="seatClass in seatClasses"
-                  :key="`oki-kisen-desktop-seat-${group.id}-${seatClass.key}`"
-                  class="border border-gray-300 dark:border-gray-600 px-4 py-3 text-right font-mono dark:text-gray-100"
-                >
-                  {{ getSeatClassFare(group.id, seatClass.key) }}
-                </td>
-              </tr>
-            </tbody>
-          </table>
         </div>
         
         <!-- Seat class fares -->
@@ -568,7 +474,6 @@ const passengerCategoryMap = passengerCategories.reduce<Record<PassengerCategory
 
 const okiKisenPassengerActiveCategory = ref<PassengerCategoryId>('adult')
 const rainbowJetPassengerActiveCategory = ref<PassengerCategoryId>('adult')
-const okiKisenDesktopActiveSection = ref<'passenger' | 'seatClass'>('passenger')
 
 const okiKisenRouteGroups = [
   {
@@ -612,11 +517,6 @@ const okiKisenRouteGroups = [
     labelKey: 'KURI_BEPPU',
     routeIds: ['kuri-beppu', 'beppu-kuri']
   }
-] as const
-
-const okiKisenDesktopTabs = [
-  { id: 'passenger', labelKey: 'PASSENGER_CATEGORY' },
-  { id: 'seatClass', labelKey: 'SEAT_CLASS_FARE' }
 ] as const
 
 const rainbowJetRouteGroups = [
@@ -784,14 +684,11 @@ const normalizePassengerFares = (source: any): Record<PassengerCategoryId, numbe
   }
 
   const fares = source.fares ?? source
-  const disabled = fares.disabled ?? source.disabled ?? {}
 
   const adult = pickNumber(fares.adult ?? source.adult)
-  const child = pickNumber(fares.child ?? source.child) ?? calculateDiscountedFare(adult)
-  const disabledAdult = pickNumber(disabled.adult ?? source.disabledAdult) ?? calculateDiscountedFare(adult)
-  const disabledChild =
-    pickNumber(disabled.child ?? source.disabledChild) ??
-    calculateDiscountedFare(disabledAdult ?? child)
+  const child = calculateDiscountedFare(adult)
+  const disabledAdult = calculateDiscountedFare(adult)
+  const disabledChild = calculateDiscountedFare(disabledAdult ?? child)
 
   return {
     adult,
