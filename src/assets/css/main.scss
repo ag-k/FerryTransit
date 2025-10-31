@@ -46,6 +46,29 @@ body {
   background: #555;
 }
 
+// Enhanced scrollbar hiding for Chrome
+.scrollbar-hide::-webkit-scrollbar {
+  display: none !important;
+  width: 0px !important;
+  height: 0px !important;
+  background: transparent !important;
+}
+
+.scrollbar-hide::-webkit-scrollbar-track {
+  display: none !important;
+  background: transparent !important;
+}
+
+.scrollbar-hide::-webkit-scrollbar-thumb {
+  display: none !important;
+  background: transparent !important;
+}
+
+.scrollbar-hide::-webkit-scrollbar-corner {
+  display: none !important;
+  background: transparent !important;
+}
+
 // Safe area for iOS devices
 .safe-area-bottom {
   padding-bottom: env(safe-area-inset-bottom);

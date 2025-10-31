@@ -42,6 +42,8 @@ declare global {
   var useAuthStore: typeof vi.fn
   var useAdminFirestore: typeof vi.fn
   var useNews: typeof vi.fn
+  var useFareDisplay: typeof vi.fn
+  var useFareStore: typeof vi.fn
 }
 
 // グローバル関数の定義
@@ -136,6 +138,21 @@ global.useNews = vi.fn(() => ({
   getNewsById: vi.fn(),
   getCategoryLabel: vi.fn((category: string) => category),
   formatDate: vi.fn((date: string) => new Date(date).toLocaleDateString('ja-JP'))
+}))
+global.useFareDisplay = vi.fn(() => ({
+  formatCurrency: vi.fn((amount: number) => `¥${amount}`),
+  getVehicleSizeName: vi.fn((size: string) => size),
+  getFareTypeName: vi.fn((type: string) => type),
+  getRouteFare: vi.fn(() => Promise.resolve(undefined)),
+  getAllFares: vi.fn(() => Promise.resolve([]))
+}))
+global.useFareStore = vi.fn(() => ({
+  fares: ref([]),
+  isLoading: ref(false),
+  error: ref(null),
+  loadFareMaster: vi.fn(() => Promise.resolve()),
+  getFareByRoute: vi.fn(),
+  getRoutesByVesselType: vi.fn(() => [])
 }))
 
 // localStorageのモック
