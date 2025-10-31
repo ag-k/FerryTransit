@@ -1,0 +1,93 @@
+#!/usr/bin/env node
+
+/**
+ * Firebase Emulator Setup Script
+ * Registers a super admin account when emulators are running
+ */
+
+import { spawn } from 'child_process'
+import { setTimeout } from 'timers/promises'
+
+const projectRoot = process.cwd()
+
+console.log('🚀 Starting Firebase emulator setup...\n')
+
+// Start Firebase emulators in background
+console.log('📡 Starting Firebase emulators...')
+const emulatorProcess = spawn('firebase', ['emulators:start'], {
+  stdio: ['pipe', 'pipe', 'pipe'],
+  cwd: projectRoot,
+  shell: true
+})
+
+// Wait for emulators to be ready
+console.log('⏳ Waiting for emulators to start...')
+await setTimeout(8000)
+
+// Register super admin
+console.log('👤 Registering super admin for development...')
+try {
+  const { execSync } = await import('child_process')
+  execSync('node src/scripts/setup-admin.js admin@ferry-dev.local Admin123! super', { 
+    stdio: 'inherit',
+    cwd: projectRoot,
+    env: {
+      ...process.env,
+      GOOGLE_APPLICATION_CREDENTIALS: '', // Use emulator mode
+      FIREBASE_AUTH_EMULATOR_HOST: 'localhost:9099',
+      FIRESTORE_EMULATOR_HOST: 'localhost:8082'
+    }
+  })
+  console.log('✅ Super admin registered successfully')
+} catch (error) {
+  console.log('⚠️  Could not register super admin. You can run it manually with:')
+  console.log('   node src/scripts/setup-admin.js admin@ferry-dev.local Admin123! super')
+}
+
+// Import timetable data
+console.log('📅 Importing timetable data...')
+try {
+  const { execSync } = await import('child_process')
+  execSync('node scripts/import-timetable-admin.mjs', { 
+    stdio: 'inherit',
+    cwd: projectRoot,
+    env: {
+      ...process.env,
+      FIREBASE_AUTH_EMULATOR_HOST: 'localhost:9099',
+      FIRESTORE_EMULATOR_HOST: 'localhost:8082'
+    }
+  })
+  console.log('✅ Timetable data imported successfully')
+} catch (error) {
+  console.log('⚠️  Could not import timetable data. You can run it manually with:')
+  console.log('   node scripts/import-timetable-admin.mjs')
+}
+
+console.log('\n🎉 Firebase emulators are running with super admin configured!')
+console.log('\n🔑 Super admin credentials:')
+console.log('   Email: admin@ferry-dev.local')
+console.log('   Password: Admin123!')
+console.log('   Role: Super Admin')
+console.log('\n🌐 Firebase Emulator UI: http://localhost:4000')
+console.log('📱 Development server: http://localhost:3030 (run npm run dev in another terminal)')
+
+// Keep the process running and forward emulator output
+emulatorProcess.stdout.on('data', (data) => {
+  process.stdout.write(data)
+})
+
+emulatorProcess.stderr.on('data', (data) => {
+  process.stderr.write(data)
+})
+
+emulatorProcess.on('close', (code) => {
+  console.log(`Emulator process exited with code ${code}`)
+  process.exit(code)
+})
+
+// Handle graceful shutdown
+process.on('SIGINT', () => {
+  console.log('\n🛑 Shututting down emulators...')
+  emulatorProcess.kill('SIGINT')
+  process.exit(0)
+})

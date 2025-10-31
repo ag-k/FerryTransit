@@ -19,7 +19,7 @@
     "indexes": "firestore.indexes.json"
   },
   "storage": [{
-    "target": "main",
+    "target": "oki-ferryguide",
     "rules": "src/storage.rules"
   }],
   "emulators": {
