@@ -86,5 +86,30 @@ export default {
   theme: {
     extend: {}
   },
-  plugins: []
+  plugins: [
+    function({ addUtilities }) {
+      addUtilities({
+        '.scrollbar-hide': {
+          '-ms-overflow-style': 'none',
+          'scrollbar-width': 'none',
+          '&::-webkit-scrollbar': {
+            display: 'none',
+            width: '0px',
+            height: '0px',
+            background: 'transparent'
+          },
+          '&::-webkit-scrollbar-track': {
+            background: 'transparent'
+          },
+          '&::-webkit-scrollbar-thumb': {
+            background: 'transparent',
+            display: 'none'
+          },
+          '&::-webkit-scrollbar-corner': {
+            background: 'transparent'
+          }
+        }
+      })
+    }
+  ]
 }
