@@ -321,8 +321,8 @@
     "dataManagement": "Data Management",
     "clearCache": "Clear cache",
     "clearCacheDesc": "Remove saved offline data",
-    "exportFavorites": "Export favorites",
-    "exportFavoritesDesc": "Save favorite data as JSON file",
+    "clearCacheConfirmTitle": "Clear Cache",
+    "clearCacheConfirmMessage": "This will remove all cached data including timetables, status information, and fare data. The app will need to download fresh data when you use it next. Do you want to continue?",
     "clearAllData": "Clear all data",
     "clearAllDataDesc": "Delete all favorites, history, and cache",
     "clearDataConfirmTitle": "Clear all data",
@@ -436,11 +436,7 @@
     "settings": {
       "title": "Map Settings",
       "enableMap": "Show Map",
-      "enableMapDesc": "Display map in timetable and transit search",
-      "showRoutes": "Show Routes",
-      "showRoutesDesc": "Display route lines on the map",
-      "autoCenter": "Auto Center",
-      "autoCenterDesc": "Automatically center selected ports or routes"
+      "enableMapDesc": "Display map in timetable and transit search"
     }
   },
   "port": {
