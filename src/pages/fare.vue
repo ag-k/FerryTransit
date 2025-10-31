@@ -152,10 +152,7 @@
                   v-for="seatClass in seatClasses"
                   :key="`seat-class-header-${seatClass.key}`"
                   scope="col"
-                  :class="[
-                    'border border-gray-300 dark:border-gray-600 px-4 py-3 text-center dark:text-gray-100',
-                    okiKisenActiveSeatClass === seatClass.key ? 'bg-blue-50 dark:bg-blue-900/20 font-semibold' : ''
-                  ]"
+                  class="border border-gray-300 dark:border-gray-600 px-4 py-3 text-center dark:text-gray-100"
                 >
                   {{ $t(seatClass.nameKey) }}
                 </th>
@@ -176,10 +173,7 @@
                 <td
                   v-for="seatClass in seatClasses"
                   :key="`seat-class-cell-${group.id}-${seatClass.key}`"
-                  :class="[
-                    'border border-gray-300 dark:border-gray-600 px-4 py-3 text-center font-mono dark:text-gray-100',
-                    okiKisenActiveSeatClass === seatClass.key ? 'bg-blue-50 dark:bg-blue-900/10 font-semibold' : ''
-                  ]"
+                  class="border border-gray-300 dark:border-gray-600 px-4 py-3 text-center font-mono dark:text-gray-100"
                 >
                   {{ getSeatClassFareForCategory(group.id, seatClass.key, okiKisenPassengerActiveCategory) }}
                 </td>
@@ -190,16 +184,80 @@
 
         <!-- Vehicle fares -->
         <h4 class="text-lg font-medium mb-3 dark:text-white">{{ $t('VEHICLE_FARE') }}</h4>
-        <div class="overflow-x-auto">
+        <div class="md:hidden mb-8">
+          <nav class="flex flex-wrap gap-2 mb-3" aria-label="Vehicle routes" role="tablist">
+            <button
+              v-for="group in okiKisenRouteGroups"
+              :key="`vehicle-route-tab-${group.id}`"
+              :class="[
+                okiKisenVehicleActiveRoute === group.id
+                  ? 'bg-blue-50 text-blue-700 border border-blue-500 dark:bg-blue-900/40 dark:text-blue-200 dark:border-blue-700'
+                  : 'bg-white text-gray-700 dark:bg-gray-800 dark:text-gray-200 border border-gray-300 dark:border-gray-600',
+                'px-3 py-1.5 rounded-full text-sm font-medium transition-colors'
+              ]"
+              type="button"
+              role="tab"
+              :aria-selected="okiKisenVehicleActiveRoute === group.id"
+              @click="okiKisenVehicleActiveRoute = group.id"
+            >
+              {{ translateLabel(group.labelKey) }}
+            </button>
+          </nav>
+          <div class="overflow-x-auto">
+            <table class="w-full text-base sm:text-sm border-collapse">
+              <thead>
+                <tr class="bg-gray-100 dark:bg-gray-800">
+                  <th class="border border-gray-300 dark:border-gray-600 px-4 py-3 text-left dark:text-gray-100">
+                    {{ $t('VEHICLE_SIZE') }}
+                  </th>
+                  <th class="border border-gray-300 dark:border-gray-600 px-4 py-3 text-right dark:text-gray-100">
+                    {{ translateLabel(activeVehicleRoute?.labelKey) }}
+                  </th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr v-for="size in vehicleSizeList" :key="`vehicle-mobile-${size.key}`" class="hover:bg-gray-50 dark:hover:bg-gray-700/50">
+                  <td class="border border-gray-300 dark:border-gray-600 px-4 py-3 font-medium dark:text-gray-100">
+                    {{ size.label }}
+                  </td>
+                  <td class="border border-gray-300 dark:border-gray-600 px-4 py-3 text-right font-mono dark:text-gray-100">
+                    {{ getVehicleFare(okiKisenVehicleActiveRoute, size.key) }}
+                  </td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+        <div class="hidden md:block overflow-x-auto">
           <table class="w-full text-base sm:text-sm border-collapse">
             <thead>
               <tr class="bg-gray-100 dark:bg-gray-800">
                 <th class="border border-gray-300 dark:border-gray-600 px-4 py-3 text-left dark:text-gray-100"></th>
-                <th class="border border-gray-300 dark:border-gray-600 px-4 py-3 text-center dark:text-gray-100">{{ $t('HONDO_OKI') }}</th>
-                <th class="border border-gray-300 dark:border-gray-600 px-4 py-3 text-center dark:text-gray-100">{{ $t('DOZEN_DOGO') }}</th>
-                <th class="border border-gray-300 dark:border-gray-600 px-4 py-3 text-center dark:text-gray-100">{{ $t('BEPPU_HISHIURA') }}<br>({{ $t('DOZEN') }})</th>
-                <th class="border border-gray-300 dark:border-gray-600 px-4 py-3 text-center dark:text-gray-100">{{ $t('HISHIURA_KURI') }}<br>({{ $t('DOZEN') }})</th>
-                <th class="border border-gray-300 dark:border-gray-600 px-4 py-3 text-center dark:text-gray-100">{{ $t('KURI_BEPPU') }}<br>({{ $t('DOZEN') }})</th>
+                <th
+                  class="border border-gray-300 dark:border-gray-600 px-4 py-3 text-center dark:text-gray-100"
+                >
+                  {{ $t('HONDO_OKI') }}
+                </th>
+                <th
+                  class="border border-gray-300 dark:border-gray-600 px-4 py-3 text-center dark:text-gray-100"
+                >
+                  {{ $t('DOZEN_DOGO') }}
+                </th>
+                <th
+                  class="border border-gray-300 dark:border-gray-600 px-4 py-3 text-center dark:text-gray-100"
+                >
+                  {{ $t('BEPPU_HISHIURA') }}<br>({{ $t('DOZEN') }})
+                </th>
+                <th
+                  class="border border-gray-300 dark:border-gray-600 px-4 py-3 text-center dark:text-gray-100"
+                >
+                  {{ $t('HISHIURA_KURI') }}<br>({{ $t('DOZEN') }})
+                </th>
+                <th
+                  class="border border-gray-300 dark:border-gray-600 px-4 py-3 text-center dark:text-gray-100"
+                >
+                  {{ $t('KURI_BEPPU') }}<br>({{ $t('DOZEN') }})
+                </th>
               </tr>
             </thead>
             <tbody>
@@ -207,19 +265,29 @@
                 <td class="border border-gray-300 dark:border-gray-600 px-4 py-3 font-medium dark:text-gray-100">
                   {{ size.label }}
                 </td>
-                <td class="border border-gray-300 dark:border-gray-600 px-4 py-3 text-center font-mono dark:text-gray-100">
+                <td
+                  class="border border-gray-300 dark:border-gray-600 px-4 py-3 text-center font-mono dark:text-gray-100"
+                >
                   {{ getVehicleFare('hondo-oki', size.key) }}
                 </td>
-                <td class="border border-gray-300 dark:border-gray-600 px-4 py-3 text-center font-mono dark:text-gray-100">
+                <td
+                  class="border border-gray-300 dark:border-gray-600 px-4 py-3 text-center font-mono dark:text-gray-100"
+                >
                   {{ getVehicleFare('dozen-dogo', size.key) }}
                 </td>
-                <td class="border border-gray-300 dark:border-gray-600 px-4 py-3 text-center font-mono dark:text-gray-100">
+                <td
+                  class="border border-gray-300 dark:border-gray-600 px-4 py-3 text-center font-mono dark:text-gray-100"
+                >
                   {{ getVehicleFare('beppu-hishiura', size.key) }}
                 </td>
-                <td class="border border-gray-300 dark:border-gray-600 px-4 py-3 text-center font-mono dark:text-gray-100">
+                <td
+                  class="border border-gray-300 dark:border-gray-600 px-4 py-3 text-center font-mono dark:text-gray-100"
+                >
                   {{ getVehicleFare('hishiura-kuri', size.key) }}
                 </td>
-                <td class="border border-gray-300 dark:border-gray-600 px-4 py-3 text-center font-mono dark:text-gray-100">
+                <td
+                  class="border border-gray-300 dark:border-gray-600 px-4 py-3 text-center font-mono dark:text-gray-100"
+                >
                   {{ getVehicleFare('kuri-beppu', size.key) }}
                 </td>
               </tr>
@@ -562,6 +630,14 @@ const okiKisenRouteGroups = [
     routeIds: ['kuri-beppu', 'beppu-kuri']
   }
 ] as const
+
+type RouteGroupId = typeof okiKisenRouteGroups[number]['id']
+
+const okiKisenVehicleActiveRoute = ref<RouteGroupId>(okiKisenRouteGroups[0].id)
+
+const activeVehicleRoute = computed(() =>
+  okiKisenRouteGroups.find(group => group.id === okiKisenVehicleActiveRoute.value) ?? okiKisenRouteGroups[0]
+)
 
 const rainbowJetRouteGroups = [
   { id: 'hondo-oki', labelKey: 'HONDO_OKI' },
