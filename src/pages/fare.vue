@@ -182,6 +182,9 @@ v-if="okiKisenPassengerActiveCategory === 'disabledAdult' || okiKisenPassengerAc
         </div>
         <!-- Vehicle fares -->
         <h4 class="text-2xl font-bold mt-12 mb-4 text-gray-900 dark:text-white border-b border-gray-200 dark:border-gray-700 pb-2">{{ $t('VEHICLE_FARE') }}</h4>
+        <div class="mb-6 p-3 bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 rounded-lg">
+          <p class="text-sm text-blue-800 dark:text-blue-200">{{ $t('VEHICLE_DRIVER_TICKET_INCLUDED') }}</p>
+        </div>
         <div class="md:hidden mb-8">
           <nav class="flex flex-wrap gap-2 mb-3" aria-label="Vehicle routes" role="tablist">
             <button
@@ -276,6 +279,49 @@ v-for="size in vehicleSizeList" :key="`vehicle-mobile-${size.key}`"
         </div>
         <div class="mt-2 text-sm text-gray-600 dark:text-gray-400">
           <p>{{ $t('VEHICLE_LENGTH_NOTE') }}</p>
+        </div>
+        
+        <!-- Vehicle fare notes -->
+        <div class="mt-6 border border-gray-200 dark:border-gray-700 rounded-lg overflow-hidden">
+          <!-- Desktop: always visible title -->
+          <div class="hidden md:block p-4 bg-gray-50 dark:bg-gray-800/50">
+            <h5 class="font-semibold text-gray-900 dark:text-gray-100 mb-3">{{ $t('VEHICLE_OPERATION_NOTES_TITLE') }}</h5>
+          </div>
+          
+          <!-- Mobile accordion header -->
+          <button 
+            @click="toggleVehicleNotes" 
+            class="md:hidden w-full p-4 bg-gray-50 dark:bg-gray-800/50 text-left flex items-center justify-between hover:bg-gray-100 dark:hover:bg-gray-700/50 transition-colors">
+            <h5 class="font-semibold text-gray-900 dark:text-gray-100">{{ $t('VEHICLE_OPERATION_NOTES_TITLE') }}</h5>
+            <svg 
+              class="w-5 h-5 text-gray-500 dark:text-gray-400 transition-transform duration-200"
+              :class="{ 'rotate-180': showVehicleNotes }"
+              fill="none" 
+              stroke="currentColor" 
+              viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path>
+            </svg>
+          </button>
+          
+          <!-- Content - Desktop always visible, Mobile collapsible -->
+          <div 
+            class="p-4 bg-gray-50 dark:bg-gray-800/50 border-t border-gray-200 dark:border-gray-700"
+            :class="{ 'hidden md:block': !showVehicleNotes, 'block': showVehicleNotes }">
+            <div class="text-sm text-gray-700 dark:text-gray-300 space-y-2">
+              <ul class="list-disc list-inside space-y-2">
+                <li>{{ $t('VEHICLE_NOTE_CONNECTED_VEHICLES') }}</li>
+                <li>{{ $t('VEHICLE_NOTE_WIDTH_SURCHARGE') }}</li>
+                <li>{{ $t('VEHICLE_NOTE_CATERPILLAR_VEHICLES') }}</li>
+                <li>{{ $t('VEHICLE_NOTE_SPECIAL_LOADING') }}</li>
+                <li>{{ $t('VEHICLE_NOTE_SPECIAL_FEES') }}</li>
+                <li>{{ $t('VEHICLE_NOTE_ROUND_TRIP_DISCOUNT') }}</li>
+                <li>{{ $t('VEHICLE_NOTE_LIMITATIONS') }}</li>
+                <li>{{ $t('VEHICLE_NOTE_SPECIAL_VEHICLES') }}</li>
+                <li>{{ $t('VEHICLE_NOTE_LOADING_PROCEDURE') }}</li>
+                <li>{{ $t('VEHICLE_NOTE_ROUNDING') }}</li>
+              </ul>
+            </div>
+          </div>
         </div>
         <div class="mt-4 text-center">
           <a
@@ -592,6 +638,7 @@ const discounts = ref<any>({})
 const innerIslandFare = ref<any>(null)
 const innerIslandVehicleFare = ref<any>(null)
 const rainbowJetSpecialFares = ref<any>(null)
+const showVehicleNotes = ref(false)
 
 // Seat class definitions
 const seatClasses = [
@@ -1070,6 +1117,11 @@ const groupFaresByShipType = (fares: any[]) => {
     naikoSen,
     rainbowJet
   }
+}
+
+// Toggle vehicle notes accordion
+const toggleVehicleNotes = () => {
+  showVehicleNotes.value = !showVehicleNotes.value
 }
 
 // Load fare data
