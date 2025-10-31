@@ -1,9 +1,9 @@
 import { initializeApp } from 'firebase/app'
-import { getFirestore } from 'firebase/firestore'
-import { getAuth, signInWithEmailAndPassword, signOut } from 'firebase/auth'
-import { getStorage } from 'firebase/storage'
+import { getFirestore, connectFirestoreEmulator } from 'firebase/firestore'
+import { getAuth, signInWithEmailAndPassword, signOut, connectAuthEmulator } from 'firebase/auth'
+import { getStorage, connectStorageEmulator } from 'firebase/storage'
 import { getAnalytics } from 'firebase/analytics'
-import { getFunctions } from 'firebase/functions'
+import { getFunctions, connectFunctionsEmulator } from 'firebase/functions'
 
 let db: ReturnType<typeof getFirestore>
 
@@ -28,6 +28,32 @@ export default defineNuxtPlugin(() => {
   const auth = getAuth(app)
   const storage = getStorage(app)
   const functions = getFunctions(app, 'asia-northeast1') // Tokyo region
+  
+  // Connect to emulators in development mode
+  if (process.dev && config.public.firebase.useEmulators) {
+    try {
+      const host = config.public.firebase.emulatorHost
+      const ports = config.public.firebase.ports
+      
+      // Connect to Firestore emulator
+      connectFirestoreEmulator(db, host, ports.firestore)
+      console.log(`🔥 Connected to Firestore emulator on ${host}:${ports.firestore}`)
+      
+      // Connect to Auth emulator
+      connectAuthEmulator(auth, `http://${host}:${ports.auth}`)
+      console.log(`🔥 Connected to Auth emulator on ${host}:${ports.auth}`)
+      
+      // Connect to Storage emulator
+      connectStorageEmulator(storage, host, ports.storage)
+      console.log(`🔥 Connected to Storage emulator on ${host}:${ports.storage}`)
+      
+      // Connect to Functions emulator
+      connectFunctionsEmulator(functions, host, ports.functions)
+      console.log(`🔥 Connected to Functions emulator on ${host}:${ports.functions}`)
+    } catch (error) {
+      console.warn('⚠️ Firebase emulator connection failed:', error)
+    }
+  }
   
   // Initialize Analytics only in browser
   let analytics = null
