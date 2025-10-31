@@ -7,6 +7,13 @@ import { createLogger } from '~/utils/logger'
 export default defineNuxtPlugin(() => {
   const logger = createLogger('CapacitorPlugin')
   if (Capacitor.isNativePlatform()) {
+    // プラットフォームクラスをbodyに追加
+    if (Capacitor.getPlatform() === 'android') {
+      document.body.classList.add('platform-android')
+    } else if (Capacitor.getPlatform() === 'ios') {
+      document.body.classList.add('platform-ios')
+    }
+    
     // ステータスバーの設定
     StatusBar.setStyle({ style: 'LIGHT' }).catch(error => {
       logger.error('Failed to set status bar style', error)
@@ -14,6 +21,20 @@ export default defineNuxtPlugin(() => {
     StatusBar.setBackgroundColor({ color: '#3B82F6' }).catch(error => {
       logger.error('Failed to set status bar background color', error)
     })
+    
+    // Androidのナビゲーションバーを設定
+    if (Capacitor.getPlatform() === 'android') {
+      // ナビゲーションバーの色を設定
+      try {
+        // @ts-ignore - Android specific API
+        if (window.AndroidInterface) {
+          // @ts-ignore
+          window.AndroidInterface.setNavigationBarColor('#FFFFFF')
+        }
+      } catch (error) {
+        logger.info('Android navigation bar color setting not available')
+      }
+    }
 
     // スプラッシュスクリーンを3秒後に非表示
     setTimeout(() => {
