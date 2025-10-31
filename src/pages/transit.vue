@@ -16,8 +16,7 @@
           <div class="md:col-span-5">
             <div class="flex items-start gap-2">
               <div class="flex-1">
-                <PortSelector
-v-model="departure" :label="$t('_FROM')" :placeholder="$t('DEPARTURE')"
+                <PortSelector v-model="departure" :label="$t('_FROM')" :placeholder="$t('DEPARTURE')"
                   :disabled-ports="[arrival]" />
               </div>
               <FavoriteButton v-if="departure" :type="'port'" :port="departure" class="mt-8" />
@@ -25,22 +24,17 @@ v-model="departure" :label="$t('_FROM')" :placeholder="$t('DEPARTURE')"
           </div>
 
           <div class="md:col-span-2 flex items-center justify-center md:items-end mb-4">
-            <button
-type="button"
+            <button type="button"
               class="p-3 md:px-4 md:py-2 text-base border border-blue-600 dark:border-blue-400 text-blue-600 dark:text-blue-200 rounded-md hover:bg-blue-50 dark:hover:bg-blue-900/20 transition-colors flex-shrink-0 touch-manipulation"
               title="出発地と到着地を入れ替え" aria-label="Reverse route" @click="reverseRoute">
-              <svg
-class="md:hidden" xmlns="http://www.w3.org/2000/svg" width="20" height="20" fill="currentColor"
+              <svg class="md:hidden" xmlns="http://www.w3.org/2000/svg" width="20" height="20" fill="currentColor"
                 viewBox="0 0 16 16" aria-hidden="true">
-                <path
-fill-rule="evenodd"
+                <path fill-rule="evenodd"
                   d="M11.5 15a.5.5 0 0 0 .5-.5V2.707l3.146 3.147a.5.5 0 0 0 .708-.708l-4-4a.5.5 0 0 0-.708 0l-4 4a.5.5 0 1 0 .708.708L11 2.707V14.5a.5.5 0 0 0 .5.5zm-7-14a.5.5 0 0 1 .5.5v11.793l3.146-3.147a.5.5 0 0 1 .708.708l-4 4a.5.5 0 0 1-.708 0l-4-4a.5.5 0 0 1 .708-.708L4 13.293V1.5a.5.5 0 0 1 .5-.5z" />
               </svg>
-              <svg
-class="hidden md:inline" xmlns="http://www.w3.org/2000/svg" width="20" height="20"
+              <svg class="hidden md:inline" xmlns="http://www.w3.org/2000/svg" width="20" height="20"
                 fill="currentColor" viewBox="0 0 16 16" aria-hidden="true">
-                <path
-fill-rule="evenodd"
+                <path fill-rule="evenodd"
                   d="M1 11.5a.5.5 0 0 0 .5.5h11.793l-3.147 3.146a.5.5 0 0 0 .708.708l4-4a.5.5 0 0 0 0-.708l-4-4a.5.5 0 0 0-.708.708L13.293 11H1.5a.5.5 0 0 0-.5.5zm14-7a.5.5 0 0 1-.5.5H2.707l3.147 3.146a.5.5 0 1 1-.708.708l-4-4a.5.5 0 0 1 0-.708l4-4a.5.5 0 1 1 .708.708L2.707 4H14.5a.5.5 0 0 1 .5.5z" />
               </svg>
             </button>
@@ -49,8 +43,7 @@ fill-rule="evenodd"
           <div class="md:col-span-5">
             <div class="flex items-start gap-2">
               <div class="flex-1">
-                <PortSelector
-v-model="arrival" :label="$t('_TO')" :placeholder="$t('ARRIVAL')"
+                <PortSelector v-model="arrival" :label="$t('_TO')" :placeholder="$t('ARRIVAL')"
                   :disabled-ports="[departure]" />
               </div>
               <FavoriteButton v-if="arrival" :type="'port'" :port="arrival" class="mt-8" />
@@ -70,15 +63,13 @@ v-model="arrival" :label="$t('_TO')" :placeholder="$t('ARRIVAL')"
             <label :for="timeInputId" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">{{
               $t('TIME') }}</label>
             <div class="flex">
-              <select
-v-model="isArrivalMode"
+              <select v-model="isArrivalMode"
                 class="px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-l-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:text-white"
                 style="min-width: 140px">
                 <option :value="false">{{ $t('DEPARTURE_AFTER') }}</option>
                 <option :value="true">{{ $t('ARRIVE_BY') }}</option>
               </select>
-              <input
-:id="timeInputId" v-model="time" type="time"
+              <input :id="timeInputId" v-model="time" type="time"
                 class="flex-1 px-3 py-2 border border-l-0 border-gray-300 dark:border-gray-600 rounded-r-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:text-white">
             </div>
           </div>
@@ -86,18 +77,14 @@ v-model="isArrivalMode"
 
         <!-- Search Button -->
         <div>
-          <button
-type="button"
+          <button type="button"
             class="px-6 py-2 bg-blue-600 text-white rounded hover:bg-blue-700 dark:bg-blue-500 dark:hover:bg-blue-600 active:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 dark:focus:ring-offset-gray-800 transform active:scale-95 transition-all duration-150 disabled:bg-gray-400 dark:disabled:bg-gray-600 disabled:cursor-not-allowed disabled:transform-none flex items-center shadow-sm hover:shadow-md"
             :disabled="!canSearch || isSearching" @click="handleSearch">
-            <span
-v-if="isSearching"
+            <span v-if="isSearching"
               class="inline-block animate-spin rounded-full h-4 w-4 border-b-2 border-white mr-2"></span>
-            <svg
-v-else xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-2" fill="none" viewBox="0 0 24 24"
+            <svg v-else xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-2" fill="none" viewBox="0 0 24 24"
               stroke="currentColor">
-              <path
-stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                 d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
             </svg>
             {{ $t('SEARCH') }}
@@ -117,8 +104,7 @@ stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
             {{ $t('SORT_ORDER') }}
           </span>
           <div class="flex flex-wrap gap-2" role="tablist" :aria-label="$t('SORT_ORDER')">
-            <button
-v-for="option in sortOptions" :key="option.value" type="button" role="tab"
+            <button v-for="option in sortOptions" :key="option.value" type="button" role="tab"
               :aria-selected="sortOption === option.value"
               class="px-3 py-2 text-sm font-medium rounded-md border transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 flex items-center justify-center"
               :class="sortOption === option.value
@@ -148,16 +134,13 @@ v-for="option in sortOptions" :key="option.value" type="button" role="tab"
               <button
                 class="text-white hover:text-yellow-300 focus:outline-none focus:ring-2 focus:ring-yellow-300 rounded p-1"
                 :title="$t('SHOW_ON_MAP')" @click="showRouteMap(route)">
-                <svg
-xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24"
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24"
                   stroke="currentColor">
-                  <path
-stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                     d="M9 20l-5.447-2.724A1 1 0 013 16.382V5.618a1 1 0 011.447-.894L9 7m0 13l6-3m-6 3V7m6 10l4.553 2.276A1 1 0 0021 18.382V7.618a1 1 0 00-.553-.894L15 4m0 13V4m0 0L9 7" />
                 </svg>
               </button>
-              <FavoriteButton
-:type="'route'" :route="{ departure: departure, arrival: arrival }"
+              <FavoriteButton :type="'route'" :route="{ departure: departure, arrival: arrival }"
                 class="text-white hover:text-yellow-300" />
             </div>
           </div>
@@ -175,8 +158,7 @@ stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                 <tr class="bg-[#D8ECF3] dark:bg-blue-900/40">
                   <td class="py-2 pl-4 pr-4 text-left dark:text-gray-100">{{ formatTime(route.departureTime) }}</td>
                   <td class="py-2 pl-4">
-                    <a
-href="#" class="text-blue-600 dark:text-blue-200 hover:underline"
+                    <a href="#" class="text-blue-600 dark:text-blue-200 hover:underline"
                       @click.prevent="showPortInfo(route.segments[0].departure)">
                       {{ getPortDisplayName(route.segments[0].departure) }}
                     </a>
@@ -194,12 +176,10 @@ href="#" class="text-blue-600 dark:text-blue-200 hover:underline"
                     <td class="py-2 pl-4" :style="getShipBorderStyle(segment.ship)">
                       <div class="flex items-center">
                         <span v-if="segment.status === 2" class="mr-2 text-red-600 dark:text-red-300">×</span>
-                        <span
-v-else-if="segment.status === 3"
+                        <span v-else-if="segment.status === 3"
                           class="mr-2 text-yellow-600 dark:text-yellow-300">⚠</span>
                         <span v-else-if="segment.status === 4" class="mr-2 text-green-600 dark:text-green-300">+</span>
-                        <a
-href="#" class="text-blue-600 dark:text-blue-200 hover:underline"
+                        <a href="#" class="text-blue-600 dark:text-blue-200 hover:underline"
                           @click.prevent="showShipInfo(segment.ship)">
                           {{ $t(segment.ship) }}
                         </a>
@@ -214,14 +194,13 @@ href="#" class="text-blue-600 dark:text-blue-200 hover:underline"
                       {{ formatTransferPortTimes(segment.arrivalTime, route.segments[segIndex + 1].departureTime) }}
                     </td>
                     <td class="py-2 pl-4">
-                      <a
-href="#" class="text-blue-600 dark:text-blue-200 hover:underline"
+                      <a href="#" class="text-blue-600 dark:text-blue-200 hover:underline"
                         @click.prevent="showPortInfo(segment.arrival)">
                         {{ getPortDisplayName(segment.arrival) }}
                       </a>
                       <span class="text-xs text-gray-600 dark:text-gray-400 ml-2">
                         ({{ $t('TRANSFER') }}) {{ formatTransferWaitTime(segment.arrivalTime, route.segments[segIndex +
-                        1].departureTime) }}
+                          1].departureTime) }}
                       </span>
                     </td>
                     <td class="py-2"></td>
@@ -232,8 +211,7 @@ href="#" class="text-blue-600 dark:text-blue-200 hover:underline"
                 <tr class="bg-[#D8ECF3] dark:bg-blue-900/40">
                   <td class="py-2 pl-4 pr-4 text-left dark:text-gray-100">{{ formatTime(route.arrivalTime) }}</td>
                   <td class="py-2 pl-4">
-                    <a
-href="#" class="text-blue-600 dark:text-blue-200 hover:underline"
+                    <a href="#" class="text-blue-600 dark:text-blue-200 hover:underline"
                       @click.prevent="showPortInfo(route.segments[route.segments.length - 1].arrival)">
                       {{ getPortDisplayName(route.segments[route.segments.length - 1].arrival) }}
                     </a>
@@ -259,8 +237,7 @@ href="#" class="text-blue-600 dark:text-blue-200 hover:underline"
     </div>
 
     <!-- No Results -->
-    <div
-v-else-if="hasSearched && !isSearching"
+    <div v-else-if="hasSearched && !isSearching"
       class="bg-blue-100 dark:bg-blue-900/30 border border-blue-200 dark:border-gray-700 text-blue-800 dark:text-blue-300 px-4 py-3 rounded">
       {{ $t('NO_ROUTES_FOUND') }}
     </div>
@@ -320,8 +297,7 @@ v-else-if="hasSearched && !isSearching"
     <CommonShipModal v-model:visible="showShipModal" :title="$t(modalShipId)" type="ship" :ship-id="modalShipId" />
 
     <!-- Port Info Modal -->
-    <CommonShipModal
-v-model:visible="showPortModal" :title="getPortDisplayName(modalPortId)" type="port"
+    <CommonShipModal v-model:visible="showPortModal" :title="getPortDisplayName(modalPortId)" type="port"
       :content="modalPortContent" />
 
     <!-- Route Map Modal -->
@@ -468,41 +444,8 @@ const sortedResults = computed(() => {
     return routes.sort(compareByTransfer)
   }
 
-  const durations = routes.map(getDurationMinutes)
-  const fares = routes.map(route => route.totalFare)
-  const transfers = routes.map(route => route.transferCount)
-
-  const minDuration = Math.min(...durations)
-  const maxDuration = Math.max(...durations)
-  const minFare = Math.min(...fares)
-  const maxFare = Math.max(...fares)
-  const minTransfer = Math.min(...transfers)
-  const maxTransfer = Math.max(...transfers)
-
-  const normalize = (value: number, min: number, max: number): number => {
-    if (max === min) {
-      return 0
-    }
-    return (value - min) / (max - min)
-  }
-
-  const getRecommendedScore = (route: TransitRoute): number => {
-    const durationScore = normalize(getDurationMinutes(route), minDuration, maxDuration)
-    const fareScore = normalize(route.totalFare, minFare, maxFare)
-    const transferScore = normalize(route.transferCount, minTransfer, maxTransfer)
-    return durationScore * 0.4 + fareScore * 0.35 + transferScore * 0.25
-  }
-
-  return routes
-    .map(route => ({ route, score: getRecommendedScore(route) }))
-    .sort((a, b) => {
-      const diff = a.score - b.score
-      if (diff !== 0) {
-        return diff
-      }
-      return compareByDepartureTime(a.route, b.route)
-    })
-    .map(item => item.route)
+  // おすすめ(バランス)は時系列順（出発時刻順）に変更
+  return routes.sort(compareByDepartureTime)
 })
 
 const displayedResults = computed(() => {
@@ -616,7 +559,7 @@ async function handleSearch() {
         const [hours, minutes] = time.value.split(':')
         searchDateTime.setHours(parseInt(hours), parseInt(minutes), 0, 0)
       }
-      
+
       historyStore.addSearchHistory({
         type: 'route',
         departure: departure.value,
