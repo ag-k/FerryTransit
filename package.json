@@ -4,9 +4,9 @@
   "type": "module",
   "scripts": {
     "build": "nuxt build",
-    "dev": "nuxt dev",
+    "dev": "npm run dev:setup && cp .env.local .env && nuxt dev",
     "dev:setup": "node scripts/dev-setup.mjs",
-    "dev:full": "concurrently \"npm run firebase:emulators\" \"npm run dev\"",
+    "dev:full": "concurrently \"npm run firebase:emulators:with-admin\" \"npm run dev\"",
     "generate": "nuxt generate",
     "preview": "nuxt preview",
     "postinstall": "nuxt prepare",
@@ -19,6 +19,7 @@
     "lint": "eslint .",
     "typecheck": "nuxt typecheck",
     "firebase:emulators": "firebase emulators:start",
+    "firebase:emulators:with-admin": "node scripts/start-emulators-with-admin.mjs",
     "firebase:deploy": "firebase deploy",
     "firebase:deploy:hosting": "firebase deploy --only hosting",
     "firebase:deploy:functions": "firebase deploy --only functions",
@@ -27,7 +28,15 @@
     "fetch:routes:online": "node scripts/fetch-online-routes.mjs",
     "cap:build": "npm run generate && npx cap sync",
     "cap:ios": "npm run cap:build && npx cap open ios",
-    "cap:android": "npm run cap:build && npx cap open android"
+    "cap:android": "npm run cap:build && npx cap open android",
+    "build-prod": "run-s build-prod:firebase build-prod:build",
+    "build-prod:firebase": "firebase use prod",
+    "build-prod:build": "NODE_ENV=production nuxt build",
+    "build-dev": "run-s build-dev:firebase build-dev:build",
+    "build-dev:firebase": "firebase use dev",
+    "build-dev:build": "NODE_ENV=development nuxt build",
+    "deploy-prod": "run-s build-prod deploy",
+    "deploy-dev": "run-s build-dev deploy"
   },
   "dependencies": {
     "@capacitor/android": "^7.4.2",
