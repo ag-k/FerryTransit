@@ -162,6 +162,7 @@
   "TRANSFER_WAIT_TIME": "待ち時間: {duration}",
   "TRANSFER_WAIT_TIME_SHORT": "待ち時間なし",
   "FOOTER_TEXT": "© 2024 隠岐デジタルラボ",
+  "REFRESH": "更新",
   "FARE_TABLE": "運賃表",
   "LOADING": "読み込み中",
   "PASSENGER_FARE": "旅客運賃",
