@@ -321,8 +321,8 @@
     "dataManagement": "データ管理",
     "clearCache": "キャッシュをクリア",
     "clearCacheDesc": "保存されたオフラインデータを削除します",
-    "exportFavorites": "お気に入りをエクスポート",
-    "exportFavoritesDesc": "お気に入りデータをJSONファイルで保存",
+    "clearCacheConfirmTitle": "キャッシュをクリア",
+    "clearCacheConfirmMessage": "時刻表、運航状況、料金データなど、すべてのキャッシュデータが削除されます。次回使用時に最新データを再度ダウンロードする必要があります。続行しますか？",
     "clearAllData": "すべてのデータを削除",
     "clearAllDataDesc": "お気に入り、履歴、キャッシュをすべて削除",
     "clearDataConfirmTitle": "すべてのデータを削除",
@@ -436,11 +436,7 @@
     "settings": {
       "title": "地図設定",
       "enableMap": "地図を表示",
-      "enableMapDesc": "時刻表や乗換案内で地図を表示します",
-      "showRoutes": "航路を表示",
-      "showRoutesDesc": "地図上に航路線を表示します",
-      "autoCenter": "自動中央表示",
-      "autoCenterDesc": "選択した港や航路を自動的に中央に表示します"
+      "enableMapDesc": "時刻表や乗換案内で地図を表示します"
     }
   },
   "port": {
