@@ -153,9 +153,11 @@ v-for="seatClass in seatClasses" :key="`seat-class-cell-${group.id}-${seatClass.
             </tbody>
           </table>
         </div>
-        <div class="mt-6 text-sm text-gray-600 dark:text-gray-400">
+        <div class="mt-4 text-sm text-gray-600 dark:text-gray-400">
           <p>{{ $t('CHILD_AGE_NOTE') }}</p>
           <p>{{ $t('INFANT_AGE_NOTE') }}</p>
+        </div>
+        <div class="mt-6 text-sm text-gray-600 dark:text-gray-400">
           <p>{{ $t('NON_2ND_CLASS_RESERVATION_REQUIRED') }}</p>
           <p>{{ $t('INTERMEDIATE_STOP_INVALIDATES_TICKET') }}</p>
         </div>
