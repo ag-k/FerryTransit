@@ -2,7 +2,7 @@ import * as admin from 'firebase-admin'
 import { getTimetable, getTimetableFromStorage } from './timetable'
 
 // Initialize Firebase Admin
-const app = admin.initializeApp()
+admin.initializeApp()
 
 // Connect to emulators in development
 if (process.env.FUNCTIONS_EMULATOR === 'true') {
