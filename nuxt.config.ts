@@ -17,6 +17,19 @@ export default defineNuxtConfig({
     componentIslands: false,
     treeshakeClientOnly: false
   },
+
+  // Capacitor（アプリ版）の場合は管理画面を除外
+  nitro: {
+    prerender: {
+      routes: ['/404.html'],
+      crawlLinks: false,
+      // アプリ版では管理画面を除外
+      exclude: process.env.CAPACITOR_BUILD === 'true' ? [
+        '/admin',
+        '/admin/**'
+      ] : []
+    }
+  },
   
   vite: {
     optimizeDeps: {
@@ -109,13 +122,6 @@ export default defineNuxtConfig({
   typescript: {
     strict: true,
     shim: false
-  },
-
-  nitro: {
-    prerender: {
-      routes: ['/404.html'],
-      crawlLinks: false
-    }
   },
 
   app: {
