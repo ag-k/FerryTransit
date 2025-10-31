@@ -147,6 +147,28 @@
           <p>{{ $t('CHILD_AGE_NOTE') }}</p>
           <p>{{ $t('INFANT_AGE_NOTE') }}</p>
         </div>
+        
+        <!-- Disability discount information -->
+        <div v-if="okiKisenPassengerActiveCategory === 'disabledAdult' || okiKisenPassengerActiveCategory === 'disabledChild'" 
+          class="mt-6 p-4 bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 rounded-lg">
+          <h5 class="font-semibold text-blue-900 dark:text-blue-100 mb-3">{{ $t('DISABILITY_DISCOUNT_TITLE') }}</h5>
+          <div class="text-sm text-blue-800 dark:text-blue-200 space-y-3">
+            <div>
+              <p class="font-medium mb-2">{{ $t('DISABILITY_DISCOUNT_CONDITIONS_TITLE') }}</p>
+              <p class="mb-2">{{ $t('DISABILITY_CERTIFICATE_REQUIRED') }}</p>
+              <p class="mb-2">{{ $t('DISABILITY_CAREGIVER_CONDITION') }}</p>
+              <p>{{ $t('DISABILITY_VISUAL_IMPAIRED_CAREGIVER') }}</p>
+            </div>
+            <div>
+              <p class="font-medium mb-2">{{ $t('DISABILITY_DISCOUNT_CONTENT_TITLE') }}</p>
+              <p class="mb-2">{{ $t('DISABILITY_TYPE_1_DISCOUNT') }}</p>
+              <p class="mb-2">{{ $t('DISABILITY_VISUAL_IMPAIRED_INTERPRETER_DISCOUNT') }}</p>
+              <p class="mb-2">{{ $t('DISABILITY_TYPE_2_DISCOUNT') }}</p>
+              <p class="mb-2">{{ $t('DISABILITY_BOARDING_PROCEDURE_NOTE') }}</p>
+              <p>{{ $t('DISABILITY_FARE_ROUNDING_NOTE') }}</p>
+            </div>
+          </div>
+        </div>
         <!-- Vehicle fares -->
         <h4 class="text-2xl font-bold mt-12 mb-4 text-gray-900 dark:text-white border-b border-gray-200 dark:border-gray-700 pb-2">{{ $t('VEHICLE_FARE') }}</h4>
         <div class="md:hidden mb-8">
@@ -450,6 +472,49 @@
           <p>{{ $t('CHILD_AGE_NOTE') }}</p>
           <p>{{ $t('INFANT_AGE_NOTE') }}</p>
           <p class="text-red-600 dark:text-red-400">{{ $t('RAINBOW_JET_NO_VEHICLE') }}</p>
+        </div>
+        
+        <!-- Disability discount information -->
+        <div v-if="rainbowJetPassengerActiveCategory === 'disabledAdult' || rainbowJetPassengerActiveCategory === 'disabledChild'" 
+          class="md:hidden mt-6 p-4 bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 rounded-lg">
+          <h5 class="font-semibold text-blue-900 dark:text-blue-100 mb-3">{{ $t('DISABILITY_DISCOUNT_TITLE') }}</h5>
+          <div class="text-sm text-blue-800 dark:text-blue-200 space-y-3">
+            <div>
+              <p class="font-medium mb-2">{{ $t('DISABILITY_DISCOUNT_CONDITIONS_TITLE') }}</p>
+              <p class="mb-2">{{ $t('DISABILITY_CERTIFICATE_REQUIRED') }}</p>
+              <p class="mb-2">{{ $t('DISABILITY_CAREGIVER_CONDITION') }}</p>
+              <p>{{ $t('DISABILITY_VISUAL_IMPAIRED_CAREGIVER') }}</p>
+            </div>
+            <div>
+              <p class="font-medium mb-2">{{ $t('DISABILITY_DISCOUNT_CONTENT_TITLE') }}</p>
+              <p class="mb-2">{{ $t('DISABILITY_TYPE_1_DISCOUNT') }}</p>
+              <p class="mb-2">{{ $t('DISABILITY_VISUAL_IMPAIRED_INTERPRETER_DISCOUNT') }}</p>
+              <p class="mb-2">{{ $t('DISABILITY_TYPE_2_DISCOUNT') }}</p>
+              <p class="mb-2">{{ $t('DISABILITY_BOARDING_PROCEDURE_NOTE') }}</p>
+              <p>{{ $t('DISABILITY_FARE_ROUNDING_NOTE') }}</p>
+            </div>
+          </div>
+        </div>
+        
+        <!-- Disability discount information (desktop always visible) -->
+        <div class="hidden md:block mt-6 p-4 bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 rounded-lg">
+          <h5 class="font-semibold text-blue-900 dark:text-blue-100 mb-3">{{ $t('DISABILITY_DISCOUNT_TITLE') }}</h5>
+          <div class="text-sm text-blue-800 dark:text-blue-200 space-y-3">
+            <div>
+              <p class="font-medium mb-2">{{ $t('DISABILITY_DISCOUNT_CONDITIONS_TITLE') }}</p>
+              <p class="mb-2">{{ $t('DISABILITY_CERTIFICATE_REQUIRED') }}</p>
+              <p class="mb-2">{{ $t('DISABILITY_CAREGIVER_CONDITION') }}</p>
+              <p>{{ $t('DISABILITY_VISUAL_IMPAIRED_CAREGIVER') }}</p>
+            </div>
+            <div>
+              <p class="font-medium mb-2">{{ $t('DISABILITY_DISCOUNT_CONTENT_TITLE') }}</p>
+              <p class="mb-2">{{ $t('DISABILITY_TYPE_1_DISCOUNT') }}</p>
+              <p class="mb-2">{{ $t('DISABILITY_VISUAL_IMPAIRED_INTERPRETER_DISCOUNT') }}</p>
+              <p class="mb-2">{{ $t('DISABILITY_TYPE_2_DISCOUNT') }}</p>
+              <p class="mb-2">{{ $t('DISABILITY_BOARDING_PROCEDURE_NOTE') }}</p>
+              <p>{{ $t('DISABILITY_FARE_ROUNDING_NOTE') }}</p>
+            </div>
+          </div>
         </div>
         <div class="mt-4 text-center">
           <a href="https://www.oki-kisen.co.jp/fare/" target="_blank" rel="noopener noreferrer"
