@@ -346,9 +346,85 @@ describe('useRouteSearch', () => {
         false
       )
       
-      // Check ferry fare (uses fallback value since fareStore is not mocked)
+      // Check ferry fare (uses fare master data)
       const ferryRoute = results.find(r => r.segments[0].ship === 'FERRY_OKI')
-      expect(ferryRoute?.totalFare).toBe(3510)
+      expect(ferryRoute?.totalFare).toBe(3520)
+    })
+
+    it('should calculate correct fares for local ferry (ISOKAZE)', async () => {
+      const store = useFerryStore()
+      store.timetableData = mockTrips
+      
+      const { searchRoutes } = useRouteSearch()
+      
+      const results = await searchRoutes(
+        'BEPPU',
+        'HISHIURA',
+        new Date('2024-01-15'),
+        '08:00',
+        false
+      )
+      
+      // Check local ferry fare (should use inner island fare for BEPPU-HISHIURA)
+      const localFerryRoute = results.find(r => r.segments[0].ship === 'ISOKAZE')
+      expect(localFerryRoute?.totalFare).toBe(410) // From fare master data
+    })
+
+    it('should calculate correct fares for local ferry (FERRY_DOZEN)', async () => {
+      const store = useFerryStore()
+      store.timetableData = mockTrips
+      
+      const { searchRoutes } = useRouteSearch()
+      
+      const results = await searchRoutes(
+        'BEPPU',
+        'KURI',
+        new Date('2024-01-15'),
+        '08:00',
+        false
+      )
+      
+      // Check local ferry fare (should use inner island fare for BEPPU-KURI)
+      const localFerryRoute = results.find(r => r.segments[0].ship === 'FERRY_DOZEN')
+      expect(localFerryRoute?.totalFare).toBe(780) // From fare master data
+    })
+
+    it('should calculate correct fares for regular ferry (FERRY_SHIRASHIMA)', async () => {
+      const store = useFerryStore()
+      store.timetableData = mockTrips
+      
+      const { searchRoutes } = useRouteSearch()
+      
+      const results = await searchRoutes(
+        'SAIGO',
+        'HISHIURA',
+        new Date('2024-01-15'),
+        '08:00',
+        false
+      )
+      
+      // Check regular ferry fare (should use fare master data for SAIGO-HISHIURA)
+      const ferryRoute = results.find(r => r.segments[0].ship === 'FERRY_SHIRASHIMA')
+      expect(ferryRoute?.totalFare).toBe(1540) // From fare master data
+    })
+
+    it('should calculate correct fares for regular ferry (FERRY_KUNIGA)', async () => {
+      const store = useFerryStore()
+      store.timetableData = mockTrips
+      
+      const { searchRoutes } = useRouteSearch()
+      
+      const results = await searchRoutes(
+        'HONDO_SHICHIRUI',
+        'KURI',
+        new Date('2024-01-15'),
+        '08:00',
+        false
+      )
+      
+      // Check regular ferry fare (should use fare master data for HONDO-KURI)
+      const ferryRoute = results.find(r => r.segments[0].ship === 'FERRY_KUNIGA')
+      expect(ferryRoute?.totalFare).toBe(3520) // From fare master data
     })
   })
 })

@@ -403,7 +403,12 @@ const sortedResults = computed(() => {
   }
 
   const compareByDepartureTime = (a: TransitRoute, b: TransitRoute): number => {
-    return a.departureTime.getTime() - b.departureTime.getTime()
+    const departureDiff = a.departureTime.getTime() - b.departureTime.getTime()
+    if (departureDiff !== 0) {
+      return departureDiff
+    }
+    // 出発時刻が同じ場合は到着時刻の早い順
+    return a.arrivalTime.getTime() - b.arrivalTime.getTime()
   }
 
   const compareByDuration = (a: TransitRoute, b: TransitRoute): number => {
@@ -423,7 +428,8 @@ const sortedResults = computed(() => {
     if (diff !== 0) {
       return diff
     }
-    return compareByDuration(a, b)
+    // 同じ金額の場合は時系列順（出発時刻順）
+    return compareByDepartureTime(a, b)
   }
 
   const compareByTransfer = (a: TransitRoute, b: TransitRoute): number => {
@@ -431,7 +437,8 @@ const sortedResults = computed(() => {
     if (diff !== 0) {
       return diff
     }
-    return compareByDuration(a, b)
+    // 同じ乗り換え回数の場合は時系列順（出発時刻順）
+    return compareByDepartureTime(a, b)
   }
 
   if (sortOption.value === 'fast') {

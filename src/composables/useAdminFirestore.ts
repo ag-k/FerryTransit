@@ -253,6 +253,11 @@ export const useAdminFirestore = () => {
         })
       })
     } catch (error) {
+      // Filter out BloomFilter warnings as they're not actionable errors
+      if (error instanceof Error && error.message.includes('BloomFilterError')) {
+        logger.warn('BloomFilter warning during batch operation (non-critical)', error)
+        return // Don't throw for BloomFilter warnings
+      }
       logger.error('Batch operation failed', error)
       throw error
     }

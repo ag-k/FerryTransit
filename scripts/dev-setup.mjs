@@ -2,7 +2,7 @@
 
 /**
  * Development Environment Setup Script
- * Sets up Firebase emulators for local development
+ * Sets up Firebase emulators for local development and registers a super admin
  */
 
 import { execSync } from 'child_process'
@@ -41,10 +41,33 @@ try {
   console.log('⚠️  Firebase emulators may not be properly installed')
 }
 
+// Register super admin for development
+console.log('\n👤 Registering super admin for development...')
+try {
+  execSync('node src/scripts/setup-admin.js admin@ferry-dev.local Admin123! super', { 
+    stdio: 'inherit',
+    cwd: projectRoot,
+    env: {
+      ...process.env,
+      GOOGLE_APPLICATION_CREDENTIALS: '', // Use emulator mode
+      FIREBASE_AUTH_EMULATOR_HOST: 'localhost:9099',
+      FIRESTORE_EMULATOR_HOST: 'localhost:8082'
+    }
+  })
+  console.log('✅ Super admin registered successfully')
+} catch (error) {
+  console.log('⚠️  Could not register super admin automatically. You can run it manually with:')
+  console.log('   node src/scripts/setup-admin.js admin@ferry-dev.local Admin123! super')
+}
+
 console.log('\n🎉 Development environment setup complete!')
 console.log('\n📋 Next steps:')
 console.log('1. Start Firebase emulators: npm run firebase:emulators')
 console.log('2. Start Nuxt development server: npm run dev')
 console.log('3. Open browser to: http://localhost:3030')
 console.log('4. Firebase Emulator UI: http://localhost:4000')
+console.log('\n🔑 Super admin credentials:')
+console.log('   Email: admin@ferry-dev.local')
+console.log('   Password: Admin123!')
+console.log('   Role: Super Admin')
 console.log('\n💡 Tip: Run both commands in separate terminals for best experience')

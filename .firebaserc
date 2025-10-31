@@ -1,6 +1,8 @@
 {
   "projects": {
-    "default": "oki-ferryguide"
+    "default": "oki-ferryguide",
+    "prod": "oki-ferryguide",
+    "dev": "oki-ferryguide-dev"
   },
   "targets": {
     "oki-ferryguide": {

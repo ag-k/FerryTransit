@@ -453,8 +453,16 @@ export const useRouteSearch = () => {
     const arrivalCandidates = toFarePortVariants(arrival);
 
     let route: FareRoute | undefined;
-    const vesselType: VesselType =
-      ship === "RAINBOWJET" ? "highspeed" : "ferry";
+    let vesselType: VesselType;
+    
+    // Determine vessel type based on ship name
+    if (ship === "RAINBOWJET") {
+      vesselType = "highspeed";
+    } else if (ship === "ISOKAZE" || ship === "ISOKAZE_EX" || ship === "FERRY_DOZEN") {
+      vesselType = "local";
+    } else {
+      vesselType = "ferry";
+    }
 
     for (const dep of departureCandidates) {
       for (const arr of arrivalCandidates) {
@@ -486,12 +494,18 @@ export const useRouteSearch = () => {
     }
 
     // Fallback for routes not found in fare master
-    logger.warn(`Fare not found for route: ${departure} -> ${arrival}`);
+    logger.warn(`Fare not found for route: ${departure} -> ${arrival} (${ship})`);
     
     // Use default values based on ship type
-    const isHighSpeed = ship === "RAINBOWJET";
-    if (isHighSpeed) {
+    if (ship === "RAINBOWJET") {
       return 6680; // Default high-speed ferry fare
+    } else if (ship === "ISOKAZE" || ship === "ISOKAZE_EX" || ship === "FERRY_DOZEN") {
+      // For local ferry, check if it's an inner island route
+      if (fareStore?.isInnerIslandRoute(departure, arrival)) {
+        return 300; // Inner island local ferry fare
+      } else {
+        return 3510; // Default local ferry fare
+      }
     } else {
       return 3510; // Default ferry fare
     }

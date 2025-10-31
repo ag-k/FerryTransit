@@ -63,6 +63,25 @@ try {
   console.log('   node scripts/import-timetable-admin.mjs')
 }
 
+// Import fare data
+console.log('💰 Importing fare data...')
+try {
+  const { execSync } = await import('child_process')
+  execSync('node scripts/import-fare-data.mjs', { 
+    stdio: 'inherit',
+    cwd: projectRoot,
+    env: {
+      ...process.env,
+      FIREBASE_AUTH_EMULATOR_HOST: 'localhost:9099',
+      FIRESTORE_EMULATOR_HOST: 'localhost:8082'
+    }
+  })
+  console.log('✅ Fare data imported successfully')
+} catch (error) {
+  console.log('⚠️  Could not import fare data. You can run it manually with:')
+  console.log('   node scripts/import-fare-data.mjs')
+}
+
 console.log('\n🎉 Firebase emulators are running with super admin configured!')
 console.log('\n🔑 Super admin credentials:')
 console.log('   Email: admin@ferry-dev.local')

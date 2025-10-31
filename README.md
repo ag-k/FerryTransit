@@ -117,10 +117,38 @@ npm run dev
 
 ### 開発環境の起動
 
+#### 通常の開発（Firebaseエミュレーター使用）
+
 ```bash
 cd src
 npm run dev
 ```
+
+このコマンドは以下を実行します：
+1. Firebaseエミュレーターのセットアップ
+2. スーパー管理者アカウントの自動登録
+3. Nuxt開発サーバーの起動
+
+#### 完全な開発環境（エミュレーター＋開発サーバー）
+
+```bash
+cd src
+npm run dev:full
+```
+
+このコマンドはFirebaseエミュレーターと開発サーバーを同時に起動します。
+
+#### 管理者アカウント情報
+
+開発環境では以下のスーパー管理者アカウントが自動的に登録されます：
+
+- **メールアドレス**: admin@ferry-dev.local
+- **パスワード**: Admin123!
+- **権限**: スーパー管理者
+
+Firebase Emulator UI: http://localhost:4000
+
+詳細な設定手順は [Firebase Emulator Admin Setup](docs/development/FIREBASE_EMULATOR_ADMIN_SETUP.md) を参照してください。
 
 ### ビルド
 
