@@ -53,14 +53,14 @@
 
       <div class="flex flex-col sm:flex-row items-end sm:items-center space-y-2 sm:space-y-0 sm:space-x-2 ml-4">
         <button
-          @click="$emit('search')"
           class="px-3 py-1 bg-blue-600 dark:bg-blue-700 text-white rounded-md hover:bg-blue-700 dark:hover:bg-blue-600 transition-colors duration-200 text-sm"
+          @click="$emit('search')"
         >
           {{ $t('history.searchAgain') }}
         </button>
         <button
-          @click="$emit('remove')"
           class="px-3 py-1 bg-gray-100 dark:bg-gray-600 text-gray-700 dark:text-gray-100 rounded-md hover:bg-gray-200 dark:hover:bg-gray-500 transition-colors duration-200 text-sm"
+          @click="$emit('remove')"
         >
           {{ $t('history.delete') }}
         </button>
@@ -70,8 +70,8 @@
 </template>
 
 <script setup lang="ts">
-import { useFerryStore } from '~/stores/ferry'
 import { useI18n } from 'vue-i18n'
+import { useFerryStore } from '~/stores/ferry'
 import type { SearchHistoryItem } from '~/types/history'
 import { createLogger } from '~/utils/logger'
 
@@ -86,11 +86,17 @@ const emit = defineEmits<{
 }>()
 
 const ferryStore = useFerryStore()
-const { locale } = useI18n()
+const { locale, t } = useI18n()
 const logger = createLogger('HistoryItem')
 
 const getPortName = (portId?: string) => {
   if (!portId) return '-'
+  
+  // Handle special case for HONDO (legacy port ID)
+  if (portId === 'HONDO') {
+    return t('HONDO')
+  }
+  
   const port = ferryStore.ports.find(p => p.PORT_ID === portId)
   return port ? (locale.value === 'ja' ? port.PLACE_NAME_JA : port.PLACE_NAME_EN) : portId
 }
