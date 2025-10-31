@@ -242,6 +242,16 @@
         <div class="mt-2 text-sm text-gray-600 dark:text-gray-400">
           <p>{{ $t('VEHICLE_LENGTH_NOTE') }}</p>
         </div>
+        <div class="mt-4 text-center">
+          <a href="https://www.oki-kisen.co.jp/fare/" target="_blank" rel="noopener noreferrer"
+            class="inline-flex items-center px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white text-sm font-medium rounded-lg transition-colors duration-200">
+            {{ $t('FARE_DETAILS') }}
+            <svg class="ml-2 w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14"></path>
+            </svg>
+          </a>
+        </div>
       </div>
 
       <!-- Naiko Sen (Ferry Dozen / Isokaze) -->
@@ -440,6 +450,16 @@
           <p>{{ $t('CHILD_AGE_NOTE') }}</p>
           <p>{{ $t('INFANT_AGE_NOTE') }}</p>
           <p class="text-red-600 dark:text-red-400">{{ $t('RAINBOW_JET_NO_VEHICLE') }}</p>
+        </div>
+        <div class="mt-4 text-center">
+          <a href="https://www.oki-kisen.co.jp/fare/" target="_blank" rel="noopener noreferrer"
+            class="inline-flex items-center px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white text-sm font-medium rounded-lg transition-colors duration-200">
+            {{ $t('FARE_DETAILS') }}
+            <svg class="ml-2 w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14"></path>
+            </svg>
+          </a>
         </div>
       </div>
 
