@@ -107,44 +107,33 @@ export const useOfflineStore = defineStore('offline', () => {
 
     if (!isOffline.value) {
       try {
+        // Cloud Storageからのみ取得（ローカルファイルフォールバックなし）
         const remoteUrl = await getStorageDownloadURL('fare-master.json').catch(() => null)
-        const fallbackUrl = `/data/fare-master.json?ts=${Date.now()}`
-        const requestUrl = remoteUrl ?? fallbackUrl
 
-        const response = await fetch(requestUrl, {
-          cache: 'no-store'
-        })
-
-        if (!response.ok) {
-          logger.warn('Failed to fetch latest fare data', { status: response.status })
-        } else {
-          const data = await response.json() as FareMaster
-          if (data) {
-            saveFareData(data)
-            lastSync.value.fare = Date.now()
-            return data
-          }
-        }
-
-        // Firebase Storage に存在しないケースではローカル fallback
-        if (!remoteUrl) {
-          const fallbackResponse = await fetch(fallbackUrl, {
+        if (remoteUrl) {
+          const response = await fetch(remoteUrl, {
             cache: 'no-store'
           })
-          if (fallbackResponse.ok) {
-            const fallbackData = await fallbackResponse.json() as FareMaster
-            if (fallbackData) {
-              saveFareData(fallbackData)
+
+          if (response.ok) {
+            const data = await response.json() as FareMaster
+            if (data) {
+              saveFareData(data)
               lastSync.value.fare = Date.now()
-              return fallbackData
+              return data
             }
+          } else {
+            logger.warn('Failed to fetch latest fare data from Cloud Storage', { status: response.status })
           }
+        } else {
+          logger.warn('Fare data not found in Cloud Storage. Please publish data from admin panel.')
         }
       } catch (e) {
-        logger.warn('Failed to fetch fare data remotely', e)
+        logger.warn('Failed to fetch fare data from Cloud Storage', e)
       }
     }
 
+    // オフライン時またはCloud Storage取得失敗時はキャッシュを返す
     if (localData) return localData
     return null
   }

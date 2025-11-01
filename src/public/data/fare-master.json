@@ -10,7 +10,11 @@
     "over10m": 3000
   },
   "rainbowJetFares": {
-    "hondo-oki": {
+    "hondo_shichirui-oki": {
+      "adult": 6680,
+      "child": 3340
+    },
+    "hondo_sakaiminato-oki": {
       "adult": 6680,
       "child": 3340
     },
@@ -23,18 +27,18 @@
       "child": 210
     },
     "hishiura-kuri": {
-      "adult": null,
-      "child": null
+      "adult": 780,
+      "child": 390
     },
     "kuri-beppu": {
-      "adult": null,
-      "child": null
+      "adult": 780,
+      "child": 390
     }
   },
   "routes": [
     {
-      "id": "hondo-saigo",
-      "departure": "HONDO",
+      "id": "hondo_shichirui-saigo",
+      "departure": "HONDO_SHICHIRUI",
       "arrival": "SAIGO",
       "fares": {
         "adult": 3520,
@@ -62,9 +66,67 @@
       }
     },
     {
-      "id": "saigo-hondo",
+      "id": "saigo-hondo_shichirui",
       "departure": "SAIGO",
-      "arrival": "HONDO",
+      "arrival": "HONDO_SHICHIRUI",
+      "fares": {
+        "adult": 3520,
+        "child": 1760,
+        "seatClass": {
+          "class2": 3510,
+          "class2Special": 4520,
+          "class1": 6360,
+          "classSpecial": 7930,
+          "specialRoom": 8890
+        },
+        "vehicle": {
+          "under3m": 13750,
+          "under4m": 18260,
+          "under5m": 22870,
+          "under6m": 27390,
+          "under7m": 35530,
+          "under8m": 40700,
+          "under9m": 45760,
+          "under10m": 50820,
+          "under11m": 55870,
+          "under12m": 60940,
+          "over12mPer1m": 5070
+        }
+      }
+    },
+    {
+      "id": "hondo_sakaiminato-saigo",
+      "departure": "HONDO_SAKAIMINATO",
+      "arrival": "SAIGO",
+      "fares": {
+        "adult": 3520,
+        "child": 1760,
+        "seatClass": {
+          "class2": 3510,
+          "class2Special": 4520,
+          "class1": 6360,
+          "classSpecial": 7930,
+          "specialRoom": 8890
+        },
+        "vehicle": {
+          "under3m": 13750,
+          "under4m": 18260,
+          "under5m": 22870,
+          "under6m": 27390,
+          "under7m": 35530,
+          "under8m": 40700,
+          "under9m": 45760,
+          "under10m": 50820,
+          "under11m": 55870,
+          "under12m": 60940,
+          "over12mPer1m": 5070
+        }
+      }
+    },
+    {
+      "id": "saigo-hondo_sakaiminato",
+      "departure": "SAIGO",
+      "arrival": "HONDO_SAKAIMINATO",
       "fares": {
         "adult": 3520,
         "child": 1760,
@@ -381,8 +443,8 @@
       }
     },
     {
-      "id": "hondo-beppu",
-      "departure": "HONDO",
+      "id": "hondo_shichirui-beppu",
+      "departure": "HONDO_SHICHIRUI",
       "arrival": "BEPPU",
       "fares": {
         "adult": 3520,
@@ -410,9 +472,9 @@
       }
     },
     {
-      "id": "beppu-hondo",
+      "id": "beppu-hondo_shichirui",
       "departure": "BEPPU",
-      "arrival": "HONDO",
+      "arrival": "HONDO_SHICHIRUI",
       "fares": {
         "adult": 3520,
         "child": 1760,
@@ -439,8 +501,66 @@
       }
     },
     {
-      "id": "hondo-hishiura",
-      "departure": "HONDO",
+      "id": "hondo_sakaiminato-beppu",
+      "departure": "HONDO_SAKAIMINATO",
+      "arrival": "BEPPU",
+      "fares": {
+        "adult": 3520,
+        "child": 1760,
+        "seatClass": {
+          "class2": 3510,
+          "class2Special": 4520,
+          "class1": 6360,
+          "classSpecial": 7930,
+          "specialRoom": 8890
+        },
+        "vehicle": {
+          "under3m": 13750,
+          "under4m": 18260,
+          "under5m": 22870,
+          "under6m": 27390,
+          "under7m": 35530,
+          "under8m": 40700,
+          "under9m": 45760,
+          "under10m": 50820,
+          "under11m": 55870,
+          "under12m": 60940,
+          "over12mPer1m": 5070
+        }
+      }
+    },
+    {
+      "id": "beppu-hondo_sakaiminato",
+      "departure": "BEPPU",
+      "arrival": "HONDO_SAKAIMINATO",
+      "fares": {
+        "adult": 3520,
+        "child": 1760,
+        "seatClass": {
+          "class2": 3510,
+          "class2Special": 4520,
+          "class1": 6360,
+          "classSpecial": 7930,
+          "specialRoom": 8890
+        },
+        "vehicle": {
+          "under3m": 13750,
+          "under4m": 18260,
+          "under5m": 22870,
+          "under6m": 27390,
+          "under7m": 35530,
+          "under8m": 40700,
+          "under9m": 45760,
+          "under10m": 50820,
+          "under11m": 55870,
+          "under12m": 60940,
+          "over12mPer1m": 5070
+        }
+      }
+    },
+    {
+      "id": "hondo_shichirui-hishiura",
+      "departure": "HONDO_SHICHIRUI",
       "arrival": "HISHIURA",
       "fares": {
         "adult": 3520,
@@ -468,9 +588,9 @@
       }
     },
     {
-      "id": "hishiura-hondo",
+      "id": "hishiura-hondo_shichirui",
       "departure": "HISHIURA",
-      "arrival": "HONDO",
+      "arrival": "HONDO_SHICHIRUI",
       "fares": {
         "adult": 3520,
         "child": 1760,
@@ -497,8 +617,66 @@
       }
     },
     {
-      "id": "hondo-kuri",
-      "departure": "HONDO",
+      "id": "hondo_sakaiminato-hishiura",
+      "departure": "HONDO_SAKAIMINATO",
+      "arrival": "HISHIURA",
+      "fares": {
+        "adult": 3520,
+        "child": 1760,
+        "seatClass": {
+          "class2": 3510,
+          "class2Special": 4520,
+          "class1": 6360,
+          "classSpecial": 7930,
+          "specialRoom": 8890
+        },
+        "vehicle": {
+          "under3m": 13750,
+          "under4m": 18260,
+          "under5m": 22870,
+          "under6m": 27390,
+          "under7m": 35530,
+          "under8m": 40700,
+          "under9m": 45760,
+          "under10m": 50820,
+          "under11m": 55870,
+          "under12m": 60940,
+          "over12mPer1m": 5070
+        }
+      }
+    },
+    {
+      "id": "hishiura-hondo_sakaiminato",
+      "departure": "HISHIURA",
+      "arrival": "HONDO_SAKAIMINATO",
+      "fares": {
+        "adult": 3520,
+        "child": 1760,
+        "seatClass": {
+          "class2": 3510,
+          "class2Special": 4520,
+          "class1": 6360,
+          "classSpecial": 7930,
+          "specialRoom": 8890
+        },
+        "vehicle": {
+          "under3m": 13750,
+          "under4m": 18260,
+          "under5m": 22870,
+          "under6m": 27390,
+          "under7m": 35530,
+          "under8m": 40700,
+          "under9m": 45760,
+          "under10m": 50820,
+          "under11m": 55870,
+          "under12m": 60940,
+          "over12mPer1m": 5070
+        }
+      }
+    },
+    {
+      "id": "hondo_shichirui-kuri",
+      "departure": "HONDO_SHICHIRUI",
       "arrival": "KURI",
       "fares": {
         "adult": 3520,
@@ -526,9 +704,9 @@
       }
     },
     {
-      "id": "kuri-hondo",
+      "id": "kuri-hondo_shichirui",
       "departure": "KURI",
-      "arrival": "HONDO",
+      "arrival": "HONDO_SHICHIRUI",
       "fares": {
         "adult": 3520,
         "child": 1760,
@@ -551,6 +729,122 @@
           "under11m": 55870,
           "under12m": 60940,
           "over12mPer1m": 5070
+        }
+      }
+    },
+    {
+      "id": "hondo_sakaiminato-kuri",
+      "departure": "HONDO_SAKAIMINATO",
+      "arrival": "KURI",
+      "fares": {
+        "adult": 3520,
+        "child": 1760,
+        "seatClass": {
+          "class2": 3510,
+          "class2Special": 4520,
+          "class1": 6360,
+          "classSpecial": 7930,
+          "specialRoom": 8890
+        },
+        "vehicle": {
+          "under3m": 13750,
+          "under4m": 18260,
+          "under5m": 22870,
+          "under6m": 27390,
+          "under7m": 35530,
+          "under8m": 40700,
+          "under9m": 45760,
+          "under10m": 50820,
+          "under11m": 55870,
+          "under12m": 60940,
+          "over12mPer1m": 5070
+        }
+      }
+    },
+    {
+      "id": "kuri-hondo_sakaiminato",
+      "departure": "KURI",
+      "arrival": "HONDO_SAKAIMINATO",
+      "fares": {
+        "adult": 3520,
+        "child": 1760,
+        "seatClass": {
+          "class2": 3510,
+          "class2Special": 4520,
+          "class1": 6360,
+          "classSpecial": 7930,
+          "specialRoom": 8890
+        },
+        "vehicle": {
+          "under3m": 13750,
+          "under4m": 18260,
+          "under5m": 22870,
+          "under6m": 27390,
+          "under7m": 35530,
+          "under8m": 40700,
+          "under9m": 45760,
+          "under10m": 50820,
+          "under11m": 55870,
+          "under12m": 60940,
+          "over12mPer1m": 5070
+        }
+      }
+    },
+    {
+      "id": "saigo-kuri",
+      "departure": "SAIGO",
+      "arrival": "KURI",
+      "fares": {
+        "adult": 780,
+        "child": 390,
+        "seatClass": {
+          "class2": 780,
+          "class2Special": 1040,
+          "class1": 1390,
+          "classSpecial": 1730,
+          "specialRoom": 2040
+        },
+        "vehicle": {
+          "under3m": 1520,
+          "under4m": 2040,
+          "under5m": 2540,
+          "under6m": 3040,
+          "under7m": 3700,
+          "under8m": 4240,
+          "under9m": 4750,
+          "under10m": 5280,
+          "under11m": 5820,
+          "under12m": 6340,
+          "over12mPer1m": 520
+        }
+      }
+    },
+    {
+      "id": "kuri-saigo",
+      "departure": "KURI",
+      "arrival": "SAIGO",
+      "fares": {
+        "adult": 780,
+        "child": 390,
+        "seatClass": {
+          "class2": 780,
+          "class2Special": 1040,
+          "class1": 1390,
+          "classSpecial": 1730,
+          "specialRoom": 2040
+        },
+        "vehicle": {
+          "under3m": 1520,
+          "under4m": 2040,
+          "under5m": 2540,
+          "under6m": 3040,
+          "under7m": 3700,
+          "under8m": 4240,
+          "under9m": 4750,
+          "under10m": 5280,
+          "under11m": 5820,
+          "under12m": 6340,
+          "over12mPer1m": 520
         }
       }
     }
