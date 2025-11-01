@@ -14,6 +14,12 @@
     "test:ui": "vitest --ui",
     "test:coverage": "vitest --coverage",
     "test:unit": "vitest --run",
+    "test:api": "vitest run src/test/unit/api/",
+    "test:api:watch": "vitest src/test/unit/api/",
+    "test:integration": "vitest run src/test/integration/",
+    "test:integration:watch": "vitest src/test/integration/",
+    "test:helpers": "vitest run src/test/unit/api/helpers.test.ts",
+    "test:all": "vitest run src/test/unit/api/ src/test/integration/",
     "test:e2e": "playwright test",
     "test:e2e:ui": "playwright test --ui",
     "lint": "eslint .",
@@ -43,7 +49,6 @@
   "dependencies": {
     "@capacitor/android": "^7.4.2",
     "@capacitor/app": "^7.0.1",
-    "@capacitor/assets": "^3.0.5",
     "@capacitor/core": "^7.4.2",
     "@capacitor/haptics": "^7.0.1",
     "@capacitor/ios": "^7.4.2",
@@ -74,6 +79,7 @@
     "vuedraggable": "^4.1.0"
   },
   "devDependencies": {
+    "@capacitor/assets": "^3.0.5",
     "@capacitor/cli": "^7.4.2",
     "@nuxtjs/eslint-config-typescript": "^12.1.0",
     "@nuxtjs/tailwindcss": "^7.0.0-beta.0",
