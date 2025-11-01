@@ -127,7 +127,8 @@
               </span>
               <span>
                 {{ calculateDuration(route.departureTime, route.arrivalTime) }} /
-                ¥{{ route.totalFare.toLocaleString() }}
+                <span v-if="route.totalFare > 0">¥{{ route.totalFare.toLocaleString() }}</span>
+                <span v-else class="text-yellow-300">{{ $t('FARE_UNAVAILABLE') }}</span>
               </span>
             </h3>
             <div class="flex items-center gap-2">
@@ -185,7 +186,10 @@
                         </a>
                       </div>
                     </td>
-                    <td class="py-2 dark:text-gray-100">¥{{ segment.fare.toLocaleString() }}</td>
+                    <td class="py-2 dark:text-gray-100">
+                    <span v-if="segment.fare > 0">¥{{ segment.fare.toLocaleString() }}</span>
+                    <span v-else class="text-gray-500">{{ $t('FARE_UNAVAILABLE') }}</span>
+                  </td>
                   </tr>
 
                   <!-- Transfer Port (if not last segment) -->
@@ -217,7 +221,8 @@
                     </a>
                   </td>
                   <td class="py-2 font-medium dark:text-gray-100">
-                    {{ $t('TOTAL') }}: ¥{{ route.totalFare.toLocaleString() }}
+                    <span v-if="route.totalFare > 0">{{ $t('TOTAL') }}: ¥{{ route.totalFare.toLocaleString() }}</span>
+                    <span v-else class="text-gray-500">{{ $t('FARE_UNAVAILABLE') }}</span>
                   </td>
                 </tr>
               </tbody>
@@ -271,7 +276,9 @@
               </div>
               <div class="mt-2">
                 <small class="text-gray-500 dark:text-gray-300">
-                  {{ $t('FARE') }}: ¥{{ segment.fare.toLocaleString() }}
+                  {{ $t('FARE') }}: 
+                  <span v-if="segment.fare > 0">¥{{ segment.fare.toLocaleString() }}</span>
+                  <span v-else class="text-gray-500">{{ $t('FARE_UNAVAILABLE') }}</span>
                 </small>
               </div>
             </div>
@@ -286,7 +293,8 @@
             </div>
             <div class="text-right dark:text-gray-300">
               <strong>{{ $t('TOTAL_FARE') }}:</strong>
-              ¥{{ selectedRoute.totalFare.toLocaleString() }}
+              <span v-if="selectedRoute.totalFare > 0">¥{{ selectedRoute.totalFare.toLocaleString() }}</span>
+              <span v-else class="text-gray-500">{{ $t('FARE_UNAVAILABLE') }}</span>
             </div>
           </div>
         </div>

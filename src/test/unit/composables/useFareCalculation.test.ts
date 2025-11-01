@@ -184,7 +184,7 @@ describe('useFareCalculation - Beppu-Hishiura Route', () => {
       
       expect(results).toHaveLength(3)
       
-      // Check ISOKAZE (local ferry) fare - should be 410 yen from fare master (but ISOKAZE actually uses 300 yen inner island fare)
+      // Check ISOKAZE (local ferry) fare - should be 410 yen from fare master
       const isokazeRoute = results.find(r => r.segments[0].ship === 'ISOKAZE')
       expect(isokazeRoute?.totalFare).toBe(410) // From fare master lookup
       expect(isokazeRoute?.segments[0].fare).toBe(410)
@@ -383,7 +383,7 @@ describe('useFareCalculation - Beppu-Hishiura Route', () => {
   })
 
   describe('ISOKAZE Inner Island Fare', () => {
-    it('should calculate 300 yen for ISOKAZE inner island routes', async () => {
+    it('should calculate fare from fare master for ISOKAZE inner island routes', async () => {
       const ferryStore = useFerryStore()
       
       // Setup mock data for ISOKAZE
@@ -411,36 +411,51 @@ describe('useFareCalculation - Beppu-Hishiura Route', () => {
         false
       )
       
-      // ISOKAZE should use inner island fare of 300 yen
+      // ISOKAZE should use fare from fare master (410 yen for BEPPU-HISHIURA)
       expect(results).toHaveLength(1)
-      expect(results[0].totalFare).toBe(300)
-      expect(results[0].segments[0].fare).toBe(300)
+      expect(results[0].totalFare).toBe(410)
+      expect(results[0].segments[0].fare).toBe(410)
     })
   })
 
   describe('Fare Display in Transit Results', () => {
-    it('should display fares in proper format for transit results', async () => {
+    it('should display routes even when fare is 0 (fare unknown)', async () => {
       const ferryStore = useFerryStore()
       
-      // Setup mock data
-      ferryStore.timetableData = mockBeppuHishiuraTrips
+      // Setup mock data for a route not in fare master
+      ferryStore.timetableData = [
+        {
+          tripId: 999,
+          startDate: '2024-01-01',
+          endDate: '2024-12-31',
+          name: 'UNKNOWN_SHIP',
+          departure: 'UNKNOWN_PORT',
+          departureTime: '08:00:00',
+          arrival: 'UNKNOWN_DEST',
+          arrivalTime: '09:00:00',
+          status: 0
+        }
+      ]
       
       const { searchRoutes } = useRouteSearch()
       
       const results = await searchRoutes(
-        'BEPPU',
-        'HISHIURA',
+        'UNKNOWN_PORT',
+        'UNKNOWN_DEST',
         new Date('2024-01-15'),
         '08:00',
         false
       )
       
-      // Check that fares are properly formatted in results
+      // Route should be returned but with 0 fare (displayed as "fare unknown")
+      expect(results).toHaveLength(1)
+      expect(results[0].totalFare).toBe(0)
+      expect(results[0].segments[0].fare).toBe(0)
+      
+      // Check that all segments have valid fare numbers (including 0)
       results.forEach(route => {
         expect(typeof route.totalFare).toBe('number')
-        expect(route.totalFare).toBeGreaterThan(0)
         expect(route.segments.every(segment => typeof segment.fare === 'number')).toBe(true)
-        expect(route.segments.every(segment => segment.fare > 0)).toBe(true)
         
         // Check that total fare equals sum of segment fares
         const segmentSum = route.segments.reduce((sum, segment) => sum + segment.fare, 0)

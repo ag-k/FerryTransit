@@ -134,14 +134,8 @@
                 <th class="px-4 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider dark:text-gray-400">
                   障がい者（小児）
                 </th>
-                <th class="px-4 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider dark:text-gray-400">
-                  車両（〜3m）
-                </th>
-                <th class="px-4 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider dark:text-gray-400">
-                  車両（〜4m）
-                </th>
-                <th class="px-4 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider dark:text-gray-400">
-                  車両（〜5m）
+                <th v-for="field in VEHICLE_SIZE_FIELDS" :key="field.key" class="px-4 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider dark:text-gray-400">
+                  車両（{{ field.label }}）
                 </th>
               </tr>
             </thead>
@@ -162,14 +156,8 @@
                 <td class="px-4 py-3 text-sm text-center text-gray-900 dark:text-gray-100">
                   {{ formatCurrency(category.disabledChild) }}
                 </td>
-                <td class="px-4 py-3 text-sm text-center text-gray-900 dark:text-gray-100">
-                  {{ formatCurrency(category.vehicle.under3m) }}
-                </td>
-                <td class="px-4 py-3 text-sm text-center text-gray-900 dark:text-gray-100">
-                  {{ formatCurrency(category.vehicle.under4m) }}
-                </td>
-                <td class="px-4 py-3 text-sm text-center text-gray-900 dark:text-gray-100">
-                  {{ formatCurrency(category.vehicle.under5m) }}
+                <td v-for="field in VEHICLE_SIZE_FIELDS" :key="field.key" class="px-4 py-3 text-sm text-center text-gray-900 dark:text-gray-100">
+                  {{ formatCurrency(category.vehicle[field.key]) }}
                 </td>
               </tr>
             </tbody>
@@ -2213,6 +2201,14 @@ const saveFareData = async () => {
             car3m: vehiclePayload.under3m ?? null,
             car4m: vehiclePayload.under4m ?? null,
             car5m: vehiclePayload.under5m ?? null,
+            car6m: vehiclePayload.under6m ?? null,
+            car7m: vehiclePayload.under7m ?? null,
+            car8m: vehiclePayload.under8m ?? null,
+            car9m: vehiclePayload.under9m ?? null,
+            car10m: vehiclePayload.under10m ?? null,
+            car11m: vehiclePayload.under11m ?? null,
+            car12m: vehiclePayload.under12m ?? null,
+            over12mPer1m: vehiclePayload.over12mPer1m ?? null,
             seatClass: seatClassPayload,
             vehicle: vehiclePayload,
             disabled: {
