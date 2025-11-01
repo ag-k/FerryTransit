@@ -9,6 +9,9 @@
       "storage": {
         "main": [
           "oki-ferryguide.firebasestorage.app"
+        ],
+        "oki-ferryguide": [
+          "oki-ferryguide"
         ]
       }
     }

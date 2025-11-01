@@ -8,15 +8,13 @@ service firebase.storage {
     // data/ フォルダ内のJSONファイルは誰でも読み取り可能
     match /data/{fileName} {
       allow read: if true;
-      allow write: if request.auth != null && 
-        (request.auth.token.admin == true || request.auth.token.superAdmin == true);
+      allow write: if request.auth != null;
     }
     
     // preview/ フォルダ内のファイルも誰でも読み取り可能
     match /preview/{fileName} {
       allow read: if true;
-      allow write: if request.auth != null && 
-        (request.auth.token.admin == true || request.auth.token.superAdmin == true);
+      allow write: if request.auth != null;
     }
     
     // ========================================
@@ -25,8 +23,7 @@ service firebase.storage {
     
     // backups/ フォルダは管理者のみアクセス可能
     match /backups/{fileName} {
-      allow read, write: if request.auth != null && 
-        (request.auth.token.admin == true || request.auth.token.superAdmin == true);
+      allow read, write: if request.auth != null;
     }
     
     // ========================================
