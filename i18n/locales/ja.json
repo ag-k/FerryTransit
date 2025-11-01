@@ -21,6 +21,7 @@
   "SEAT_CLASS_FARE": "旅客運賃",
   "TIME": "時刻",
   "FARE": "運賃",
+  "FARE_UNAVAILABLE": "料金不明",
   "DEPARTURE": "出発地",
   "ARRIVAL": "目的地",
   "DEPARTURE_TIME": "出発時刻",

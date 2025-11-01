@@ -156,6 +156,13 @@ export const useRouteSearch = () => {
         const status = getTripStatus(trip);
         if (status === 2) continue; // Skip cancelled trips
 
+        const fare = calculateFare(
+          trip.name,
+          trip.departure,
+          trip.arrival,
+          departureTime
+        );
+
         const segment: TransitSegment = {
           tripId: String(trip.tripId),
           ship: trip.name,
@@ -164,12 +171,7 @@ export const useRouteSearch = () => {
           departureTime,
           arrivalTime,
           status,
-          fare: calculateFare(
-            trip.name,
-            trip.departure,
-            trip.arrival,
-            departureTime
-          ),
+          fare,
         };
 
         routes.push({
@@ -344,6 +346,13 @@ export const useRouteSearch = () => {
         processedRoutes.add(routeKey);
 
         if (shouldNormalizeTrips(firstTrip, secondTrip)) {
+          const fare = calculateFare(
+            firstTrip.name,
+            firstTrip.departure,
+            finalTrip.arrival,
+            firstDepartureTime
+          );
+
           const segment: TransitSegment = {
             tripId: String(firstTrip.tripId),
             ship: firstTrip.name,
@@ -352,12 +361,7 @@ export const useRouteSearch = () => {
             departureTime: firstDepartureTime,
             arrivalTime: secondArrivalTime,
             status: Math.max(firstStatus, chainStatus),
-            fare: calculateFare(
-              firstTrip.name,
-              firstTrip.departure,
-              finalTrip.arrival,
-              firstDepartureTime
-            ),
+            fare,
           };
 
           routes.push({
@@ -368,6 +372,20 @@ export const useRouteSearch = () => {
             transferCount: 0,
           });
         } else {
+          const fare1 = calculateFare(
+            firstTrip.name,
+            firstTrip.departure,
+            firstTrip.arrival,
+            firstDepartureTime
+          );
+
+          const fare2 = calculateFare(
+            secondTrip.name,
+            secondTrip.departure,
+            finalTrip.arrival,
+            secondDepartureTime
+          );
+
           const segment1: TransitSegment = {
             tripId: String(firstTrip.tripId),
             ship: firstTrip.name,
@@ -376,12 +394,7 @@ export const useRouteSearch = () => {
             departureTime: firstDepartureTime,
             arrivalTime: firstArrivalTime,
             status: firstStatus,
-            fare: calculateFare(
-              firstTrip.name,
-              firstTrip.departure,
-              firstTrip.arrival,
-              firstDepartureTime
-            ),
+            fare: fare1,
           };
 
           const segment2: TransitSegment = {
@@ -395,12 +408,7 @@ export const useRouteSearch = () => {
             departureTime: secondDepartureTime,
             arrivalTime: secondArrivalTime,
             status: chainStatus,
-            fare: calculateFare(
-              secondTrip.name,
-              secondTrip.departure,
-              finalTrip.arrival,
-              secondDepartureTime
-            ),
+            fare: fare2,
           };
 
           routes.push({
@@ -493,22 +501,9 @@ export const useRouteSearch = () => {
       return baseFare;
     }
 
-    // Fallback for routes not found in fare master
+    // Return 0 if fare not found in fare master (no fallback)
     logger.warn(`Fare not found for route: ${departure} -> ${arrival} (${ship})`);
-    
-    // Use default values based on ship type
-    if (ship === "RAINBOWJET") {
-      return 6680; // Default high-speed ferry fare
-    } else if (ship === "ISOKAZE" || ship === "ISOKAZE_EX" || ship === "FERRY_DOZEN") {
-      // For local ferry, check if it's an inner island route
-      if (fareStore?.isInnerIslandRoute(departure, arrival)) {
-        return 300; // Inner island local ferry fare
-      } else {
-        return 3510; // Default local ferry fare
-      }
-    } else {
-      return 3510; // Default ferry fare
-    }
+    return 0;
   };
 
   // Format time for display
