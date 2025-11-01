@@ -1,3 +1,6 @@
+import { readFile } from 'fs/promises'
+import { join } from 'path'
+
 export default defineEventHandler(async (event) => {
   try {
     const body = await readBody(event)
@@ -30,7 +33,9 @@ export default defineEventHandler(async (event) => {
     const searchTime = time || '00:00'
 
     // 料金データを取得
-    const fareResponse = await $fetch('/api/fare')
+    const filePath = join(process.cwd(), 'src', 'public', 'data', 'fare-master.json')
+    const fareData = await readFile(filePath, 'utf-8')
+    const fareResponse = JSON.parse(fareData)
     
     // 時刻表データを取得
     const timetableResponse = await $fetch('/api/timetable')

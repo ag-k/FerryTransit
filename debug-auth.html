@@ -1,0 +1,74 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Debug Firebase Auth</title>
+</head>
+<body>
+    <h1>Firebase Auth Debug</h1>
+    <div id="auth-status"></div>
+    <div id="token-info"></div>
+    
+    <script src="https://www.gstatic.com/firebasejs/9.0.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.0.0/firebase-auth-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.0.0/firebase-storage-compat.js"></script>
+    
+    <script>
+        // Firebase config (emulator mode)
+        const firebaseConfig = {
+            apiKey: "test-api-key",
+            authDomain: "localhost:9099",
+            projectId: "oki-ferryguide",
+            storageBucket: "localhost:9199",
+            appId: "test-app-id"
+        };
+        
+        firebase.initializeApp(firebaseConfig);
+        
+        // Connect to emulators
+        firebase.auth().useEmulator("http://localhost:9099");
+        firebase.storage().useEmulator("localhost", 9199);
+        
+        async function testAuth() {
+            try {
+                // Login with admin credentials
+                const result = await firebase.auth().signInWithEmailAndPassword("admin@ferry-dev.local", "Admin123!");
+                console.log("Login successful:", result.user);
+                
+                // Get ID token with claims
+                const idToken = await result.user.getIdTokenResult();
+                console.log("ID Token Claims:", idToken.claims);
+                
+                // Display info
+                document.getElementById('auth-status').innerHTML = `
+                    <h2>Auth Status: ✅ Logged in</h2>
+                    <p>User: ${result.user.email}</p>
+                    <p>UID: ${result.user.uid}</p>
+                `;
+                
+                document.getElementById('token-info').innerHTML = `
+                    <h2>Token Claims:</h2>
+                    <pre>${JSON.stringify(idToken.claims, null, 2)}</pre>
+                `;
+                
+                // Test Storage access
+                try {
+                    const storageRef = firebase.storage().ref().child('data/test.json');
+                    const testBlob = new Blob(['{"test": "data"}'], { type: 'application/json' });
+                    await storageRef.put(testBlob);
+                    console.log("Storage write successful!");
+                    document.getElementById('token-info').innerHTML += `<p>✅ Storage access successful!</p>`;
+                } catch (storageError) {
+                    console.error("Storage access failed:", storageError);
+                    document.getElementById('token-info').innerHTML += `<p>❌ Storage access failed: ${storageError.message}</p>`;
+                }
+                
+            } catch (error) {
+                console.error("Auth failed:", error);
+                document.getElementById('auth-status').innerHTML = `<h2>Auth Status: ❌ ${error.message}</h2>`;
+            }
+        }
+        
+        testAuth();
+    </script>
+</body>
+</html>

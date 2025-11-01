@@ -228,7 +228,9 @@ export const useFareStore = defineStore('fare', () => {
 
     const versions = fareMaster.value?.versions ?? []
     versions.forEach((version) => {
-      grouped[version.vesselType].push(version)
+      if (version.vesselType && grouped[version.vesselType]) {
+        grouped[version.vesselType].push(version)
+      }
     })
 
     vesselTypes.forEach((type) => {

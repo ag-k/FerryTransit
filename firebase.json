@@ -18,10 +18,9 @@
     "rules": "src/firestore.rules",
     "indexes": "firestore.indexes.json"
   },
-  "storage": [{
-    "target": "oki-ferryguide",
+  "storage": {
     "rules": "src/storage.rules"
-  }],
+  },
   "emulators": {
     "auth": {
       "port": 9099
