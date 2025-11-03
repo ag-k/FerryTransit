@@ -63,7 +63,24 @@ export default defineEventHandler(async (event) => {
         route.departure === departureUpper && route.arrival === arrivalUpper
       )
       
-      const fare = fareRoute?.fares?.adult || 0
+      let fare = fareRoute?.fares?.adult || 0
+      
+      // For high-speed ferry (Rainbow Jet), use the actual fare
+      if (trip.name === "RAINBOWJET") {
+        fare = 6680;
+      }
+      
+      // For local vessels (ISOKAZE, FERRY_DOZEN), use inner island fare if available
+      const isLocalVessel = trip.name === "ISOKAZE" || trip.name === "ISOKAZE_EX" || trip.name === "FERRY_DOZEN";
+      if (isLocalVessel && fareResponse.innerIslandFare) {
+        // Check if this is an inner island route
+        const innerIslandPorts = ["HISHIURA", "KURI", "SAIGO"];
+        const isInnerIslandRoute = innerIslandPorts.includes(departureUpper) && innerIslandPorts.includes(arrivalUpper);
+        
+        if (isInnerIslandRoute) {
+          fare = fareResponse.innerIslandFare.adult;
+        }
+      }
       
       // 時刻を組み立て
       const departureDateTime = new Date(`${date} ${trip.departure_time}`)
