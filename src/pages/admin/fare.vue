@@ -1551,8 +1551,9 @@ const loadFaresForType = async (vesselType: VesselType) => {
       }
     })
 
+    console.log('Final highspeedFares:', highspeedFares.value)
     highspeedFares.value = enriched
-    editingHighspeedFares.value = enriched.map(fare => ({ ...fare }))
+    editingHighspeedFares.value = highspeedFares.value.map(fare => ({ ...fare }))
   }
 }
 
@@ -1832,6 +1833,11 @@ const loadFareData = async () => {
     ])
     versionsInitialized.value = true
 
+    // 高速船料金が空の場合はデフォルトを設定
+    if (highspeedFares.value.length === 0) {
+      initializeDefaults()
+    }
+
     // 割引設定
     await loadDiscounts()
   } catch (error) {
@@ -2010,6 +2016,7 @@ const setDefaultData = () => {
 
   highspeedFares.value = defaultHighspeedRouteIds.map((routeId, index) => {
     const label = getHighspeedRouteLabel(routeId) ?? routeId
+    console.log('Creating highspeed fare:', { routeId, label })
     const adult = defaultHighspeedAdults[index]
     return {
       route: routeId,
@@ -2024,6 +2031,9 @@ const setDefaultData = () => {
       versionId: selectedHighspeedVersionId.value ?? undefined
     }
   })
+
+  console.log('Final highspeedFares:', highspeedFares.value)
+  editingHighspeedFares.value = highspeedFares.value.map(fare => ({ ...fare }))
 
   // デフォルトの割引設定
   discounts.value = [
