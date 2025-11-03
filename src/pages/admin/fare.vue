@@ -10,17 +10,12 @@
     <!-- タブ -->
     <div class="mb-6">
       <nav class="flex space-x-4" aria-label="Tabs">
-        <button
-          v-for="tab in tabs"
-          :key="tab.id"
-          :class="[
-            activeTab === tab.id
-              ? 'bg-blue-100 text-blue-700 dark:bg-blue-900 dark:text-blue-200'
-              : 'text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200',
-            'px-3 py-2 font-medium text-sm rounded-md'
-          ]"
-          @click="activeTab = tab.id"
-        >
+        <button v-for="tab in tabs" :key="tab.id" :class="[
+          activeTab === tab.id
+            ? 'bg-blue-100 text-blue-700 dark:bg-blue-900 dark:text-blue-200'
+            : 'text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200',
+          'px-3 py-2 font-medium text-sm rounded-md'
+        ]" @click="activeTab = tab.id">
           {{ tab.name }}
         </button>
       </nav>
@@ -29,19 +24,15 @@
     <!-- アクションボタン -->
     <div class="mb-4 flex justify-between items-center">
       <div class="flex space-x-2">
-        <button
-          :disabled="isLoading"
+        <button :disabled="isLoading"
           class="px-4 py-2 bg-gray-600 text-white rounded-md hover:bg-gray-700 disabled:bg-gray-400"
-          @click="refreshData"
-        >
+          @click="refreshData">
           <ArrowPathIcon class="h-5 w-5 inline mr-1" />
           {{ isLoading ? '読み込み中...' : '更新' }}
         </button>
-        <button
-          :disabled="isPublishing"
+        <button :disabled="isPublishing"
           class="px-4 py-2 bg-purple-600 text-white rounded-md hover:bg-purple-700 disabled:bg-gray-400"
-          @click="publishFareData"
-        >
+          @click="publishFareData">
           <CloudArrowUpIcon class="h-5 w-5 inline mr-1" />
           {{ isPublishing ? '公開中...' : 'データ公開' }}
         </button>
@@ -56,10 +47,7 @@
             <h2 class="text-lg font-medium text-gray-900 dark:text-white">
               {{ activeTabData.title }}
             </h2>
-            <p
-              v-if="activeVersionLabel"
-              class="mt-1 text-sm text-gray-500 dark:text-gray-400"
-            >
+            <p v-if="activeVersionLabel" class="mt-1 text-sm text-gray-500 dark:text-gray-400">
               {{ activeVersionLabel }}
             </p>
           </div>
@@ -68,46 +56,28 @@
               <label class="text-sm text-gray-500 dark:text-gray-400">
                 版
               </label>
-              <select
-                v-model="activeVersionId"
-                class="rounded-md border border-gray-300 dark:border-gray-600 dark:bg-gray-700 focus:border-blue-500 dark:focus:border-blue-400 focus:ring-2 focus:ring-blue-500 focus:ring-opacity-30 transition-colors text-sm"
-              >
-                <option
-                  v-if="activeVersionOptions.length === 0"
-                  disabled
-                  value=""
-                >
+              <select v-model="activeVersionId"
+                class="rounded-md border border-gray-300 dark:border-gray-600 dark:bg-gray-700 focus:border-blue-500 dark:focus:border-blue-400 focus:ring-2 focus:ring-blue-500 focus:ring-opacity-30 transition-colors text-sm">
+                <option v-if="activeVersionOptions.length === 0" disabled value="">
                   版が未作成
                 </option>
-                <option
-                  v-for="version in activeVersionOptions"
-                  :key="version.id"
-                  :value="version.id"
-                >
+                <option v-for="version in activeVersionOptions" :key="version.id" :value="version.id">
                   {{ version.name || version.effectiveFrom }}
                 </option>
               </select>
-              <button
-                class="px-3 py-2 bg-green-600 text-white rounded-md hover:bg-green-700 text-sm"
-                @click="openCreateVersionModal(activeTab === 'ferry' ? 'ferry' : 'highspeed')"
-              >
+              <button class="px-3 py-2 bg-green-600 text-white rounded-md hover:bg-green-700 text-sm"
+                @click="openCreateVersionModal(activeTab === 'ferry' ? 'ferry' : 'highspeed')">
                 <PlusIcon class="h-4 w-4 inline mr-1" />
                 新しい版
               </button>
-              <button
-                v-if="activeVersionId"
-                :disabled="isDeletingVersion"
+              <button v-if="activeVersionId" :disabled="isDeletingVersion"
                 class="px-3 py-2 bg-red-600 text-white rounded-md hover:bg-red-700 disabled:bg-red-400 text-sm flex items-center"
-                @click="openDeleteVersionModal"
-              >
+                @click="openDeleteVersionModal">
                 <TrashIcon class="h-4 w-4 mr-1" />
                 版を削除
               </button>
             </template>
-            <button
-              class="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700"
-              @click="showEditModal = true"
-            >
+            <button class="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700" @click="showEditModal = true">
               <PencilIcon class="h-5 w-5 inline mr-1" />
               {{ activeTab === 'discount' ? '割引編集' : '料金編集' }}
             </button>
@@ -119,10 +89,12 @@
           <table class="min-w-full divide-y divide-gray-200 dark:divide-gray-700">
             <thead>
               <tr>
-                <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider dark:text-gray-400">
+                <th
+                  class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider dark:text-gray-400">
                   区間
                 </th>
-                <th v-for="field in VEHICLE_SIZE_FIELDS" :key="field.key" class="px-4 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider dark:text-gray-400">
+                <th v-for="field in VEHICLE_SIZE_FIELDS" :key="field.key"
+                  class="px-4 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider dark:text-gray-400">
                   車両（{{ field.label }}）
                 </th>
               </tr>
@@ -132,7 +104,8 @@
                 <td class="px-4 py-3 text-sm font-medium text-gray-900 dark:text-gray-100">
                   {{ category.label }}
                 </td>
-                <td v-for="field in VEHICLE_SIZE_FIELDS" :key="field.key" class="px-4 py-3 text-sm text-center text-gray-900 dark:text-gray-100">
+                <td v-for="field in VEHICLE_SIZE_FIELDS" :key="field.key"
+                  class="px-4 py-3 text-sm text-center text-gray-900 dark:text-gray-100">
                   {{ formatCurrency(category.vehicle[field.key]) }}
                 </td>
               </tr>
@@ -145,10 +118,12 @@
           <table class="min-w-full divide-y divide-gray-200 dark:divide-gray-700">
             <thead>
               <tr>
-                <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider dark:text-gray-400">
+                <th
+                  class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider dark:text-gray-400">
                   区間
                 </th>
-                <th class="px-4 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider dark:text-gray-400">
+                <th
+                  class="px-4 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider dark:text-gray-400">
                   大人
                 </th>
               </tr>
@@ -181,14 +156,12 @@
                   {{ formatDiscountPercent(discount) }}% 割引
                 </p>
               </div>
-              <span
-                :class="[
-                  'px-2 py-1 text-xs rounded-full',
-                  discount.active
-                    ? 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200'
-                    : 'bg-gray-100 text-gray-800 dark:bg-gray-900 dark:text-gray-200'
-                ]"
-              >
+              <span :class="[
+                'px-2 py-1 text-xs rounded-full',
+                discount.active
+                  ? 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200'
+                  : 'bg-gray-100 text-gray-800 dark:bg-gray-900 dark:text-gray-200'
+              ]">
                 {{ isDiscountActive(discount) ? '有効' : '無効' }}
               </span>
             </div>
@@ -198,22 +171,13 @@
     </div>
 
     <!-- 編集モーダル -->
-    <FormModal
-      :open="showEditModal"
-      :title="`${activeTabData.title}の編集`"
-      :loading="isSaving"
-      size="xl"
-      @close="showEditModal = false"
-      @submit="saveFareData"
-    >
+    <FormModal :open="showEditModal" :title="`${activeTabData.title}の編集`" :loading="isSaving" size="xl"
+      @close="showEditModal = false" @submit="saveFareData">
       <div class="space-y-4">
         <!-- フェリー料金編集 -->
         <div v-if="activeTab === 'ferry'">
-          <div
-            v-for="category in editingFerryCategories"
-            :key="category.id"
-            class="border-b pb-4 mb-4 last:border-b-0 last:pb-0 last:mb-0"
-          >
+          <div v-for="category in editingFerryCategories" :key="category.id"
+            class="border-b pb-4 mb-4 last:border-b-0 last:pb-0 last:mb-0">
             <div class="flex flex-col gap-2 md:flex-row md:items-center md:justify-between">
               <h4 class="font-medium text-gray-900 dark:text-gray-100">
                 {{ category.label }}
@@ -224,21 +188,6 @@
             </div>
             <div class="space-y-4 mt-3">
               <div>
-                <h5 class="text-sm font-medium text-gray-700 dark:text-gray-200 mb-2">旅客運賃</h5>
-                <div class="grid grid-cols-1 gap-3">
-                  <div>
-                    <label class="text-xs text-gray-500">大人</label>
-                    <input
-                      v-model.number="category.adult"
-                      type="number"
-                      min="0"
-                      class="w-full rounded-md border border-gray-300 dark:border-gray-600 dark:bg-gray-700 focus:border-blue-500 dark:focus:border-blue-400 focus:ring-2 focus:ring-blue-500 focus:ring-opacity-30 transition-colors"
-                    >
-                  </div>
-                </div>
-              </div>
-
-              <div>
                 <div class="flex items-center justify-between mb-2">
                   <h5 class="text-sm font-medium text-gray-700 dark:text-gray-200">座席区分</h5>
                   <span class="text-xs text-gray-400 dark:text-gray-500">円</span>
@@ -246,12 +195,8 @@
                 <div class="grid grid-cols-1 sm:grid-cols-3 lg:grid-cols-5 gap-3">
                   <div v-for="field in SEAT_CLASS_FIELDS" :key="field.key">
                     <label class="text-xs text-gray-500">{{ field.label }}</label>
-                    <input
-                      v-model.number="category.seatClass[field.key]"
-                      type="number"
-                      min="0"
-                      class="w-full rounded-md border border-gray-300 dark:border-gray-600 dark:bg-gray-700 focus:border-blue-500 dark:focus:border-blue-400 focus:ring-2 focus:ring-blue-500 focus:ring-opacity-30 transition-colors"
-                    >
+                    <input v-model.number="category.seatClass[field.key]" type="number" min="0"
+                      class="w-full rounded-md border border-gray-300 dark:border-gray-600 dark:bg-gray-700 focus:border-blue-500 dark:focus:border-blue-400 focus:ring-2 focus:ring-blue-500 focus:ring-opacity-30 transition-colors">
                   </div>
                 </div>
               </div>
@@ -264,12 +209,8 @@
                 <div class="grid grid-cols-1 sm:grid-cols-3 lg:grid-cols-4 gap-3">
                   <div v-for="field in VEHICLE_SIZE_FIELDS" :key="field.key">
                     <label class="text-xs text-gray-500">{{ field.label }}</label>
-                    <input
-                      v-model.number="category.vehicle[field.key]"
-                      type="number"
-                      min="0"
-                      class="w-full rounded-md border border-gray-300 dark:border-gray-600 dark:bg-gray-700 focus:border-blue-500 dark:focus:border-blue-400 focus:ring-2 focus:ring-blue-500 focus:ring-opacity-30 transition-colors"
-                    >
+                    <input v-model.number="category.vehicle[field.key]" type="number" min="0"
+                      class="w-full rounded-md border border-gray-300 dark:border-gray-600 dark:bg-gray-700 focus:border-blue-500 dark:focus:border-blue-400 focus:ring-2 focus:ring-blue-500 focus:ring-opacity-30 transition-colors">
                   </div>
                 </div>
               </div>
@@ -284,12 +225,8 @@
             <div class="grid grid-cols-1 gap-3">
               <div>
                 <label class="text-xs text-gray-500">大人</label>
-                <input
-                  v-model.number="fare.adult"
-                  type="number"
-                  min="0"
-                  class="w-full rounded-md border border-gray-300 dark:border-gray-600 dark:bg-gray-700 focus:border-blue-500 dark:focus:border-blue-400 focus:ring-2 focus:ring-blue-500 focus:ring-opacity-30 transition-colors"
-                >
+                <input v-model.number="fare.adult" type="number" min="0"
+                  class="w-full rounded-md border border-gray-300 dark:border-gray-600 dark:bg-gray-700 focus:border-blue-500 dark:focus:border-blue-400 focus:ring-2 focus:ring-blue-500 focus:ring-opacity-30 transition-colors">
               </div>
             </div>
           </div>
@@ -297,40 +234,28 @@
 
         <!-- 割引設定編集 -->
         <div v-else-if="activeTab === 'discount'" class="space-y-6">
-          <div
-            v-if="!editingDiscounts.length"
-            class="rounded-md border border-dashed border-gray-300 dark:border-gray-600 bg-gray-50 dark:bg-gray-700/40 p-6 text-center text-sm text-gray-500 dark:text-gray-400"
-          >
+          <div v-if="!editingDiscounts.length"
+            class="rounded-md border border-dashed border-gray-300 dark:border-gray-600 bg-gray-50 dark:bg-gray-700/40 p-6 text-center text-sm text-gray-500 dark:text-gray-400">
             割引設定がありません。「割引を追加」から新しい割引を作成できます。
           </div>
-          <div
-            v-for="(discount, index) in editingDiscounts"
-            :key="discount.formKey"
-            class="rounded-lg border border-gray-200 dark:border-gray-600 bg-gray-50 dark:bg-gray-700/50 p-4 space-y-5"
-          >
+          <div v-for="(discount, index) in editingDiscounts" :key="discount.formKey"
+            class="rounded-lg border border-gray-200 dark:border-gray-600 bg-gray-50 dark:bg-gray-700/50 p-4 space-y-5">
             <div class="flex flex-col gap-4 lg:flex-row lg:items-start lg:justify-between">
               <div class="flex-1 space-y-2">
                 <label class="block text-xs font-medium text-gray-500 dark:text-gray-400">
                   割引ID
                 </label>
-                <input
-                  v-model="discount.id"
-                  type="text"
-                  :disabled="discount.originalId !== null"
+                <input v-model="discount.id" type="text" :disabled="discount.originalId !== null"
                   class="w-full rounded-md border border-gray-300 dark:border-gray-600 dark:bg-gray-800 focus:border-blue-500 dark:focus:border-blue-400 focus:ring-2 focus:ring-blue-500 focus:ring-opacity-30 transition-colors text-sm disabled:opacity-70 disabled:cursor-not-allowed"
-                  placeholder="例: student"
-                >
+                  placeholder="例: student">
                 <p class="text-xs text-gray-500 dark:text-gray-400">
                   公開データでの識別子です。既存の割引では変更できません。
                 </p>
               </div>
               <div class="flex items-start justify-end">
-                <button
-                  type="button"
+                <button type="button"
                   class="inline-flex items-center rounded-md border border-red-200 dark:border-red-600 px-3 py-2 text-sm font-medium text-red-600 dark:text-red-300 hover:bg-red-50 dark:hover:bg-red-900/30 disabled:opacity-50 disabled:cursor-not-allowed"
-                  :disabled="editingDiscounts.length <= 1"
-                  @click="removeDiscount(index)"
-                >
+                  :disabled="editingDiscounts.length <= 1" @click="removeDiscount(index)">
                   <TrashIcon class="mr-1 h-4 w-4" />
                   削除
                 </button>
@@ -342,36 +267,27 @@
                 <label class="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-1">
                   表示名（日本語）
                 </label>
-                <input
-                  v-model="discount.name"
-                  type="text"
+                <input v-model="discount.name" type="text"
                   class="w-full rounded-md border border-gray-300 dark:border-gray-600 dark:bg-gray-800 focus:border-blue-500 dark:focus:border-blue-400 focus:ring-2 focus:ring-blue-500 focus:ring-opacity-30 transition-colors text-sm"
-                  placeholder="例: 学生割引"
-                >
+                  placeholder="例: 学生割引">
               </div>
               <div>
                 <label class="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-1">
                   表示名（英語）
                   <span class="ml-1 text-xs text-gray-400 dark:text-gray-500">(任意)</span>
                 </label>
-                <input
-                  v-model="discount.nameEn"
-                  type="text"
+                <input v-model="discount.nameEn" type="text"
                   class="w-full rounded-md border border-gray-300 dark:border-gray-600 dark:bg-gray-800 focus:border-blue-500 dark:focus:border-blue-400 focus:ring-2 focus:ring-blue-500 focus:ring-opacity-30 transition-colors text-sm"
-                  placeholder="例: Student Discount"
-                >
+                  placeholder="例: Student Discount">
               </div>
               <div>
                 <label class="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-1">
                   表示名 i18nキー
                   <span class="ml-1 text-xs text-gray-400 dark:text-gray-500">(任意)</span>
                 </label>
-                <input
-                  v-model="discount.nameKey"
-                  type="text"
+                <input v-model="discount.nameKey" type="text"
                   class="w-full rounded-md border border-gray-300 dark:border-gray-600 dark:bg-gray-800 focus:border-blue-500 dark:focus:border-blue-400 focus:ring-2 focus:ring-blue-500 focus:ring-opacity-30 transition-colors text-sm"
-                  placeholder="例: DISCOUNT_STUDENT"
-                >
+                  placeholder="例: DISCOUNT_STUDENT">
               </div>
             </div>
 
@@ -380,36 +296,27 @@
                 <label class="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-1">
                   説明（日本語）
                 </label>
-                <textarea
-                  v-model="discount.description"
-                  rows="2"
+                <textarea v-model="discount.description" rows="2"
                   class="w-full rounded-md border border-gray-300 dark:border-gray-600 dark:bg-gray-800 focus:border-blue-500 dark:focus:border-blue-400 focus:ring-2 focus:ring-blue-500 focus:ring-opacity-30 transition-colors text-sm"
-                  placeholder="例: 学生証の提示が必要です"
-                ></textarea>
+                  placeholder="例: 学生証の提示が必要です"></textarea>
               </div>
               <div class="lg:col-span-1">
                 <label class="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-1">
                   説明（英語）
                   <span class="ml-1 text-xs text-gray-400 dark:text-gray-500">(任意)</span>
                 </label>
-                <textarea
-                  v-model="discount.descriptionEn"
-                  rows="2"
+                <textarea v-model="discount.descriptionEn" rows="2"
                   class="w-full rounded-md border border-gray-300 dark:border-gray-600 dark:bg-gray-800 focus:border-blue-500 dark:focus:border-blue-400 focus:ring-2 focus:ring-blue-500 focus:ring-opacity-30 transition-colors text-sm"
-                  placeholder="例: Student ID required"
-                ></textarea>
+                  placeholder="例: Student ID required"></textarea>
               </div>
               <div class="lg:col-span-1">
                 <label class="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-1">
                   説明 i18nキー
                   <span class="ml-1 text-xs text-gray-400 dark:text-gray-500">(任意)</span>
                 </label>
-                <input
-                  v-model="discount.descriptionKey"
-                  type="text"
+                <input v-model="discount.descriptionKey" type="text"
                   class="w-full rounded-md border border-gray-300 dark:border-gray-600 dark:bg-gray-800 focus:border-blue-500 dark:focus:border-blue-400 focus:ring-2 focus:ring-blue-500 focus:ring-opacity-30 transition-colors text-sm"
-                  placeholder="例: DISCOUNT_STUDENT_DESC"
-                >
+                  placeholder="例: DISCOUNT_STUDENT_DESC">
               </div>
             </div>
 
@@ -418,26 +325,16 @@
                 <label class="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-1">
                   割引率（%）
                 </label>
-                <input
-                  v-model.number="discount.ratePercent"
-                  type="number"
-                  min="0"
-                  max="100"
-                  step="0.1"
+                <input v-model.number="discount.ratePercent" type="number" min="0" max="100" step="0.1"
                   class="w-full rounded-md border border-gray-300 dark:border-gray-600 dark:bg-gray-800 focus:border-blue-500 dark:focus:border-blue-400 focus:ring-2 focus:ring-blue-500 focus:ring-opacity-30 transition-colors text-sm"
-                  placeholder="例: 15"
-                >
+                  placeholder="例: 15">
               </div>
               <div>
                 <label class="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-1">
                   適用後係数（自動計算）
                 </label>
-                <input
-                  :value="formatRateMultiplierValue(discount.ratePercent)"
-                  type="text"
-                  readonly
-                  class="w-full rounded-md border border-gray-300 dark:border-gray-600 dark:bg-gray-900 text-gray-500 dark:text-gray-400 focus:outline-none text-sm"
-                >
+                <input :value="formatRateMultiplierValue(discount.ratePercent)" type="text" readonly
+                  class="w-full rounded-md border border-gray-300 dark:border-gray-600 dark:bg-gray-900 text-gray-500 dark:text-gray-400 focus:outline-none text-sm">
                 <p class="mt-1 text-xs text-gray-500 dark:text-gray-400">
                   保存時にこの係数が rate / rateMultiplier として保存されます。
                 </p>
@@ -447,14 +344,9 @@
                   最低人数
                   <span class="ml-1 text-xs text-gray-400 dark:text-gray-500">(任意)</span>
                 </label>
-                <input
-                  v-model.number="discount.minPeople"
-                  type="number"
-                  min="0"
-                  step="1"
+                <input v-model.number="discount.minPeople" type="number" min="0" step="1"
                   class="w-full rounded-md border border-gray-300 dark:border-gray-600 dark:bg-gray-800 focus:border-blue-500 dark:focus:border-blue-400 focus:ring-2 focus:ring-blue-500 focus:ring-opacity-30 transition-colors text-sm"
-                  placeholder="例: 15"
-                >
+                  placeholder="例: 15">
               </div>
             </div>
 
@@ -463,27 +355,18 @@
                 適用条件タグ
                 <span class="ml-1 text-xs text-gray-400 dark:text-gray-500">(カンマまたは改行区切り)</span>
               </label>
-              <textarea
-                v-model="discount.conditionsText"
-                rows="2"
+              <textarea v-model="discount.conditionsText" rows="2"
                 class="w-full rounded-md border border-gray-300 dark:border-gray-600 dark:bg-gray-800 focus:border-blue-500 dark:focus:border-blue-400 focus:ring-2 focus:ring-blue-500 focus:ring-opacity-30 transition-colors text-sm"
-                placeholder="例: group,student"
-              ></textarea>
+                placeholder="例: group,student"></textarea>
             </div>
 
-            <ToggleSwitch
-              v-model:checked="discount.active"
-              label="割引を有効化"
-              description="無効化すると公開データから除外されます。"
-            />
+            <ToggleSwitch v-model:checked="discount.active" label="割引を有効化" description="無効化すると公開データから除外されます。" />
           </div>
 
           <div class="pt-2">
-            <button
-              type="button"
+            <button type="button"
               class="inline-flex items-center rounded-md border border-dashed border-blue-300 dark:border-blue-500 px-3 py-2 text-sm font-medium text-blue-600 dark:text-blue-300 hover:bg-blue-50 dark:hover:bg-blue-900/20 transition"
-              @click="addDiscount()"
-            >
+              @click="addDiscount()">
               <PlusIcon class="mr-1 h-4 w-4" />
               割引を追加
             </button>
@@ -493,13 +376,8 @@
       </div>
     </FormModal>
 
-    <FormModal
-      :open="showVersionModal"
-      title="新しい版を作成"
-      :loading="isSavingVersion"
-      @close="closeVersionModal"
-      @submit="createVersion"
-    >
+    <FormModal :open="showVersionModal" title="新しい版を作成" :loading="isSavingVersion" @close="closeVersionModal"
+      @submit="createVersion">
       <div class="space-y-4">
         <div>
           <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
@@ -513,40 +391,28 @@
           <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
             版名称（任意）
           </label>
-          <input
-            v-model="versionForm.name"
-            type="text"
+          <input v-model="versionForm.name" type="text"
             class="w-full rounded-md border border-gray-300 dark:border-gray-600 dark:bg-gray-700 focus:border-blue-500 dark:focus:border-blue-400 focus:ring-2 focus:ring-blue-500 focus:ring-opacity-30 transition-colors"
-            placeholder="例: 2024年4月改定"
-          >
+            placeholder="例: 2024年4月改定">
         </div>
         <div>
           <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
             適用開始日
           </label>
-          <input
-            v-model="versionForm.effectiveFrom"
-            type="date"
+          <input v-model="versionForm.effectiveFrom" type="date"
             class="w-full rounded-md border border-gray-300 dark:border-gray-600 dark:bg-gray-700 focus:border-blue-500 dark:focus:border-blue-400 focus:ring-2 focus:ring-blue-500 focus:ring-opacity-30 transition-colors"
-            required
-          >
+            required>
         </div>
         <div>
           <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
             既存版からコピー（任意）
           </label>
-          <select
-            v-model="versionForm.copyFromVersionId"
-            class="w-full rounded-md border border-gray-300 dark:border-gray-600 dark:bg-gray-700 focus:border-blue-500 dark:focus:border-blue-400 focus:ring-2 focus:ring-blue-500 focus:ring-opacity-30 transition-colors"
-          >
+          <select v-model="versionForm.copyFromVersionId"
+            class="w-full rounded-md border border-gray-300 dark:border-gray-600 dark:bg-gray-700 focus:border-blue-500 dark:focus:border-blue-400 focus:ring-2 focus:ring-blue-500 focus:ring-opacity-30 transition-colors">
             <option :value="null">
               コピーしない
             </option>
-            <option
-              v-for="version in copySourceVersions"
-              :key="version.id"
-              :value="version.id"
-            >
+            <option v-for="version in copySourceVersions" :key="version.id" :value="version.id">
               {{ formatVersionLabel(version) }}
             </option>
           </select>
@@ -554,17 +420,10 @@
       </div>
     </FormModal>
 
-    <FormModal
-      :open="showDeleteVersionModal"
-      title="版を削除"
-      confirm-text="削除する"
-      cancel-text="キャンセル"
+    <FormModal :open="showDeleteVersionModal" title="版を削除" confirm-text="削除する" cancel-text="キャンセル"
       :loading="isDeletingVersion || deleteVersionInfo.isLoading"
-      :loading-text="isDeletingVersion ? '削除中...' : '読み込み中...'"
-      variant="danger"
-      @close="closeDeleteVersionModal"
-      @submit="confirmDeleteVersion"
-    >
+      :loading-text="isDeletingVersion ? '削除中...' : '読み込み中...'" variant="danger" @close="closeDeleteVersionModal"
+      @submit="confirmDeleteVersion">
       <p class="text-sm text-gray-700 dark:text-gray-300">
         {{ deleteVersionInfo.vesselType === 'ferry' ? 'フェリー' : '高速船' }}の版
         「{{ deleteVersionInfo.name || '名称未設定' }}」
@@ -829,7 +688,6 @@ type FerryCategoryRecord = {
   translationKey: string
   routeIds: string[]
   docIds: Record<string, string | null>
-  adult: number | null
   seatClass: Record<SeatClassKey, number | null>
   vehicle: Record<VehicleSizeKey, number | null>
 }
@@ -1014,14 +872,14 @@ const getHighspeedRouteLabel = (routeId: string | null | undefined): string | nu
   const canonical = mapHighspeedToCanonicalRoute(routeId)
   console.log('getHighspeedRouteLabel:', { routeId, canonical })
   if (!canonical) return null
-  
+
   // 直接日本語ラベルを返す
   const directLabels: Record<string, string> = {
     'hondo-oki': '本土〜隠岐',
     'dozen-dogo': '島前〜島後',
     'beppu-hishiura': '別府〜菱浦'
   }
-  
+
   return directLabels[canonical] ?? canonical
 }
 
@@ -1222,7 +1080,6 @@ const createEmptyCategoryRecord = (def: FerryCategoryDefinition): FerryCategoryR
     acc[routeId] = null
     return acc
   }, {}),
-  adult: null,
   seatClass: SEAT_CLASS_FIELDS.reduce<Record<SeatClassKey, number | null>>((acc, field) => {
     acc[field.key] = null
     return acc
@@ -1291,7 +1148,6 @@ const buildFerryCategories = (fareDocs: Array<FareDoc & { id?: string }>): Ferry
       const disabled = extractDisabledFare(baseDoc)
       const seatClass = extractSeatClass(baseDoc)
       const vehicle = extractVehicle(baseDoc)
-      record.adult = passenger.adult
       record.seatClass = seatClass
       record.vehicle = vehicle
     }
@@ -1983,7 +1839,6 @@ const setDefaultData = () => {
     const record = createEmptyCategoryRecord(def)
     const defaults = defaultCategoryValues[def.id]
     if (defaults) {
-      record.adult = defaults.adult
       SEAT_CLASS_FIELDS.forEach(({ key }) => {
         const value = defaults.seatClass?.[key]
         record.seatClass[key] = typeof value === 'number' ? value : null
@@ -2096,7 +1951,7 @@ const saveFareData = async () => {
         category.routeIds.forEach(routeId => {
           const metadata = ROUTE_METADATA[routeId]
           const targetDocId = category.docIds[routeId] ?? buildFareDocId(versionId, routeId)
-          const adult = pickNumber(category.adult)
+          const adult = pickNumber(category.seatClass.second)
           const child = calculateChildFare(adult)
           const disabledAdult = pickNumber(category.disabledAdult)
           const disabledChild = disabledAdult ? calculateChildFare(disabledAdult) : null
@@ -2302,7 +2157,7 @@ const saveFareData = async () => {
       await loadDiscounts()
       $toast.success('割引設定を更新しました')
     }
-    
+
     showEditModal.value = false
   } catch (error) {
     logger.error('Failed to save fare data', error)
