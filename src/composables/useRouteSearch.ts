@@ -491,13 +491,6 @@ export const useRouteSearch = () => {
     if (route) {
       let baseFare = route.fares.adult;
 
-      // For high-speed ferry (Rainbow Jet), use the actual fare
-      const isHighSpeed = ship === "RAINBOWJET";
-      if (isHighSpeed) {
-        // Rainbow Jet fare is 6,680 yen (according to official website)
-        baseFare = 6680;
-      }
-
       // For local vessels (ISOKAZE, FERRY_DOZEN), use inner island fare if available
       const isLocalVessel = ship === "ISOKAZE" || ship === "ISOKAZE_EX" || ship === "FERRY_DOZEN";
       if (isLocalVessel && fareStore?.fareMaster?.innerIslandFare) {
