@@ -498,6 +498,18 @@ export const useRouteSearch = () => {
         baseFare = 6680;
       }
 
+      // For local vessels (ISOKAZE, FERRY_DOZEN), use inner island fare if available
+      const isLocalVessel = ship === "ISOKAZE" || ship === "ISOKAZE_EX" || ship === "FERRY_DOZEN";
+      if (isLocalVessel && fareStore?.fareMaster?.innerIslandFare) {
+        // Check if this is an inner island route
+        const innerIslandPorts = ["HISHIURA", "KURI", "SAIGO"];
+        const isInnerIslandRoute = innerIslandPorts.includes(departure) && innerIslandPorts.includes(arrival);
+        
+        if (isInnerIslandRoute) {
+          baseFare = fareStore.fareMaster.innerIslandFare.adult;
+        }
+      }
+
       return baseFare;
     }
 
