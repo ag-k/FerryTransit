@@ -122,9 +122,6 @@
                 <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider dark:text-gray-400">
                   区間
                 </th>
-                <th class="px-4 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider dark:text-gray-400">
-                  大人
-                </th>
                 <th v-for="field in VEHICLE_SIZE_FIELDS" :key="field.key" class="px-4 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider dark:text-gray-400">
                   車両（{{ field.label }}）
                 </th>
@@ -134,9 +131,6 @@
               <tr v-for="category in ferryCategories" :key="category.id">
                 <td class="px-4 py-3 text-sm font-medium text-gray-900 dark:text-gray-100">
                   {{ category.label }}
-                </td>
-                <td class="px-4 py-3 text-sm text-center text-gray-900 dark:text-gray-100">
-                  {{ formatCurrency(category.adult) }}
                 </td>
                 <td v-for="field in VEHICLE_SIZE_FIELDS" :key="field.key" class="px-4 py-3 text-sm text-center text-gray-900 dark:text-gray-100">
                   {{ formatCurrency(category.vehicle[field.key]) }}
