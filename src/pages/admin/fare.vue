@@ -1018,12 +1018,17 @@ const mapHighspeedToCanonicalRoute = (routeId: string | null | undefined): strin
 
 const getHighspeedRouteLabel = (routeId: string | null | undefined): string | null => {
   const canonical = mapHighspeedToCanonicalRoute(routeId)
+  console.log('getHighspeedRouteLabel:', { routeId, canonical })
   if (!canonical) return null
-  const translationKey = HIGHSPEED_ROUTE_TRANSLATION_KEYS[canonical]
-  if (translationKey) {
-    return t(translationKey)
+  
+  // 直接日本語ラベルを返す
+  const directLabels: Record<string, string> = {
+    'hondo-oki': '本土〜隠岐',
+    'dozen-dogo': '島前〜島後',
+    'beppu-hishiura': '別府〜菱浦'
   }
-  return ROUTE_LABELS[canonical] ?? ROUTE_LABELS[routeId ?? ''] ?? canonical
+  
+  return directLabels[canonical] ?? canonical
 }
 
 const resolveHighspeedRouteInfo = (fare: FareDoc): { routeId: string | null; label: string } => {
