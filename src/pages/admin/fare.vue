@@ -125,15 +125,6 @@
                 <th class="px-4 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider dark:text-gray-400">
                   大人
                 </th>
-                <th class="px-4 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider dark:text-gray-400">
-                  小児
-                </th>
-                <th class="px-4 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider dark:text-gray-400">
-                  障がい者（大人）
-                </th>
-                <th class="px-4 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider dark:text-gray-400">
-                  障がい者（小児）
-                </th>
                 <th v-for="field in VEHICLE_SIZE_FIELDS" :key="field.key" class="px-4 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider dark:text-gray-400">
                   車両（{{ field.label }}）
                 </th>
@@ -146,15 +137,6 @@
                 </td>
                 <td class="px-4 py-3 text-sm text-center text-gray-900 dark:text-gray-100">
                   {{ formatCurrency(category.adult) }}
-                </td>
-                <td class="px-4 py-3 text-sm text-center text-gray-900 dark:text-gray-100">
-                  {{ formatCurrency(category.child) }}
-                </td>
-                <td class="px-4 py-3 text-sm text-center text-gray-900 dark:text-gray-100">
-                  {{ formatCurrency(category.disabledAdult) }}
-                </td>
-                <td class="px-4 py-3 text-sm text-center text-gray-900 dark:text-gray-100">
-                  {{ formatCurrency(category.disabledChild) }}
                 </td>
                 <td v-for="field in VEHICLE_SIZE_FIELDS" :key="field.key" class="px-4 py-3 text-sm text-center text-gray-900 dark:text-gray-100">
                   {{ formatCurrency(category.vehicle[field.key]) }}
@@ -175,15 +157,6 @@
                 <th class="px-4 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider dark:text-gray-400">
                   大人
                 </th>
-                <th class="px-4 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider dark:text-gray-400">
-                  小児
-                </th>
-                <th class="px-4 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider dark:text-gray-400">
-                  障がい者（大人）
-                </th>
-                <th class="px-4 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider dark:text-gray-400">
-                  障がい者（小児）
-                </th>
               </tr>
             </thead>
             <tbody class="divide-y divide-gray-200 dark:divide-gray-700">
@@ -193,15 +166,6 @@
                 </td>
                 <td class="px-4 py-3 text-sm text-center text-gray-900 dark:text-gray-100">
                   {{ formatCurrency(fare.adult) }}
-                </td>
-                <td class="px-4 py-3 text-sm text-center text-gray-900 dark:text-gray-100">
-                  {{ formatCurrency(fare.child) }}
-                </td>
-                <td class="px-4 py-3 text-sm text-center text-gray-900 dark:text-gray-100">
-                  {{ formatCurrency(fare.disabledAdult) }}
-                </td>
-                <td class="px-4 py-3 text-sm text-center text-gray-900 dark:text-gray-100">
-                  {{ formatCurrency(fare.disabledChild) }}
                 </td>
               </tr>
             </tbody>
@@ -267,38 +231,11 @@
             <div class="space-y-4 mt-3">
               <div>
                 <h5 class="text-sm font-medium text-gray-700 dark:text-gray-200 mb-2">旅客運賃</h5>
-                <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3">
+                <div class="grid grid-cols-1 gap-3">
                   <div>
                     <label class="text-xs text-gray-500">大人</label>
                     <input
                       v-model.number="category.adult"
-                      type="number"
-                      min="0"
-                      class="w-full rounded-md border border-gray-300 dark:border-gray-600 dark:bg-gray-700 focus:border-blue-500 dark:focus:border-blue-400 focus:ring-2 focus:ring-blue-500 focus:ring-opacity-30 transition-colors"
-                    >
-                  </div>
-                  <div>
-                    <label class="text-xs text-gray-500">小児</label>
-                    <input
-                      v-model.number="category.child"
-                      type="number"
-                      min="0"
-                      class="w-full rounded-md border border-gray-300 dark:border-gray-600 dark:bg-gray-700 focus:border-blue-500 dark:focus:border-blue-400 focus:ring-2 focus:ring-blue-500 focus:ring-opacity-30 transition-colors"
-                    >
-                  </div>
-                  <div>
-                    <label class="text-xs text-gray-500">障がい者（大人）</label>
-                    <input
-                      v-model.number="category.disabledAdult"
-                      type="number"
-                      min="0"
-                      class="w-full rounded-md border border-gray-300 dark:border-gray-600 dark:bg-gray-700 focus:border-blue-500 dark:focus:border-blue-400 focus:ring-2 focus:ring-blue-500 focus:ring-opacity-30 transition-colors"
-                    >
-                  </div>
-                  <div>
-                    <label class="text-xs text-gray-500">障がい者（小児）</label>
-                    <input
-                      v-model.number="category.disabledChild"
                       type="number"
                       min="0"
                       class="w-full rounded-md border border-gray-300 dark:border-gray-600 dark:bg-gray-700 focus:border-blue-500 dark:focus:border-blue-400 focus:ring-2 focus:ring-blue-500 focus:ring-opacity-30 transition-colors"
@@ -350,38 +287,11 @@
         <div v-else-if="activeTab === 'highspeed'">
           <div v-for="(fare, index) in editingHighspeedFares" :key="index" class="border-b pb-4 mb-4">
             <h4 class="font-medium mb-2">{{ fare.routeLabel || fare.route }}</h4>
-            <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3">
+            <div class="grid grid-cols-1 gap-3">
               <div>
                 <label class="text-xs text-gray-500">大人</label>
                 <input
                   v-model.number="fare.adult"
-                  type="number"
-                  min="0"
-                  class="w-full rounded-md border border-gray-300 dark:border-gray-600 dark:bg-gray-700 focus:border-blue-500 dark:focus:border-blue-400 focus:ring-2 focus:ring-blue-500 focus:ring-opacity-30 transition-colors"
-                >
-              </div>
-              <div>
-                <label class="text-xs text-gray-500">小児</label>
-                <input
-                  v-model.number="fare.child"
-                  type="number"
-                  min="0"
-                  class="w-full rounded-md border border-gray-300 dark:border-gray-600 dark:bg-gray-700 focus:border-blue-500 dark:focus:border-blue-400 focus:ring-2 focus:ring-blue-500 focus:ring-opacity-30 transition-colors"
-                >
-              </div>
-              <div>
-                <label class="text-xs text-gray-500">障がい者（大人）</label>
-                <input
-                  v-model.number="fare.disabledAdult"
-                  type="number"
-                  min="0"
-                  class="w-full rounded-md border border-gray-300 dark:border-gray-600 dark:bg-gray-700 focus:border-blue-500 dark:focus:border-blue-400 focus:ring-2 focus:ring-blue-500 focus:ring-opacity-30 transition-colors"
-                >
-              </div>
-              <div>
-                <label class="text-xs text-gray-500">障がい者（小児）</label>
-                <input
-                  v-model.number="fare.disabledChild"
                   type="number"
                   min="0"
                   class="w-full rounded-md border border-gray-300 dark:border-gray-600 dark:bg-gray-700 focus:border-blue-500 dark:focus:border-blue-400 focus:ring-2 focus:ring-blue-500 focus:ring-opacity-30 transition-colors"
@@ -926,9 +836,6 @@ type FerryCategoryRecord = {
   routeIds: string[]
   docIds: Record<string, string | null>
   adult: number | null
-  child: number | null
-  disabledAdult: number | null
-  disabledChild: number | null
   seatClass: Record<SeatClassKey, number | null>
   vehicle: Record<VehicleSizeKey, number | null>
 }
@@ -1299,9 +1206,6 @@ const createEmptyCategoryRecord = (def: FerryCategoryDefinition): FerryCategoryR
     return acc
   }, {}),
   adult: null,
-  child: null,
-  disabledAdult: null,
-  disabledChild: null,
   seatClass: SEAT_CLASS_FIELDS.reduce<Record<SeatClassKey, number | null>>((acc, field) => {
     acc[field.key] = null
     return acc
@@ -1316,8 +1220,6 @@ const cloneCategoryRecord = (category: FerryCategoryRecord): FerryCategoryRecord
   ...category,
   routeIds: [...category.routeIds],
   docIds: { ...category.docIds },
-  disabledAdult: category.disabledAdult,
-  disabledChild: category.disabledChild,
   seatClass: { ...category.seatClass },
   vehicle: { ...category.vehicle }
 })
@@ -1373,9 +1275,6 @@ const buildFerryCategories = (fareDocs: Array<FareDoc & { id?: string }>): Ferry
       const seatClass = extractSeatClass(baseDoc)
       const vehicle = extractVehicle(baseDoc)
       record.adult = passenger.adult
-      record.child = passenger.child ?? calculateChildFare(passenger.adult)
-      record.disabledAdult = disabled.adult
-      record.disabledChild = disabled.child ?? (disabled.adult ? calculateChildFare(disabled.adult) : null)
       record.seatClass = seatClass
       record.vehicle = vehicle
     }
@@ -1623,7 +1522,7 @@ const loadFaresForType = async (vesselType: VesselType) => {
         displayName: fare.displayName ?? label,
         routeName: fare.routeName ?? label,
         adult,
-        child,
+        child: calculateChildFare(adult),
         disabledAdult: disabled.adult,
         disabledChild: disabled.child ?? (disabled.adult ? calculateChildFare(disabled.adult) : null)
       }
@@ -1780,9 +1679,9 @@ const mapFareEntryForCreate = (fare: FareDoc, versionId: string) => {
   const seatClass = extractSeatClass(fare)
   const vehicle = extractVehicle(fare)
   const adult = passenger.adult ?? null
-  const child = passenger.child ?? calculateChildFare(passenger.adult)
+  const child = calculateChildFare(passenger.adult)
   const disabledAdult = disabled.adult ?? null
-  const disabledChild = disabled.child ?? (disabled.adult ? calculateChildFare(disabled.adult) : null)
+  const disabledChild = disabled.adult ? calculateChildFare(disabled.adult) : null
 
   const payload: Record<string, any> = {
     type: fare.type ?? fare.vesselType ?? 'ferry',
@@ -2062,11 +1961,6 @@ const setDefaultData = () => {
     const defaults = defaultCategoryValues[def.id]
     if (defaults) {
       record.adult = defaults.adult
-      record.child = typeof defaults.child === 'number' ? defaults.child : calculateChildFare(defaults.adult)
-      record.disabledAdult = typeof defaults.disabled?.adult === 'number' ? defaults.disabled.adult : null
-      record.disabledChild = typeof defaults.disabled?.child === 'number'
-        ? defaults.disabled.child
-        : (record.disabledAdult ? calculateChildFare(record.disabledAdult) : null)
       SEAT_CLASS_FIELDS.forEach(({ key }) => {
         const value = defaults.seatClass?.[key]
         record.seatClass[key] = typeof value === 'number' ? value : null
@@ -2100,7 +1994,7 @@ const setDefaultData = () => {
       displayName: label,
       routeName: label,
       adult,
-      child: defaultHighspeedChildren[index] ?? calculateChildFare(adult),
+      child: calculateChildFare(adult),
       disabledAdult: null,
       disabledChild: null,
       type: 'highspeed',
@@ -2176,9 +2070,9 @@ const saveFareData = async () => {
           const metadata = ROUTE_METADATA[routeId]
           const targetDocId = category.docIds[routeId] ?? buildFareDocId(versionId, routeId)
           const adult = pickNumber(category.adult)
-          const child = pickNumber(category.child)
+          const child = calculateChildFare(adult)
           const disabledAdult = pickNumber(category.disabledAdult)
-          const disabledChild = pickNumber(category.disabledChild)
+          const disabledChild = disabledAdult ? calculateChildFare(disabledAdult) : null
           const seatClassPayload = SEAT_CLASS_FIELDS.reduce<Record<SeatClassKey, number | null>>((acc, field) => {
             acc[field.key] = pickNumber(category.seatClass[field.key])
             return acc
@@ -2259,9 +2153,9 @@ const saveFareData = async () => {
       const operations = targetFares.map(fare => {
         const { routeId, label } = resolveHighspeedRouteInfo(fare)
         const adult = pickNumber(fare.adult)
-        const child = pickNumber(fare.child)
+        const child = calculateChildFare(adult)
         const disabledAdult = pickNumber(fare.disabledAdult)
-        const disabledChild = pickNumber(fare.disabledChild)
+        const disabledChild = disabledAdult ? calculateChildFare(disabledAdult) : null
         const resolvedRoute = routeId ?? normalizeRouteId(label) ?? (typeof fare.route === 'string' ? fare.route : null)
         return {
           type: fare.id ? 'update' as const : 'create' as const,
