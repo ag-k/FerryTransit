@@ -187,16 +187,6 @@ export const useOfflineStorage = () => {
     return getData('timetable')
   }
   
-  // 運航状況データを保存
-  const saveStatusData = (data: any): boolean => {
-    return saveData('status', data, 30) // 30分
-  }
-  
-  // 運航状況データを取得
-  const getStatusData = (): any => {
-    return getData('status')
-  }
-  
   // 料金データを保存
   const saveFareData = (data: any): boolean => {
     return saveData('fare', data, 60 * 24 * 7) // 1週間
@@ -252,8 +242,6 @@ export const useOfflineStorage = () => {
     cleanupExpired,
     saveTimetableData,
     getTimetableData,
-    saveStatusData,
-    getStatusData,
     saveFareData,
     getFareData,
     saveHolidayData,

@@ -3,7 +3,6 @@ import { ref, readonly, onMounted } from 'vue'
 import { useOfflineStorage } from '@/composables/useOfflineStorage'
 import { getStorageDownloadURL } from '@/composables/useDataPublish'
 import type { TimetableData } from '@/types/timetable'
-import type { FerryStatus } from '@/types/ferry'
 import type { FareMaster } from '@/types/fare'
 import type { HolidayMaster } from '@/types/holiday'
 import { createLogger } from '@/utils/logger'
@@ -14,8 +13,6 @@ export const useOfflineStore = defineStore('offline', () => {
     isStorageAvailable,
     saveTimetableData,
     getTimetableData,
-    saveStatusData,
-    getStatusData,
     saveFareData,
     getFareData,
     saveHolidayData,
@@ -31,7 +28,6 @@ export const useOfflineStore = defineStore('offline', () => {
   const isOffline = ref(false)
   const lastSync = ref<{
     timetable?: number
-    status?: number
     fare?: number
     holiday?: number
   }>({})
@@ -71,31 +67,6 @@ export const useOfflineStore = defineStore('offline', () => {
     
     // オフラインまたはエラーの場合はローカルから取得
     const localData = getTimetableData()
-    if (localData) return localData
-    
-    return null
-  }
-  
-  // 運航状況データの取得（オフライン対応）
-  const fetchStatusData = async (): Promise<FerryStatus | null> => {
-    try {
-      // オンラインの場合は通常通り取得
-      if (!isOffline.value) {
-        // 実際のAPIエンドポイントに置き換える
-        const data = await $fetch<FerryStatus>('/api/status')
-        // 成功したらローカルに保存
-        if (data) {
-          saveStatusData(data)
-          lastSync.value.status = Date.now()
-        }
-        return data
-      }
-    } catch (e) {
-      /* ignore network failures and fallback to cached data */
-    }
-    
-    // オフラインまたはエラーの場合はローカルから取得
-    const localData = getStatusData()
     if (localData) return localData
     
     return null
@@ -230,7 +201,6 @@ export const useOfflineStore = defineStore('offline', () => {
   const getLastSyncTimes = () => {
     return {
       timetable: getDataTimestamp('timetable'),
-      status: getDataTimestamp('status'),
       fare: getDataTimestamp('fare'),
       holiday: getDataTimestamp('holiday')
     }
@@ -276,7 +246,6 @@ export const useOfflineStore = defineStore('offline', () => {
     
     // Actions
     fetchTimetableData,
-    fetchStatusData,
     fetchFareData,
     fetchHolidayData,
     downloadAllData,
