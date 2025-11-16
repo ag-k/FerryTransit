@@ -24,7 +24,7 @@ xmlns="http://www.w3.org/2000/svg" width="48" height="48" fill="currentColor"
           <h5 class="text-xl font-semibold mb-2 dark:text-white">{{ $t('TIMETABLE') }}</h5>
           <p class="text-gray-600 dark:text-gray-300 mb-4">{{ $t('TIMETABLE_DESC') }}</p>
           <NuxtLink
-:to="localePath('/timetable')"
+:to="localePath('/')"
             class="inline-block px-6 py-2 bg-blue-600 text-white rounded hover:bg-blue-700 dark:bg-blue-500 dark:hover:bg-blue-600 transition-colors">
             {{ $t('VIEW_TIMETABLE') }}
           </NuxtLink>
