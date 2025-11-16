@@ -9,6 +9,7 @@ export const useRouteSearch = () => {
   const ferryStore = process.client ? useFerryStore() : null;
   const fareStore = process.client ? useFareStore() : null;
   const { getTripStatus, initializeData } = useFerryData();
+  const i18n = useI18n() as any;
   const logger = createLogger("useRouteSearch");
 
   // Initialize fare data
@@ -134,10 +135,8 @@ export const useRouteSearch = () => {
       ) {
         logger.debug("Found matching trip", trip);
         // Create date objects using the search date and trip times
-        const [depHours, depMinutes] = trip.departureTime
-          .split(":")
-          .map(Number);
-        const [arrHours, arrMinutes] = trip.arrivalTime.split(":").map(Number);
+        const [depHours, depMinutes] = parseTimeParts(trip.departureTime);
+        const [arrHours, arrMinutes] = parseTimeParts(trip.arrivalTime);
 
         const departureTime = new Date(searchTime);
         departureTime.setHours(depHours, depMinutes, 0, 0);
@@ -212,17 +211,6 @@ export const useRouteSearch = () => {
       arrival === "HONDO"
         ? ["HONDO_SHICHIRUI", "HONDO_SAKAIMINATO"]
         : [arrival];
-
-    const parseTimeParts = (timeValue: string | Date): [number, number] => {
-      if (timeValue instanceof Date) {
-        return [timeValue.getHours(), timeValue.getMinutes()];
-      }
-
-      const parts = String(timeValue).split(":");
-      const hours = Number(parts[0]);
-      const minutes = Number(parts[1] || 0);
-      return [hours, minutes];
-    };
 
     const collectTripChain = (
       startTrip: Trip
@@ -435,6 +423,18 @@ export const useRouteSearch = () => {
     return ferryStore?.hondoPorts?.includes(port) || port === "HONDO";
   };
 
+  // Parse time parts from string or Date
+  const parseTimeParts = (timeValue: string | Date): [number, number] => {
+    if (timeValue instanceof Date) {
+      return [timeValue.getHours(), timeValue.getMinutes()];
+    }
+
+    const parts = String(timeValue).split(":");
+    const hours = Number(parts[0]);
+    const minutes = Number(parts[1] || 0);
+    return [hours, minutes];
+  };
+
   // Calculate fare for a trip with date consideration
   const calculateFare = (
     ship: string,
@@ -488,7 +488,7 @@ export const useRouteSearch = () => {
       }
     }
 
-    if (route) {
+    if (route && route.fares) {
       let baseFare = route.fares.adult;
 
       // For local vessels (ISOKAZE, FERRY_DOZEN), use inner island fare if available
@@ -522,27 +522,19 @@ export const useRouteSearch = () => {
 
   // Calculate duration between two times
   const calculateDuration = (start: Date, end: Date): string => {
-    const { $i18n } = useNuxtApp();
     const diff = end.getTime() - start.getTime();
     const hours = Math.floor(diff / (1000 * 60 * 60));
     const minutes = Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60));
 
     if (hours > 0) {
-      return `${hours}${$i18n.t('HOURS')}${minutes}${$i18n.t('MINUTES')}`;
+      return `${hours}${i18n.t('HOURS')}${minutes}${i18n.t('MINUTES')}`;
     }
-    return `${minutes}${$i18n.t('MINUTES')}`;
+    return `${minutes}${i18n.t('MINUTES')}`;
   };
 
-  // Get display name for HONDO ports
+  // Get display name for port
   const getPortDisplayName = (port: string): string => {
-    const { $i18n } = useNuxtApp();
-
-    if (port === "HONDO_SHICHIRUI") {
-      return `${$i18n.t("HONDO")} (${$i18n.t("HONDO_SHICHIRUI")})`;
-    } else if (port === "HONDO_SAKAIMINATO") {
-      return `${$i18n.t("HONDO")} (${$i18n.t("HONDO_SAKAIMINATO")})`;
-    }
-    return $i18n.t(port);
+    return port === "HONDO_SHICHIRUI" ? "HONDO" : port;
   };
 
   return {
