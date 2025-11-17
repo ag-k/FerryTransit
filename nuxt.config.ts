@@ -79,7 +79,10 @@ export default defineNuxtConfig({
       alwaysRedirect: false
     },
     strategy: 'prefix_except_default',
-    vueI18n: '../i18n.config.ts'
+    vueI18n: '../i18n.config.ts',
+    bundle: {
+      optimizeTranslationDirective: false
+    }
   },
 
   googleFonts: {
