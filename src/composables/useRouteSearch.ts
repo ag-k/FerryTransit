@@ -534,7 +534,23 @@ export const useRouteSearch = () => {
 
   // Get display name for port
   const getPortDisplayName = (port: string): string => {
-    return port === "HONDO_SHICHIRUI" ? "HONDO" : port;
+    if (!port) return '';
+
+    // Handle special case for HONDO (legacy port ID)
+    if (port === 'HONDO') {
+      return i18n.t('HONDO');
+    }
+
+    // Get port from ferryStore
+    if (ferryStore) {
+      const portData = ferryStore.ports.find(p => p.PORT_ID === port);
+      if (portData) {
+        return i18n.locale.value === 'ja' ? portData.PLACE_NAME_JA : portData.PLACE_NAME_EN;
+      }
+    }
+
+    // Fallback to translation key
+    return i18n.t(port);
   };
 
   return {

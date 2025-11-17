@@ -103,6 +103,44 @@ describe('History Store', () => {
       expect(store.history[0].date).toEqual(new Date('2025-06-24'))
     })
 
+    it('カスタムsearchedAtを指定して検索履歴を追加できる', () => {
+      const store = useHistoryStore()
+      const customSearchedAt = new Date('2025-01-15T10:00:00')
+      const historyItem: Omit<SearchHistoryItem, 'id' | 'searchedAt'> = {
+        type: 'route',
+        departure: 'hongo',
+        arrival: 'saigo',
+        date: new Date('2025-06-23'),
+        isArrivalMode: false
+      }
+
+      store.addSearchHistory(historyItem, customSearchedAt)
+
+      expect(store.history).toHaveLength(1)
+      expect(store.history[0].searchedAt).toEqual(customSearchedAt)
+    })
+
+    it('searchedAtを省略すると現在時刻が設定される', () => {
+      const store = useHistoryStore()
+      const beforeAdd = new Date()
+
+      const historyItem: Omit<SearchHistoryItem, 'id' | 'searchedAt'> = {
+        type: 'route',
+        departure: 'hongo',
+        arrival: 'saigo',
+        date: new Date('2025-06-23'),
+        isArrivalMode: false
+      }
+
+      store.addSearchHistory(historyItem)
+
+      const afterAdd = new Date()
+
+      expect(store.history).toHaveLength(1)
+      expect(store.history[0].searchedAt.getTime()).toBeGreaterThanOrEqual(beforeAdd.getTime())
+      expect(store.history[0].searchedAt.getTime()).toBeLessThanOrEqual(afterAdd.getTime())
+    })
+
     it('最大エントリ数を超えたら古いものが削除される', () => {
       const store = useHistoryStore()
       

@@ -314,7 +314,7 @@
 </template>
 
 <script setup lang="ts">
-import { nextTick } from 'vue'
+import { nextTick, getCurrentInstance, markRaw } from 'vue'
 import { useRouteSearch } from '@/composables/useRouteSearch'
 import { useHistoryStore } from '@/stores/history'
 import { useFerryStore } from '@/stores/ferry'
@@ -339,6 +339,7 @@ const date = ref(new Date())
 const time = ref('')
 const timeInputId = 'transit-time-input'
 const isArrivalMode = ref(false)
+const historySearchedAt = ref<Date | null>(null)
 
 // Watch for changes in departure/arrival and update ferryStore
 watch(departure, (newVal) => {
@@ -388,6 +389,59 @@ const sortOption = ref<SortKey>('recommended')
 // Composables
 const { searchRoutes, formatTime, calculateDuration, getPortDisplayName } = useRouteSearch()
 const { t } = useI18n()
+
+const cloneRouteForState = (route: TransitRoute): TransitRoute => {
+  const segments = Array.isArray(route.segments)
+    ? route.segments.map(segment => markRaw({
+      ...segment
+    }))
+    : []
+
+  return markRaw({
+    ...route,
+    segments
+  })
+}
+
+const normalizeTransitRoutes = (routes: TransitRoute[]): TransitRoute[] => {
+  return routes.map(cloneRouteForState)
+}
+
+const setSearchResults = (routes: TransitRoute[] = []) => {
+  searchResults.value = normalizeTransitRoutes(routes)
+}
+
+const setSelectedRoute = (route: TransitRoute | null) => {
+  selectedRoute.value = route ? cloneRouteForState(route) : null
+}
+
+const instance = getCurrentInstance()
+if (instance?.proxy) {
+  Object.defineProperty(instance.proxy, 'searchResults', {
+    get() {
+      return searchResults.value
+    },
+    set(value: TransitRoute[] | null | undefined) {
+      if (Array.isArray(value)) {
+        setSearchResults(value)
+      } else {
+        setSearchResults([])
+      }
+    },
+    configurable: true,
+    enumerable: true
+  })
+  Object.defineProperty(instance.proxy, 'selectedRoute', {
+    get() {
+      return selectedRoute.value
+    },
+    set(value: TransitRoute | null | undefined) {
+      setSelectedRoute(value ?? null)
+    },
+    configurable: true,
+    enumerable: true
+  })
+}
 
 // Constants
 const today = new Date()
@@ -449,6 +503,18 @@ const sortedResults = computed(() => {
     return compareByDepartureTime(a, b)
   }
 
+  const compareRecommended = (a: TransitRoute, b: TransitRoute): number => {
+    const transferDiff = a.transferCount - b.transferCount
+    if (transferDiff !== 0) {
+      return transferDiff
+    }
+    const durationDiff = getDurationMinutes(a) - getDurationMinutes(b)
+    if (durationDiff !== 0) {
+      return durationDiff
+    }
+    return compareByDepartureTime(a, b)
+  }
+
   if (sortOption.value === 'fast') {
     return routes.sort(compareByDuration)
   }
@@ -459,8 +525,8 @@ const sortedResults = computed(() => {
     return routes.sort(compareByTransfer)
   }
 
-  // おすすめ(バランス)は時系列順（出発時刻順）に変更
-  return routes.sort(compareByDepartureTime)
+  // おすすめ(バランス)は乗換回数 → 所要時間 → 出発時刻でソート
+  return routes.sort(compareRecommended)
 })
 
 const displayedResults = computed(() => {
@@ -564,7 +630,8 @@ async function handleSearch() {
     )
 
     logger.debug('Search results', results)
-    searchResults.value = results
+    setSelectedRoute(null)
+    setSearchResults(results)
 
     // Add to search history
     if (historyStore) {
@@ -575,6 +642,7 @@ async function handleSearch() {
         searchDateTime.setHours(parseInt(hours), parseInt(minutes), 0, 0)
       }
 
+      // 検索履歴から再検索の場合は、元の検索日時を使用
       historyStore.addSearchHistory({
         type: 'route',
         departure: departure.value,
@@ -582,11 +650,12 @@ async function handleSearch() {
         date: date.value,
         time: searchDateTime,
         isArrivalMode: isArrivalMode.value
-      })
+      }, historySearchedAt.value || undefined)
     }
   } catch (error) {
     logger.error('Search error', error)
-    searchResults.value = []
+    setSelectedRoute(null)
+    setSearchResults([])
   } finally {
     isSearching.value = false
   }
@@ -632,6 +701,10 @@ onMounted(() => {
   }
   if (route.query.isArrivalMode) {
     isArrivalMode.value = route.query.isArrivalMode === '1'
+  }
+  // 検索履歴から遷移してきた場合は、元の検索日時を保持
+  if (route.query.searchedAt) {
+    historySearchedAt.value = new Date(route.query.searchedAt as string)
   }
 })
 
