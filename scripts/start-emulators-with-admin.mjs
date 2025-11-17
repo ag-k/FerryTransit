@@ -6,11 +6,46 @@
  */
 
 import { spawn } from 'child_process'
-import { setTimeout } from 'timers/promises'
+import { setTimeout as sleep } from 'timers/promises'
+import net from 'net'
 
 const projectRoot = process.cwd()
 
 console.log('🚀 Starting Firebase emulator setup...\n')
+
+// Function to check if a port is open
+async function isPortOpen(port, maxAttempts = 30, interval = 1000) {
+  for (let attempt = 1; attempt <= maxAttempts; attempt++) {
+    try {
+      await new Promise((resolve, reject) => {
+        const socket = new net.Socket()
+        const timeout = global.setTimeout(() => {
+          socket.destroy()
+          reject(new Error('Timeout'))
+        }, 500)
+
+        socket.on('connect', () => {
+          clearTimeout(timeout)
+          socket.destroy()
+          resolve()
+        })
+
+        socket.on('error', (err) => {
+          clearTimeout(timeout)
+          reject(err)
+        })
+
+        socket.connect(port, 'localhost')
+      })
+      return true
+    } catch (err) {
+      if (attempt < maxAttempts) {
+        await sleep(interval)
+      }
+    }
+  }
+  return false
+}
 
 // Start Firebase emulators in background
 console.log('📡 Starting Firebase emulators...')
@@ -20,9 +55,18 @@ const emulatorProcess = spawn('firebase', ['emulators:start'], {
   shell: true
 })
 
-// Wait for emulators to be ready
+// Wait for emulators to be ready by checking ports
 console.log('⏳ Waiting for emulators to start...')
-await setTimeout(8000)
+const firestoreReady = await isPortOpen(8082)
+const authReady = await isPortOpen(9099)
+
+if (!firestoreReady || !authReady) {
+  console.log('❌ Emulators failed to start properly')
+  emulatorProcess.kill('SIGINT')
+  process.exit(1)
+}
+
+console.log('✅ Emulators are ready!')
 
 // Register super admin
 console.log('👤 Registering super admin for development...')
