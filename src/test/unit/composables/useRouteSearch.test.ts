@@ -18,6 +18,26 @@ vi.mock('@/composables/useHolidayCalendar', () => ({
   useHolidayCalendar: () => ({})
 }))
 
+// Mock useI18n from #imports
+vi.mock('#imports', async () => {
+  const actual = await vi.importActual('#imports')
+  const { ref } = await import('vue')
+
+  const translations: Record<string, string> = {
+    'MINUTES': '分',
+    'HOURS': '時間',
+    'HONDO': '本土'
+  }
+
+  return {
+    ...actual,
+    useI18n: () => ({
+      locale: ref('ja'),
+      t: (key: string) => translations[key] || key
+    })
+  }
+})
+
 describe('useRouteSearch', () => {
   beforeEach(() => {
     setActivePinia(createPinia())
@@ -315,19 +335,41 @@ describe('useRouteSearch', () => {
   })
 
   describe('getPortDisplayName', () => {
-    it('should return special display name for HONDO ports', () => {
-      const { getPortDisplayName } = useRouteSearch()
-      
-      // Since i18n is mocked to return the key, the expected output will include the key
-      expect(getPortDisplayName('HONDO_SHICHIRUI')).toBe('HONDO (HONDO_SHICHIRUI)')
-      expect(getPortDisplayName('HONDO_SAKAIMINATO')).toBe('HONDO (HONDO_SAKAIMINATO)')
+    beforeEach(() => {
+      const store = useFerryStore()
+      // Set up mock port data
+      store.ports = [
+        { PORT_ID: 'SAIGO', PLACE_NAME_JA: '西郷港', PLACE_NAME_EN: 'Saigo', PLACE_ID: 1 } as any,
+        { PORT_ID: 'BEPPU', PLACE_NAME_JA: '別府港', PLACE_NAME_EN: 'Beppu', PLACE_ID: 2 } as any,
+        { PORT_ID: 'HONDO_SHICHIRUI', PLACE_NAME_JA: '七類港', PLACE_NAME_EN: 'Shichirui', PLACE_ID: 3 } as any,
+        { PORT_ID: 'HONDO_SAKAIMINATO', PLACE_NAME_JA: '境港', PLACE_NAME_EN: 'Sakaiminato', PLACE_ID: 4 } as any
+      ]
     })
 
-    it('should return regular name for other ports', () => {
+    it('should return port name from ferryStore', () => {
       const { getPortDisplayName } = useRouteSearch()
-      
-      expect(getPortDisplayName('SAIGO')).toBe('SAIGO')
-      expect(getPortDisplayName('BEPPU')).toBe('BEPPU')
+
+      expect(getPortDisplayName('SAIGO')).toBe('西郷港')
+      expect(getPortDisplayName('BEPPU')).toBe('別府港')
+    })
+
+    it('should handle HONDO_SHICHIRUI port', () => {
+      const { getPortDisplayName } = useRouteSearch()
+
+      expect(getPortDisplayName('HONDO_SHICHIRUI')).toBe('七類港')
+    })
+
+    it('should handle special HONDO case', () => {
+      const { getPortDisplayName } = useRouteSearch()
+
+      // HONDO is a special legacy port ID that should be translated
+      expect(getPortDisplayName('HONDO')).toBe('HONDO')
+    })
+
+    it('should return empty string for empty port', () => {
+      const { getPortDisplayName } = useRouteSearch()
+
+      expect(getPortDisplayName('')).toBe('')
     })
   })
 

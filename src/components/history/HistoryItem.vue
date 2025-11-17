@@ -112,7 +112,8 @@ const formatDateTime = (date: Date | string) => {
       month: 'short',
       day: 'numeric',
       hour: '2-digit',
-      minute: '2-digit'
+      minute: '2-digit',
+      timeZone: 'Asia/Tokyo'
     }).format(dateObj)
   } catch (error) {
     logger.error('Error formatting datetime', error)
@@ -130,7 +131,8 @@ const formatDate = (date: Date | string) => {
       year: 'numeric',
       month: 'short',
       day: 'numeric',
-      weekday: 'short'
+      weekday: 'short',
+      timeZone: 'Asia/Tokyo'
     }).format(dateObj)
   } catch (error) {
     logger.error('Error formatting date', error)
@@ -145,7 +147,12 @@ const formatTime = (time?: Date | string) => {
     if (isNaN(timeObj.getTime())) {
       return '-'
     }
-    return timeObj.toTimeString().slice(0, 5)
+    // JSTで時刻を表示
+    return new Intl.DateTimeFormat(locale.value, {
+      hour: '2-digit',
+      minute: '2-digit',
+      timeZone: 'Asia/Tokyo'
+    }).format(timeObj)
   } catch (error) {
     logger.error('Error formatting time', error)
     return '-'
