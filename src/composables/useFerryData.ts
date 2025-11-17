@@ -1,12 +1,15 @@
 import { useFerryStore } from '@/stores/ferry'
 import { useUIStore } from '@/stores/ui'
+import { useTimetableLoader } from '@/composables/useTimetableLoader'
 import { createLogger } from '~/utils/logger'
 
 export const useFerryData = () => {
   // Initialize stores only on client side
   const ferryStore = process.client ? useFerryStore() : null
   const uiStore = process.client ? useUIStore() : null
-  const { $i18n } = useNuxtApp()
+  const { ensureTimetableLoaded } = useTimetableLoader()
+  const nuxtApp = useNuxtApp()
+  const $i18n = (nuxtApp as unknown as { $i18n: any }).$i18n
   const logger = createLogger('useFerryData')
 
   // 時刻文字列の比較関数
@@ -35,7 +38,7 @@ export const useFerryData = () => {
       
       // 時刻表データと運航状況を並行で取得
       await Promise.all([
-        ferryStore.fetchTimetable(),
+        ensureTimetableLoaded(),
         ferryStore.fetchShipStatus()
       ])
     } catch (error) {
@@ -49,7 +52,7 @@ export const useFerryData = () => {
   // 時刻表の更新
   const updateTimetable = async () => {
     if (!ferryStore) return
-    await ferryStore.fetchTimetable(true) // 強制更新
+    await ensureTimetableLoaded(true) // 強制更新
   }
 
   // 運航状況の更新
