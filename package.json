@@ -6,7 +6,7 @@
     "build": "nuxt build",
     "dev": "npm run dev:setup && cp .env.local .env && nuxt dev",
     "dev:setup": "node scripts/dev-setup.mjs",
-    "dev:full": "concurrently \"npm run firebase:emulators:with-admin\" \"npm run dev\"",
+    "dev:full": "concurrently \"npm run firebase:emulators:with-data\" \"npm run dev\"",
     "generate": "nuxt generate",
     "preview": "nuxt preview",
     "postinstall": "nuxt prepare",
@@ -26,6 +26,8 @@
     "typecheck": "nuxt typecheck",
     "firebase:emulators": "firebase emulators:start",
     "firebase:emulators:with-admin": "node scripts/start-emulators-with-admin.mjs",
+    "firebase:emulators:with-data": "node scripts/start-emulators-with-data.mjs",
+    "firebase:emulators:export": "node scripts/export-emulator-data.mjs",
     "firebase:deploy": "firebase deploy",
     "firebase:deploy:hosting": "firebase deploy --only hosting",
     "firebase:deploy:functions": "firebase deploy --only functions",
@@ -100,7 +102,8 @@
     "sass": "^1.89.2",
     "sass-loader": "^16.0.5",
     "tailwindcss": "^4.1.11",
-    "vitest": "^3.2.4"
+    "vitest": "^3.2.4",
+    "vue-tsc": "^3.1.4"
   },
   "optionalDependencies": {
     "@oxc-parser/binding-darwin-arm64": "^0.73.2"
