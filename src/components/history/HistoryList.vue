@@ -137,6 +137,9 @@ const groupedHistory = computed(() => {
 })
 
 const handleSearch = (history: SearchHistoryItem) => {
+  // 検索履歴から再検索する場合は、元の検索日時（searchedAt）を使用
+  const searchedAtDate = new Date(history.searchedAt)
+
   router.push({
     path: localePath('/transit'),
     query: {
@@ -144,7 +147,9 @@ const handleSearch = (history: SearchHistoryItem) => {
       arrival: history.arrival,
       date: history.date ? new Date(history.date).toISOString().split('T')[0] : undefined,
       time: history.time ? new Date(history.time).toTimeString().slice(0, 5) : undefined,
-      isArrivalMode: history.isArrivalMode ? '1' : '0'
+      isArrivalMode: history.isArrivalMode ? '1' : '0',
+      // 検索履歴の日時を使用（ISO形式で渡す）
+      searchedAt: searchedAtDate.toISOString()
     }
   })
 }

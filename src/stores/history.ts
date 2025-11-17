@@ -64,7 +64,8 @@ export const useHistoryStore = defineStore('history', () => {
   }
   
   const addSearchHistory = (
-    item: Omit<SearchHistoryItem, 'id' | 'searchedAt'>
+    item: Omit<SearchHistoryItem, 'id' | 'searchedAt'>,
+    searchedAt?: Date
   ): void => {
     // 重複チェック（同じ検索条件は最新のもののみ保持）
     const existingIndex = history.value.findIndex(h => 
@@ -104,7 +105,7 @@ export const useHistoryStore = defineStore('history', () => {
     const newItem: SearchHistoryItem = {
       ...item,
       id: generateId(),
-      searchedAt: new Date(),
+      searchedAt: searchedAt || new Date(),
       date: item.date instanceof Date ? item.date : new Date(item.date),
       time: convertedTime
     }

@@ -1,5 +1,5 @@
 import { vi } from 'vitest'
-import { ref, computed, reactive, watch, watchEffect, onMounted, onUnmounted } from 'vue'
+import { ref, shallowRef, computed, reactive, watch, watchEffect, onMounted, onUnmounted } from 'vue'
 
 export const defineNuxtPlugin = vi.fn((plugin) => plugin)
 
@@ -31,14 +31,22 @@ export const navigateTo = vi.fn()
 export const useHead = vi.fn()
 export const useSwitchLocalePath = vi.fn(() => vi.fn((locale: string) => `/${locale}`))
 
-export const useI18n = vi.fn(() => ({
-  locale: ref('ja'),
-  locales: ref([
-    { code: 'ja', name: '日本語' },
-    { code: 'en', name: 'English' }
-  ]),
-  t: vi.fn((key: string) => key)
-}))
+export const useI18n = vi.fn(() => {
+  const translations: Record<string, string> = {
+    'MINUTES': '分',
+    'HOURS': '時間',
+    'HONDO': '本土'
+  }
+
+  return {
+    locale: ref('ja'),
+    locales: ref([
+      { code: 'ja', name: '日本語' },
+      { code: 'en', name: 'English' }
+    ]),
+    t: vi.fn((key: string) => translations[key] || key)
+  }
+})
 
 export const defineEventHandler = vi.fn((handler) => handler)
 export const createError = vi.fn((error) => error)
@@ -101,4 +109,4 @@ export const useHolidayCalendar = vi.fn(() => {
 })
 
 // Re-export Vue reactivity functions
-export { ref, computed, reactive, watch, watchEffect, onMounted, onUnmounted }
+export { ref, shallowRef, computed, reactive, watch, watchEffect, onMounted, onUnmounted }
