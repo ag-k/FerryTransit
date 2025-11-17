@@ -1,6 +1,7 @@
 import { useFerryStore } from "@/stores/ferry";
 import { useFareStore } from "@/stores/fare";
 import { useFerryData } from "@/composables/useFerryData";
+import { useTimetableLoader } from "@/composables/useTimetableLoader";
 import type { Trip, TransitRoute, TransitSegment } from "@/types";
 import type { FareRoute, VesselType } from "@/types/fare";
 import { createLogger } from "~/utils/logger";
@@ -9,6 +10,7 @@ export const useRouteSearch = () => {
   const ferryStore = process.client ? useFerryStore() : null;
   const fareStore = process.client ? useFareStore() : null;
   const { getTripStatus, initializeData } = useFerryData();
+  const { ensureTimetableLoaded } = useTimetableLoader();
   const i18n = useI18n() as any;
   const logger = createLogger("useRouteSearch");
 
@@ -28,7 +30,12 @@ export const useRouteSearch = () => {
     isArrivalMode: boolean = false
   ): Promise<TransitRoute[]> => {
     // Ensure data is loaded
-    if (ferryStore && ferryStore.timetableData.length === 0) {
+    if (ferryStore) {
+      await ensureTimetableLoaded();
+      if (ferryStore.timetableData.length === 0) {
+        await initializeData();
+      }
+    } else {
       await initializeData();
     }
     if (fareStore) {
