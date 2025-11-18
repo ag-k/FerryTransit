@@ -4,6 +4,11 @@ import { useAdminAuth } from '~/composables/useAdminAuth'
 import { useAdminFirestore } from '~/composables/useAdminFirestore'
 import { createLogger } from '~/utils/logger'
 import type { VesselType } from '~/types/fare'
+import {
+  ROUTE_METADATA,
+  normalizeRouteId,
+  mapHighspeedPortsToCanonicalRoute
+} from '~/utils/fareRoutes'
 
 /**
  * 公開用のJSONデータを Hosting から取得（ユーザー向け）
@@ -316,9 +321,32 @@ export const useDataPublish = () => {
       const disabledChild = typeof (disabled?.child ?? fare.disabledChild) === 'number'
         ? (disabled?.child ?? fare.disabledChild)
         : null
+      const normalizedRoute =
+        normalizeRouteId(fare.route ?? fare.routeName ?? fare.id ?? null) ??
+        (typeof fare.route === 'string' ? fare.route : null)
+      const metadata = normalizedRoute ? ROUTE_METADATA[normalizedRoute] : null
+      const departure =
+        typeof fare.departure === 'string' && fare.departure.trim().length
+          ? fare.departure.trim()
+          : metadata?.departure ?? null
+      const arrival =
+        typeof fare.arrival === 'string' && fare.arrival.trim().length
+          ? fare.arrival.trim()
+          : metadata?.arrival ?? null
+      const canonicalFromPorts =
+        departure && arrival ? mapHighspeedPortsToCanonicalRoute(departure, arrival) : null
+      const finalRoute = normalizedRoute ?? canonicalFromPorts ?? (typeof fare.route === 'string' ? fare.route : null)
+      const routeName =
+        typeof fare.routeName === 'string' && fare.routeName.trim().length
+          ? fare.routeName.trim()
+          : null
+      const displayName =
+        typeof fare.displayName === 'string' && fare.displayName.trim().length
+          ? fare.displayName.trim()
+          : null
 
       return {
-        route: fare.route,
+        route: finalRoute,
         adult: fare.adult ?? null,
         child: fare.child ?? null,
         disabledAdult,
@@ -339,7 +367,11 @@ export const useDataPublish = () => {
         disabled: disabledAdult !== null || disabledChild !== null
           ? { adult: disabledAdult, child: disabledChild }
           : null,
-        type: fare.type
+        type: fare.type,
+        departure,
+        arrival,
+        routeName,
+        displayName
       }
     }
 

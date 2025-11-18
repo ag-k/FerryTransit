@@ -210,35 +210,33 @@ describe('Transit Page - Fare Display', () => {
         }
       })
 
-      // Set search parameters
-      await wrapper.setData({
-        departure: 'BEPPU',
-        arrival: 'HISHIURA',
-        date: new Date('2024-01-15'),
-        time: '08:00',
-        isArrivalMode: false,
-        hasSearched: true,
-        searchResults: [
-          {
-            segments: [
-              {
-                tripId: '100',
-                ship: 'ISOKAZE',
-                departure: 'BEPPU',
-                arrival: 'HISHIURA',
-                departureTime: new Date('2024-01-15T08:00:00'),
-                arrivalTime: new Date('2024-01-15T08:20:00'),
-                status: 0,
-                fare: 410
-              }
-            ],
-            departureTime: new Date('2024-01-15T08:00:00'),
-            arrivalTime: new Date('2024-01-15T08:20:00'),
-            totalFare: 410,
-            transferCount: 0
-          }
-        ]
-      })
+      // Set search parameters via component refs
+      wrapper.vm.departure = 'BEPPU'
+      wrapper.vm.arrival = 'HISHIURA'
+      wrapper.vm.date = new Date('2024-01-15')
+      wrapper.vm.time = '08:00'
+      wrapper.vm.isArrivalMode = false
+      wrapper.vm.hasSearched = true
+      wrapper.vm.searchResults = [
+        {
+          segments: [
+            {
+              tripId: '100',
+              ship: 'ISOKAZE',
+              departure: 'BEPPU',
+              arrival: 'HISHIURA',
+              departureTime: new Date('2024-01-15T08:00:00'),
+              arrivalTime: new Date('2024-01-15T08:20:00'),
+              status: 0,
+              fare: 410
+            }
+          ],
+          departureTime: new Date('2024-01-15T08:00:00'),
+          arrivalTime: new Date('2024-01-15T08:20:00'),
+          totalFare: 410,
+          transferCount: 0
+        }
+      ]
 
       await wrapper.vm.$nextTick()
 
@@ -266,32 +264,30 @@ describe('Transit Page - Fare Display', () => {
         }
       })
 
-      // Set search results
-      await wrapper.setData({
-        departure: 'BEPPU',
-        arrival: 'HISHIURA',
-        hasSearched: true,
-        searchResults: [
-          {
-            segments: [
-              {
-                tripId: '100',
-                ship: 'ISOKAZE',
-                departure: 'BEPPU',
-                arrival: 'HISHIURA',
-                departureTime: new Date('2024-01-15T08:00:00'),
-                arrivalTime: new Date('2024-01-15T08:20:00'),
-                status: 0,
-                fare: 410
-              }
-            ],
-            departureTime: new Date('2024-01-15T08:00:00'),
-            arrivalTime: new Date('2024-01-15T08:20:00'),
-            totalFare: 410,
-            transferCount: 0
-          }
-        ]
-      })
+      // Set search results via component refs
+      wrapper.vm.departure = 'BEPPU'
+      wrapper.vm.arrival = 'HISHIURA'
+      wrapper.vm.hasSearched = true
+      wrapper.vm.searchResults = [
+        {
+          segments: [
+            {
+              tripId: '100',
+              ship: 'ISOKAZE',
+              departure: 'BEPPU',
+              arrival: 'HISHIURA',
+              departureTime: new Date('2024-01-15T08:00:00'),
+              arrivalTime: new Date('2024-01-15T08:20:00'),
+              status: 0,
+              fare: 410
+            }
+          ],
+          departureTime: new Date('2024-01-15T08:00:00'),
+          arrivalTime: new Date('2024-01-15T08:20:00'),
+          totalFare: 410,
+          transferCount: 0
+        }
+      ]
 
       await wrapper.vm.$nextTick()
 
@@ -321,50 +317,48 @@ describe('Transit Page - Fare Display', () => {
         }
       })
 
-      // Set multiple search results with different fares
-      await wrapper.setData({
-        departure: 'BEPPU',
-        arrival: 'HISHIURA',
-        hasSearched: true,
-        searchResults: [
-          {
-            segments: [
-              {
-                tripId: '100',
-                ship: 'ISOKAZE',
-                departure: 'BEPPU',
-                arrival: 'HISHIURA',
-                departureTime: new Date('2024-01-15T08:00:00'),
-                arrivalTime: new Date('2024-01-15T08:20:00'),
-                status: 0,
-                fare: 410
-              }
-            ],
-            departureTime: new Date('2024-01-15T08:00:00'),
-            arrivalTime: new Date('2024-01-15T08:20:00'),
-            totalFare: 410,
-            transferCount: 0
-          },
-          {
-            segments: [
-              {
-                tripId: '101',
-                ship: 'FERRY_DOZEN',
-                departure: 'BEPPU',
-                arrival: 'HISHIURA',
-                departureTime: new Date('2024-01-15T14:00:00'),
-                arrivalTime: new Date('2024-01-15T14:25:00'),
-                status: 0,
-                fare: 630 // 2等特別
-              }
-            ],
-            departureTime: new Date('2024-01-15T14:00:00'),
-            arrivalTime: new Date('2024-01-15T14:25:00'),
-            totalFare: 630,
-            transferCount: 0
-          }
-        ]
-      })
+      // Set multiple search results with different fares via component refs
+      wrapper.vm.departure = 'BEPPU'
+      wrapper.vm.arrival = 'HISHIURA'
+      wrapper.vm.hasSearched = true
+      wrapper.vm.searchResults = [
+        {
+          segments: [
+            {
+              tripId: '100',
+              ship: 'ISOKAZE',
+              departure: 'BEPPU',
+              arrival: 'HISHIURA',
+              departureTime: new Date('2024-01-15T08:00:00'),
+              arrivalTime: new Date('2024-01-15T08:20:00'),
+              status: 0,
+              fare: 410
+            }
+          ],
+          departureTime: new Date('2024-01-15T08:00:00'),
+          arrivalTime: new Date('2024-01-15T08:20:00'),
+          totalFare: 410,
+          transferCount: 0
+        },
+        {
+          segments: [
+            {
+              tripId: '101',
+              ship: 'FERRY_DOZEN',
+              departure: 'BEPPU',
+              arrival: 'HISHIURA',
+              departureTime: new Date('2024-01-15T14:00:00'),
+              arrivalTime: new Date('2024-01-15T14:25:00'),
+              status: 0,
+              fare: 630 // 2等特別
+            }
+          ],
+          departureTime: new Date('2024-01-15T14:00:00'),
+          arrivalTime: new Date('2024-01-15T14:25:00'),
+          totalFare: 630,
+          transferCount: 0
+        }
+      ]
 
       await wrapper.vm.$nextTick()
 
@@ -390,42 +384,40 @@ describe('Transit Page - Fare Display', () => {
         }
       })
 
-      // Set transfer route results
-      await wrapper.setData({
-        departure: 'BEPPU',
-        arrival: 'SAIGO',
-        hasSearched: true,
-        searchResults: [
-          {
-            segments: [
-              {
-                tripId: '100',
-                ship: 'ISOKAZE',
-                departure: 'BEPPU',
-                arrival: 'HISHIURA',
-                departureTime: new Date('2024-01-15T08:00:00'),
-                arrivalTime: new Date('2024-01-15T08:20:00'),
-                status: 0,
-                fare: 410
-              },
-              {
-                tripId: '101',
-                ship: 'FERRY_DOZEN',
-                departure: 'HISHIURA',
-                arrival: 'SAIGO',
-                departureTime: new Date('2024-01-15T09:00:00'),
-                arrivalTime: new Date('2024-01-15T10:30:00'),
-                status: 0,
-                fare: 1540
-              }
-            ],
-            departureTime: new Date('2024-01-15T08:00:00'),
-            arrivalTime: new Date('2024-01-15T10:30:00'),
-            totalFare: 1950, // 410 + 1540
-            transferCount: 1
-          }
-        ]
-      })
+      // Set transfer route results via component refs
+      wrapper.vm.departure = 'BEPPU'
+      wrapper.vm.arrival = 'SAIGO'
+      wrapper.vm.hasSearched = true
+      wrapper.vm.searchResults = [
+        {
+          segments: [
+            {
+              tripId: '100',
+              ship: 'ISOKAZE',
+              departure: 'BEPPU',
+              arrival: 'HISHIURA',
+              departureTime: new Date('2024-01-15T08:00:00'),
+              arrivalTime: new Date('2024-01-15T08:20:00'),
+              status: 0,
+              fare: 410
+            },
+            {
+              tripId: '101',
+              ship: 'FERRY_DOZEN',
+              departure: 'HISHIURA',
+              arrival: 'SAIGO',
+              departureTime: new Date('2024-01-15T09:00:00'),
+              arrivalTime: new Date('2024-01-15T10:30:00'),
+              status: 0,
+              fare: 1540
+            }
+          ],
+          departureTime: new Date('2024-01-15T08:00:00'),
+          arrivalTime: new Date('2024-01-15T10:30:00'),
+          totalFare: 1950, // 410 + 1540
+          transferCount: 1
+        }
+      ]
 
       await wrapper.vm.$nextTick()
 
@@ -433,8 +425,8 @@ describe('Transit Page - Fare Display', () => {
       
       // Individual segment fares should be displayed
       expect(pageText).toContain('¥410')
-      expect(pageText).toContain('¥1540')
-      
+      expect(pageText).toContain('¥1,540')
+
       // Total fare should be displayed
       expect(pageText).toContain('TOTAL: ¥1,950')
     })
@@ -456,32 +448,30 @@ describe('Transit Page - Fare Display', () => {
         }
       })
 
-      // Set search results with high fare
-      await wrapper.setData({
-        departure: 'BEPPU',
-        arrival: 'HISHIURA',
-        hasSearched: true,
-        searchResults: [
-          {
-            segments: [
-              {
-                tripId: '100',
-                ship: 'ISOKAZE',
-                departure: 'BEPPU',
-                arrival: 'HISHIURA',
-                departureTime: new Date('2024-01-15T08:00:00'),
-                arrivalTime: new Date('2024-01-15T08:20:00'),
-                status: 0,
-                fare: 1150
-              }
-            ],
-            departureTime: new Date('2024-01-15T08:00:00'),
-            arrivalTime: new Date('2024-01-15T08:20:00'),
-            totalFare: 1150,
-            transferCount: 0
-          }
-        ]
-      })
+      // Set search results with high fare via component refs
+      wrapper.vm.departure = 'BEPPU'
+      wrapper.vm.arrival = 'HISHIURA'
+      wrapper.vm.hasSearched = true
+      wrapper.vm.searchResults = [
+        {
+          segments: [
+            {
+              tripId: '100',
+              ship: 'ISOKAZE',
+              departure: 'BEPPU',
+              arrival: 'HISHIURA',
+              departureTime: new Date('2024-01-15T08:00:00'),
+              arrivalTime: new Date('2024-01-15T08:20:00'),
+              status: 0,
+              fare: 1150
+            }
+          ],
+          departureTime: new Date('2024-01-15T08:00:00'),
+          arrivalTime: new Date('2024-01-15T08:20:00'),
+          totalFare: 1150,
+          transferCount: 0
+        }
+      ]
 
       await wrapper.vm.$nextTick()
 
@@ -507,33 +497,12 @@ describe('Transit Page - Fare Display', () => {
         }
       })
 
-      // Set search results and show details modal
-      await wrapper.setData({
-        departure: 'BEPPU',
-        arrival: 'HISHIURA',
-        hasSearched: true,
-        searchResults: [
-          {
-            segments: [
-              {
-                tripId: '100',
-                ship: 'ISOKAZE',
-                departure: 'BEPPU',
-                arrival: 'HISHIURA',
-                departureTime: new Date('2024-01-15T08:00:00'),
-                arrivalTime: new Date('2024-01-15T08:20:00'),
-                status: 0,
-                fare: 410
-              }
-            ],
-            departureTime: new Date('2024-01-15T08:00:00'),
-            arrivalTime: new Date('2024-01-15T08:20:00'),
-            totalFare: 410,
-            transferCount: 0
-          }
-        ],
-        showDetailsModal: true,
-        selectedRoute: {
+      // Set search results and show details modal via component refs
+      wrapper.vm.departure = 'BEPPU'
+      wrapper.vm.arrival = 'HISHIURA'
+      wrapper.vm.hasSearched = true
+      wrapper.vm.searchResults = [
+        {
           segments: [
             {
               tripId: '100',
@@ -551,7 +520,26 @@ describe('Transit Page - Fare Display', () => {
           totalFare: 410,
           transferCount: 0
         }
-      })
+      ]
+      wrapper.vm.showDetailsModal = true
+      wrapper.vm.selectedRoute = {
+        segments: [
+          {
+            tripId: '100',
+            ship: 'ISOKAZE',
+            departure: 'BEPPU',
+            arrival: 'HISHIURA',
+            departureTime: new Date('2024-01-15T08:00:00'),
+            arrivalTime: new Date('2024-01-15T08:20:00'),
+            status: 0,
+            fare: 410
+          }
+        ],
+        departureTime: new Date('2024-01-15T08:00:00'),
+        arrivalTime: new Date('2024-01-15T08:20:00'),
+        totalFare: 410,
+        transferCount: 0
+      }
 
       await wrapper.vm.$nextTick()
 
@@ -559,7 +547,7 @@ describe('Transit Page - Fare Display', () => {
       
       // Should show fare in modal
       expect(pageText).toContain('¥410')
-      expect(pageText).toContain('TOTAL_FARE')
+      expect(pageText).toContain('TOTAL: ¥410')
     })
   })
 })

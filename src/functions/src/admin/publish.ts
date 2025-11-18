@@ -1,6 +1,11 @@
 /* eslint-disable no-console */
 import { onCall, HttpsError } from 'firebase-functions/v2/https'
 import * as admin from 'firebase-admin'
+import {
+  ROUTE_METADATA,
+  normalizeRouteId,
+  mapHighspeedPortsToCanonicalRoute
+} from '../../../utils/fareRoutes'
 
 type TimestampLike = string | number | Date | { toDate: () => Date } | null | undefined
 
@@ -22,6 +27,10 @@ interface FareDocument {
   type?: string | null
   versionId?: string | null
   route?: string | null
+  routeName?: string | null
+  displayName?: string | null
+  departure?: string | null
+  arrival?: string | null
   adult?: number | null
   child?: number | null
   disabledAdult?: number | null
@@ -53,6 +62,10 @@ interface NormalizedFareRecord {
   vehicle: VehicleFare | null
   disabled: DisabledFare | null
   type?: string | null
+  departure: string | null
+  arrival: string | null
+  routeName: string | null
+  displayName: string | null
 }
 
 interface VersionMetadata {
@@ -372,9 +385,32 @@ async function prepareFareData() {
     const toNumberOrNull = (value: unknown): number | null => (typeof value === 'number' ? value : null)
     const disabledAdult = toNumberOrNull(disabledSource?.adult ?? fare.disabledAdult)
     const disabledChild = toNumberOrNull(disabledSource?.child ?? fare.disabledChild)
+    const normalizedRoute =
+      normalizeRouteId(fare.route ?? fare.routeName ?? fare.id ?? null) ??
+      (typeof fare.route === 'string' ? fare.route : null)
+    const metadata = normalizedRoute ? ROUTE_METADATA[normalizedRoute] : null
+    const departure =
+      typeof fare.departure === 'string' && fare.departure.trim().length
+        ? fare.departure.trim()
+        : metadata?.departure ?? null
+    const arrival =
+      typeof fare.arrival === 'string' && fare.arrival.trim().length
+        ? fare.arrival.trim()
+        : metadata?.arrival ?? null
+    const canonicalFromPorts =
+      departure && arrival ? mapHighspeedPortsToCanonicalRoute(departure, arrival) : null
+    const finalRoute = normalizedRoute ?? canonicalFromPorts ?? (typeof fare.route === 'string' ? fare.route : null)
+    const routeName =
+      typeof fare.routeName === 'string' && fare.routeName.trim().length
+        ? fare.routeName.trim()
+        : null
+    const displayName =
+      typeof fare.displayName === 'string' && fare.displayName.trim().length
+        ? fare.displayName.trim()
+        : null
 
     return {
-      route: typeof fare.route === 'string' ? fare.route : null,
+      route: finalRoute,
       adult: typeof fare.adult === 'number' ? fare.adult : null,
       child: typeof fare.child === 'number' ? fare.child : null,
       disabledAdult,
@@ -387,7 +423,11 @@ async function prepareFareData() {
       disabled: disabledAdult !== null || disabledChild !== null
         ? { adult: disabledAdult, child: disabledChild }
         : null,
-      type: fare.type ?? null
+      type: fare.type ?? null,
+      departure,
+      arrival,
+      routeName,
+      displayName
     }
   }
 

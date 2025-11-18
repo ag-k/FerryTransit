@@ -462,6 +462,14 @@ import FormModal from '~/components/admin/FormModal.vue'
 import ToggleSwitch from '~/components/common/ToggleSwitch.vue'
 import { createLogger } from '~/utils/logger'
 import { roundUpToTen } from '~/utils/currency'
+import {
+  HIGHSPEED_ROUTE_TRANSLATION_KEYS,
+  ROUTE_METADATA,
+  normalizeRouteId,
+  mapHighspeedToCanonicalRoute,
+  getHighspeedRouteLabel,
+  resolveHighspeedRouteInfo
+} from '~/utils/fareRoutes'
 
 definePageMeta({
   layout: 'admin',
@@ -753,189 +761,6 @@ const CATEGORY_BY_ID = FERRY_CATEGORY_DEFINITIONS.reduce<Record<string, FerryCat
   acc[def.id] = def
   return acc
 }, {})
-
-const LEGACY_ROUTE_NAME_MAP: Record<string, string> = {
-  '本土七類 ⇔ 西郷': 'hondo-saigo',
-  '西郷 ⇔ 本土七類': 'saigo-hondo',
-  '本土七類 ⇔ 菱浦': 'hondo-hishiura',
-  '菱浦 ⇔ 本土七類': 'hishiura-hondo',
-  '本土七類 ⇔ 別府': 'hondo-beppu',
-  '別府 ⇔ 本土七類': 'beppu-hondo',
-  '本土七類 ⇔ 来居': 'hondo-kuri',
-  '来居 ⇔ 本土七類': 'kuri-hondo',
-  '西郷 ⇔ 菱浦': 'saigo-hishiura',
-  '菱浦 ⇔ 西郷': 'hishiura-saigo',
-  '西郷 ⇔ 別府': 'saigo-beppu',
-  '別府 ⇔ 西郷': 'beppu-saigo',
-  '菱浦 ⇔ 別府': 'hishiura-beppu',
-  '別府 ⇔ 菱浦': 'beppu-hishiura',
-  '菱浦 ⇔ 来居': 'hishiura-kuri',
-  '来居 ⇔ 菱浦': 'kuri-hishiura',
-  '来居 ⇔ 別府': 'kuri-beppu',
-  '別府 ⇔ 来居': 'beppu-kuri'
-}
-
-const HIGHSPEED_ROUTE_TRANSLATION_KEYS: Record<string, string> = {
-  'hondo-oki': 'HONDO_OKI',
-  'hondo-saigo': 'HONDO_SAIGO',
-  'hondo-hishiura': 'HONDO_HISHIURA',
-  'hondo-beppu': 'HONDO_BEPPU',
-  'hondo-kuri': 'HONDO_KURI',
-  'saigo-hondo': 'SAIGO_HONDO',
-  'saigo-beppu': 'SAIGO_BEPPU',
-  'saigo-hishiura': 'SAIGO_HISHIURA',
-  'hishiura-hondo': 'HISHIURA_HONDO',
-  'hishiura-saigo': 'HISHIURA_SAIGO',
-  'hishiura-beppu': 'HISHIURA_BEPPU',
-  'hishiura-kuri': 'HISHIURA_KURI',
-  'kuri-hondo': 'KURI_HONDO',
-  'kuri-beppu': 'KURI_BEPPU',
-  'kuri-hishiura': 'KURI_HISHIURA',
-  'beppu-hondo': 'BEPPU_HONDO',
-  'beppu-saigo': 'BEPPU_SAIGO',
-  'beppu-hishiura': 'BEPPU_HISHIURA',
-  'beppu-kuri': 'BEPPU_KURI',
-  'dozen-dogo': 'DOZEN_DOGO',
-  'beppu-hishiura': 'BEPPU_HISHIURA',
-  'hishiura-kuri': 'HISHIURA_KURI',
-  'kuri-beppu': 'KURI_BEPPU'
-}
-
-const HIGHSPEED_CANONICAL_ROUTE_MAP: Record<string, string> = {
-  'hondo-oki': 'hondo-oki',
-  'hondo-saigo': 'hondo-oki',
-  'saigo-hondo': 'hondo-oki',
-  'hondo-hishiura': 'hondo-oki',
-  'hishiura-hondo': 'hondo-oki',
-  'hondo-beppu': 'hondo-oki',
-  'beppu-hondo': 'hondo-oki',
-  'dozen-dogo': 'dozen-dogo',
-  'saigo-beppu': 'dozen-dogo',
-  'beppu-saigo': 'dozen-dogo',
-  'saigo-hishiura': 'dozen-dogo',
-  'hishiura-saigo': 'dozen-dogo',
-  'beppu-hishiura': 'beppu-hishiura',
-  'hishiura-beppu': 'beppu-hishiura',
-  'hishiura-kuri': 'hishiura-kuri',
-  'kuri-hishiura': 'hishiura-kuri',
-  'kuri-beppu': 'kuri-beppu',
-  'beppu-kuri': 'kuri-beppu'
-}
-
-const ROUTE_LABELS: Record<string, string> = Object.entries(LEGACY_ROUTE_NAME_MAP).reduce((acc, [label, routeId]) => {
-  if (!acc[routeId]) {
-    acc[routeId] = label
-  }
-  return acc
-}, {} as Record<string, string>)
-
-const ROUTE_METADATA: Record<string, { departure: string; arrival: string }> = {
-  'hondo-saigo': { departure: 'HONDO', arrival: 'SAIGO' },
-  'saigo-hondo': { departure: 'SAIGO', arrival: 'HONDO' },
-  'hondo-beppu': { departure: 'HONDO', arrival: 'BEPPU' },
-  'beppu-hondo': { departure: 'BEPPU', arrival: 'HONDO' },
-  'hondo-hishiura': { departure: 'HONDO', arrival: 'HISHIURA' },
-  'hishiura-hondo': { departure: 'HISHIURA', arrival: 'HONDO' },
-  'hondo-kuri': { departure: 'HONDO', arrival: 'KURI' },
-  'kuri-hondo': { departure: 'KURI', arrival: 'HONDO' },
-  'saigo-beppu': { departure: 'SAIGO', arrival: 'BEPPU' },
-  'beppu-saigo': { departure: 'BEPPU', arrival: 'SAIGO' },
-  'saigo-hishiura': { departure: 'SAIGO', arrival: 'HISHIURA' },
-  'hishiura-saigo': { departure: 'HISHIURA', arrival: 'SAIGO' },
-  'saigo-kuri': { departure: 'SAIGO', arrival: 'KURI' },
-  'kuri-saigo': { departure: 'KURI', arrival: 'SAIGO' },
-  'beppu-hishiura': { departure: 'BEPPU', arrival: 'HISHIURA' },
-  'hishiura-beppu': { departure: 'HISHIURA', arrival: 'BEPPU' },
-  'hishiura-kuri': { departure: 'HISHIURA', arrival: 'KURI' },
-  'kuri-hishiura': { departure: 'KURI', arrival: 'HISHIURA' },
-  'kuri-beppu': { departure: 'KURI', arrival: 'BEPPU' },
-  'beppu-kuri': { departure: 'BEPPU', arrival: 'KURI' },
-  'hondo-oki': { departure: 'HONDO', arrival: 'OKI' },
-  'dozen-dogo': { departure: 'DOZEN', arrival: 'DOGO' }
-}
-
-const normalizeRouteId = (value?: string | null): string | null => {
-  if (!value) return null
-  const trimmed = value.trim()
-  if (!trimmed) return null
-  if (ROUTE_METADATA[trimmed]) return trimmed
-  const lower = trimmed.toLowerCase()
-  if (ROUTE_METADATA[lower]) return lower
-  if (LEGACY_ROUTE_NAME_MAP[trimmed]) return LEGACY_ROUTE_NAME_MAP[trimmed]
-  return null
-}
-
-const resolveRouteLabel = (routeId: string | null | undefined): string | null => {
-  if (!routeId) return null
-  return ROUTE_LABELS[routeId] ?? null
-}
-
-const mapHighspeedToCanonicalRoute = (routeId: string | null | undefined): string | null => {
-  if (!routeId) return null
-  const normalized = routeId.toLowerCase()
-  return HIGHSPEED_CANONICAL_ROUTE_MAP[normalized] ?? normalized
-}
-
-const getHighspeedRouteLabel = (routeId: string | null | undefined): string | null => {
-  const canonical = mapHighspeedToCanonicalRoute(routeId)
-  console.log('getHighspeedRouteLabel:', { routeId, canonical })
-  if (!canonical) return null
-
-  // 直接日本語ラベルを返す
-  const directLabels: Record<string, string> = {
-    'hondo-oki': '本土〜隠岐',
-    'dozen-dogo': '島前〜島後',
-    'beppu-hishiura': '別府〜菱浦'
-  }
-
-  return directLabels[canonical] ?? canonical
-}
-
-const resolveHighspeedRouteInfo = (fare: FareDoc): { routeId: string | null; label: string } => {
-  const routeCandidates = [
-    typeof fare.route === 'string' ? fare.route : null,
-    typeof fare.routeName === 'string' ? fare.routeName : null,
-    typeof fare.displayName === 'string' ? fare.displayName : null
-  ]
-
-  let routeId: string | null = null
-  for (const candidate of routeCandidates) {
-    if (!candidate) continue
-    const normalized = normalizeRouteId(candidate)
-    if (normalized) {
-      routeId = normalized
-      break
-    }
-  }
-
-  if (!routeId) {
-    routeId = routeCandidates.find(candidate => candidate && !candidate.includes('⇔')) ?? null
-  }
-
-  const canonicalRouteId = mapHighspeedToCanonicalRoute(routeId)
-
-  let label = getHighspeedRouteLabel(canonicalRouteId)
-  if (!label) {
-    label = routeCandidates.find(candidate => candidate && candidate.includes('⇔')) ?? null
-  }
-  if (!label && routeCandidates[2]) {
-    label = routeCandidates[2]
-  }
-  if (!label && routeCandidates[1]) {
-    label = routeCandidates[1]
-  }
-  if ((!label || !label.trim()) && canonicalRouteId) {
-    label = resolveRouteLabel(canonicalRouteId) ?? null
-  }
-  if (!label || !label.trim()) {
-    label = typeof fare.route === 'string' && fare.route.trim() ? fare.route : '未設定'
-  }
-
-  return {
-    routeId: canonicalRouteId,
-    label: label.trim()
-  }
-}
 
 const isHighspeedKuriRoute = (fare: FareDoc): boolean => {
   const routeCandidates = [
@@ -1564,6 +1389,16 @@ const mapFareEntryForCreate = (fare: FareDoc, versionId: string) => {
   const child = calculateChildFare(passenger.adult)
   const disabledAdult = disabled.adult ?? null
   const disabledChild = disabled.adult ? calculateChildFare(disabled.adult) : null
+  const normalizedRoute = normalizeRouteId(fare.route ?? fare.routeName)
+  const routeMetadata = normalizedRoute ? ROUTE_METADATA[normalizedRoute] : null
+  const departure =
+    typeof fare.departure === 'string' && fare.departure.trim().length
+      ? fare.departure.trim()
+      : routeMetadata?.departure ?? null
+  const arrival =
+    typeof fare.arrival === 'string' && fare.arrival.trim().length
+      ? fare.arrival.trim()
+      : routeMetadata?.arrival ?? null
 
   const payload: Record<string, any> = {
     type: fare.type ?? fare.vesselType ?? 'ferry',
@@ -1586,10 +1421,11 @@ const mapFareEntryForCreate = (fare: FareDoc, versionId: string) => {
         adult: disabledAdult,
         child: disabledChild
       }
-    }
+    },
+    departure,
+    arrival
   }
 
-  const normalizedRoute = normalizeRouteId(fare.route ?? fare.routeName)
   if (normalizedRoute) {
     payload.route = normalizedRoute
     payload.routeName = normalizedRoute
@@ -1599,8 +1435,6 @@ const mapFareEntryForCreate = (fare: FareDoc, versionId: string) => {
 
   if (fare.categoryId) payload.categoryId = fare.categoryId
   if (fare.displayName) payload.displayName = fare.displayName
-  if (fare.departure) payload.departure = fare.departure
-  if (fare.arrival) payload.arrival = fare.arrival
 
   return payload
 }
@@ -1873,7 +1707,6 @@ const setDefaultData = () => {
 
   highspeedFares.value = defaultHighspeedRouteIds.map((routeId, index) => {
     const label = getHighspeedRouteLabel(routeId) ?? routeId
-    console.log('Creating highspeed fare:', { routeId, label })
     const adult = defaultHighspeedAdults[index]
     return {
       route: routeId,
@@ -1889,7 +1722,6 @@ const setDefaultData = () => {
     }
   })
 
-  console.log('Final highspeedFares:', highspeedFares.value)
   editingHighspeedFares.value = highspeedFares.value.map(fare => ({ ...fare }))
 
   // デフォルトの割引設定
@@ -2046,7 +1878,16 @@ const saveFareData = async () => {
         const child = calculateChildFare(adult)
         const disabledAdult = pickNumber(fare.disabledAdult)
         const disabledChild = disabledAdult ? calculateChildFare(disabledAdult) : null
-        const resolvedRoute = routeId ?? normalizeRouteId(label) ?? (typeof fare.route === 'string' ? fare.route : null)
+        const resolvedRoute = routeId ?? normalizeRouteId(label) ?? normalizeRouteId(fare.route ?? null) ?? (typeof fare.route === 'string' ? fare.route : null)
+        const routeMetadata = resolvedRoute ? ROUTE_METADATA[resolvedRoute] : null
+        const departure =
+          typeof fare.departure === 'string' && fare.departure.trim().length
+            ? fare.departure.trim()
+            : routeMetadata?.departure ?? null
+        const arrival =
+          typeof fare.arrival === 'string' && fare.arrival.trim().length
+            ? fare.arrival.trim()
+            : routeMetadata?.arrival ?? null
         return {
           type: fare.id ? 'update' as const : 'create' as const,
           collection: 'fares',
@@ -2065,6 +1906,8 @@ const saveFareData = async () => {
             disabledChild,
             type: 'highspeed',
             versionId: selectedHighspeedVersionId.value,
+            departure,
+            arrival,
             fares: {
               adult,
               child,

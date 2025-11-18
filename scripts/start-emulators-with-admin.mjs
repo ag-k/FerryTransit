@@ -72,7 +72,7 @@ console.log('✅ Emulators are ready!')
 console.log('👤 Registering super admin for development...')
 try {
   const { execSync } = await import('child_process')
-  execSync('node src/scripts/setup-admin.js admin@ferry-dev.local Admin123! super', { 
+  execSync('node src/scripts/setup-admin.js admin@ferry-dev.local Admin123! super', {
     stdio: 'inherit',
     cwd: projectRoot,
     env: {
@@ -92,7 +92,7 @@ try {
 console.log('📅 Importing timetable data...')
 try {
   const { execSync } = await import('child_process')
-  execSync('node scripts/import-timetable-admin.mjs', { 
+  execSync('node scripts/import-timetable-admin.mjs', {
     stdio: 'inherit',
     cwd: projectRoot,
     env: {
@@ -111,7 +111,7 @@ try {
 console.log('💰 Importing fare data...')
 try {
   const { execSync } = await import('child_process')
-  execSync('node scripts/import-fare-data.mjs', { 
+  execSync('node scripts/import-fare-data.mjs', {
     stdio: 'inherit',
     cwd: projectRoot,
     env: {
@@ -124,6 +124,46 @@ try {
 } catch (error) {
   console.log('⚠️  Could not import fare data. You can run it manually with:')
   console.log('   node scripts/import-fare-data.mjs')
+}
+
+// Upload fare data to Storage
+console.log('📤 Uploading fare data to Firebase Storage...')
+try {
+  const { execSync } = await import('child_process')
+  execSync('node scripts/upload-fare-data.mjs', {
+    stdio: 'inherit',
+    cwd: projectRoot,
+    env: {
+      ...process.env,
+      FIREBASE_AUTH_EMULATOR_HOST: 'localhost:9099',
+      FIRESTORE_EMULATOR_HOST: 'localhost:8082',
+      FIREBASE_STORAGE_EMULATOR_HOST: 'localhost:9199'
+    }
+  })
+  console.log('✅ Fare data uploaded to Storage successfully')
+} catch (error) {
+  console.log('⚠️  Could not upload fare data to Storage. You can run it manually with:')
+  console.log('   node scripts/upload-fare-data.mjs')
+}
+
+// Upload timetable data to Storage
+console.log('📤 Uploading timetable data to Firebase Storage...')
+try {
+  const { execSync } = await import('child_process')
+  execSync('node scripts/upload-timetable-data.mjs', {
+    stdio: 'inherit',
+    cwd: projectRoot,
+    env: {
+      ...process.env,
+      FIREBASE_AUTH_EMULATOR_HOST: 'localhost:9099',
+      FIRESTORE_EMULATOR_HOST: 'localhost:8082',
+      FIREBASE_STORAGE_EMULATOR_HOST: 'localhost:9199'
+    }
+  })
+  console.log('✅ Timetable data uploaded to Storage successfully')
+} catch (error) {
+  console.log('⚠️  Could not upload timetable data to Storage. You can run it manually with:')
+  console.log('   node scripts/upload-timetable-data.mjs')
 }
 
 console.log('\n🎉 Firebase emulators are running with super admin configured!')
