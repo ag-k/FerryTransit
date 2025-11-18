@@ -15,20 +15,20 @@ console.log('💰 Importing fare data using Admin SDK...')
 try {
   // Initialize Firebase Admin SDK for emulator
   process.env.FIRESTORE_EMULATOR_HOST = 'localhost:8082'
-  
+
   admin.initializeApp({
     projectId: 'oki-ferryguide'
   })
-  
+
   const db = admin.firestore()
   console.log('🔥 Connected to Firestore emulator with Admin SDK')
-  
+
   // Read fare data
-  const fareDataPath = join(projectRoot, 'src/data/fare-master.json')
+  const fareDataPath = join(projectRoot, 'src/public/data/fare-master.json')
   const fareData = JSON.parse(readFileSync(fareDataPath, 'utf8'))
-  
+
   console.log(`📊 Found fare data with structure: ${Object.keys(fareData).join(', ')}`)
-  
+
   // Clear existing fare data first
   console.log('🗑️  Clearing existing fare data...')
   const existingFareDocs = await db.collection('fares').listDocuments()
@@ -40,7 +40,7 @@ try {
     await deleteBatch.commit()
     console.log(`✅ Cleared ${existingFareDocs.length} existing fare entries`)
   }
-  
+
   // Clear existing fare versions
   console.log('🗑️  Clearing existing fare versions...')
   const existingVersionDocs = await db.collection('fareVersions').listDocuments()
@@ -52,11 +52,11 @@ try {
     await deleteBatch.commit()
     console.log(`✅ Cleared ${existingVersionDocs.length} existing fare version entries`)
   }
-  
+
   // Convert fare data to Firestore format
   const fareRecords = []
   const versionRecords = []
-  
+
   // Process inner island fares
   if (fareData.innerIslandFare) {
     const innerIslandVersion = {
@@ -69,7 +69,7 @@ try {
       updatedAt: new Date().toISOString()
     }
     versionRecords.push(innerIslandVersion)
-    
+
     // Adult fare
     fareRecords.push({
       route: 'inner-island',
@@ -80,7 +80,7 @@ try {
       createdAt: new Date(),
       updatedAt: new Date()
     })
-    
+
     // Vehicle fares
     if (fareData.innerIslandVehicleFare) {
       Object.entries(fareData.innerIslandVehicleFare).forEach(([size, price]) => {
@@ -100,7 +100,7 @@ try {
       })
     }
   }
-  
+
   // Process rainbow jet fares
   if (fareData.rainbowJetFares) {
     const jetVersion = {
@@ -113,7 +113,7 @@ try {
       updatedAt: new Date().toISOString()
     }
     versionRecords.push(jetVersion)
-    
+
     Object.entries(fareData.rainbowJetFares).forEach(([route, prices]) => {
       if (prices.adult !== null || prices.child !== null) {
         fareRecords.push({
@@ -128,43 +128,43 @@ try {
       }
     })
   }
-  
+
   // Import fare data in batches
   const batchSize = 500
   let importedFares = 0
-  
+
   for (let i = 0; i < fareRecords.length; i += batchSize) {
     const batch = db.batch()
     const batchEnd = Math.min(i + batchSize, fareRecords.length)
-    
+
     for (let j = i; j < batchEnd; j++) {
       const record = fareRecords[j]
       const docRef = db.collection('fares').doc()
       batch.set(docRef, record)
     }
-    
+
     await batch.commit()
     importedFares += batchEnd - i
-    console.log(`✅ Imported fare batch ${Math.floor(i/batchSize) + 1}: ${importedFares}/${fareRecords.length} entries`)
+    console.log(`✅ Imported fare batch ${Math.floor(i / batchSize) + 1}: ${importedFares}/${fareRecords.length} entries`)
   }
-  
+
   // Import version data
   for (let i = 0; i < versionRecords.length; i += batchSize) {
     const batch = db.batch()
     const batchEnd = Math.min(i + batchSize, versionRecords.length)
-    
+
     for (let j = i; j < batchEnd; j++) {
       const record = versionRecords[j]
       const docRef = db.collection('fareVersions').doc(record.id)
       batch.set(docRef, record)
     }
-    
+
     await batch.commit()
-    console.log(`✅ Imported version batch ${Math.floor(i/batchSize) + 1}: ${batchEnd}/${versionRecords.length} entries`)
+    console.log(`✅ Imported version batch ${Math.floor(i / batchSize) + 1}: ${batchEnd}/${versionRecords.length} entries`)
   }
-  
+
   console.log(`🎉 Successfully imported ${importedFares} fare records and ${versionRecords.length} version records!`)
-  
+
 } catch (error) {
   console.error('❌ Failed to import fare data:', error)
   process.exit(1)

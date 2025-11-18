@@ -61,7 +61,7 @@
             
             const loadFareMaster = async () => {
                 try {
-                    const response = await fetch('/api/fare');
+                    const response = await fetch('/data/fare-master.json');
                     const data = await response.json();
                     fareMaster.value = data;
                     console.log('料金データ読み込み完了:', data);
@@ -86,7 +86,7 @@
             
             const loadTimetableData = async () => {
                 try {
-                    const response = await fetch('/api/timetable');
+                    const response = await fetch('/data/timetable.json');
                     const data = await response.json();
                     timetableData.value = data;
                     console.log('時刻表データ読み込み完了:', data.length, '件');
