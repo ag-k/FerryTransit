@@ -2,6 +2,10 @@ import { defineStore } from 'pinia'
 import { ref, computed, readonly } from 'vue'
 import { useOfflineStore } from './offline'
 import { roundUpToTen } from '@/utils/currency'
+import {
+  ROUTE_METADATA,
+  mapHighspeedPortsToCanonicalRoute
+} from '@/utils/fareRoutes'
 import type { FareMaster, FareRoute, FareVersion, VesselType, RouteFare, VehicleFare, SeatClassFare } from '@/types/fare'
 
 type GetFareOptions = {
@@ -99,10 +103,20 @@ const convertFaresToRoutes = (
         }
       }
 
+      const metadata = ROUTE_METADATA[routeId] ?? null
+      const departure =
+        typeof fare.departure === 'string' && fare.departure.trim().length
+          ? fare.departure.trim()
+          : metadata?.departure ?? ''
+      const arrival =
+        typeof fare.arrival === 'string' && fare.arrival.trim().length
+          ? fare.arrival.trim()
+          : metadata?.arrival ?? ''
+
       const route: FareRoute = {
         id: routeId,
-        departure: typeof fare.departure === 'string' ? fare.departure : '',
-        arrival: typeof fare.arrival === 'string' ? fare.arrival : '',
+        departure,
+        arrival,
         fares: routeFare,
         vehicle: vehicle ?? undefined,
         vesselType: version.vesselType,
@@ -197,6 +211,79 @@ const aggregateRoutesForDate = (versions: FareVersion[], date: Date): FareRoute[
   return result
 }
 
+const createRoute = (
+  id: string,
+  departure: string,
+  arrival: string,
+  adult: number,
+  child: number
+): FareRoute => ({
+  id,
+  departure,
+  arrival,
+  fares: {
+    adult,
+    child
+  }
+})
+
+const DEFAULT_FARE_MASTER: FareMaster = {
+  innerIslandFare: {
+    adult: 300,
+    child: 100
+  },
+  versions: [
+    {
+      id: 'fallback-ferry',
+      vesselType: 'ferry',
+      name: '標準フェリー',
+      effectiveFrom: '1970-01-01',
+      routes: [
+        createRoute('hondo_shichirui-saigo', 'HONDO_SHICHIRUI', 'SAIGO', 3520, 1760),
+        createRoute('saigo-hondo_shichirui', 'SAIGO', 'HONDO_SHICHIRUI', 3520, 1760),
+        createRoute('saigo-hishiura', 'SAIGO', 'HISHIURA', 1540, 770),
+        createRoute('hondo_shichirui-kuri', 'HONDO_SHICHIRUI', 'KURI', 3520, 1760)
+      ]
+    },
+    {
+      id: 'fallback-local',
+      vesselType: 'local',
+      name: '標準内航船',
+      effectiveFrom: '1970-01-01',
+      routes: [
+        createRoute('beppu-hishiura', 'BEPPU', 'HISHIURA', 410, 205),
+        createRoute('beppu-kuri', 'BEPPU', 'KURI', 780, 390),
+        createRoute('saigo-hishiura', 'SAIGO', 'HISHIURA', 1540, 770),
+        createRoute('saigo-beppu', 'SAIGO', 'BEPPU', 1680, 840)
+      ]
+    },
+    {
+      id: 'fallback-highspeed',
+      vesselType: 'highspeed',
+      name: '標準高速船',
+      effectiveFrom: '1970-01-01',
+      routes: [
+        createRoute('hondo-oki', 'HONDO_SHICHIRUI', 'SAIGO', 6680, 3340),
+        createRoute('dozen-dogo', 'BEPPU', 'SAIGO', 4890, 2450),
+        createRoute('beppu-hishiura', 'BEPPU', 'HISHIURA', 2450, 1220),
+        createRoute('hishiura-kuri', 'HISHIURA', 'KURI', 2450, 1220),
+        createRoute('kuri-beppu', 'KURI', 'BEPPU', 2450, 1220)
+      ]
+    }
+  ],
+  routes: [],
+  activeVersionIds: {
+    ferry: 'fallback-ferry',
+    local: 'fallback-local',
+    highspeed: 'fallback-highspeed'
+  },
+  discounts: {},
+  notes: []
+}
+
+const cloneDefaultFareMaster = (): FareMaster =>
+  JSON.parse(JSON.stringify(DEFAULT_FARE_MASTER))
+
 const normalizeFareMaster = (data: FareMaster): FareMaster => {
   const normalizedVersions = (data.versions && data.versions.length
     ? data.versions.map(normalizeVersion)
@@ -264,12 +351,33 @@ export const useFareStore = defineStore('fare', () => {
       const vesselType = options.vesselType ?? 'ferry'
       const version = getActiveVersionInternal(vesselType, date)
       const searchRoutes = version?.routes ?? getActiveRoutesForDate(date)
+      const departureUpper = departure.toUpperCase()
+      const arrivalUpper = arrival.toUpperCase()
 
-      return searchRoutes.find(
+      const directMatch = searchRoutes.find(
         route =>
-          route.departure === departure &&
-          route.arrival === arrival
+          route.departure === departureUpper &&
+          route.arrival === arrivalUpper
       )
+      if (directMatch) {
+        return directMatch
+      }
+
+      if (vesselType === 'highspeed') {
+        const canonical = mapHighspeedPortsToCanonicalRoute(departureUpper, arrivalUpper)
+        if (canonical) {
+          const fallback = searchRoutes.find(route => {
+            if (route.id === canonical) return true
+            const routeCanonical = mapHighspeedPortsToCanonicalRoute(route.departure, route.arrival)
+            return routeCanonical === canonical
+          })
+          if (fallback) {
+            return fallback
+          }
+        }
+      }
+
+      return undefined
     }
   })
 
@@ -311,13 +419,14 @@ export const useFareStore = defineStore('fare', () => {
       // オフラインストアを使用
       const offlineStore = useOfflineStore()
       const data = await offlineStore.fetchFareData()
-      
+
       if (data) {
         fareMaster.value = normalizeFareMaster(data)
       } else {
-        error.value = 'FARE_LOAD_ERROR'
+        fareMaster.value = normalizeFareMaster(cloneDefaultFareMaster())
       }
     } catch (e) {
+      fareMaster.value = normalizeFareMaster(cloneDefaultFareMaster())
       error.value = 'FARE_LOAD_ERROR'
     } finally {
       isLoading.value = false

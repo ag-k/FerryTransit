@@ -1,5 +1,7 @@
 <template>
-  <nav class="bg-blue-600 dark:bg-gray-900 text-white relative border-b border-transparent dark:border-gray-700 safe-area-top" :style="{ paddingTop: `${totalTopPadding}px` }">
+  <nav
+    class="bg-blue-600 dark:bg-gray-900 text-white relative border-b border-transparent dark:border-gray-700 safe-area-top"
+    :style="{ paddingTop: `${totalTopPadding}px` }">
     <!-- Mobile menu overlay -->
     <div v-if="menuOpen" class="fixed inset-0 bg-black bg-opacity-50 dark:bg-opacity-70 z-40 lg:hidden"
       @click="closeMenu"></div>
@@ -7,9 +9,10 @@
     <div class="container mx-auto px-4">
       <div class="flex items-center justify-between py-3 sm:py-4">
         <div class="flex items-center">
-          <NuxtLink class="text-base sm:text-xl font-medium hover:opacity-80 transition-opacity py-2 flex-1 lg:flex-none"
+          <NuxtLink
+            class="text-base sm:text-xl font-medium hover:opacity-80 transition-opacity py-2 flex-1 lg:flex-none"
             :to="localePath('/')">
-            <span class="hidden lg:inline">{{ $t('TITLE') }}</span>
+            <span class="hidden lg:inline font-bold">{{ $t('TITLE') }}</span>
             <span class="lg:hidden flex items-center">
               <span class="text-sm">{{ $t('TITLE') }}</span>
               <span v-if="currentPageTitle" class="ml-1 text-xs opacity-80">/ {{ currentPageTitle }}</span>
@@ -135,70 +138,63 @@
         </div>
       </div>
     </div>
-    
+
     <!-- News Section -->
-    <div v-if="latestNews.length > 0" class="bg-yellow-50 dark:bg-gray-800 border-b border-yellow-200 dark:border-gray-700">
+    <div v-if="latestNews.length > 0"
+      class="bg-yellow-50 dark:bg-gray-800 border-b border-yellow-200 dark:border-gray-700">
       <div class="container mx-auto px-2 sm:px-4 py-2 sm:py-3">
         <!-- Latest News -->
         <div class="flex items-start space-x-2 sm:space-x-3">
-          <svg class="w-4 h-4 sm:w-5 sm:h-5 text-yellow-600 dark:text-yellow-500 mt-0.5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+          <svg class="w-4 h-4 sm:w-5 sm:h-5 text-yellow-600 dark:text-yellow-500 mt-0.5 flex-shrink-0" fill="none"
+            stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+              d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
           </svg>
           <div class="flex-1 min-w-0">
             <div class="flex items-center justify-between">
-              <NuxtLink :to="localePath(`/news/${latestNews[0].id}`)" class="group flex items-center space-x-2 flex-1 min-w-0">
+              <NuxtLink :to="localePath(`/news/${latestNews[0].id}`)"
+                class="group flex items-center space-x-2 flex-1 min-w-0">
                 <span class="text-xs text-gray-500 dark:text-gray-400 flex-shrink-0">
                   {{ formatDate(latestNews[0].publishDate) }}
                 </span>
-                <h3 class="text-xs sm:text-sm font-medium text-gray-900 dark:text-gray-100 group-hover:text-blue-600 dark:group-hover:text-blue-400 transition-colors truncate">
+                <h3
+                  class="text-xs sm:text-sm font-medium text-gray-900 dark:text-gray-100 group-hover:text-blue-600 dark:group-hover:text-blue-400 transition-colors truncate">
                   {{ latestNews[0].title[locale] || latestNews[0].title.ja || latestNews[0].title }}
                 </h3>
               </NuxtLink>
-              
+
               <!-- Accordion button on the same line -->
-              <button 
-                v-if="latestNews.length > 1"
-                @click="newsExpanded = !newsExpanded"
-                class="flex items-center text-xs text-blue-600 dark:text-blue-400 hover:text-blue-700 dark:hover:text-blue-300 transition-colors ml-2 flex-shrink-0"
-              >
-                <svg 
-                  class="w-3 h-3 sm:w-4 sm:h-4 mr-0.5 sm:mr-1 transform transition-transform" 
-                  :class="{ 'rotate-90': newsExpanded }"
-                  fill="none" 
-                  stroke="currentColor" 
-                  viewBox="0 0 24 24"
-                >
+              <button v-if="latestNews.length > 1" @click="newsExpanded = !newsExpanded"
+                class="flex items-center text-xs text-blue-600 dark:text-blue-400 hover:text-blue-700 dark:hover:text-blue-300 transition-colors ml-2 flex-shrink-0">
+                <svg class="w-3 h-3 sm:w-4 sm:h-4 mr-0.5 sm:mr-1 transform transition-transform"
+                  :class="{ 'rotate-90': newsExpanded }" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path>
                 </svg>
                 <span class="hidden sm:inline">{{ newsExpanded ? $t('news.hideOlder') : $t('news.showOlder') }}</span>
                 <span class="sm:hidden">{{ newsExpanded ? '-' : '+' }}</span>
               </button>
             </div>
-              
-            
+
+
             <!-- Older news items -->
-            <div v-show="newsExpanded" class="mt-1 sm:mt-2 space-y-1 border-t border-yellow-200 dark:border-gray-700 pt-1 sm:pt-2">
-              <NuxtLink 
-                v-for="item in latestNews.slice(1, 4)" 
-                :key="item.id"
-                :to="localePath(`/news/${item.id}`)"
-                class="block group"
-              >
+            <div v-show="newsExpanded"
+              class="mt-1 sm:mt-2 space-y-1 border-t border-yellow-200 dark:border-gray-700 pt-1 sm:pt-2">
+              <NuxtLink v-for="item in latestNews.slice(1, 4)" :key="item.id" :to="localePath(`/news/${item.id}`)"
+                class="block group">
                 <div class="flex items-center space-x-2">
                   <span class="text-xs text-gray-500 dark:text-gray-500 flex-shrink-0">
                     {{ formatDate(item.publishDate) }}
                   </span>
-                  <h4 class="text-xs font-medium text-gray-800 dark:text-gray-200 group-hover:text-blue-600 dark:group-hover:text-blue-400 transition-colors truncate">
+                  <h4
+                    class="text-xs font-medium text-gray-800 dark:text-gray-200 group-hover:text-blue-600 dark:group-hover:text-blue-400 transition-colors truncate">
                     {{ item.title[locale] || item.title.ja || item.title }}
                   </h4>
                 </div>
               </NuxtLink>
-              
+
               <!-- Link to all news -->
-              <NuxtLink 
-                :to="localePath('/news')"
-                class="inline-flex items-center text-xs text-blue-600 dark:text-blue-400 hover:text-blue-700 dark:hover:text-blue-300 transition-colors mt-1 sm:mt-2"
-              >
+              <NuxtLink :to="localePath('/news')"
+                class="inline-flex items-center text-xs text-blue-600 dark:text-blue-400 hover:text-blue-700 dark:hover:text-blue-300 transition-colors mt-1 sm:mt-2">
                 {{ $t('news.viewAll') }}
                 <svg class="w-3 h-3 ml-0.5 sm:ml-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path>
@@ -244,29 +240,29 @@ onMounted(() => {
   }
 
   updateSafeArea()
-  
+
   // Androidステータスバーの高さを検出
   if (isAndroid.value) {
     const calculateStatusBarHeight = () => {
       let detectedHeight = 24 // デフォルト値
-      
+
       // 方法1: スクリーンサイズとウィンドウサイズの差を計算
       const screenHeight = screen.height
       const windowHeight = window.innerHeight
       const availHeight = screen.availHeight
       const heightDiff = availHeight - windowHeight
-      
+
       if (heightDiff > 0 && heightDiff < 100) {
         detectedHeight = heightDiff
       }
-      
+
       // 方法2: デバイスピクセル比率を考慮
       const pixelRatio = window.devicePixelRatio || 1
       if (pixelRatio > 2) {
         // 高解像度デバイスではステータスバーが高くなる傾向
         detectedHeight = Math.max(detectedHeight, 28)
       }
-      
+
       // 方法3: CSS変数から取得（フォールバック）
       const rootStyles = getComputedStyle(document.documentElement)
       const cssStatusHeight = rootStyles.getPropertyValue('--android-status-bar-height')
@@ -276,33 +272,33 @@ onMounted(() => {
           detectedHeight = Math.max(detectedHeight, cssHeight)
         }
       }
-      
+
       // 最低でも24px、最大でも80pxに制限
       statusBarHeight.value = Math.max(24, Math.min(detectedHeight, 80))
-      
+
       console.log('Android status bar height detected:', statusBarHeight.value)
     }
 
     // 初回計算
     setTimeout(calculateStatusBarHeight, 100)
-    
+
     // 画面サイズ変更時に再計算
     window.addEventListener('resize', calculateStatusBarHeight)
-    
+
     // 画面の向き変更時に再計算
     window.addEventListener('orientationchange', () => {
       setTimeout(calculateStatusBarHeight, 500)
     })
   }
-  
+
   // 画面の向き変更時にiOS safe areaも再計算
   window.addEventListener('orientationchange', () => {
     setTimeout(updateSafeArea, 100)
   })
-  
+
   // Visual Viewport APIが利用可能な場合
   if ((window as any).visualViewport) {
-    ;(window as any).visualViewport.addEventListener('resize', updateSafeArea)
+    ; (window as any).visualViewport.addEventListener('resize', updateSafeArea)
   }
 })
 
@@ -315,7 +311,7 @@ const currentPageTitle = computed(() => {
   } else if (path === '/en') {
     path = '/'
   }
-  
+
   if (path === '/') return t('TIMETABLE')
   if (path === '/transit') return t('TRANSIT')
   if (path === '/status') return t('STATUS')

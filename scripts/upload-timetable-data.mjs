@@ -14,34 +14,33 @@ const storage = new Storage({
   projectId: 'oki-ferryguide'
 });
 
-async function uploadFareData() {
+async function uploadTimetableData() {
   try {
-    console.log('📤 料金データをCloud Storageエミュレータにアップロードします...');
+    console.log('📤 時刻表データをCloud Storageエミュレータにアップロードします...');
 
     const bucketName = 'oki-ferryguide.appspot.com';
-    const fileName = 'fare-master.json';
-    const filePath = path.join(__dirname, '..', 'src', 'public', 'data', 'fare-master.json');
+    const fileName = 'data/timetable.json';
+    const filePath = path.join(__dirname, '..', 'src', 'public', 'data', 'timetable.json');
 
     // ファイルが存在するか確認
     if (!fs.existsSync(filePath)) {
-      console.error('❌ 料金データファイルが見つかりません:', filePath);
+      console.error('❌ 時刻表データファイルが見つかりません:', filePath);
       process.exit(1);
     }
 
-    // バケットを作成
-    console.log('📦 バケットを作成します:', bucketName);
+    // バケットを取得または作成
+    console.log('📦 バケットを確認します:', bucketName);
+    let bucket;
     try {
-      await storage.createBucket(bucketName);
-      console.log('✅ バケットを作成しました');
+      bucket = storage.bucket(bucketName);
+      await bucket.exists();
+      console.log('✅ バケットは既に存在します');
     } catch (error) {
-      if (error.code === 409) {
-        console.log('✅ バケットは既に存在します');
-      } else {
-        throw error;
-      }
+      console.log('📦 バケットを作成します...');
+      await storage.createBucket(bucketName);
+      bucket = storage.bucket(bucketName);
+      console.log('✅ バケットを作成しました');
     }
-
-    const bucket = storage.bucket(bucketName);
 
     // ファイルをアップロード
     await bucket.upload(filePath, {
@@ -52,17 +51,17 @@ async function uploadFareData() {
       }
     });
 
-    console.log('✅ 料金データのアップロードが完了しました');
+    console.log('✅ 時刻表データのアップロードが完了しました');
     console.log(`📁 バケット: ${bucketName}`);
     console.log(`📄 ファイル: ${fileName}`);
 
     // 検証
     const [files] = await bucket.getFiles();
-    const fareFile = files.find(f => f.name === fileName);
+    const timetableFile = files.find(f => f.name === fileName);
 
-    if (fareFile) {
+    if (timetableFile) {
       console.log('✅ アップロードを確認しました');
-      const [metadata] = await fareFile.getMetadata();
+      const [metadata] = await timetableFile.getMetadata();
       console.log(`📊 サイズ: ${metadata.size} bytes`);
       console.log(`🕒 更新日時: ${metadata.updated}`);
     } else {
@@ -75,4 +74,4 @@ async function uploadFareData() {
   }
 }
 
-uploadFareData();
+uploadTimetableData();
