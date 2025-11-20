@@ -1069,8 +1069,6 @@ const groupFaresByShipType = (fares: any[]) => {
     'hishiura-kuri', 'kuri-hishiura'
   ]
 
-  const rainbowJetRouteIds = ['hondo-saigo', 'saigo-hondo']
-
   const selectRoutes = (routeIds: string[], sourceRoutes: any[]): any[] => {
     const localLookup = buildRouteLookup(sourceRoutes)
     const selected: any[] = []
@@ -1107,7 +1105,11 @@ const toggleVehicleNotes = () => {
 // Load fare data
 onMounted(async () => {
   const fares = await getAllFares()
+  console.log('All fares:', fares)
+  console.log('Highspeed fares:', fares.filter(route => route?.vesselType === 'highspeed'))
   const grouped = groupFaresByShipType(fares)
+  console.log('Grouped fares:', grouped)
+  console.log('RainbowJet fares:', grouped.rainbowJet)
 
   okiKisenFares.value = grouped.okiKisen
   naikoSenFares.value = grouped.naikoSen

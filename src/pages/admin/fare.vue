@@ -1875,9 +1875,9 @@ const saveFareData = async () => {
       const operations = targetFares.map(fare => {
         const { routeId, label } = resolveHighspeedRouteInfo(fare)
         const adult = pickNumber(fare.adult)
-        const child = calculateChildFare(adult)
+        const child = pickNumber(fare.child)
         const disabledAdult = pickNumber(fare.disabledAdult)
-        const disabledChild = disabledAdult ? calculateChildFare(disabledAdult) : null
+        const disabledChild = pickNumber(fare.disabledChild)
         const resolvedRoute = routeId ?? normalizeRouteId(label) ?? normalizeRouteId(fare.route ?? null) ?? (typeof fare.route === 'string' ? fare.route : null)
         const routeMetadata = resolvedRoute ? ROUTE_METADATA[resolvedRoute] : null
         const departure =
@@ -1897,23 +1897,23 @@ const saveFareData = async () => {
             routeName: label,
             displayName: label,
             adult,
-            child,
+            child: child ?? calculateChildFare(adult),
             disabled: {
               adult: disabledAdult,
-              child: disabledChild
+              child: disabledChild ?? (disabledAdult ? calculateChildFare(disabledAdult) : null)
             },
             disabledAdult,
-            disabledChild,
+            disabledChild: disabledChild ?? (disabledAdult ? calculateChildFare(disabledAdult) : null),
             type: 'highspeed',
             versionId: selectedHighspeedVersionId.value,
             departure,
             arrival,
             fares: {
               adult,
-              child,
+              child: child ?? calculateChildFare(adult),
               disabled: {
                 adult: disabledAdult,
-                child: disabledChild
+                child: disabledChild ?? (disabledAdult ? calculateChildFare(disabledAdult) : null)
               }
             }
           }
