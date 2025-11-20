@@ -74,24 +74,9 @@ export const useOfflineStore = defineStore('offline', () => {
   
   // 料金データの取得（オフライン対応）
   const fetchFareData = async (): Promise<FareMaster | null> => {
-    // 開発環境では常にpublicディレクトリから読み込む
-    if (process.dev && process.client) {
-      try {
-        const response = await fetch('/data/fare-master.json')
-        if (response.ok) {
-          const data = await response.json() as FareMaster
-          if (data) {
-            saveFareData(data)
-            return data
-          }
-        }
-      } catch (e) {
-        logger.warn('Failed to fetch fare data from public directory', e)
-      }
-    }
-
     const localData = getFareData()
 
+    // オンライン時はCloud Storageから取得を試みる（開発環境でも優先）
     if (!isOffline.value) {
       try {
         // Cloud Storageからのみ取得（ローカルファイルフォールバックなし）
@@ -120,7 +105,23 @@ export const useOfflineStore = defineStore('offline', () => {
       }
     }
 
-    // オフライン時またはCloud Storage取得失敗時はキャッシュを返す
+    // Cloud Storage取得失敗時は、開発環境ではpublicディレクトリから読み込む
+    if (process.dev && process.client) {
+      try {
+        const response = await fetch('/data/fare-master.json')
+        if (response.ok) {
+          const data = await response.json() as FareMaster
+          if (data) {
+            saveFareData(data)
+            return data
+          }
+        }
+      } catch (e) {
+        logger.warn('Failed to fetch fare data from public directory', e)
+      }
+    }
+
+    // オフライン時または全ての取得失敗時はキャッシュを返す
     if (localData) return localData
     
     return null
