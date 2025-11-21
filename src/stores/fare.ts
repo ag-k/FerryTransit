@@ -211,79 +211,6 @@ const aggregateRoutesForDate = (versions: FareVersion[], date: Date): FareRoute[
   return result
 }
 
-const createRoute = (
-  id: string,
-  departure: string,
-  arrival: string,
-  adult: number,
-  child: number
-): FareRoute => ({
-  id,
-  departure,
-  arrival,
-  fares: {
-    adult,
-    child
-  }
-})
-
-const DEFAULT_FARE_MASTER: FareMaster = {
-  innerIslandFare: {
-    adult: 300,
-    child: 100
-  },
-  versions: [
-    {
-      id: 'fallback-ferry',
-      vesselType: 'ferry',
-      name: '標準フェリー',
-      effectiveFrom: '1970-01-01',
-      routes: [
-        createRoute('hondo_shichirui-saigo', 'HONDO_SHICHIRUI', 'SAIGO', 3520, 1760),
-        createRoute('saigo-hondo_shichirui', 'SAIGO', 'HONDO_SHICHIRUI', 3520, 1760),
-        createRoute('saigo-hishiura', 'SAIGO', 'HISHIURA', 1540, 770),
-        createRoute('hondo_shichirui-kuri', 'HONDO_SHICHIRUI', 'KURI', 3520, 1760)
-      ]
-    },
-    {
-      id: 'fallback-local',
-      vesselType: 'local',
-      name: '標準内航船',
-      effectiveFrom: '1970-01-01',
-      routes: [
-        createRoute('beppu-hishiura', 'BEPPU', 'HISHIURA', 410, 205),
-        createRoute('beppu-kuri', 'BEPPU', 'KURI', 780, 390),
-        createRoute('saigo-hishiura', 'SAIGO', 'HISHIURA', 1540, 770),
-        createRoute('saigo-beppu', 'SAIGO', 'BEPPU', 1680, 840)
-      ]
-    },
-    {
-      id: 'fallback-highspeed',
-      vesselType: 'highspeed',
-      name: '標準高速船',
-      effectiveFrom: '1970-01-01',
-      routes: [
-        createRoute('hondo-oki', 'HONDO_SHICHIRUI', 'SAIGO', 6680, 3340),
-        createRoute('dozen-dogo', 'BEPPU', 'SAIGO', 4890, 2450),
-        createRoute('beppu-hishiura', 'BEPPU', 'HISHIURA', 2450, 1220),
-        createRoute('hishiura-kuri', 'HISHIURA', 'KURI', 2450, 1220),
-        createRoute('kuri-beppu', 'KURI', 'BEPPU', 2450, 1220)
-      ]
-    }
-  ],
-  routes: [],
-  activeVersionIds: {
-    ferry: 'fallback-ferry',
-    local: 'fallback-local',
-    highspeed: 'fallback-highspeed'
-  },
-  discounts: {},
-  notes: []
-}
-
-const cloneDefaultFareMaster = (): FareMaster =>
-  JSON.parse(JSON.stringify(DEFAULT_FARE_MASTER))
-
 const normalizeFareMaster = (data: FareMaster): FareMaster => {
   const normalizedVersions = (data.versions && data.versions.length
     ? data.versions.map(normalizeVersion)
@@ -423,10 +350,11 @@ export const useFareStore = defineStore('fare', () => {
       if (data) {
         fareMaster.value = normalizeFareMaster(data)
       } else {
-        fareMaster.value = normalizeFareMaster(cloneDefaultFareMaster())
+        fareMaster.value = null
+        error.value = 'FARE_LOAD_ERROR'
       }
     } catch (e) {
-      fareMaster.value = normalizeFareMaster(cloneDefaultFareMaster())
+      fareMaster.value = null
       error.value = 'FARE_LOAD_ERROR'
     } finally {
       isLoading.value = false
