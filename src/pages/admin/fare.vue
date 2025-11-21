@@ -948,19 +948,6 @@ const buildFerryCategories = (fareDocs: Array<FareDoc & { id?: string }>): Ferry
     const categoryId = typeof doc.categoryId === 'string' ? doc.categoryId : null
     if (categoryId && CATEGORY_BY_ID[categoryId] && !categoryFallback[categoryId]) {
       categoryFallback[categoryId] = doc
-      // デバッグ: カテゴリIDで登録されたことを確認
-      if (categoryId === 'hondo-oki' || categoryId === 'dozen-dogo') {
-        console.log(`[buildFerryCategories] categoryFallback登録: ${categoryId}`, {
-          id: doc.id,
-          route: doc.route,
-          routeName: doc.routeName,
-          categoryId: doc.categoryId,
-          seatClass: Object.keys(doc.seatClass || {}),
-          vehicle: Object.keys(doc.vehicle || {}),
-          faresSeatClass: Object.keys(doc.fares?.seatClass || {}),
-          faresVehicle: Object.keys(doc.fares?.vehicle || {})
-        })
-      }
       return
     }
     // categoryId が存在しない場合のみ、routeId から routeDocMap に登録
@@ -992,17 +979,6 @@ const buildFerryCategories = (fareDocs: Array<FareDoc & { id?: string }>): Ferry
 
     if (!baseDoc && categoryFallback[def.id]) {
       baseDoc = categoryFallback[def.id] ?? undefined
-      // デバッグ: categoryFallback から取得したことを確認
-      if (def.id === 'hondo-oki' || def.id === 'dozen-dogo') {
-        console.log(`[buildFerryCategories] categoryFallbackから取得: ${def.id}`, {
-          id: baseDoc?.id,
-          route: baseDoc?.route,
-          routeName: baseDoc?.routeName,
-          categoryId: baseDoc?.categoryId,
-          seatClass: extractSeatClass(baseDoc),
-          vehicle: extractVehicle(baseDoc)
-        })
-      }
     }
 
     if (baseDoc) {
@@ -1012,21 +988,6 @@ const buildFerryCategories = (fareDocs: Array<FareDoc & { id?: string }>): Ferry
       const vehicle = extractVehicle(baseDoc)
       record.seatClass = seatClass
       record.vehicle = vehicle
-      // デバッグ: 最終的な結果を確認
-      if (def.id === 'hondo-oki' || def.id === 'dozen-dogo') {
-        console.log(`[buildFerryCategories] 最終結果: ${def.id}`, {
-          seatClassKeys: Object.keys(seatClass).filter(k => seatClass[k as SeatClassKey] !== null),
-          vehicleKeys: Object.keys(vehicle).filter(k => vehicle[k as VehicleSizeKey] !== null)
-        })
-      }
-    } else {
-      // デバッグ: baseDoc が見つからなかった場合
-      if (def.id === 'hondo-oki' || def.id === 'dozen-dogo') {
-        console.log(`[buildFerryCategories] baseDocが見つからない: ${def.id}`, {
-          categoryFallbackExists: !!categoryFallback[def.id],
-          routeDocMapKeys: Array.from(routeDocMap.keys()).filter(k => def.routeIds.includes(k))
-        })
-      }
     }
 
     return record
@@ -1253,7 +1214,6 @@ const loadFaresForType = async (vesselType: VesselType) => {
           const sortedVersionIds = versionIdsWithCategoryId.sort().reverse()
           const fallbackVersionId = sortedVersionIds[0]
           if (fallbackVersionId) {
-            console.log(`[loadFaresForType] categoryIdが設定されていないため、fallback versionIdを使用: ${fallbackVersionId}`)
             filtered = fareDocs.filter(fare => fare.versionId === fallbackVersionId)
             // selectedFerryVersionId も更新
             if (vesselType === 'ferry' && selectedFerryVersionId.value !== fallbackVersionId) {
@@ -1263,51 +1223,9 @@ const loadFaresForType = async (vesselType: VesselType) => {
         }
       }
     }
-    // デバッグ: フィルタリング結果を確認
-    if (vesselType === 'ferry') {
-      console.log(`[loadFaresForType] targetVersionId: ${targetVersionId}`)
-      console.log(`[loadFaresForType] 全データ: ${fareDocs.length}件`)
-      console.log(`[loadFaresForType] フィルタ後: ${filtered.length}件`)
-      const hondoOkiDocs = filtered.filter(doc => doc.categoryId === 'hondo-oki')
-      const dozenDogoDocs = filtered.filter(doc => doc.categoryId === 'dozen-dogo')
-      console.log(`[loadFaresForType] 本土〜隠岐: ${hondoOkiDocs.length}件`)
-      console.log(`[loadFaresForType] 島前〜島後: ${dozenDogoDocs.length}件`)
-      // デバッグ: フィルタ後のデータの versionId と categoryId を確認
-      const uniqueVersionIds = Array.from(new Set(filtered.map(doc => doc.versionId)))
-      const uniqueCategoryIds = Array.from(new Set(filtered.map(doc => doc.categoryId).filter(Boolean)))
-      console.log(`[loadFaresForType] フィルタ後のversionId一覧:`, uniqueVersionIds)
-      console.log(`[loadFaresForType] フィルタ後のcategoryId一覧:`, uniqueCategoryIds)
-      // フィルタ後のデータのサンプルを確認
-      if (filtered.length > 0) {
-        const sampleDoc = filtered[0]
-        console.log(`[loadFaresForType] フィルタ後のデータサンプル:`, {
-          id: sampleDoc.id,
-          versionId: sampleDoc.versionId,
-          categoryId: sampleDoc.categoryId,
-          route: sampleDoc.route,
-          routeName: sampleDoc.routeName,
-          hasSeatClass: !!sampleDoc.seatClass,
-          hasVehicle: !!sampleDoc.vehicle,
-          hasFaresSeatClass: !!sampleDoc.fares?.seatClass,
-          hasFaresVehicle: !!sampleDoc.fares?.vehicle
-        })
-      }
-      // 全データの versionId と categoryId も確認
-      const allUniqueVersionIds = Array.from(new Set(fareDocs.map(doc => doc.versionId)))
-      const allUniqueCategoryIds = Array.from(new Set(fareDocs.map(doc => doc.categoryId).filter(Boolean)))
-      console.log(`[loadFaresForType] 全データのversionId一覧:`, allUniqueVersionIds)
-      console.log(`[loadFaresForType] 全データのcategoryId一覧:`, allUniqueCategoryIds)
-      // categoryId が設定されているデータの versionId を確認
-      const docsWithCategoryId = fareDocs.filter(doc => doc.categoryId)
-      const versionIdsWithCategoryId = Array.from(new Set(docsWithCategoryId.map(doc => doc.versionId)))
-      console.log(`[loadFaresForType] categoryIdが設定されているデータのversionId一覧:`, versionIdsWithCategoryId)
-    }
     if (!filtered.length) {
       // 互換性のためversionIdが未設定のデータをフォールバック
       filtered = fareDocs.filter(fare => !fare.versionId)
-      if (vesselType === 'ferry') {
-        console.log(`[loadFaresForType] フォールバック後: ${filtered.length}件`)
-      }
     }
   }
 
@@ -1342,7 +1260,6 @@ const loadFaresForType = async (vesselType: VesselType) => {
       }
     })
 
-    console.log('Final highspeedFares:', highspeedFares.value)
     highspeedFares.value = enriched
     editingHighspeedFares.value = highspeedFares.value.map(fare => ({ ...fare }))
   }
