@@ -61,12 +61,15 @@
             
             const loadFareMaster = async () => {
                 try {
+                    // 注意: このファイルはテスト用です。本番ではCloud Storageからデータを取得します。
+                    // テスト時はテスト用のfixtureを使用してください。
                     const response = await fetch('/data/fare-master.json');
                     const data = await response.json();
                     fareMaster.value = data;
                     console.log('料金データ読み込み完了:', data);
                 } catch (error) {
                     console.error('料金データ読み込みエラー:', error);
+                    console.warn('注意: 本番環境ではCloud Storageからデータを取得してください。');
                 }
             };
             
