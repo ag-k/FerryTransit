@@ -56,3 +56,9 @@ coverage/
 
 # Firebase emulator data
 emulator-data/
+
+# Claude local settings
+.claude/settings.local.json
+
+# Kamui
+.kamui
