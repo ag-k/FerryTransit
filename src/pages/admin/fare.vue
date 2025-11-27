@@ -70,15 +70,21 @@
                 <PlusIcon class="h-4 w-4 inline mr-1" />
                 新しい版
               </button>
+              <button v-if="activeVersionId" :disabled="isDeletingVersion || isEditingVersion"
+                class="px-3 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 disabled:bg-blue-400 text-sm"
+                @click="openEditVersionModal">
+                <PencilIcon class="h-4 w-4 inline mr-1" />
+                版を編集
+              </button>
               <button v-if="activeVersionId" :disabled="isDeletingVersion"
-                class="px-3 py-2 bg-red-600 text-white rounded-md hover:bg-red-700 disabled:bg-red-400 text-sm flex items-center"
+                class="px-3 py-2 bg-red-600 text-white rounded-md hover:bg-red-700 disabled:bg-red-400 text-sm"
                 @click="openDeleteVersionModal">
-                <TrashIcon class="h-4 w-4 mr-1" />
+                <TrashIcon class="h-4 w-4 inline mr-1" />
                 版を削除
               </button>
             </template>
-            <button class="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700" @click="showEditModal = true">
-              <PencilIcon class="h-5 w-5 inline mr-1" />
+            <button class="px-3 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 text-sm" @click="showEditModal = true">
+              <PencilIcon class="h-4 w-4 inline mr-1" />
               {{ activeTab === 'discount' ? '割引編集' : '料金編集' }}
             </button>
           </div>
@@ -428,6 +434,44 @@
       </div>
     </FormModal>
 
+    <FormModal :open="showEditVersionModal" title="版を編集" :loading="isEditingVersion" @close="closeEditVersionModal"
+      @submit="updateVersion">
+      <div class="space-y-4">
+        <div>
+          <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+            船種
+          </label>
+          <p class="text-sm text-gray-600 dark:text-gray-400">
+            {{ editVersionForm.vesselType === 'ferry' ? 'フェリー' : '高速船' }}
+          </p>
+        </div>
+        <div>
+          <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+            版名称（任意）
+          </label>
+          <input v-model="editVersionForm.name" type="text"
+            class="w-full rounded-md border border-gray-300 dark:border-gray-600 dark:bg-gray-700 focus:border-blue-500 dark:focus:border-blue-400 focus:ring-2 focus:ring-blue-500 focus:ring-opacity-30 transition-colors"
+            placeholder="例: 2024年4月改定">
+        </div>
+        <div>
+          <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+            説明（任意）
+          </label>
+          <textarea v-model="editVersionForm.description" rows="3"
+            class="w-full rounded-md border border-gray-300 dark:border-gray-600 dark:bg-gray-700 focus:border-blue-500 dark:focus:border-blue-400 focus:ring-2 focus:ring-blue-500 focus:ring-opacity-30 transition-colors"
+            placeholder="版の説明を入力してください"></textarea>
+        </div>
+        <div>
+          <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+            適用開始日
+          </label>
+          <input v-model="editVersionForm.effectiveFrom" type="date"
+            class="w-full rounded-md border border-gray-300 dark:border-gray-600 dark:bg-gray-700 focus:border-blue-500 dark:focus:border-blue-400 focus:ring-2 focus:ring-blue-500 focus:ring-opacity-30 transition-colors"
+            required>
+        </div>
+      </div>
+    </FormModal>
+
     <FormModal :open="showDeleteVersionModal" title="版を削除" confirm-text="削除する" cancel-text="キャンセル"
       :loading="isDeletingVersion || deleteVersionInfo.isLoading"
       :loading-text="isDeletingVersion ? '削除中...' : '読み込み中...'" variant="danger" @close="closeDeleteVersionModal"
@@ -476,7 +520,7 @@ definePageMeta({
   middleware: 'admin'
 })
 
-const { getCollection, batchWrite, createDocument, deleteDocument } = useAdminFirestore()
+const { getCollection, batchWrite, createDocument, deleteDocument, updateDocument } = useAdminFirestore()
 const { publishData } = useDataPublish()
 const { $toast } = useNuxtApp()
 const logger = createLogger('AdminFarePage')
@@ -1042,6 +1086,22 @@ const versionForm = reactive<{
   copyFromVersionId: null
 })
 
+const showEditVersionModal = ref(false)
+const isEditingVersion = ref(false)
+const editVersionForm = reactive<{
+  versionId: string
+  vesselType: VesselType
+  name: string
+  description: string
+  effectiveFrom: string
+}>({
+  versionId: '',
+  vesselType: 'ferry',
+  name: '',
+  description: '',
+  effectiveFrom: ''
+})
+
 const showDeleteVersionModal = ref(false)
 const isDeletingVersion = ref(false)
 const deleteVersionInfo = reactive<{
@@ -1306,6 +1366,75 @@ const closeVersionModal = () => {
   versionForm.name = ''
   versionForm.effectiveFrom = ''
   versionForm.copyFromVersionId = null
+}
+
+const openEditVersionModal = () => {
+  const version = activeVersionMetadata.value
+  if (!version) {
+    $toast.error('編集する版が選択されていません')
+    return
+  }
+
+  editVersionForm.versionId = version.id
+  editVersionForm.vesselType = version.vesselType
+  editVersionForm.name = version.name || ''
+  editVersionForm.description = version.description || ''
+  editVersionForm.effectiveFrom = version.effectiveFrom || ''
+  showEditVersionModal.value = true
+}
+
+const closeEditVersionModal = () => {
+  showEditVersionModal.value = false
+  editVersionForm.versionId = ''
+  editVersionForm.vesselType = 'ferry'
+  editVersionForm.name = ''
+  editVersionForm.description = ''
+  editVersionForm.effectiveFrom = ''
+}
+
+const updateVersion = async () => {
+  if (!editVersionForm.versionId) {
+    $toast.error('編集対象の版が見つかりません')
+    return
+  }
+
+  if (!editVersionForm.effectiveFrom) {
+    $toast.error('適用開始日を入力してください')
+    return
+  }
+
+  // 日付形式のバリデーション
+  const dateRegex = /^\d{4}-\d{2}-\d{2}$/
+  if (!dateRegex.test(editVersionForm.effectiveFrom)) {
+    $toast.error('適用開始日は正しい日付形式（YYYY-MM-DD）で入力してください')
+    return
+  }
+
+  isEditingVersion.value = true
+  try {
+    await updateDocument('fareVersions', editVersionForm.versionId, {
+      name: editVersionForm.name.trim() || null,
+      description: editVersionForm.description.trim() || null,
+      effectiveFrom: editVersionForm.effectiveFrom
+    })
+
+    await loadFareVersions()
+
+    // 現在選択中の版を更新した場合は、データを再読み込み
+    if (editVersionForm.vesselType === 'ferry' && selectedFerryVersionId.value === editVersionForm.versionId) {
+      await loadFaresForType('ferry')
+    } else if (editVersionForm.vesselType === 'highspeed' && selectedHighspeedVersionId.value === editVersionForm.versionId) {
+      await loadFaresForType('highspeed')
+    }
+
+    $toast.success('版情報を更新しました')
+    closeEditVersionModal()
+  } catch (error) {
+    logger.error('Failed to update fare version', error)
+    $toast.error('版情報の更新に失敗しました')
+  } finally {
+    isEditingVersion.value = false
+  }
 }
 
 const openDeleteVersionModal = async () => {
