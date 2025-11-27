@@ -45,6 +45,28 @@ export const setupPublicPageStubs = async (page: Page, options: StubOptions = {}
       window.localStorage.setItem('i18n_redirected', 'ja')
       window.localStorage.setItem('rawTimetable', JSON.stringify(timetableData))
       window.localStorage.setItem('rawTimetable_time', Date.now().toString())
+      // 料金データをlocalStorageに設定（offlineStoreが使用）
+      // useOfflineStorageの形式に合わせて保存
+      const fareStorageItem = {
+        key: 'fare',
+        data: fareData,
+        timestamp: Date.now()
+      }
+      window.localStorage.setItem('ferry-transit:fare', JSON.stringify(fareStorageItem))
+      // テスト環境では、エミュレータが起動していない場合でもローカルデータを使用できるようにする
+      // エミュレータを使用する場合はオンラインモードを維持
+      // エミュレータ経由でFirebase Storageにアクセスできるようにする
+      try {
+        Object.defineProperty(navigator, 'onLine', { value: true, configurable: true, writable: true })
+        // onlineイベントを発火してofflineStoreをオンラインモードにする
+        if (typeof window !== 'undefined' && window.dispatchEvent) {
+          window.dispatchEvent(new Event('online'))
+        }
+      } catch {
+        // ignore if readonly
+      }
+      // テスト環境フラグを設定（必要に応じて使用）
+      window.localStorage.setItem('ferry-transit:test-mode', 'true')
       window.localStorage.setItem('ferryTransitSettings', JSON.stringify({
         mapEnabled: false,
         mapShowRoutes: true,
@@ -133,6 +155,7 @@ export const setupPublicPageStubs = async (page: Page, options: StubOptions = {}
   })
 
   // ローカルデータを返すルート定義
+  // /data/fare-master.jsonへのリクエストをモック（offlineStoreが使用する可能性がある）
   await page.route('**/data/fare-master.json', async (route) => {
     await route.fulfill({ json: fareMaster, headers: { 'access-control-allow-origin': '*' } })
   })
@@ -151,9 +174,27 @@ export const setupPublicPageStubs = async (page: Page, options: StubOptions = {}
     await route.fulfill({ json: shipStatusKankou, headers: { 'access-control-allow-origin': '*' } })
   })
 
-  // Firebase Storage へのアクセスをブロックし、テストの決定性を保つ
-  await page.route('https://firebasestorage.googleapis.com/**', (route) => {
-    route.fulfill({ status: 404, body: '' })
+  // Firebase Storage エミュレータへのアクセスを許可
+  // エミュレータを使用する場合は、Firebase Storageへのアクセスを許可する
+  // エミュレータが起動していない場合は、モックデータを返す
+  await page.route('**/fare-master.json*', async (route) => {
+    const url = route.request().url()
+    // エミュレータのURLパターン（localhost:9199など）の場合はそのまま通す
+    if (url.includes('localhost') || url.includes('127.0.0.1') || url.includes(':9199')) {
+      await route.continue()
+    } else if (url.includes('firebasestorage.googleapis.com')) {
+      // 本番のFirebase Storageへのアクセスは、エミュレータ経由で処理される可能性があるため許可
+      // エミュレータが起動していない場合は、エミュレータがエラーを返すため、そのまま通す
+      await route.continue()
+    } else {
+      // その他のURLパターン（/data/fare-master.jsonなど）の場合はモックデータを返す
+      await route.fulfill({ json: fareMaster, headers: { 'access-control-allow-origin': '*' } })
+    }
+  })
+  
+  // Firebase Storage エミュレータへの直接アクセスを許可
+  await page.route('http://localhost:9199/**', async (route) => {
+    await route.continue()
   })
 
   await page.route('https://maps.googleapis.com/**', (route) => {
