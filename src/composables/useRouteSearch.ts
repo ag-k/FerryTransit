@@ -1,3 +1,5 @@
+import { onMounted } from "vue";
+import { useI18n } from "#imports";
 import { useFerryStore } from "@/stores/ferry";
 import { useFareStore } from "@/stores/fare";
 import { useFerryData } from "@/composables/useFerryData";
@@ -79,7 +81,7 @@ export const useRouteSearch = () => {
     });
 
     // Find direct routes
-    const directRoutes = findDirectRoutes(
+    const directRoutes = await findDirectRoutes(
       dayTimetable,
       departure,
       arrival,
@@ -91,7 +93,7 @@ export const useRouteSearch = () => {
 
     // Find transfer routes if direct routes are limited
     if (directRoutes.length < 5) {
-      const transferRoutes = findTransferRoutes(
+      const transferRoutes = await findTransferRoutes(
         dayTimetable,
         departure,
         arrival,
@@ -114,13 +116,13 @@ export const useRouteSearch = () => {
   };
 
   // Find direct routes
-  const findDirectRoutes = (
+  const findDirectRoutes = async (
     timetable: Trip[],
     departure: string,
     arrival: string,
     searchTime: Date,
     isArrivalMode: boolean
-  ): TransitRoute[] => {
+  ): Promise<TransitRoute[]> => {
     const routes: TransitRoute[] = [];
 
     // Handle special HONDO port mapping
@@ -162,7 +164,7 @@ export const useRouteSearch = () => {
         const status = getTripStatus(trip);
         if (status === 2) continue; // Skip cancelled trips
 
-        const fare = calculateFare(
+        const fare = await calculateFare(
           trip.name,
           trip.departure,
           trip.arrival,
@@ -194,13 +196,13 @@ export const useRouteSearch = () => {
   };
 
   // Find transfer routes
-  const findTransferRoutes = (
+  const findTransferRoutes = async (
     timetable: Trip[],
     departure: string,
     arrival: string,
     searchTime: Date,
     isArrivalMode: boolean
-  ): TransitRoute[] => {
+  ): Promise<TransitRoute[]> => {
     const routes: TransitRoute[] = [];
     const processedRoutes = new Set<string>();
     const tripMap = new Map<string, Trip>();
@@ -341,7 +343,7 @@ export const useRouteSearch = () => {
         processedRoutes.add(routeKey);
 
         if (shouldNormalizeTrips(firstTrip, secondTrip)) {
-          const fare = calculateFare(
+          const fare = await calculateFare(
             firstTrip.name,
             firstTrip.departure,
             finalTrip.arrival,
@@ -367,14 +369,14 @@ export const useRouteSearch = () => {
             transferCount: 0,
           });
         } else {
-          const fare1 = calculateFare(
+          const fare1 = await calculateFare(
             firstTrip.name,
             firstTrip.departure,
             firstTrip.arrival,
             firstDepartureTime
           );
 
-          const fare2 = calculateFare(
+          const fare2 = await calculateFare(
             secondTrip.name,
             secondTrip.departure,
             finalTrip.arrival,
@@ -443,15 +445,26 @@ export const useRouteSearch = () => {
   };
 
   // Calculate fare for a trip with date consideration
-  const calculateFare = (
+  const calculateFare = async (
     ship: string,
     departure: string,
     arrival: string,
     date?: Date
-  ): number => {
+  ): Promise<number> => {
     // Ensure fare data is loaded
-    if (fareStore && !fareStore.fareMaster) {
-      fareStore.loadFareMaster();
+    if (!fareStore) {
+      logger.warn(`FareStore is not available (server-side rendering?)`);
+      return 0;
+    }
+
+    if (!fareStore.fareMaster) {
+      await fareStore.loadFareMaster();
+    }
+
+    // If still not loaded after attempting to load, return 0
+    if (!fareStore.fareMaster) {
+      logger.warn(`FareMaster is not available after loading attempt`);
+      return 0;
     }
 
     const toFarePortVariants = (port: string): string[] => {
@@ -479,6 +492,30 @@ export const useRouteSearch = () => {
       vesselType = "ferry";
     }
 
+    // For local vessels (ISOKAZE, FERRY_DOZEN), use inner island fare regardless of route
+    const isLocalVessel = ship === "ISOKAZE" || ship === "ISOKAZE_EX" || ship === "FERRY_DOZEN";
+    if (isLocalVessel) {
+      // 内航船はルートに関わらず一定料金
+      // /fare ページと同じように、fareMaster.innerIslandFare を直接参照
+      const innerIslandFare = fareStore.fareMaster.innerIslandFare;
+      
+      if (innerIslandFare?.adult !== undefined && innerIslandFare.adult !== null) {
+        return innerIslandFare.adult;
+      }
+      
+      // フォールバック: getFareByRoute から取得を試みる
+      const fallbackRoute = fareStore.getFareByRoute(departure, arrival, {
+        date,
+        vesselType: 'local',
+      });
+      if (fallbackRoute?.fares?.adult !== undefined && fallbackRoute.fares.adult !== null) {
+        return fallbackRoute.fares.adult;
+      }
+      
+      return 0;
+    }
+
+    // Try to find route by direct match first
     for (const dep of departureCandidates) {
       for (const arr of arrivalCandidates) {
         const candidate = fareStore?.getFareByRoute(dep, arr, {
@@ -495,22 +532,22 @@ export const useRouteSearch = () => {
       }
     }
 
+    // If route found, return adult fare
     if (route && route.fares) {
-      let baseFare = route.fares.adult;
-
-      // For local vessels (ISOKAZE, FERRY_DOZEN), use inner island fare if available
-      const isLocalVessel = ship === "ISOKAZE" || ship === "ISOKAZE_EX" || ship === "FERRY_DOZEN";
-      if (isLocalVessel && fareStore?.fareMaster?.innerIslandFare) {
-        // Check if this is an inner island route
-        const innerIslandPorts = ["HISHIURA", "KURI", "SAIGO"];
-        const isInnerIslandRoute = innerIslandPorts.includes(departure) && innerIslandPorts.includes(arrival);
-        
-        if (isInnerIslandRoute) {
-          baseFare = fareStore.fareMaster.innerIslandFare.adult;
-        }
+      // Try to get adult fare from various sources
+      let adultFare = route.fares.adult;
+      
+      // If adult fare is not available, try to get from seatClass (class2 is typically the base fare)
+      if (adultFare === undefined || adultFare === null || adultFare === 0) {
+        adultFare = route.fares.seatClass?.class2;
       }
-
-      return baseFare;
+      
+      // If still not available, try to get from route.fares directly
+      if (adultFare === undefined || adultFare === null || adultFare === 0) {
+        adultFare = (route as any).adult;
+      }
+      
+      return adultFare ?? 0;
     }
 
     // Return 0 if fare not found in fare master (no fallback)
