@@ -116,7 +116,9 @@ export const useOfflineStore = defineStore('offline', () => {
     }
 
     // オフライン時または全ての取得失敗時はキャッシュを返す
-    if (localData) return localData
+    if (localData) {
+      return localData
+    }
     
     return null
   }

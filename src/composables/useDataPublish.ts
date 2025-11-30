@@ -77,7 +77,7 @@ export const getStorageDownloadURL = async (path: string): Promise<string> => {
 export const useDataPublish = () => {
   const { $firebase } = useNuxtApp()
   const { user } = useAdminAuth()
-  const { logAdminAction, getCollection } = useAdminFirestore()
+  const { logAdminAction, getCollection, getDocument } = useAdminFirestore()
   const logger = createLogger('useDataPublish')
 
   // ========================================
@@ -418,7 +418,21 @@ export const useDataPublish = () => {
       )
     }
 
-    return {
+    // 内航船料金を取得
+    let innerIslandFare: { adult: number | null; child: number | null } | null = null
+    let innerIslandVehicleFare: Record<string, number> | null = null
+    
+    try {
+      const innerIslandFareDoc = await getDocument('innerIslandFares', 'default')
+      if (innerIslandFareDoc) {
+        innerIslandFare = innerIslandFareDoc.innerIslandFare ?? null
+        innerIslandVehicleFare = innerIslandFareDoc.innerIslandVehicleFare ?? null
+      }
+    } catch (error) {
+      logger.warn('Failed to load inner island fare', error)
+    }
+
+    const result: Record<string, unknown> = {
       fares: activeFares,
       versions: versionPayloads,
       activeVersionIds,
@@ -429,8 +443,20 @@ export const useDataPublish = () => {
           name: discount.name,
           rate: discount.rate,
           conditions: discount.conditions
-        }))
+        })),
+      notes: [] // FareMaster型に必須のnotesプロパティ
     }
+
+    // 内航船料金が存在する場合のみ追加
+    if (innerIslandFare) {
+      result.innerIslandFare = innerIslandFare
+    }
+    
+    if (innerIslandVehicleFare) {
+      result.innerIslandVehicleFare = innerIslandVehicleFare
+    }
+
+    return result
   }
 
   /**

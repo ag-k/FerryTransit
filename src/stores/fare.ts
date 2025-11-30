@@ -4,9 +4,11 @@ import { useOfflineStore } from './offline'
 import { roundUpToTen } from '@/utils/currency'
 import {
   ROUTE_METADATA,
-  mapHighspeedPortsToCanonicalRoute
+  mapHighspeedPortsToCanonicalRoute,
+  normalizeRouteId
 } from '@/utils/fareRoutes'
 import type { FareMaster, FareRoute, FareVersion, VesselType, RouteFare, VehicleFare, SeatClassFare } from '@/types/fare'
+import { createLogger } from '~/utils/logger'
 
 type GetFareOptions = {
   date?: Date
@@ -57,6 +59,7 @@ const convertFaresToRoutes = (
     .filter(fare => fare && typeof fare === 'object')
     .map((fare: any, index: number) => {
       const routeIdCandidates = [
+        typeof fare.categoryId === 'string' ? fare.categoryId.trim() : '', // categoryId を優先
         typeof fare.route === 'string' ? fare.route.trim() : '',
         typeof fare.id === 'string' ? fare.id.trim() : ''
       ]
@@ -64,14 +67,20 @@ const convertFaresToRoutes = (
         routeIdCandidates.find(candidate => candidate.length > 0) ||
         `${version.id}-route-${index}`
 
-      const adult = toNumberOrUndefined(fare.adult ?? fare.fares?.adult)
+      const seatClass = convertSeatClass(fare.seatClass ?? fare.fares?.seatClass)
+      const vehicle = convertVehicleFare(fare.vehicle ?? fare.fares?.vehicle)
+      
+      // Get adult fare from various sources, prioritizing seatClass.class2 if adult is not available
+      let adult = toNumberOrUndefined(fare.adult ?? fare.fares?.adult)
+      if (adult === undefined && seatClass?.class2 !== undefined) {
+        adult = seatClass.class2
+      }
+      
       const child = toNumberOrUndefined(fare.child ?? fare.fares?.child)
       const disabled = convertDisabledFare(fare.disabled ?? fare.fares?.disabled ?? {
         adult: fare.disabledAdult,
         child: fare.disabledChild
       })
-      const seatClass = convertSeatClass(fare.seatClass ?? fare.fares?.seatClass)
-      const vehicle = convertVehicleFare(fare.vehicle ?? fare.fares?.vehicle)
 
       let routeFare: RouteFare | undefined
       if (
@@ -211,17 +220,35 @@ const aggregateRoutesForDate = (versions: FareVersion[], date: Date): FareRoute[
   return result
 }
 
+const logger = createLogger('fareStore')
+
 const normalizeFareMaster = (data: FareMaster): FareMaster => {
   const normalizedVersions = (data.versions && data.versions.length
     ? data.versions.map(normalizeVersion)
     : [fallbackVersion(data.routes)]
   )
 
+  // innerIslandFareが有効な値を持つか確認
+  const innerIslandFare = data.innerIslandFare && 
+    typeof data.innerIslandFare === 'object' && 
+    data.innerIslandFare !== null &&
+    ('adult' in data.innerIslandFare || 'child' in data.innerIslandFare)
+    ? data.innerIslandFare
+    : undefined
+
+  // まず、innerIslandFareなどのトップレベルプロパティを保持
   const normalized: FareMaster = {
-    ...data,
+    // トップレベルのプロパティを先に設定（versionsやroutesで上書きされないように）
+    // innerIslandFareが有効な値を持つ場合のみ設定
+    ...(innerIslandFare ? { innerIslandFare } : {}),
+    ...(data.innerIslandVehicleFare ? { innerIslandVehicleFare: data.innerIslandVehicleFare } : {}),
+    ...(data.rainbowJetFares ? { rainbowJetFares: data.rainbowJetFares } : {}),
+    // その他のプロパティ
     versions: normalizedVersions,
     routes: aggregateRoutesForDate(normalizedVersions, new Date()),
-    activeVersionIds: data.activeVersionIds ?? {}
+    activeVersionIds: data.activeVersionIds ?? {},
+    discounts: data.discounts ?? {},
+    notes: data.notes ?? []
   }
 
   return normalized
@@ -277,7 +304,9 @@ export const useFareStore = defineStore('fare', () => {
       const date = options.date ?? new Date()
       const vesselType = options.vesselType ?? 'ferry'
       const version = getActiveVersionInternal(vesselType, date)
-      const searchRoutes = version?.routes ?? getActiveRoutesForDate(date)
+      const allRoutes = version?.routes ?? getActiveRoutesForDate(date)
+      // Filter routes by vesselType to avoid mixing different vessel types
+      const searchRoutes = allRoutes.filter(route => (route.vesselType ?? vesselType) === vesselType)
       const departureUpper = departure.toUpperCase()
       const arrivalUpper = arrival.toUpperCase()
 
@@ -288,6 +317,25 @@ export const useFareStore = defineStore('fare', () => {
       )
       if (directMatch) {
         return directMatch
+      }
+      
+      // For local vessels, use inner island fare regardless of route
+      if (vesselType === 'local') {
+        if (fareMaster.value?.innerIslandFare) {
+          // 内航船はルートに関わらず一定料金
+          return {
+            id: 'inner-island',
+            departure: departureUpper,
+            arrival: arrivalUpper,
+            fares: {
+              adult: fareMaster.value.innerIslandFare.adult,
+              child: fareMaster.value.innerIslandFare.child
+            },
+            vesselType: 'local',
+            versionId: version?.id,
+            versionEffectiveFrom: version?.effectiveFrom
+          }
+        }
       }
 
       if (vesselType === 'highspeed') {
@@ -300,6 +348,54 @@ export const useFareStore = defineStore('fare', () => {
           })
           if (fallback) {
             return fallback
+          }
+        }
+      }
+
+      // For ferry routes, try to find by category ID
+      if (vesselType === 'ferry') {
+        // Map individual routes to category IDs
+        const routeToCategoryMap: Record<string, string> = {
+          'hondo-saigo': 'hondo-oki',
+          'saigo-hondo': 'hondo-oki',
+          'hondo-beppu': 'hondo-oki',
+          'beppu-hondo': 'hondo-oki',
+          'hondo-hishiura': 'hondo-oki',
+          'hishiura-hondo': 'hondo-oki',
+          'hondo-kuri': 'hondo-oki',
+          'kuri-hondo': 'hondo-oki',
+          'saigo-beppu': 'dozen-dogo',
+          'beppu-saigo': 'dozen-dogo',
+          'saigo-hishiura': 'dozen-dogo',
+          'hishiura-saigo': 'dozen-dogo',
+          'saigo-kuri': 'dozen-dogo',
+          'kuri-saigo': 'dozen-dogo',
+          'beppu-hishiura': 'beppu-hishiura',
+          'hishiura-beppu': 'beppu-hishiura',
+          'hishiura-kuri': 'hishiura-kuri',
+          'kuri-hishiura': 'hishiura-kuri',
+          'kuri-beppu': 'kuri-beppu',
+          'beppu-kuri': 'kuri-beppu'
+        }
+
+        // Try to find route ID from departure and arrival
+        const routeId = normalizeRouteId(`${departure.toLowerCase()}-${arrival.toLowerCase()}`)
+        
+        // Check if routeId is already a category ID
+        const categoryIds = ['hondo-oki', 'dozen-dogo', 'beppu-hishiura', 'hishiura-kuri', 'kuri-beppu']
+        if (routeId && categoryIds.includes(routeId)) {
+          const categoryRoute = searchRoutes.find(route => route.id === routeId)
+          if (categoryRoute) {
+            return categoryRoute
+          }
+        }
+        
+        // Check if routeId maps to a category
+        if (routeId && routeToCategoryMap[routeId]) {
+          const categoryId = routeToCategoryMap[routeId]
+          const categoryRoute = searchRoutes.find(route => route.id === categoryId)
+          if (categoryRoute) {
+            return categoryRoute
           }
         }
       }
@@ -352,10 +448,12 @@ export const useFareStore = defineStore('fare', () => {
       } else {
         fareMaster.value = null
         error.value = 'FARE_LOAD_ERROR'
+        logger.warn('Fare data not loaded')
       }
     } catch (e) {
       fareMaster.value = null
       error.value = 'FARE_LOAD_ERROR'
+      logger.error('Failed to load fare master', e)
     } finally {
       isLoading.value = false
     }
