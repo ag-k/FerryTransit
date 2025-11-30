@@ -155,6 +155,70 @@
           </table>
         </div>
 
+        <!-- 内航船料金表 -->
+        <div v-else-if="activeTab === 'local'" class="space-y-6">
+          <div>
+            <h3 class="text-lg font-medium text-gray-900 dark:text-white mb-4">島前内航船共通料金</h3>
+            <div class="overflow-x-auto">
+              <table class="min-w-full divide-y divide-gray-200 dark:divide-gray-700">
+                <thead>
+                  <tr>
+                    <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider dark:text-gray-400">
+                      区分
+                    </th>
+                    <th class="px-4 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider dark:text-gray-400">
+                      大人
+                    </th>
+                    <th class="px-4 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider dark:text-gray-400">
+                      小人
+                    </th>
+                  </tr>
+                </thead>
+                <tbody class="divide-y divide-gray-200 dark:divide-gray-700">
+                  <tr>
+                    <td class="px-4 py-3 text-sm font-medium text-gray-900 dark:text-gray-100">
+                      島前内航船共通
+                    </td>
+                    <td class="px-4 py-3 text-sm text-center text-gray-900 dark:text-gray-100">
+                      {{ formatCurrency(innerIslandFare?.adult) }}
+                    </td>
+                    <td class="px-4 py-3 text-sm text-center text-gray-900 dark:text-gray-100">
+                      {{ formatCurrency(innerIslandFare?.child) }}
+                    </td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+          <div>
+            <h3 class="text-lg font-medium text-gray-900 dark:text-white mb-4">車両料金</h3>
+            <div class="overflow-x-auto">
+              <table class="min-w-full divide-y divide-gray-200 dark:divide-gray-700">
+                <thead>
+                  <tr>
+                    <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider dark:text-gray-400">
+                      車両サイズ
+                    </th>
+                    <th class="px-4 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider dark:text-gray-400">
+                      料金
+                    </th>
+                  </tr>
+                </thead>
+                <tbody class="divide-y divide-gray-200 dark:divide-gray-700">
+                  <tr v-for="(value, key) in innerIslandVehicleFare" :key="key">
+                    <td class="px-4 py-3 text-sm font-medium text-gray-900 dark:text-gray-100">
+                      {{ formatVehicleSizeLabel(key) }}
+                    </td>
+                    <td class="px-4 py-3 text-sm text-center text-gray-900 dark:text-gray-100">
+                      {{ formatCurrency(value) }}
+                    </td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+
         <!-- 割引設定 -->
         <div v-else-if="activeTab === 'discount'" class="space-y-4">
           <div v-for="discount in discounts" :key="discount.id" class="border dark:border-gray-700 rounded-lg p-4">
@@ -240,6 +304,41 @@
               <div>
                 <label class="text-xs text-gray-500">大人</label>
                 <input v-model.number="fare.adult" type="number" min="0"
+                  class="w-full rounded-md border border-gray-300 dark:border-gray-600 dark:bg-gray-700 focus:border-blue-500 dark:focus:border-blue-400 focus:ring-2 focus:ring-blue-500 focus:ring-opacity-30 transition-colors">
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- 内航船料金編集 -->
+        <div v-else-if="activeTab === 'local'" class="space-y-6">
+          <div>
+            <h3 class="text-lg font-medium text-gray-900 dark:text-white mb-4">島前内航船共通料金</h3>
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div>
+                <label class="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-1">
+                  大人料金（円）
+                </label>
+                <input v-model.number="editingInnerIslandFare.adult" type="number" min="0"
+                  class="w-full rounded-md border border-gray-300 dark:border-gray-600 dark:bg-gray-700 focus:border-blue-500 dark:focus:border-blue-400 focus:ring-2 focus:ring-blue-500 focus:ring-opacity-30 transition-colors">
+              </div>
+              <div>
+                <label class="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-1">
+                  小人料金（円）
+                </label>
+                <input v-model.number="editingInnerIslandFare.child" type="number" min="0"
+                  class="w-full rounded-md border border-gray-300 dark:border-gray-600 dark:bg-gray-700 focus:border-blue-500 dark:focus:border-blue-400 focus:ring-2 focus:ring-blue-500 focus:ring-opacity-30 transition-colors">
+              </div>
+            </div>
+          </div>
+          <div>
+            <h3 class="text-lg font-medium text-gray-900 dark:text-white mb-4">車両料金</h3>
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div v-for="(value, key) in editingInnerIslandVehicleFare" :key="key">
+                <label class="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-1">
+                  {{ formatVehicleSizeLabel(key) }}（円）
+                </label>
+                <input v-model.number="editingInnerIslandVehicleFare[key]" type="number" min="0"
                   class="w-full rounded-md border border-gray-300 dark:border-gray-600 dark:bg-gray-700 focus:border-blue-500 dark:focus:border-blue-400 focus:ring-2 focus:ring-blue-500 focus:ring-opacity-30 transition-colors">
               </div>
             </div>
@@ -520,7 +619,7 @@ definePageMeta({
   middleware: 'admin'
 })
 
-const { getCollection, batchWrite, createDocument, deleteDocument, updateDocument } = useAdminFirestore()
+const { getCollection, batchWrite, createDocument, deleteDocument, updateDocument, getDocument } = useAdminFirestore()
 const { publishData } = useDataPublish()
 const { $toast } = useNuxtApp()
 const logger = createLogger('AdminFarePage')
@@ -1046,6 +1145,7 @@ const formatCurrency = (value: number | null | undefined): string => {
 const tabs = [
   { id: 'ferry', name: 'フェリー料金' },
   { id: 'highspeed', name: '高速船料金' },
+  { id: 'local', name: '内航船料金' },
   { id: 'discount', name: '割引設定' }
 ]
 
@@ -1070,6 +1170,15 @@ const versionsInitialized = ref(false)
 const editingFerryCategories = ref<FerryCategoryRecord[]>([])
 const editingHighspeedFares = ref<FareDoc[]>([])
 const editingDiscounts = ref<DiscountFormItem[]>([])
+
+// 内航船料金データ
+const innerIslandFare = ref<{ adult: number | null; child: number | null } | null>(null)
+const innerIslandVehicleFare = ref<Record<string, number> | null>(null)
+const editingInnerIslandFare = ref<{ adult: number | null; child: number | null }>({
+  adult: null,
+  child: null
+})
+const editingInnerIslandVehicleFare = ref<Record<string, number>>({})
 
 // 版作成モーダル
 const showVersionModal = ref(false)
@@ -1138,6 +1247,8 @@ const activeTabData = computed(() => {
       return { title: 'フェリー料金表' }
     case 'highspeed':
       return { title: '高速船料金表' }
+    case 'local':
+      return { title: '内航船料金表' }
     case 'discount':
       return { title: '割引設定' }
     default:
@@ -1668,6 +1779,47 @@ watch(selectedHighspeedVersionId, async () => {
   }
 })
 
+const loadInnerIslandFare = async () => {
+  try {
+    const { getDocument } = useAdminFirestore()
+    const doc = await getDocument('innerIslandFares', 'default')
+    
+    if (doc) {
+      innerIslandFare.value = doc.innerIslandFare ?? null
+      innerIslandVehicleFare.value = doc.innerIslandVehicleFare ?? null
+    } else {
+      // デフォルト値を設定
+      innerIslandFare.value = { adult: 300, child: 100 }
+      innerIslandVehicleFare.value = {
+        under5m: 1000,
+        under7m: 2000,
+        under10m: 3000,
+        over10m: 3000
+      }
+    }
+  } catch (error) {
+    logger.error('Failed to load inner island fare', error)
+    // デフォルト値を設定
+    innerIslandFare.value = { adult: 300, child: 100 }
+    innerIslandVehicleFare.value = {
+      under5m: 1000,
+      under7m: 2000,
+      under10m: 3000,
+      over10m: 3000
+    }
+  }
+}
+
+const formatVehicleSizeLabel = (key: string): string => {
+  const labels: Record<string, string> = {
+    under5m: '5m未満',
+    under7m: '7m未満',
+    under10m: '10m未満',
+    over10m: '10m以上'
+  }
+  return labels[key] || key
+}
+
 const loadFareData = async () => {
   isLoading.value = true
   try {
@@ -1675,7 +1827,8 @@ const loadFareData = async () => {
     await loadFareVersions()
     await Promise.all([
       loadFaresForType('ferry'),
-      loadFaresForType('highspeed')
+      loadFaresForType('highspeed'),
+      loadInnerIslandFare()
     ])
     versionsInitialized.value = true
 
@@ -2161,6 +2314,40 @@ const saveFareData = async () => {
 
       await loadDiscounts()
       $toast.success('割引設定を更新しました')
+    } else if (activeTab.value === 'local') {
+      // 内航船料金の保存
+      const { createDocument, updateDocument, getDocument } = useAdminFirestore()
+      
+      const innerIslandFareData = {
+        adult: editingInnerIslandFare.value.adult ?? null,
+        child: editingInnerIslandFare.value.child ?? null
+      }
+      
+      const innerIslandVehicleFareData: Record<string, number | null> = {}
+      Object.entries(editingInnerIslandVehicleFare.value).forEach(([key, value]) => {
+        innerIslandVehicleFareData[key] = value ?? null
+      })
+      
+      // 既存のドキュメントを確認
+      const existingDoc = await getDocument('innerIslandFares', 'default')
+      
+      const payload = {
+        innerIslandFare: innerIslandFareData,
+        innerIslandVehicleFare: innerIslandVehicleFareData,
+        updatedAt: new Date()
+      }
+      
+      if (existingDoc) {
+        await updateDocument('innerIslandFares', 'default', payload)
+      } else {
+        await createDocument('innerIslandFares', {
+          ...payload,
+          createdAt: new Date()
+        }, 'default')
+      }
+      
+      await loadInnerIslandFare()
+      $toast.success('内航船料金を更新しました')
     }
 
     showEditModal.value = false
@@ -2192,23 +2379,41 @@ const refreshData = () => {
 // 編集モーダルを開く際に編集用データを更新
 watch(showEditModal, (isOpen) => {
   if (isOpen) {
-    editingFerryCategories.value = ferryCategories.value.map(category => cloneCategoryRecord(category))
-    editingHighspeedFares.value = highspeedFares.value.map(fare => ({ ...fare }))
-    const discountForms = discounts.value.map(discount => createDiscountFormItem(discount))
-    editingDiscounts.value = discountForms.length
-      ? discountForms
-      : [
-        createDiscountFormItem(null, {
-          id: '',
-          originalId: null,
-          name: '',
-          nameEn: '',
-          description: '',
-          descriptionEn: '',
-          ratePercent: 0,
-          active: true
-        })
-      ]
+    if (activeTab.value === 'ferry') {
+      editingFerryCategories.value = ferryCategories.value.map(category => cloneCategoryRecord(category))
+    } else if (activeTab.value === 'highspeed') {
+      editingHighspeedFares.value = highspeedFares.value.map(fare => ({ ...fare }))
+    } else if (activeTab.value === 'local') {
+      // 内航船料金の編集用データを初期化
+      editingInnerIslandFare.value = {
+        adult: innerIslandFare.value?.adult ?? null,
+        child: innerIslandFare.value?.child ?? null
+      }
+      editingInnerIslandVehicleFare.value = innerIslandVehicleFare.value
+        ? { ...innerIslandVehicleFare.value }
+        : {
+            under5m: 1000,
+            under7m: 2000,
+            under10m: 3000,
+            over10m: 3000
+          }
+    } else if (activeTab.value === 'discount') {
+      const discountForms = discounts.value.map(discount => createDiscountFormItem(discount))
+      editingDiscounts.value = discountForms.length
+        ? discountForms
+        : [
+          createDiscountFormItem(null, {
+            id: '',
+            originalId: null,
+            name: '',
+            nameEn: '',
+            description: '',
+            descriptionEn: '',
+            ratePercent: 0,
+            active: true
+          })
+        ]
+    }
   }
 })
 

@@ -53,6 +53,18 @@ service cloud.firestore {
       allow write: if isAdmin();
     }
     
+    // 料金バージョン管理（管理者のみアクセス）
+    match /fareVersions/{document=**} {
+      allow read: if isAdmin();
+      allow write: if isAdmin();
+    }
+    
+    // 内航船料金（誰でも読み取り可能、管理者のみ書き込み可能）
+    match /innerIslandFares/{document=**} {
+      allow read: if true;
+      allow write: if isAdmin();
+    }
+    
     // 祝日データ
     match /holidays/{document=**} {
       allow read: if true;

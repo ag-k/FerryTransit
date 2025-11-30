@@ -475,15 +475,47 @@ async function prepareFareData() {
     )
   }
 
-  return {
+  // 内航船料金を取得
+  let innerIslandFare: { adult: number | null; child: number | null } | null = null
+  let innerIslandVehicleFare: Record<string, number> | null = null
+  
+  try {
+    const innerIslandFareDoc = await admin.firestore()
+      .collection('innerIslandFares')
+      .doc('default')
+      .get()
+    
+    if (innerIslandFareDoc.exists) {
+      const data = innerIslandFareDoc.data()
+      innerIslandFare = data?.innerIslandFare ?? null
+      innerIslandVehicleFare = data?.innerIslandVehicleFare ?? null
+    }
+  } catch (error) {
+    console.warn('Failed to load inner island fare:', error)
+  }
+
+  const result: Record<string, unknown> = {
     fares: activeFares,
     versions: versionPayloads,
     activeVersionIds,
     discounts: discountsSnapshot.docs.map(doc => ({
       id: doc.id,
       ...(doc.data() as Record<string, unknown>)
-    }))
+    })),
+    notes: [] // FareMaster型に必須のnotesプロパティ
   }
+
+  // 内航船料金が存在する場合のみ追加
+  if (innerIslandFare) {
+    result.innerIslandFare = innerIslandFare
+  } else {
+    console.warn('innerIslandFare is null or undefined. This will cause errors for local vessel routes. Please set innerIslandFare in the admin panel.')
+  }
+  if (innerIslandVehicleFare) {
+    result.innerIslandVehicleFare = innerIslandVehicleFare
+  }
+
+  return result
 }
 
 async function prepareHolidayData() {
