@@ -36,6 +36,12 @@
           <CloudArrowUpIcon class="h-5 w-5 inline mr-1" />
           {{ isPublishing ? '公開中...' : 'データ公開' }}
         </button>
+        <button :disabled="isLoadingStorage"
+          class="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 disabled:bg-gray-400"
+          @click="showStorageDataModal = true; loadStorageData()">
+          <EyeIcon class="h-5 w-5 inline mr-1" />
+          {{ isLoadingStorage ? '読み込み中...' : 'Storage データ確認' }}
+        </button>
       </div>
     </div>
 
@@ -592,14 +598,132 @@
         この操作は取り消せません。必要に応じて事前にバックアップを取得してください。
       </p>
     </FormModal>
+
+    <!-- Storage データ確認モーダル -->
+    <FormModal :open="showStorageDataModal" title="Storage 公開データ確認" size="xl"
+      :loading="isLoadingStorage" @close="showStorageDataModal = false">
+      <div v-if="isLoadingStorage" class="text-center py-8">
+        <p class="text-gray-600 dark:text-gray-400">Storage からデータを読み込んでいます...</p>
+      </div>
+      <div v-else-if="storageDataError" class="text-center py-8">
+        <p class="text-red-600 dark:text-red-400">{{ storageDataError }}</p>
+      </div>
+      <div v-else-if="storageFareData" class="space-y-6">
+        <!-- メタ情報 -->
+        <div class="bg-gray-50 dark:bg-gray-800 rounded-lg p-4">
+          <h3 class="text-lg font-medium text-gray-900 dark:text-white mb-3">ファイル情報</h3>
+          <dl class="grid grid-cols-1 md:grid-cols-2 gap-3 text-sm">
+            <div>
+              <dt class="text-gray-500 dark:text-gray-400">更新日時</dt>
+              <dd class="text-gray-900 dark:text-white font-medium">
+                {{ storageMetadata?.updated ? new Date(storageMetadata.updated).toLocaleString('ja-JP') : '不明' }}
+              </dd>
+            </div>
+            <div>
+              <dt class="text-gray-500 dark:text-gray-400">ファイルサイズ</dt>
+              <dd class="text-gray-900 dark:text-white font-medium">
+                {{ storageMetadata?.size ? formatFileSize(storageMetadata.size) : '不明' }}
+              </dd>
+            </div>
+            <div>
+              <dt class="text-gray-500 dark:text-gray-400">コンテンツタイプ</dt>
+              <dd class="text-gray-900 dark:text-white font-medium">
+                {{ storageMetadata?.contentType || '不明' }}
+              </dd>
+            </div>
+            <div>
+              <dt class="text-gray-500 dark:text-gray-400">ダウンロードURL</dt>
+              <dd class="text-gray-900 dark:text-white font-medium break-all">
+                <a v-if="storageDownloadUrl" :href="storageDownloadUrl" target="_blank" rel="noopener noreferrer"
+                  class="text-blue-600 dark:text-blue-400 hover:underline">
+                  {{ storageDownloadUrl }}
+                </a>
+                <span v-else>取得できませんでした</span>
+              </dd>
+            </div>
+          </dl>
+        </div>
+
+        <!-- データ概要 -->
+        <div class="bg-gray-50 dark:bg-gray-800 rounded-lg p-4">
+          <h3 class="text-lg font-medium text-gray-900 dark:text-white mb-3">データ概要</h3>
+          <dl class="grid grid-cols-1 md:grid-cols-2 gap-3 text-sm">
+            <div>
+              <dt class="text-gray-500 dark:text-gray-400">料金レコード数</dt>
+              <dd class="text-gray-900 dark:text-white font-medium">
+                {{ storageFareData.fares?.length || 0 }} 件
+              </dd>
+            </div>
+            <div>
+              <dt class="text-gray-500 dark:text-gray-400">版数</dt>
+              <dd class="text-gray-900 dark:text-white font-medium">
+                {{ storageFareData.versions?.length || 0 }} 件
+              </dd>
+            </div>
+            <div>
+              <dt class="text-gray-500 dark:text-gray-400">割引数</dt>
+              <dd class="text-gray-900 dark:text-white font-medium">
+                {{ storageFareData.discounts?.length || 0 }} 件
+              </dd>
+            </div>
+            <div>
+              <dt class="text-gray-500 dark:text-gray-400">内航船料金</dt>
+              <dd class="text-gray-900 dark:text-white font-medium">
+                {{ storageFareData.innerIslandFare ? '設定済み' : '未設定' }}
+              </dd>
+            </div>
+          </dl>
+        </div>
+
+        <!-- 版情報 -->
+        <div v-if="storageFareData.versions && storageFareData.versions.length > 0" class="bg-gray-50 dark:bg-gray-800 rounded-lg p-4">
+          <h3 class="text-lg font-medium text-gray-900 dark:text-white mb-3">版情報</h3>
+          <div class="space-y-2">
+            <div v-for="version in storageFareData.versions" :key="version.id"
+              class="border-b dark:border-gray-700 pb-2 last:border-b-0">
+              <div class="flex justify-between items-start">
+                <div>
+                  <p class="font-medium text-gray-900 dark:text-white">
+                    {{ version.name || '名称未設定' }} ({{ version.vesselType === 'ferry' ? 'フェリー' : '高速船' }})
+                  </p>
+                  <p class="text-sm text-gray-500 dark:text-gray-400">
+                    適用開始日: {{ version.effectiveFrom }}
+                  </p>
+                  <p class="text-sm text-gray-500 dark:text-gray-400">
+                    料金数: {{ version.fares?.length || 0 }} 件
+                  </p>
+                </div>
+                <span v-if="storageFareData.activeVersionIds?.[version.vesselType] === version.id"
+                  class="px-2 py-1 text-xs bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200 rounded">
+                  有効
+                </span>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- JSON データ表示 -->
+        <div class="bg-gray-50 dark:bg-gray-800 rounded-lg p-4">
+          <div class="flex justify-between items-center mb-3">
+            <h3 class="text-lg font-medium text-gray-900 dark:text-white">JSON データ</h3>
+            <button @click="copyStorageDataToClipboard"
+              class="px-3 py-1 text-sm bg-blue-600 text-white rounded hover:bg-blue-700">
+              コピー
+            </button>
+          </div>
+          <pre class="bg-gray-900 text-gray-100 p-4 rounded overflow-auto text-xs max-h-96">{{ formatStorageDataForDisplay }}</pre>
+        </div>
+      </div>
+    </FormModal>
   </div>
 </template>
 
 <script setup lang="ts">
-import { PencilIcon, CloudArrowUpIcon, ArrowPathIcon, PlusIcon, TrashIcon } from '@heroicons/vue/24/outline'
+import { PencilIcon, CloudArrowUpIcon, ArrowPathIcon, PlusIcon, TrashIcon, EyeIcon } from '@heroicons/vue/24/outline'
 import { orderBy, where } from 'firebase/firestore'
 import { useAdminFirestore } from '~/composables/useAdminFirestore'
-import { useDataPublish } from '~/composables/useDataPublish'
+import { useDataPublish, getStorageDownloadURL } from '~/composables/useDataPublish'
+import { useFirebaseStorage } from '~/composables/useFirebaseStorage'
 import type { FareVersion, VesselType } from '~/types/fare'
 import FormModal from '~/components/admin/FormModal.vue'
 import ToggleSwitch from '~/components/common/ToggleSwitch.vue'
@@ -621,6 +745,7 @@ definePageMeta({
 
 const { getCollection, batchWrite, createDocument, deleteDocument, updateDocument, getDocument } = useAdminFirestore()
 const { publishData } = useDataPublish()
+const { getJsonFile, getFileMetadata } = useFirebaseStorage()
 const { $toast } = useNuxtApp()
 const logger = createLogger('AdminFarePage')
 const { t, locale } = useI18n()
@@ -1230,6 +1355,14 @@ const deleteVersionInfo = reactive<{
   fareIds: [],
   isLoading: false
 })
+
+// Storage データ確認
+const showStorageDataModal = ref(false)
+const isLoadingStorage = ref(false)
+const storageFareData = ref<any>(null)
+const storageMetadata = ref<{ size: number; contentType: string; updated: Date } | null>(null)
+const storageDownloadUrl = ref<string | null>(null)
+const storageDataError = ref<string | null>(null)
 
 const resetDeleteVersionInfo = () => {
   deleteVersionInfo.versionId = ''
@@ -2416,6 +2549,59 @@ watch(showEditModal, (isOpen) => {
     }
   }
 })
+
+const loadStorageData = async () => {
+  isLoadingStorage.value = true
+  storageDataError.value = null
+  storageFareData.value = null
+  storageMetadata.value = null
+  storageDownloadUrl.value = null
+
+  try {
+    // Storage から料金データを取得
+    const [data, metadata, url] = await Promise.all([
+      getJsonFile<any>('data/fare-master.json'),
+      getFileMetadata('data/fare-master.json'),
+      getStorageDownloadURL('fare-master.json').catch(() => null)
+    ])
+
+    storageFareData.value = data
+    storageMetadata.value = metadata
+    storageDownloadUrl.value = url
+  } catch (error: any) {
+    logger.error('Failed to load storage data', error)
+    if (error.code === 'storage/object-not-found') {
+      storageDataError.value = 'Storage に料金データが公開されていません。先に「データ公開」を実行してください。'
+    } else {
+      storageDataError.value = `データの取得に失敗しました: ${error.message || '不明なエラー'}`
+    }
+  } finally {
+    isLoadingStorage.value = false
+  }
+}
+
+const formatFileSize = (bytes: number): string => {
+  if (bytes === 0) return '0 Bytes'
+  const k = 1024
+  const sizes = ['Bytes', 'KB', 'MB', 'GB']
+  const i = Math.floor(Math.log(bytes) / Math.log(k))
+  return Math.round(bytes / Math.pow(k, i) * 100) / 100 + ' ' + sizes[i]
+}
+
+const formatStorageDataForDisplay = computed(() => {
+  if (!storageFareData.value) return ''
+  return JSON.stringify(storageFareData.value, null, 2)
+})
+
+const copyStorageDataToClipboard = async () => {
+  try {
+    await navigator.clipboard.writeText(formatStorageDataForDisplay.value)
+    $toast.success('JSON データをクリップボードにコピーしました')
+  } catch (error) {
+    logger.error('Failed to copy to clipboard', error)
+    $toast.error('クリップボードへのコピーに失敗しました')
+  }
+}
 
 onMounted(() => {
   loadFareData()
