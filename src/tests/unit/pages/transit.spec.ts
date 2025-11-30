@@ -70,6 +70,24 @@ const buildSampleRoutes = (): TransitRoute[] => {
     {
       segments: [
         {
+          tripId: 'route-same-departure-early',
+          ship: 'FERRY_OKI',
+          departure: 'HONDO',
+          arrival: 'SAIGO',
+          departureTime: toDate('08:00'),
+          arrivalTime: toDate('09:30'),
+          status: 1,
+          fare: 6000
+        }
+      ],
+      departureTime: toDate('08:00'),
+      arrivalTime: toDate('09:30'),
+      totalFare: 6000,
+      transferCount: 0
+    },
+    {
+      segments: [
+        {
           tripId: 'route-cheap-1',
           ship: 'FERRY_OKI',
           departure: 'HONDO',
@@ -202,13 +220,23 @@ describe('Transit Page', () => {
     expect(searchDate.getDate()).toBe(today.getDate())
   })
 
-  it('sorts routes by recommended order by default', async () => {
+  it('filters out routes with same departure time but later arrival', async () => {
     const wrapper = createWrapper()
     wrapper.vm.searchResults = buildSampleRoutes()
     await wrapper.vm.$nextTick()
 
-    const order = wrapper.vm.displayedResults.map((route: TransitRoute) => route.segments[0].tripId)
-    expect(order).toEqual(['route-fast-1', 'route-balanced-1', 'route-late-1', 'route-cheap-1'])
+    // 08:00出発のルートが2つある場合、到着が早い方（route-same-departure-early）だけが残る
+    const results = wrapper.vm.sortedResults
+    const route08_00 = results.find((route: TransitRoute) => 
+      route.departureTime.getTime() === new Date('2024-01-01T08:00:00').getTime()
+    )
+    
+    expect(route08_00).toBeDefined()
+    expect(route08_00?.segments[0].tripId).toBe('route-same-departure-early')
+    
+    // 到着が遅い方（route-balanced-1）は除外されている
+    const tripIds = results.map((route: TransitRoute) => route.segments[0].tripId)
+    expect(tripIds).not.toContain('route-balanced-1')
   })
 
   it('sorts routes by shortest duration when fast option is selected', async () => {
@@ -219,8 +247,17 @@ describe('Transit Page', () => {
     wrapper.vm.sortOption = 'fast'
     await wrapper.vm.$nextTick()
 
-    const order = wrapper.vm.displayedResults.map((route: TransitRoute) => route.segments[0].tripId)
-    expect(order).toEqual(['route-fast-1', 'route-balanced-1', 'route-cheap-1', 'route-late-1'])
+    const results = wrapper.vm.sortedResults
+    // 所要時間が短い順になっていることを確認
+    for (let i = 0; i < results.length - 1; i++) {
+      const current = (results[i].arrivalTime.getTime() - results[i].departureTime.getTime()) / (1000 * 60)
+      const next = (results[i + 1].arrivalTime.getTime() - results[i + 1].departureTime.getTime()) / (1000 * 60)
+      expect(current).toBeLessThanOrEqual(next)
+    }
+    
+    // 同じ出発時刻で到着が遅い結果が除外されていることを確認
+    const tripIds = results.map((route: TransitRoute) => route.segments[0].tripId)
+    expect(tripIds).not.toContain('route-balanced-1')
   })
 
   it('sorts routes by lowest fare when cheap option is selected', async () => {
@@ -231,8 +268,17 @@ describe('Transit Page', () => {
     wrapper.vm.sortOption = 'cheap'
     await wrapper.vm.$nextTick()
 
-    const order = wrapper.vm.displayedResults.map((route: TransitRoute) => route.segments[0].tripId)
-    expect(order).toEqual(['route-cheap-1', 'route-late-1', 'route-balanced-1', 'route-fast-1'])
+    const results = wrapper.vm.sortedResults
+    // 料金が安い順になっていることを確認
+    for (let i = 0; i < results.length - 1; i++) {
+      const current = results[i].totalFare
+      const next = results[i + 1].totalFare
+      expect(current).toBeLessThanOrEqual(next)
+    }
+    
+    // 同じ出発時刻で到着が遅い結果が除外されていることを確認
+    const tripIds = results.map((route: TransitRoute) => route.segments[0].tripId)
+    expect(tripIds).not.toContain('route-balanced-1')
   })
 
   it('sorts routes by easiest transfer when easy option is selected', async () => {
@@ -243,8 +289,35 @@ describe('Transit Page', () => {
     wrapper.vm.sortOption = 'easy'
     await wrapper.vm.$nextTick()
 
-    const order = wrapper.vm.displayedResults.map((route: TransitRoute) => route.segments[0].tripId)
-    expect(order).toEqual(['route-fast-1', 'route-balanced-1', 'route-late-1', 'route-cheap-1'])
+    const results = wrapper.vm.sortedResults
+    // 乗り換え回数が少ない順になっていることを確認
+    for (let i = 0; i < results.length - 1; i++) {
+      const current = results[i].transferCount
+      const next = results[i + 1].transferCount
+      expect(current).toBeLessThanOrEqual(next)
+    }
+    
+    // 同じ出発時刻で到着が遅い結果が除外されていることを確認
+    const tripIds = results.map((route: TransitRoute) => route.segments[0].tripId)
+    expect(tripIds).not.toContain('route-balanced-1')
+  })
+
+  it('sorts routes by chronological order (departure time) by default', async () => {
+    const wrapper = createWrapper()
+    wrapper.vm.searchResults = buildSampleRoutes()
+    await wrapper.vm.$nextTick()
+
+    const results = wrapper.vm.sortedResults
+    // 時系列順（出発時刻順）になっていることを確認
+    for (let i = 0; i < results.length - 1; i++) {
+      const current = results[i].departureTime.getTime()
+      const next = results[i + 1].departureTime.getTime()
+      expect(current).toBeLessThanOrEqual(next)
+    }
+    
+    // 同じ出発時刻で到着が遅い結果が除外されていることを確認
+    const tripIds = results.map((route: TransitRoute) => route.segments[0].tripId)
+    expect(tripIds).not.toContain('route-balanced-1')
   })
 
   it('updates sort order when a tab is clicked', async () => {
@@ -261,7 +334,262 @@ describe('Transit Page', () => {
 
     expect(wrapper.vm.sortOption).toBe('cheap')
 
-    const order = wrapper.vm.displayedResults.map((route: TransitRoute) => route.segments[0].tripId)
-    expect(order).toEqual(['route-cheap-1', 'route-late-1', 'route-balanced-1', 'route-fast-1'])
+    // 料金順になっていることを確認
+    const results = wrapper.vm.sortedResults
+    for (let i = 0; i < results.length - 1; i++) {
+      const current = results[i].totalFare
+      const next = results[i + 1].totalFare
+      expect(current).toBeLessThanOrEqual(next)
+    }
+    
+    // 同じ出発時刻で到着が遅い結果が除外されていることを確認
+    const tripIds = results.map((route: TransitRoute) => route.segments[0].tripId)
+    expect(tripIds).not.toContain('route-balanced-1')
+  })
+
+  describe('Edge cases', () => {
+    it('handles empty search results', async () => {
+      const wrapper = createWrapper()
+      wrapper.vm.searchResults = []
+      await wrapper.vm.$nextTick()
+
+      expect(wrapper.vm.sortedResults).toEqual([])
+    })
+
+    it('handles single search result', async () => {
+      const wrapper = createWrapper()
+      const toDate = (time: string): Date => new Date(`2024-01-01T${time}:00`)
+      wrapper.vm.searchResults = [{
+        segments: [{
+          tripId: 'single-route',
+          ship: 'FERRY_OKI',
+          departure: 'HONDO',
+          arrival: 'SAIGO',
+          departureTime: toDate('08:00'),
+          arrivalTime: toDate('10:00'),
+          status: 1,
+          fare: 6000
+        }],
+        departureTime: toDate('08:00'),
+        arrivalTime: toDate('10:00'),
+        totalFare: 6000,
+        transferCount: 0
+      }]
+      await wrapper.vm.$nextTick()
+
+      expect(wrapper.vm.sortedResults).toHaveLength(1)
+      expect(wrapper.vm.sortedResults[0].segments[0].tripId).toBe('single-route')
+    })
+
+    it('handles multiple routes with same departure time correctly', async () => {
+      const wrapper = createWrapper()
+      const toDate = (time: string): Date => new Date(`2024-01-01T${time}:00`)
+      
+      // 同じ出発時刻で3つのルート（到着時刻が異なる）
+      wrapper.vm.searchResults = [
+        {
+          segments: [{ tripId: 'route-1', ship: 'FERRY_OKI', departure: 'HONDO', arrival: 'SAIGO', departureTime: toDate('08:00'), arrivalTime: toDate('11:00'), status: 1, fare: 5000 }],
+          departureTime: toDate('08:00'),
+          arrivalTime: toDate('11:00'),
+          totalFare: 5000,
+          transferCount: 0
+        },
+        {
+          segments: [{ tripId: 'route-2', ship: 'FERRY_OKI', departure: 'HONDO', arrival: 'SAIGO', departureTime: toDate('08:00'), arrivalTime: toDate('09:30'), status: 1, fare: 5000 }],
+          departureTime: toDate('08:00'),
+          arrivalTime: toDate('09:30'),
+          totalFare: 5000,
+          transferCount: 0
+        },
+        {
+          segments: [{ tripId: 'route-3', ship: 'FERRY_OKI', departure: 'HONDO', arrival: 'SAIGO', departureTime: toDate('08:00'), arrivalTime: toDate('10:00'), status: 1, fare: 5000 }],
+          departureTime: toDate('08:00'),
+          arrivalTime: toDate('10:00'),
+          totalFare: 5000,
+          transferCount: 0
+        }
+      ]
+      await wrapper.vm.$nextTick()
+
+      const results = wrapper.vm.sortedResults
+      // 到着が最も早いもの（route-2）だけが残る
+      expect(results).toHaveLength(1)
+      expect(results[0].segments[0].tripId).toBe('route-2')
+    })
+  })
+
+  describe('Sort order verification', () => {
+    it('sorts by fast: duration first, then fare, then departure time', async () => {
+      const wrapper = createWrapper()
+      const toDate = (time: string): Date => new Date(`2024-01-01T${time}:00`)
+      
+      wrapper.vm.searchResults = [
+        {
+          segments: [{ tripId: 'long-cheap', ship: 'FERRY_OKI', departure: 'HONDO', arrival: 'SAIGO', departureTime: toDate('08:00'), arrivalTime: toDate('12:00'), status: 1, fare: 3000 }],
+          departureTime: toDate('08:00'),
+          arrivalTime: toDate('12:00'),
+          totalFare: 3000,
+          transferCount: 0
+        },
+        {
+          segments: [{ tripId: 'short-expensive', ship: 'FERRY_OKI', departure: 'HONDO', arrival: 'SAIGO', departureTime: toDate('09:00'), arrivalTime: toDate('10:00'), status: 1, fare: 8000 }],
+          departureTime: toDate('09:00'),
+          arrivalTime: toDate('10:00'),
+          totalFare: 8000,
+          transferCount: 0
+        },
+        {
+          segments: [{ tripId: 'medium-medium', ship: 'FERRY_OKI', departure: 'HONDO', arrival: 'SAIGO', departureTime: toDate('10:00'), arrivalTime: toDate('12:00'), status: 1, fare: 5000 }],
+          departureTime: toDate('10:00'),
+          arrivalTime: toDate('12:00'),
+          totalFare: 5000,
+          transferCount: 0
+        }
+      ]
+      await wrapper.vm.$nextTick()
+
+      wrapper.vm.sortOption = 'fast'
+      await wrapper.vm.$nextTick()
+
+      const results = wrapper.vm.sortedResults
+      // 所要時間が短い順: short-expensive (60分) < medium-medium (120分) < long-cheap (240分)
+      expect(results[0].segments[0].tripId).toBe('short-expensive')
+      expect(results[1].segments[0].tripId).toBe('medium-medium')
+      expect(results[2].segments[0].tripId).toBe('long-cheap')
+    })
+
+    it('sorts by cheap: fare first, then departure time', async () => {
+      const wrapper = createWrapper()
+      const toDate = (time: string): Date => new Date(`2024-01-01T${time}:00`)
+      
+      wrapper.vm.searchResults = [
+        {
+          segments: [{ tripId: 'expensive-early', ship: 'FERRY_OKI', departure: 'HONDO', arrival: 'SAIGO', departureTime: toDate('08:00'), arrivalTime: toDate('10:00'), status: 1, fare: 8000 }],
+          departureTime: toDate('08:00'),
+          arrivalTime: toDate('10:00'),
+          totalFare: 8000,
+          transferCount: 0
+        },
+        {
+          segments: [{ tripId: 'cheap-late', ship: 'FERRY_OKI', departure: 'HONDO', arrival: 'SAIGO', departureTime: toDate('10:00'), arrivalTime: toDate('12:00'), status: 1, fare: 3000 }],
+          departureTime: toDate('10:00'),
+          arrivalTime: toDate('12:00'),
+          totalFare: 3000,
+          transferCount: 0
+        },
+        {
+          segments: [{ tripId: 'medium-middle', ship: 'FERRY_OKI', departure: 'HONDO', arrival: 'SAIGO', departureTime: toDate('09:00'), arrivalTime: toDate('11:00'), status: 1, fare: 5000 }],
+          departureTime: toDate('09:00'),
+          arrivalTime: toDate('11:00'),
+          totalFare: 5000,
+          transferCount: 0
+        }
+      ]
+      await wrapper.vm.$nextTick()
+
+      wrapper.vm.sortOption = 'cheap'
+      await wrapper.vm.$nextTick()
+
+      const results = wrapper.vm.sortedResults
+      // 料金が安い順: cheap-late (3000) < medium-middle (5000) < expensive-early (8000)
+      expect(results[0].segments[0].tripId).toBe('cheap-late')
+      expect(results[1].segments[0].tripId).toBe('medium-middle')
+      expect(results[2].segments[0].tripId).toBe('expensive-early')
+    })
+
+    it('sorts by easy: transfer count first, then departure time', async () => {
+      const wrapper = createWrapper()
+      const toDate = (time: string): Date => new Date(`2024-01-01T${time}:00`)
+      
+      wrapper.vm.searchResults = [
+        {
+          segments: [
+            { tripId: 'transfer-1', ship: 'FERRY_OKI', departure: 'HONDO', arrival: 'TRANSFER', departureTime: toDate('09:00'), arrivalTime: toDate('10:00'), status: 1, fare: 3000 },
+            { tripId: 'transfer-2', ship: 'FERRY_KUNIGA', departure: 'TRANSFER', arrival: 'SAIGO', departureTime: toDate('10:30'), arrivalTime: toDate('11:30'), status: 1, fare: 2000 }
+          ],
+          departureTime: toDate('09:00'),
+          arrivalTime: toDate('11:30'),
+          totalFare: 5000,
+          transferCount: 1
+        },
+        {
+          segments: [{ tripId: 'direct-late', ship: 'FERRY_OKI', departure: 'HONDO', arrival: 'SAIGO', departureTime: toDate('10:00'), arrivalTime: toDate('12:00'), status: 1, fare: 6000 }],
+          departureTime: toDate('10:00'),
+          arrivalTime: toDate('12:00'),
+          totalFare: 6000,
+          transferCount: 0
+        },
+        {
+          segments: [{ tripId: 'direct-early', ship: 'FERRY_OKI', departure: 'HONDO', arrival: 'SAIGO', departureTime: toDate('08:00'), arrivalTime: toDate('10:00'), status: 1, fare: 6000 }],
+          departureTime: toDate('08:00'),
+          arrivalTime: toDate('10:00'),
+          totalFare: 6000,
+          transferCount: 0
+        }
+      ]
+      await wrapper.vm.$nextTick()
+
+      wrapper.vm.sortOption = 'easy'
+      await wrapper.vm.$nextTick()
+
+      const results = wrapper.vm.sortedResults
+      // 乗り換え回数が少ない順: direct-early (0回) < direct-late (0回) < transfer (1回)
+      // 同じ乗り換え回数の場合は出発時刻順
+      expect(results).toHaveLength(3)
+      expect(results[0].segments[0].tripId).toBe('direct-early')
+      expect(results[1].segments[0].tripId).toBe('direct-late')
+      expect(results[2].segments[0].tripId).toBe('transfer-1')
+    })
+
+    it('sorts by chronological order: departure time first, then arrival time', async () => {
+      const wrapper = createWrapper()
+      const toDate = (time: string): Date => new Date(`2024-01-01T${time}:00`)
+      
+      wrapper.vm.searchResults = [
+        {
+          segments: [
+            { tripId: 'transfer-slow', ship: 'FERRY_OKI', departure: 'HONDO', arrival: 'TRANSFER', departureTime: toDate('09:00'), arrivalTime: toDate('11:00'), status: 1, fare: 3000 },
+            { tripId: 'transfer-slow-2', ship: 'FERRY_KUNIGA', departure: 'TRANSFER', arrival: 'SAIGO', departureTime: toDate('12:00'), arrivalTime: toDate('15:00'), status: 1, fare: 2000 }
+          ],
+          departureTime: toDate('09:00'),
+          arrivalTime: toDate('15:00'),
+          totalFare: 5000,
+          transferCount: 1
+        },
+        {
+          segments: [{ tripId: 'direct-fast', ship: 'FERRY_OKI', departure: 'HONDO', arrival: 'SAIGO', departureTime: toDate('10:00'), arrivalTime: toDate('11:00'), status: 1, fare: 6000 }],
+          departureTime: toDate('10:00'),
+          arrivalTime: toDate('11:00'),
+          totalFare: 6000,
+          transferCount: 0
+        },
+        {
+          segments: [{ tripId: 'direct-slow', ship: 'FERRY_OKI', departure: 'HONDO', arrival: 'SAIGO', departureTime: toDate('08:00'), arrivalTime: toDate('11:00'), status: 1, fare: 6000 }],
+          departureTime: toDate('08:00'),
+          arrivalTime: toDate('11:00'),
+          totalFare: 6000,
+          transferCount: 0
+        }
+      ]
+      await wrapper.vm.$nextTick()
+
+      wrapper.vm.sortOption = 'recommended'
+      await wrapper.vm.$nextTick()
+
+      const results = wrapper.vm.sortedResults
+      // 時系列順（出発時刻順）になっていることを確認
+      // direct-slow (08:00) < transfer-slow (09:00) < direct-fast (10:00)
+      expect(results).toHaveLength(3)
+      expect(results[0].segments[0].tripId).toBe('direct-slow')
+      expect(results[1].segments[0].tripId).toBe('transfer-slow')
+      expect(results[2].segments[0].tripId).toBe('direct-fast')
+      
+      // 出発時刻が時系列順になっていることを確認
+      for (let i = 0; i < results.length - 1; i++) {
+        const current = results[i].departureTime.getTime()
+        const next = results[i + 1].departureTime.getTime()
+        expect(current).toBeLessThanOrEqual(next)
+      }
+    })
   })
 })
