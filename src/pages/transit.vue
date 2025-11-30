@@ -460,6 +460,39 @@ const sortedResults = computed(() => {
     return routes
   }
 
+  // まず出発時刻順にソート（最適化のための準備）
+  routes.sort((a, b) => {
+    const departureDiff = a.departureTime.getTime() - b.departureTime.getTime()
+    if (departureDiff !== 0) {
+      return departureDiff
+    }
+    // 出発時刻が同じ場合は到着時刻の早い順
+    return a.arrivalTime.getTime() - b.arrivalTime.getTime()
+  })
+
+  // 同じ出発時刻でより遅く到着する結果を除外
+  const filteredRoutes: TransitRoute[] = []
+  const departureTimeGroups = new Map<number, TransitRoute[]>()
+
+  // 出発時刻ごとにグループ化
+  for (const route of routes) {
+    const departureTime = route.departureTime.getTime()
+    if (!departureTimeGroups.has(departureTime)) {
+      departureTimeGroups.set(departureTime, [])
+    }
+    departureTimeGroups.get(departureTime)!.push(route)
+  }
+
+  // 各グループから到着時刻が最も早いものだけを残す
+  for (const [, groupRoutes] of departureTimeGroups) {
+    // 到着時刻が最も早いものを選択
+    const bestRoute = groupRoutes.reduce((best, current) => {
+      return current.arrivalTime.getTime() < best.arrivalTime.getTime() ? current : best
+    })
+    filteredRoutes.push(bestRoute)
+  }
+
+  // ソートオプションに応じて並び替え
   const getDurationMinutes = (route: TransitRoute): number => {
     return (route.arrivalTime.getTime() - route.departureTime.getTime()) / (1000 * 60)
   }
@@ -503,30 +536,18 @@ const sortedResults = computed(() => {
     return compareByDepartureTime(a, b)
   }
 
-  const compareRecommended = (a: TransitRoute, b: TransitRoute): number => {
-    const transferDiff = a.transferCount - b.transferCount
-    if (transferDiff !== 0) {
-      return transferDiff
-    }
-    const durationDiff = getDurationMinutes(a) - getDurationMinutes(b)
-    if (durationDiff !== 0) {
-      return durationDiff
-    }
-    return compareByDepartureTime(a, b)
-  }
-
   if (sortOption.value === 'fast') {
-    return routes.sort(compareByDuration)
+    return filteredRoutes.sort(compareByDuration)
   }
   if (sortOption.value === 'cheap') {
-    return routes.sort(compareByFare)
+    return filteredRoutes.sort(compareByFare)
   }
   if (sortOption.value === 'easy') {
-    return routes.sort(compareByTransfer)
+    return filteredRoutes.sort(compareByTransfer)
   }
 
-  // おすすめ(バランス)は乗換回数 → 所要時間 → 出発時刻でソート
-  return routes.sort(compareRecommended)
+  // 時系列順（出発時刻順）でソート
+  return filteredRoutes.sort(compareByDepartureTime)
 })
 
 const displayedResults = computed(() => {
