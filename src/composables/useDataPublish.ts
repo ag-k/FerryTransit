@@ -418,6 +418,12 @@ export const useDataPublish = () => {
       )
     }
 
+    // 有効な版だけをフィルタリング
+    const activeVersions = versionPayloads.filter(version => {
+      const activeId = activeVersionIds[version.vesselType]
+      return activeId === version.id
+    })
+
     // 内航船料金を取得
     let innerIslandFare: { adult: number | null; child: number | null } | null = null
     let innerIslandVehicleFare: Record<string, number> | null = null
@@ -434,7 +440,7 @@ export const useDataPublish = () => {
 
     const result: Record<string, unknown> = {
       fares: activeFares,
-      versions: versionPayloads,
+      versions: activeVersions,
       activeVersionIds,
       discounts: discounts
         .filter((discount: any) => discount.active)
