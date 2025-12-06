@@ -309,10 +309,25 @@
     }
   ],
   "discounts": {
+    "roundTrip": {
+      "nameKey": "DISCOUNT_ROUND_TRIP",
+      "rate": 0.9,
+      "descriptionKey": "DISCOUNT_ROUND_TRIP_DESC"
+    },
     "group": {
       "nameKey": "DISCOUNT_GROUP",
-      "rate": 0.9,
+      "rate": 0.85,
       "descriptionKey": "DISCOUNT_GROUP_DESC"
+    },
+    "student": {
+      "nameKey": "DISCOUNT_STUDENT",
+      "rate": 0.8,
+      "descriptionKey": "DISCOUNT_STUDENT_DESC"
+    },
+    "disability": {
+      "nameKey": "DISCOUNT_DISABILITY",
+      "rate": 0.5,
+      "descriptionKey": "DISCOUNT_DISABILITY_DESC"
     }
   },
   "notes": []
