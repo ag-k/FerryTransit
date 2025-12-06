@@ -37,6 +37,7 @@ export default defineConfig({
       '@': resolve(__dirname, './src'),
       '~': resolve(__dirname, './src'),
       '#app': resolve(__dirname, './src/test/mocks/nuxt.ts'),
+      '#imports': resolve(__dirname, './src/test/mocks/nuxt.ts'),
       '@/composables/useHolidayCalendar': resolve(__dirname, './src/test/mocks/nuxt.ts')
     }
   }
