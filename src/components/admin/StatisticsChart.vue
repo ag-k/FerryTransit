@@ -1,6 +1,6 @@
 <template>
   <div class="bg-white dark:bg-gray-800 rounded-lg shadow p-6">
-    <div class="flex items-center justify-between mb-4">
+    <div v-if="title" class="flex items-center justify-between mb-4">
       <h3 class="text-lg font-medium text-gray-900 dark:text-white">
         {{ title }}
       </h3>
@@ -128,10 +128,13 @@ const totalValue = computed(() => {
 })
 
 const normalizedData = computed(() => {
-  const maxValue = Math.max(...props.data.map(d => d.value))
+  if (!props.data || props.data.length === 0) {
+    return []
+  }
+  const maxValue = Math.max(...props.data.map(d => d.value), 1)
   return props.data.map(point => ({
     ...point,
-    percentage: (point.value / maxValue) * 100
+    percentage: maxValue > 0 ? (point.value / maxValue) * 100 : 0
   }))
 })
 

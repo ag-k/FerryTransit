@@ -6,11 +6,11 @@
     <div v-if="menuOpen" class="fixed inset-0 bg-black bg-opacity-50 dark:bg-opacity-70 z-40 lg:hidden"
       @click="closeMenu"></div>
 
-    <div class="container mx-auto px-4">
-      <div class="flex items-center justify-between py-3 sm:py-4">
+    <div class="container mx-auto lg:px-4">
+      <div class="flex items-center justify-between h-[44px] lg:h-auto lg:py-4">
         <div class="flex items-center">
           <NuxtLink
-            class="text-base sm:text-xl font-medium hover:opacity-80 transition-opacity py-2 flex-1 lg:flex-none"
+            class="text-base sm:text-xl font-medium hover:opacity-80 transition-opacity pt-0 pb-2 lg:py-2 flex-1 lg:flex-none"
             :to="localePath('/')">
             <span class="hidden lg:inline font-bold">{{ $t('TITLE') }}</span>
             <span class="lg:hidden flex items-center">
@@ -21,7 +21,7 @@
         </div>
 
         <button
-          class="lg:hidden relative min-w-[44px] min-h-[44px] p-2 rounded hover:bg-blue-700 dark:hover:bg-slate-800 transition-colors z-50 touch-manipulation flex items-center justify-center"
+          class="lg:hidden relative min-w-[44px] min-h-[44px] p-2 rounded hover:bg-blue-700 dark:hover:bg-slate-800 transition-colors z-50 touch-manipulation flex items-center justify-center ml-auto"
           type="button" aria-controls="navbarNav" :aria-expanded="menuOpen" aria-label="Toggle navigation"
           style="user-select: none; -webkit-user-select: none; -webkit-touch-callout: none;" @click.stop="toggleMenu"
           @touchstart.passive="() => { }">
@@ -224,14 +224,32 @@ const { isAndroid } = useAndroidNavigation()
 const statusBarHeight = ref(0)
 const envSafeAreaTop = ref(0)
 
+// 画面サイズを判定
+const isMobile = ref(true)
+
 // 総合的な上部パディングを計算
 const totalTopPadding = computed(() => {
+  // モバイル版では0を返す
+  if (isMobile.value) {
+    return 0
+  }
   const safeArea = envSafeAreaTop.value || 0
   const androidStatus = isAndroid.value ? Math.max(statusBarHeight.value, 24) : 0 // Androidは最低24pxを確保
   return Math.max(safeArea, androidStatus, 8) // 最低8pxを確保
 })
 
+// 画面サイズを判定する関数
+const updateIsMobile = () => {
+  if (process.client) {
+    isMobile.value = window.innerWidth < 1024 // lgブレークポイント
+  }
+}
+
 onMounted(() => {
+  // 画面サイズを判定
+  updateIsMobile()
+  window.addEventListener('resize', updateIsMobile)
+
   // iOS safe areaの値を取得
   const updateSafeArea = () => {
     const rootStyles = getComputedStyle(document.documentElement)
@@ -433,6 +451,7 @@ onUnmounted(() => {
     document.removeEventListener('click', handleClickOutside)
     document.removeEventListener('touchstart', handleClickOutside)
   }
+  window.removeEventListener('resize', updateIsMobile)
   // Ensure body scroll is restored
   document.body.style.overflow = ''
 })
