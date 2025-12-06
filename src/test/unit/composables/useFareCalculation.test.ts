@@ -184,19 +184,19 @@ describe('useFareCalculation - Beppu-Hishiura Route', () => {
       
       expect(results).toHaveLength(3)
       
-      // Check ISOKAZE (local ferry) fare - should be 410 yen from fare master
+      // Check ISOKAZE (local ferry) fare - should be 300 yen (innerIslandFare)
       const isokazeRoute = results.find(r => r.segments[0].ship === 'ISOKAZE')
-      expect(isokazeRoute?.totalFare).toBe(410) // From fare master lookup
-      expect(isokazeRoute?.segments[0].fare).toBe(410)
+      expect(isokazeRoute?.totalFare).toBe(300) // Uses innerIslandFare
+      expect(isokazeRoute?.segments[0].fare).toBe(300)
       
-      // Check FERRY_DOZEN (local ferry) fare - should be 410 yen from fare master
+      // Check FERRY_DOZEN (local ferry) fare - should be 300 yen (innerIslandFare)
       const ferryDozenRoute = results.find(r => r.segments[0].ship === 'FERRY_DOZEN')
-      expect(ferryDozenRoute?.totalFare).toBe(410)
-      expect(ferryDozenRoute?.segments[0].fare).toBe(410)
+      expect(ferryDozenRoute?.totalFare).toBe(300) // Uses innerIslandFare
+      expect(ferryDozenRoute?.segments[0].fare).toBe(300)
       
       // Check FERRY_OKI (regular ferry) fare - should be 410 yen from fare master
       const ferryOkiRoute = results.find(r => r.segments[0].ship === 'FERRY_OKI')
-      expect(ferryOkiRoute?.totalFare).toBe(410)
+      expect(ferryOkiRoute?.totalFare).toBe(410) // From fare master lookup
       expect(ferryOkiRoute?.segments[0].fare).toBe(410)
     })
 
@@ -222,9 +222,19 @@ describe('useFareCalculation - Beppu-Hishiura Route', () => {
       
       expect(results).toHaveLength(3)
       
-      // All routes should have the same fare regardless of direction (from fare master)
-      results.forEach(route => {
-        expect(route.totalFare).toBe(410)
+      // Local ferries (ISOKAZE, FERRY_DOZEN) should use innerIslandFare (300 yen)
+      // Regular ferries (FERRY_OKI) should use fare master (410 yen)
+      const localFerryRoutes = results.filter(r => 
+        r.segments[0].ship === 'ISOKAZE' || r.segments[0].ship === 'FERRY_DOZEN'
+      )
+      localFerryRoutes.forEach(route => {
+        expect(route.totalFare).toBe(300) // Uses innerIslandFare
+        expect(route.segments[0].fare).toBe(300)
+      })
+      
+      const regularFerryRoutes = results.filter(r => r.segments[0].ship === 'FERRY_OKI')
+      regularFerryRoutes.forEach(route => {
+        expect(route.totalFare).toBe(410) // From fare master
         expect(route.segments[0].fare).toBe(410)
       })
     })
@@ -411,10 +421,10 @@ describe('useFareCalculation - Beppu-Hishiura Route', () => {
         false
       )
       
-      // ISOKAZE should use fare from fare master (410 yen for BEPPU-HISHIURA)
+      // ISOKAZE should use innerIslandFare (300 yen) for all inner island routes
       expect(results).toHaveLength(1)
-      expect(results[0].totalFare).toBe(410)
-      expect(results[0].segments[0].fare).toBe(410)
+      expect(results[0].totalFare).toBe(300) // Uses innerIslandFare
+      expect(results[0].segments[0].fare).toBe(300)
     })
   })
 
