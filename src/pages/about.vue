@@ -136,6 +136,25 @@ fill-rule="evenodd"
             </div>
             <p class="text-gray-600 dark:text-gray-300 text-sm mt-1">{{ $t('OKI_DOUZEN_DESC') }}</p>
           </a>
+          <a
+href="https://oki-digilab.com/" target="_blank"
+            class="block p-4 bg-white dark:bg-gray-900 text-gray-800 dark:text-white rounded-lg border border-gray-200 dark:border-gray-600 hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors group">
+            <div class="flex justify-between items-start">
+              <h6 class="font-semibold group-hover:text-blue-600 dark:text-white dark:group-hover:text-blue-400">{{
+                $t('OKI_DIGILAB') }}</h6>
+              <svg
+xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor"
+                class="text-gray-400 dark:text-gray-300" viewBox="0 0 16 16">
+                <path
+fill-rule="evenodd"
+                  d="M8.636 3.5a.5.5 0 0 0-.5-.5H1.5A1.5 1.5 0 0 0 0 4.5v10A1.5 1.5 0 0 0 1.5 16h10a1.5 1.5 0 0 0 1.5-1.5V7.864a.5.5 0 0 0-1 0V14.5a.5.5 0 0 1-.5.5h-10a.5.5 0 0 1-.5-.5v-10a.5.5 0 0 1 .5-.5h6.636a.5.5 0 0 0 .5-.5z" />
+                <path
+fill-rule="evenodd"
+                  d="M16 .5a.5.5 0 0 0-.5-.5h-5a.5.5 0 0 0 0 1h3.793L6.146 9.146a.5.5 0 1 0 .708.708L15 1.707V5.5a.5.5 0 0 0 1 0v-5z" />
+              </svg>
+            </div>
+            <p class="text-gray-600 dark:text-gray-300 text-sm mt-1">{{ $t('OKI_DIGILAB_DESC') }}</p>
+          </a>
         </div>
       </div>
     </div>
