@@ -245,6 +245,21 @@
           {{ $t('TIMETABLE_LAST_UPDATE') }}: {{ formatDateTime(ferryStore.timetableLastUpdate) }}
         </p>
       </div>
+
+      <!-- 乗換を含むルートを検索ボタン -->
+      <div v-if="showTransferSearchButton" class="px-4 py-3 bg-gray-50 dark:bg-gray-700/50 border-t border-gray-200 dark:border-gray-600">
+        <button
+          type="button"
+          data-test="transfer-search-button"
+          class="w-full py-2.5 px-4 bg-blue-600 hover:bg-blue-700 dark:bg-blue-500 dark:hover:bg-blue-600 text-white font-medium rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 dark:focus:ring-offset-gray-800 transform active:scale-[0.98] transition-all duration-150 shadow-sm hover:shadow-md flex items-center justify-center gap-2"
+          @click="navigateToTransit">
+          <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+              d="M8 7h12m0 0l-4-4m4 4l-4 4m0 6H4m0 0l4 4m-4-4l4-4" />
+          </svg>
+          {{ $t('SEARCH_WITH_TRANSFER') }}
+        </button>
+      </div>
     </div>
 
     <!-- モーダル -->
@@ -317,6 +332,20 @@ const sortedTimetable = computed(() => {
     const timeB = new Date(`2000-01-01T${normalizeTime(b.departureTime)}`).getTime()
     return timeA - timeB
   })
+})
+
+// 島前3島間のルートかどうかを判定
+const isDozenRoute = computed(() => {
+  const dozenPorts = ['BEPPU', 'HISHIURA', 'KURI']
+  return departure.value && arrival.value &&
+    dozenPorts.includes(departure.value) &&
+    dozenPorts.includes(arrival.value) &&
+    departure.value !== arrival.value
+})
+
+// 乗換を含むルートを検索ボタンを表示するかどうか
+const showTransferSearchButton = computed(() => {
+  return departure.value && arrival.value && !isDozenRoute.value
 })
 
 // Methods
@@ -459,6 +488,26 @@ const handleMapRouteSelect = (route: { from: string; to: string }) => {
 // 地図表示の切り替え
 const toggleMapDisplay = () => {
   settingsStore.setMapEnabled(!settingsStore.mapEnabled)
+}
+
+// 乗換案内画面に遷移
+const navigateToTransit = () => {
+  if (!departure.value || !arrival.value) {
+    return
+  }
+
+  const router = useRouter()
+  const dateStr = selectedDate.value.toISOString().split('T')[0]
+  
+  router.push({
+    path: '/transit',
+    query: {
+      departure: departure.value,
+      arrival: arrival.value,
+      date: dateStr,
+      time: '00:00'
+    }
+  })
 }
 
 // Watchers
