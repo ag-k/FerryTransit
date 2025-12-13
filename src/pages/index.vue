@@ -308,16 +308,20 @@ const selectedMapRoute = ref<{ from: string; to: string } | undefined>()
 
 // Computed properties
 const selectedDateString = computed(() => {
-  return selectedDate.value.toISOString().split('T')[0]
+  // ローカル時間で日付を取得（UTC変換によるずれを防ぐ）
+  const year = selectedDate.value.getFullYear()
+  const month = String(selectedDate.value.getMonth() + 1).padStart(2, '0')
+  const day = String(selectedDate.value.getDate()).padStart(2, '0')
+  return `${year}-${month}-${day}`
 })
 
 const todayString = computed(() => {
-  // JSTで本日の日付を取得
+  // ローカル時間で本日の日付を取得（UTC変換によるずれを防ぐ）
   const now = new Date()
-  const jstOffset = 9 * 60 // JST is UTC+9
-  const jstTime = new Date(now.getTime() + (jstOffset - now.getTimezoneOffset()) * 60 * 1000)
-  jstTime.setHours(0, 0, 0, 0)
-  return jstTime.toISOString().split('T')[0]
+  const year = now.getFullYear()
+  const month = String(now.getMonth() + 1).padStart(2, '0')
+  const day = String(now.getDate()).padStart(2, '0')
+  return `${year}-${month}-${day}`
 })
 
 const sortedTimetable = computed(() => {
@@ -433,7 +437,11 @@ const formatDateTime = (date: Date) => {
 
 const tripStatus = (trip: any) => {
   const alerts = ferryStore?.alerts || []
-  const tripDate = selectedDate.value.toISOString().split('T')[0]
+  // ローカル時間で日付を取得（UTC変換によるずれを防ぐ）
+  const year = selectedDate.value.getFullYear()
+  const month = String(selectedDate.value.getMonth() + 1).padStart(2, '0')
+  const day = String(selectedDate.value.getDate()).padStart(2, '0')
+  const tripDate = `${year}-${month}-${day}`
 
   // Check if this trip has any alerts
   const hasAlert = alerts.some(alert => {
@@ -497,7 +505,11 @@ const navigateToTransit = () => {
   }
 
   const router = useRouter()
-  const dateStr = selectedDate.value.toISOString().split('T')[0]
+  // ローカル時間で日付を取得（UTC変換によるずれを防ぐ）
+  const year = selectedDate.value.getFullYear()
+  const month = String(selectedDate.value.getMonth() + 1).padStart(2, '0')
+  const day = String(selectedDate.value.getDate()).padStart(2, '0')
+  const dateStr = `${year}-${month}-${day}`
   
   router.push({
     path: '/transit',
