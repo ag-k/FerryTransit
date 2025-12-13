@@ -278,6 +278,7 @@
   "OKI_KISEN_DESC": "Ferry and high-speed boat operator connecting Oki and mainland",
   "OPERATION_ALERTS": "Service Alerts",
   "SEARCH_ROUTES": "Search routes",
+  "SEARCH_WITH_TRANSFER": "Search routes with transfers",
   "STATUS_DESC": "Check the latest service status",
   "TIMETABLE_DESC": "Check ferry timetables",
   "TRANSIT_DESC": "Search for optimal transfer routes",

@@ -158,6 +158,7 @@
   "STATUS_DESC": "最新の運航状況を確認できます",
   "VIEW_TIMETABLE": "時刻表を見る",
   "SEARCH_ROUTES": "経路を検索",
+  "SEARCH_WITH_TRANSFER": "乗換を含むルートを検索",
   "CHECK_STATUS": "運航状況を確認",
   "OPERATION_ALERTS": "運航に関するお知らせ",
   "CHECK_DETAILS": "詳細を確認してください",
