@@ -137,11 +137,27 @@ export const useRouteSearch = () => {
 
     logger.debug("Direct route search", { departurePorts, arrivalPorts });
 
+    // 本土の港を判定する関数
+    const isMainlandPort = (port: string | undefined): boolean => {
+      return port === "HONDO_SHICHIRUI" || port === "HONDO_SAKAIMINATO";
+    };
+
     for (const trip of timetable) {
       if (
         departurePorts.includes(trip.departure) &&
         arrivalPorts.includes(trip.arrival)
       ) {
+        // 本土の港が途中経由地（出発地/目的地以外）にある便を除外
+        if (trip.via && isMainlandPort(trip.via)) {
+          // 出発地または目的地が本土の港の場合は除外しない
+          if (
+            !isMainlandPort(trip.departure) &&
+            !isMainlandPort(trip.arrival)
+          ) {
+            continue;
+          }
+        }
+
         logger.debug("Found matching trip", trip);
         // Create date objects using the search date and trip times
         const [depHours, depMinutes] = parseTimeParts(trip.departureTime);
@@ -232,6 +248,16 @@ export const useRouteSearch = () => {
         return null;
       }
 
+      // 本土の港が途中経由地（出発地/目的地以外）にある便を除外
+      if (current.via && isMainlandPort(current.via)) {
+        if (
+          !isMainlandPort(current.departure) &&
+          !isMainlandPort(current.arrival)
+        ) {
+          return null;
+        }
+      }
+
       if (arrivalPorts.includes(current.arrival)) {
         return { trips: chain, maxStatus };
       }
@@ -244,6 +270,26 @@ export const useRouteSearch = () => {
         const nextTrip = tripMap.get(String(current.nextId));
         if (!nextTrip) {
           return null;
+        }
+
+        // 本土の港が途中経由地（出発地/目的地以外）にある便を除外
+        if (nextTrip.via && isMainlandPort(nextTrip.via)) {
+          const endpointsNonMainland =
+            !isMainlandPort(nextTrip.departure) &&
+            !isMainlandPort(nextTrip.arrival);
+
+          // 例: KURI→HONDO→KURI→(KURI→BEPPU/SAIGO...) のように
+          // 本土から出発地へ戻った“直後”の区間は、via が本土になっていても
+          // 「2回目の出発地→目的地」区間として結果に含めたい
+          const canIgnoreViaAfterReturnToDeparture =
+            endpointsNonMainland &&
+            isMainlandPort(current.departure) &&
+            departurePorts.includes(current.arrival) &&
+            departurePorts.includes(nextTrip.departure);
+
+          if (endpointsNonMainland && !canIgnoreViaAfterReturnToDeparture) {
+            return null;
+          }
         }
 
         if (nextTrip.name !== current.name) {
@@ -275,6 +321,17 @@ export const useRouteSearch = () => {
     for (const firstTrip of timetable) {
       if (!departurePorts.includes(firstTrip.departure)) continue;
 
+      // 本土の港が途中経由地（出発地/目的地以外）にある便を除外
+      if (firstTrip.via && isMainlandPort(firstTrip.via)) {
+        // 出発地または目的地が本土の港の場合は除外しない
+        if (
+          !isMainlandPort(firstTrip.departure) &&
+          !isMainlandPort(firstTrip.arrival)
+        ) {
+          continue;
+        }
+      }
+
       const [firstDepHours, firstDepMinutes] = parseTimeParts(
         firstTrip.departureTime
       );
@@ -297,6 +354,17 @@ export const useRouteSearch = () => {
 
       for (const secondTrip of timetable) {
         if (secondTrip.departure !== firstTrip.arrival) continue;
+
+        // 本土の港が途中経由地（出発地/目的地以外）にある便を除外
+        if (secondTrip.via && isMainlandPort(secondTrip.via)) {
+          // 出発地または目的地が本土の港の場合は除外しない
+          if (
+            !isMainlandPort(secondTrip.departure) &&
+            !isMainlandPort(secondTrip.arrival)
+          ) {
+            continue;
+          }
+        }
 
         const chainResult = collectTripChain(secondTrip);
         if (!chainResult) continue;
@@ -328,11 +396,121 @@ export const useRouteSearch = () => {
           continue;
         }
 
-        if (
+        // 本土に寄っていったん出発地へ戻る便（例: KURI→HONDO→KURI→BEPPU / KURI→HONDO→KURI→SAIGO）
+        // この場合は「本土を含む区間」は表示せず、出発地に戻った後の区間（2回目の KURI→...）だけを結果に含める
+        const isDetourToMainland =
           !isMainlandPort(departure) &&
           !isMainlandPort(arrival) &&
-          (isMainlandPort(firstTrip.arrival) || isMainlandPort(secondTrip.departure))
-        ) {
+          isMainlandPort(firstTrip.arrival) &&
+          isMainlandPort(secondTrip.departure);
+
+        if (isDetourToMainland) {
+          // chain は secondTrip を先頭に含むので、idx>0 で「本土から戻った後」の区間を探す
+          const resumeIdx = chain.findIndex(
+            (t, idx) => idx > 0 && departurePorts.includes(t.departure)
+          );
+
+          // 出発地へ戻らない本土経由（例: SAIGO→HONDO→BEPPU）は除外
+          if (resumeIdx === -1) {
+            continue;
+          }
+
+          const resumeTrips = chain.slice(resumeIdx);
+          const resumeFinalTrip = resumeTrips[resumeTrips.length - 1];
+          if (!arrivalPorts.includes(resumeFinalTrip.arrival)) {
+            continue;
+          }
+
+          // 再開区間のセグメントを構築（1本だけの場合は直行扱い）
+          const resumeSegments: TransitSegment[] = [];
+          let prevArrival: Date | null = null;
+          let totalFare = 0;
+          let maxStatus = 0;
+
+          for (const t of resumeTrips) {
+            const [depH, depM] = parseTimeParts(t.departureTime);
+            const [arrH, arrM] = parseTimeParts(t.arrivalTime);
+
+            const depTime = prevArrival
+              ? new Date(prevArrival)
+              : new Date(searchTime);
+            depTime.setHours(depH, depM, 0, 0);
+            if (prevArrival && depTime <= prevArrival) {
+              depTime.setDate(depTime.getDate() + 1);
+            }
+
+            const arrTime = new Date(depTime);
+            arrTime.setHours(arrH, arrM, 0, 0);
+            if (arrTime < depTime) {
+              arrTime.setDate(arrTime.getDate() + 1);
+            }
+
+            // 検索時刻条件
+            if (
+              !isArrivalMode &&
+              resumeSegments.length === 0 &&
+              depTime < searchTime
+            ) {
+              // 再開区間の出発が検索時刻より前なら、この候補は無効
+              resumeSegments.length = 0;
+              break;
+            }
+
+            const status = getTripStatus(t);
+            if (status === 2) {
+              resumeSegments.length = 0;
+              break;
+            }
+
+            const fare = await calculateFare(
+              t.name,
+              t.departure,
+              t.arrival,
+              depTime
+            );
+            totalFare += fare;
+            maxStatus = Math.max(maxStatus, status);
+
+            resumeSegments.push({
+              tripId: String(t.tripId),
+              ship: t.name,
+              departure: t.departure,
+              arrival: t.arrival,
+              departureTime: depTime,
+              arrivalTime: arrTime,
+              status,
+              fare,
+            });
+
+            prevArrival = arrTime;
+          }
+
+          if (resumeSegments.length === 0) {
+            continue;
+          }
+
+          if (isArrivalMode) {
+            const finalArrival =
+              resumeSegments[resumeSegments.length - 1].arrivalTime;
+            if (finalArrival > searchTime) {
+              continue;
+            }
+          }
+
+          const resumeKey = `resume-${resumeTrips
+            .map((t) => t.tripId)
+            .join("_")}`;
+          if (processedRoutes.has(resumeKey)) continue;
+          processedRoutes.add(resumeKey);
+
+          routes.push({
+            segments: resumeSegments,
+            departureTime: resumeSegments[0].departureTime,
+            arrivalTime: resumeSegments[resumeSegments.length - 1].arrivalTime,
+            totalFare,
+            transferCount: Math.max(0, resumeSegments.length - 1),
+          });
+
           continue;
         }
 
@@ -482,36 +660,47 @@ export const useRouteSearch = () => {
 
     let route: FareRoute | undefined;
     let vesselType: VesselType;
-    
+
     // Determine vessel type based on ship name
     if (ship === "RAINBOWJET") {
       vesselType = "highspeed";
-    } else if (ship === "ISOKAZE" || ship === "ISOKAZE_EX" || ship === "FERRY_DOZEN") {
+    } else if (
+      ship === "ISOKAZE" ||
+      ship === "ISOKAZE_EX" ||
+      ship === "FERRY_DOZEN"
+    ) {
       vesselType = "local";
     } else {
       vesselType = "ferry";
     }
 
     // For local vessels (ISOKAZE, FERRY_DOZEN), use inner island fare regardless of route
-    const isLocalVessel = ship === "ISOKAZE" || ship === "ISOKAZE_EX" || ship === "FERRY_DOZEN";
+    const isLocalVessel =
+      ship === "ISOKAZE" || ship === "ISOKAZE_EX" || ship === "FERRY_DOZEN";
     if (isLocalVessel) {
       // 内航船はルートに関わらず一定料金
       // /fare ページと同じように、fareMaster.innerIslandFare を直接参照
       const innerIslandFare = fareStore.fareMaster.innerIslandFare;
-      
-      if (innerIslandFare?.adult !== undefined && innerIslandFare.adult !== null) {
+
+      if (
+        innerIslandFare?.adult !== undefined &&
+        innerIslandFare.adult !== null
+      ) {
         return innerIslandFare.adult;
       }
-      
+
       // フォールバック: getFareByRoute から取得を試みる
       const fallbackRoute = fareStore.getFareByRoute(departure, arrival, {
         date,
-        vesselType: 'local',
+        vesselType: "local",
       });
-      if (fallbackRoute?.fares?.adult !== undefined && fallbackRoute.fares.adult !== null) {
+      if (
+        fallbackRoute?.fares?.adult !== undefined &&
+        fallbackRoute.fares.adult !== null
+      ) {
         return fallbackRoute.fares.adult;
       }
-      
+
       return 0;
     }
 
@@ -536,22 +725,24 @@ export const useRouteSearch = () => {
     if (route && route.fares) {
       // Try to get adult fare from various sources
       let adultFare = route.fares.adult;
-      
+
       // If adult fare is not available, try to get from seatClass (class2 is typically the base fare)
       if (adultFare === undefined || adultFare === null || adultFare === 0) {
         adultFare = route.fares.seatClass?.class2;
       }
-      
+
       // If still not available, try to get from route.fares directly
       if (adultFare === undefined || adultFare === null || adultFare === 0) {
         adultFare = (route as any).adult;
       }
-      
+
       return adultFare ?? 0;
     }
 
     // Return 0 if fare not found in fare master (no fallback)
-    logger.warn(`Fare not found for route: ${departure} -> ${arrival} (${ship})`);
+    logger.warn(
+      `Fare not found for route: ${departure} -> ${arrival} (${ship})`
+    );
     return 0;
   };
 
@@ -571,25 +762,27 @@ export const useRouteSearch = () => {
     const minutes = Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60));
 
     if (hours > 0) {
-      return `${hours}${i18n.t('HOURS')}${minutes}${i18n.t('MINUTES')}`;
+      return `${hours}${i18n.t("HOURS")}${minutes}${i18n.t("MINUTES")}`;
     }
-    return `${minutes}${i18n.t('MINUTES')}`;
+    return `${minutes}${i18n.t("MINUTES")}`;
   };
 
   // Get display name for port
   const getPortDisplayName = (port: string): string => {
-    if (!port) return '';
+    if (!port) return "";
 
     // Handle special case for HONDO (legacy port ID)
-    if (port === 'HONDO') {
-      return i18n.t('HONDO');
+    if (port === "HONDO") {
+      return i18n.t("HONDO");
     }
 
     // Get port from ferryStore
     if (ferryStore) {
-      const portData = ferryStore.ports.find(p => p.PORT_ID === port);
+      const portData = ferryStore.ports.find((p) => p.PORT_ID === port);
       if (portData) {
-        return i18n.locale.value === 'ja' ? portData.PLACE_NAME_JA : portData.PLACE_NAME_EN;
+        return i18n.locale.value === "ja"
+          ? portData.PLACE_NAME_JA
+          : portData.PLACE_NAME_EN;
       }
     }
 

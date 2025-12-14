@@ -1,6 +1,7 @@
 import { describe, it, expect, beforeEach, vi } from "vitest";
 import { setActivePinia, createPinia } from "pinia";
 import { useFerryStore } from "@/stores/ferry";
+import type { Trip } from "@/types";
 import {
   mockTrips,
   mockShipStatus,
@@ -489,6 +490,99 @@ describe("Ferry Store", () => {
         expect(alerts1[0].date).toBe(alerts2[0].date);
         expect(alerts1[0].date).toBe("2024-01-15");
       }
+    });
+
+    it("should exclude trips with mainland port as via when departure and arrival are not mainland", () => {
+      const store = useFerryStore();
+
+      // 来居発、境港経由、西郷行き（除外されるべき）
+      const tripWithMainlandVia: Trip = {
+        tripId: 100,
+        startDate: "2024-01-01",
+        endDate: "2024-12-31",
+        name: "FERRY_OKI",
+        departure: "KURI",
+        departureTime: "08:00:00" as any,
+        arrival: "SAIGO",
+        arrivalTime: "10:00:00" as any,
+        status: 0,
+        via: "HONDO_SAKAIMINATO", // 本土の港が経由地
+      };
+
+      // 来居発、境港経由、境港行き（除外されない - 目的地が本土の港）
+      const tripWithMainlandViaToMainland: Trip = {
+        tripId: 101,
+        startDate: "2024-01-01",
+        endDate: "2024-12-31",
+        name: "FERRY_OKI",
+        departure: "KURI",
+        departureTime: "08:00:00" as any,
+        arrival: "HONDO_SAKAIMINATO",
+        arrivalTime: "10:00:00" as any,
+        status: 0,
+        via: "HONDO_SAKAIMINATO", // 本土の港が経由地だが、目的地も本土の港
+      };
+
+      // 境港発、境港経由、西郷行き（除外されない - 出発地が本土の港）
+      const tripWithMainlandViaFromMainland: Trip = {
+        tripId: 102,
+        startDate: "2024-01-01",
+        endDate: "2024-12-31",
+        name: "FERRY_OKI",
+        departure: "HONDO_SAKAIMINATO",
+        departureTime: "08:00:00" as any,
+        arrival: "SAIGO",
+        arrivalTime: "10:00:00" as any,
+        status: 0,
+        via: "HONDO_SAKAIMINATO", // 本土の港が経由地だが、出発地も本土の港
+      };
+
+      // 通常の便（経由地なし）
+      const normalTrip: Trip = {
+        tripId: 103,
+        startDate: "2024-01-01",
+        endDate: "2024-12-31",
+        name: "FERRY_OKI",
+        departure: "KURI",
+        departureTime: "08:00:00" as any,
+        arrival: "SAIGO",
+        arrivalTime: "10:00:00" as any,
+        status: 0,
+      };
+
+      store.timetableData = [
+        tripWithMainlandVia,
+        tripWithMainlandViaToMainland,
+        tripWithMainlandViaFromMainland,
+        normalTrip,
+      ];
+
+      // 来居 → 西郷の検索
+      store.setDeparture("KURI");
+      store.setArrival("SAIGO");
+      store.setSelectedDate(new Date("2024-01-15"));
+
+      const filtered = store.filteredTimetable;
+
+      // 来居発、境港経由、西郷行きは除外される
+      expect(filtered.find((t) => t.tripId === 100)).toBeUndefined();
+      // 通常の便は含まれる
+      expect(filtered.find((t) => t.tripId === 103)).toBeDefined();
+
+      // 来居 → 境港の検索
+      store.setArrival("HONDO_SAKAIMINATO");
+      const filteredToMainland = store.filteredTimetable;
+
+      // 来居発、境港経由、境港行きは除外されない（目的地が本土の港）
+      expect(filteredToMainland.find((t) => t.tripId === 101)).toBeDefined();
+
+      // 境港 → 西郷の検索
+      store.setDeparture("HONDO_SAKAIMINATO");
+      store.setArrival("SAIGO");
+      const filteredFromMainland = store.filteredTimetable;
+
+      // 境港発、境港経由、西郷行きは除外されない（出発地が本土の港）
+      expect(filteredFromMainland.find((t) => t.tripId === 102)).toBeDefined();
     });
   });
 

@@ -222,8 +222,12 @@ export const useFerryStore = defineStore("ferry", () => {
 
     // 期間でフィルタリング
     const validTimetable = timetableData.value.filter((trip) => {
-      const startYmd = trip.startDate.slice(0, 10);
-      const endYmd = trip.endDate.slice(0, 10);
+      const normalizeYmd = (value: string): string => {
+        // データ側は YYYY/MM/DD と YYYY-MM-DD が混在するため正規化
+        return value.replace(/\//g, "-").slice(0, 10);
+      };
+      const startYmd = normalizeYmd(trip.startDate);
+      const endYmd = normalizeYmd(trip.endDate);
 
       // すべてJSTの暦日として比較する
       const startDate = parseYmdAsJstMidnight(startYmd);
