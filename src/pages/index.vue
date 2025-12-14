@@ -279,6 +279,7 @@ import { useFerryData } from '@/composables/useFerryData'
 import FavoriteButton from '@/components/favorites/FavoriteButton.vue'
 import FerryMap from '@/components/map/FerryMap.vue'
 import StatusAlerts from '@/components/common/StatusAlerts.vue'
+import { formatDateYmdJst, parseYmdAsJstMidnight } from '@/utils/jstDate'
 
 // Store and composables
 const ferryStore = process.client ? useFerryStore() : null
@@ -308,20 +309,13 @@ const selectedMapRoute = ref<{ from: string; to: string } | undefined>()
 
 // Computed properties
 const selectedDateString = computed(() => {
-  // ローカル時間で日付を取得（UTC変換によるずれを防ぐ）
-  const year = selectedDate.value.getFullYear()
-  const month = String(selectedDate.value.getMonth() + 1).padStart(2, '0')
-  const day = String(selectedDate.value.getDate()).padStart(2, '0')
-  return `${year}-${month}-${day}`
+  // JST基準で日付を取得（海外端末でも常にJST表示）
+  return formatDateYmdJst(selectedDate.value)
 })
 
 const todayString = computed(() => {
-  // ローカル時間で本日の日付を取得（UTC変換によるずれを防ぐ）
-  const now = new Date()
-  const year = now.getFullYear()
-  const month = String(now.getMonth() + 1).padStart(2, '0')
-  const day = String(now.getDate()).padStart(2, '0')
-  return `${year}-${month}-${day}`
+  // JST基準で本日の日付を取得（海外端末でも常にJST）
+  return formatDateYmdJst(new Date())
 })
 
 const sortedTimetable = computed(() => {
@@ -355,7 +349,7 @@ const showTransferSearchButton = computed(() => {
 // Methods
 const handleDateChange = (event: Event) => {
   const target = event.target as HTMLInputElement
-  const newDate = new Date(target.value + 'T00:00:00')
+  const newDate = parseYmdAsJstMidnight(target.value)
   if (ferryStore) {
     ferryStore.setSelectedDate(newDate)
   }

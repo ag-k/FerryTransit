@@ -1,6 +1,12 @@
 import { defineStore } from "pinia";
 import { useFirebaseStorage } from "@/composables/useFirebaseStorage";
 import type { Trip, ShipStatus, FerryStatus, SightseeingStatus } from "@/types";
+import {
+  formatDateYmdJst,
+  getTodayJstMidnight,
+  parseYmdAsJstMidnight,
+  addDaysJst,
+} from "@/utils/jstDate";
 
 // Port and Ship interfaces
 interface Port {
@@ -17,12 +23,9 @@ interface Ship {
   SHIP_NAME_EN: string;
 }
 
-// ローカル時間で日付をYYYY-MM-DD形式の文字列に変換（UTC変換によるずれを防ぐ）
+// JST基準で日付をYYYY-MM-DD形式の文字列に変換（端末TZに依存しない）
 const formatDateLocal = (date: Date): string => {
-  const year = date.getFullYear();
-  const month = String(date.getMonth() + 1).padStart(2, "0");
-  const day = String(date.getDate()).padStart(2, "0");
-  return `${year}-${month}-${day}`;
+  return formatDateYmdJst(date);
 };
 
 export const useFerryStore = defineStore("ferry", () => {
@@ -36,14 +39,8 @@ export const useFerryStore = defineStore("ferry", () => {
   });
   // 固定の初期日付を使用（ハイドレーションエラー対策）
   const getInitialDate = () => {
-    // JSTで本日の日付を取得
-    const now = new Date();
-    const jstOffset = 9 * 60; // JST is UTC+9
-    const jstTime = new Date(
-      now.getTime() + (jstOffset - now.getTimezoneOffset()) * 60 * 1000
-    );
-    jstTime.setHours(0, 0, 0, 0);
-    return jstTime;
+    // JSTで本日の日付（0:00）を取得（海外端末でも常にJST）
+    return getTodayJstMidnight();
   };
   const selectedDate = ref(getInitialDate());
   // SSR/CSRで同じ初期値を保証
@@ -225,12 +222,15 @@ export const useFerryStore = defineStore("ferry", () => {
 
     // 期間でフィルタリング
     const validTimetable = timetableData.value.filter((trip) => {
-      const startDate = new Date(trip.startDate);
-      const endDate = new Date(trip.endDate);
-      endDate.setDate(endDate.getDate() + 1); // 終了日の翌日まで含める
-      const currentDate = new Date(dateStr);
+      const startYmd = trip.startDate.slice(0, 10);
+      const endYmd = trip.endDate.slice(0, 10);
 
-      return currentDate >= startDate && currentDate <= endDate;
+      // すべてJSTの暦日として比較する
+      const startDate = parseYmdAsJstMidnight(startYmd);
+      const endExclusive = addDaysJst(parseYmdAsJstMidnight(endYmd), 1); // 終了日の翌日0:00(JST)
+      const currentDate = parseYmdAsJstMidnight(dateStr);
+
+      return currentDate >= startDate && currentDate < endExclusive;
     });
 
     // 出発地でフィルタリング
@@ -241,8 +241,21 @@ export const useFerryStore = defineStore("ferry", () => {
         : trip.departure === departure.value;
     });
 
-    // 直行便を抽出
+    // 本土の港を判定する関数
+    const isMainlandPort = (port: string | undefined): boolean => {
+      return port === "HONDO_SHICHIRUI" || port === "HONDO_SAKAIMINATO";
+    };
+
+    // 直行便を抽出（本土の港が途中経由地にある便は除外）
     const directTrips = departureTimetable.filter((trip) => {
+      // 本土の港が途中経由地（出発地/目的地以外）にある便を除外
+      if (trip.via && isMainlandPort(trip.via)) {
+        // 出発地または目的地が本土の港の場合は除外しない
+        if (!isMainlandPort(trip.departure) && !isMainlandPort(trip.arrival)) {
+          return false;
+        }
+      }
+
       return arrival.value === "HONDO"
         ? trip.arrival === "HONDO_SHICHIRUI" ||
             trip.arrival === "HONDO_SAKAIMINATO"
@@ -290,6 +303,13 @@ export const useFerryStore = defineStore("ferry", () => {
     );
 
     remainingTrips.forEach((trip) => {
+      // 本土の港が途中経由地（出発地/目的地以外）にある便を除外
+      if (trip.via && isMainlandPort(trip.via)) {
+        if (!isMainlandPort(trip.departure) && !isMainlandPort(trip.arrival)) {
+          return;
+        }
+      }
+
       if (trip.nextId) {
         let nextId = trip.nextId;
 
@@ -308,6 +328,16 @@ export const useFerryStore = defineStore("ferry", () => {
               trip.departure === "HONDO_SAKAIMINATO")
           ) {
             break;
+          }
+
+          // 本土の港が途中経由地（出発地/目的地以外）にある便を除外
+          if (nextTrip.via && isMainlandPort(nextTrip.via)) {
+            if (
+              !isMainlandPort(nextTrip.departure) &&
+              !isMainlandPort(nextTrip.arrival)
+            ) {
+              break;
+            }
           }
 
           // 目的地に到達した場合
