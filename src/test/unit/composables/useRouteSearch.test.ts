@@ -215,6 +215,134 @@ describe("useRouteSearch", () => {
       expect(transferRoute!.segments[1].departure).toBe("SAIGO");
     });
 
+    it("should keep only the transfer route with the shortest wait time when path and vessel sequence are the same", async () => {
+      const store = useFerryStore();
+      store.timetableData = [
+        ...mockTrips,
+        // SAIGO -> BEPPU (short wait after HONDO_SHICHIRUI -> SAIGO arrives at 11:25)
+        {
+          tripId: 40,
+          startDate: "2024-01-01",
+          endDate: "2024-12-31",
+          name: "FERRY_DOZEN",
+          departure: "SAIGO",
+          departureTime: "12:00:00" as any,
+          arrival: "BEPPU",
+          arrivalTime: "13:30:00" as any,
+          status: 0,
+        },
+        // SAIGO -> BEPPU (longer wait, same ship/ports)
+        {
+          tripId: 41,
+          startDate: "2024-01-01",
+          endDate: "2024-12-31",
+          name: "FERRY_DOZEN",
+          departure: "SAIGO",
+          departureTime: "13:00:00" as any,
+          arrival: "BEPPU",
+          arrivalTime: "14:30:00" as any,
+          status: 0,
+        },
+      ];
+
+      const { searchRoutes } = useRouteSearch();
+      const results = await searchRoutes(
+        "HONDO_SHICHIRUI",
+        "BEPPU",
+        new Date("2024-01-15"),
+        "08:00",
+        false
+      );
+
+      const transferRoutes = results.filter((r) => r.transferCount === 1);
+      // Same (HONDO_SHICHIRUI->SAIGO@FERRY_OKI, SAIGO->BEPPU@FERRY_DOZEN) should be de-duplicated
+      expect(transferRoutes).toHaveLength(1);
+      expect(transferRoutes[0].segments[1].ship).toBe("FERRY_DOZEN");
+      expect(transferRoutes[0].segments[1].departureTime.getHours()).toBe(12);
+      expect(transferRoutes[0].segments[1].departureTime.getMinutes()).toBe(0);
+    });
+
+    it("should treat different vessel types as different routes (do not de-duplicate)", async () => {
+      const store = useFerryStore();
+      store.timetableData = [
+        ...mockTrips,
+        // SAIGO -> BEPPU with FERRY_DOZEN
+        {
+          tripId: 50,
+          startDate: "2024-01-01",
+          endDate: "2024-12-31",
+          name: "FERRY_DOZEN",
+          departure: "SAIGO",
+          departureTime: "12:00:00" as any,
+          arrival: "BEPPU",
+          arrivalTime: "13:30:00" as any,
+          status: 0,
+        },
+        // SAIGO -> BEPPU with a different ship (should be a separate route signature)
+        {
+          tripId: 51,
+          startDate: "2024-01-01",
+          endDate: "2024-12-31",
+          name: "FERRY_SHIRASHIMA",
+          departure: "SAIGO",
+          departureTime: "12:10:00" as any,
+          arrival: "BEPPU",
+          arrivalTime: "13:40:00" as any,
+          status: 0,
+        },
+      ];
+
+      const { searchRoutes } = useRouteSearch();
+      const results = await searchRoutes(
+        "HONDO_SHICHIRUI",
+        "BEPPU",
+        new Date("2024-01-15"),
+        "08:00",
+        false
+      );
+
+      const transferRoutes = results.filter((r) => r.transferCount === 1);
+      expect(transferRoutes.length).toBeGreaterThanOrEqual(2);
+      const ships = transferRoutes.map((r) => r.segments[1].ship).sort();
+      expect(ships).toContain("FERRY_DOZEN");
+      expect(ships).toContain("FERRY_SHIRASHIMA");
+    });
+
+    it("should not de-duplicate direct routes (different departure times should remain)", async () => {
+      const store = useFerryStore();
+      store.timetableData = [
+        ...mockTrips,
+        // Add another direct trip with same ports/ship but different time
+        {
+          tripId: 60,
+          startDate: "2024-01-01",
+          endDate: "2024-12-31",
+          name: "FERRY_OKI",
+          departure: "HONDO_SHICHIRUI",
+          departureTime: "10:00:00" as any,
+          arrival: "SAIGO",
+          arrivalTime: "12:25:00" as any,
+          status: 0,
+        },
+      ];
+
+      const { searchRoutes } = useRouteSearch();
+      const results = await searchRoutes(
+        "HONDO_SHICHIRUI",
+        "SAIGO",
+        new Date("2024-01-15"),
+        "08:00",
+        false
+      );
+
+      const directRoutes = results.filter((r) => r.transferCount === 0);
+      // Expect both direct departures to remain
+      expect(directRoutes.length).toBeGreaterThanOrEqual(2);
+      const depHours = directRoutes.map((r) => r.departureTime.getHours());
+      expect(depHours).toContain(9);
+      expect(depHours).toContain(10);
+    });
+
     it("should handle HONDO port mapping", async () => {
       const store = useFerryStore();
       store.timetableData = mockTrips;
