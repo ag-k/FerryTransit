@@ -181,34 +181,44 @@
                   class="border-b dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-700/50 transition-colors duration-150"
                   :class="{ 'line-through opacity-60': tripStatus(trip) === 2 }">
                   <td class="px-3 sm:px-4 py-4 sm:py-3">
-                    <span v-if="tripStatus(trip) === 2" class="inline-block text-red-600 dark:text-red-300 mr-1">
-                      <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" fill="currentColor"
-                        viewBox="0 0 16 16">
-                        <path
-                          d="M16 8A8 8 0 1 1 0 8a8 8 0 0 1 16 0zM5.354 4.646a.5.5 0 1 0-.708.708L7.293 8l-2.647 2.646a.5.5 0 0 0 .708.708L8 8.707l2.646 2.647a.5.5 0 0 0 .708-.708L8.707 8l2.647-2.646a.5.5 0 0 0-.708-.708L8 7.293 5.354 4.646z" />
-                      </svg>
-                    </span>
-                    <span v-else-if="tripStatus(trip) === 3"
-                      class="inline-block text-yellow-600 dark:text-yellow-300 mr-1">
-                      <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" fill="currentColor"
-                        viewBox="0 0 16 16">
-                        <path
-                          d="M8.982 1.566a1.13 1.13 0 0 0-1.96 0L.165 13.233c-.457.778.091 1.767.98 1.767h13.713c.889 0 1.438-.99.98-1.767L8.982 1.566zM8 5c.535 0 .954.462.9.995l-.35 3.507a.552.552 0 0 1-1.1 0L7.1 5.995A.905.905 0 0 1 8 5zm.002 6a1 1 0 1 1 0 2 1 1 0 0 1 0-2z" />
-                      </svg>
-                    </span>
-                    <span v-else-if="tripStatus(trip) === 4"
-                      class="inline-block text-green-600 dark:text-green-300 mr-1">
-                      <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" fill="currentColor"
-                        viewBox="0 0 16 16">
-                        <path
-                          d="M16 8A8 8 0 1 1 0 8a8 8 0 0 1 16 0zM8.5 4.5a.5.5 0 0 0-1 0v3h-3a.5.5 0 0 0 0 1h3v3a.5.5 0 0 0 1 0v-3h3a.5.5 0 0 0 0-1h-3v-3z" />
-                      </svg>
-                    </span>
-                    <a href="#"
-                      class="text-blue-600 dark:text-blue-200 hover:underline font-medium inline-block py-1 -my-1 px-2 -mx-2 touch-manipulation"
-                      @click.prevent="showShipInfo(trip.name)">
-                      {{ $t(trip.name) }}
-                    </a>
+                    <div class="flex items-center gap-1 min-h-[20px]">
+                      <button
+                        v-if="tripStatus(trip) === 2"
+                        type="button"
+                        data-test="cancel-status-icon"
+                        class="inline-flex items-center text-red-600 dark:text-red-300"
+                        :title="$t('OPERATION_STATUS')"
+                        aria-label="運航状況を見る"
+                        @click.stop="navigateToStatus"
+                      >
+                        <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" fill="currentColor"
+                          viewBox="0 0 16 16">
+                          <path
+                            d="M16 8A8 8 0 1 1 0 8a8 8 0 0 1 16 0zM5.354 4.646a.5.5 0 1 0-.708.708L7.293 8l-2.647 2.646a.5.5 0 0 0 .708.708L8 8.707l2.646 2.647a.5.5 0 0 0 .708-.708L8.707 8l2.647-2.646a.5.5 0 0 0-.708-.708L8 7.293 5.354 4.646z" />
+                        </svg>
+                      </button>
+                      <span v-else-if="tripStatus(trip) === 3"
+                        class="inline-flex items-center text-yellow-600 dark:text-yellow-300">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" fill="currentColor"
+                          viewBox="0 0 16 16">
+                          <path
+                            d="M8.982 1.566a1.13 1.13 0 0 0-1.96 0L.165 13.233c-.457.778.091 1.767.98 1.767h13.713c.889 0 1.438-.99.98-1.767L8.982 1.566zM8 5c.535 0 .954.462.9.995l-.35 3.507a.552.552 0 0 1-1.1 0L7.1 5.995A.905.905 0 0 1 8 5zm.002 6a1 1 0 1 1 0 2 1 1 0 0 1 0-2z" />
+                        </svg>
+                      </span>
+                      <span v-else-if="tripStatus(trip) === 4"
+                        class="inline-flex items-center text-green-600 dark:text-green-300">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" fill="currentColor"
+                          viewBox="0 0 16 16">
+                          <path
+                            d="M16 8A8 8 0 1 1 0 8a8 8 0 0 1 16 0zM8.5 4.5a.5.5 0 0 0-1 0v3h-3a.5.5 0 0 0 0 1h3v3a.5.5 0 0 0 1 0v-3h3a.5.5 0 0 0 0-1h-3v-3z" />
+                        </svg>
+                      </span>
+                      <a href="#"
+                        class="text-blue-600 dark:text-blue-200 hover:underline font-medium inline-block py-1 -my-1 px-2 -mx-2 touch-manipulation"
+                        @click.prevent="showShipInfo(trip.name)">
+                        {{ $t(trip.name) }}
+                      </a>
+                    </div>
                   </td>
                   <td class="px-3 sm:px-4 py-4 sm:py-3 font-mono text-right text-gray-900 dark:text-gray-100">
                     {{ formatTime(trip.departureTime) }}
@@ -271,7 +281,7 @@
 </template>
 
 <script setup lang="ts">
-import { nextTick } from 'vue'
+import { nextTick, unref } from 'vue'
 import { useFerryStore } from '@/stores/ferry'
 import { useHistoryStore } from '@/stores/history'
 import { useSettingsStore } from '@/stores/settings'
@@ -287,6 +297,7 @@ const historyStore = process.client ? useHistoryStore() : null
 const settingsStore = process.client ? useSettingsStore() : null
 const {
   filteredTimetable,
+  getTripStatus,
   selectedDate,
   departure,
   arrival,
@@ -430,15 +441,12 @@ const formatDateTime = (date: Date) => {
 }
 
 const tripStatus = (trip: any) => {
-  const alerts = ferryStore?.alerts || []
-  // ローカル時間で日付を取得（UTC変換によるずれを防ぐ）
-  const year = selectedDate.value.getFullYear()
-  const month = String(selectedDate.value.getMonth() + 1).padStart(2, '0')
-  const day = String(selectedDate.value.getDate()).padStart(2, '0')
-  const tripDate = `${year}-${month}-${day}`
+  const alerts = (unref((ferryStore as any)?.alerts) ?? []) as any[]
+  // JST基準で日付を取得（海外端末でも常にJST）
+  const tripDate = formatDateYmdJst(selectedDate.value)
 
   // Check if this trip has any alerts
-  const hasAlert = alerts.some(alert => {
+  const hasAlert = Array.isArray(alerts) && alerts.some(alert => {
     return alert.date === tripDate &&
       alert.shipName === trip.name &&
       alert.departureTime === trip.departureTime
@@ -450,10 +458,11 @@ const tripStatus = (trip: any) => {
       a.shipName === trip.name &&
       a.departureTime === trip.departureTime
     )
-    return alert?.status || 1
+    return alert?.status ?? getTripStatus(trip)
   }
 
-  return 1 // Normal status
+  // アラートが無い場合は、時刻表データ/運航状況から判定（trip.status=2 も反映）
+  return getTripStatus(trip)
 }
 
 const showShipInfo = (shipName: string) => {
@@ -514,6 +523,12 @@ const navigateToTransit = () => {
       time: '00:00'
     }
   })
+}
+
+// 運航状況ページに遷移
+const navigateToStatus = () => {
+  const router = useRouter()
+  router.push({ path: '/status' })
 }
 
 // Watchers
