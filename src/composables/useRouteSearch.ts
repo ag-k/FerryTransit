@@ -178,7 +178,7 @@ export const useRouteSearch = () => {
 
         // Check if trip is cancelled
         const status = getTripStatus(trip);
-        if (status === 2) continue; // Skip cancelled trips
+        // NOTE: 時刻表と合わせて欠航便も表示対象にする（status=2 のまま返す）
 
         const fare = await calculateFare(
           trip.name,
@@ -244,10 +244,6 @@ export const useRouteSearch = () => {
       let current = startTrip;
       let maxStatus = getTripStatus(startTrip);
 
-      if (maxStatus === 2) {
-        return null;
-      }
-
       // 本土の港が途中経由地（出発地/目的地以外）にある便を除外
       if (current.via && isMainlandPort(current.via)) {
         if (
@@ -301,9 +297,7 @@ export const useRouteSearch = () => {
         }
 
         const nextStatus = getTripStatus(nextTrip);
-        if (nextStatus === 2) {
-          return null;
-        }
+        // NOTE: 欠航便もチェーンに含める（maxStatus に反映）
 
         chain.push(nextTrip);
         maxStatus = Math.max(maxStatus, nextStatus);
@@ -348,7 +342,7 @@ export const useRouteSearch = () => {
       if (!isArrivalMode && firstDepartureTime < searchTime) continue;
 
       const firstStatus = getTripStatus(firstTrip);
-      if (firstStatus === 2) continue;
+      // NOTE: 欠航便も候補に含める（status=2 のまま返す）
 
       if (arrivalPorts.includes(firstTrip.arrival)) continue;
 
