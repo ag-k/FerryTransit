@@ -1,7 +1,9 @@
 export default defineEventHandler(async (event) => {
+  const runtimeConfig = useRuntimeConfig()
+
   return {
     title: "FerryTransit 時刻表 API",
-    version: "1.0.0",
+    version: runtimeConfig.public.appVersion,
     description: "島根県隠岐諸島のフェリー時刻表情報を提供するAPI",
     baseUrl: "/api/timetable",
     endpoints: {

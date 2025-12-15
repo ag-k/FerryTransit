@@ -30,7 +30,9 @@
         <dl class="space-y-3">
           <div>
             <dt class="text-sm text-gray-600 dark:text-gray-300">{{ $t('VERSION') }}</dt>
-            <dd class="text-base font-medium dark:text-gray-100">1.0.0</dd>
+            <dd class="text-base font-medium dark:text-gray-100">
+              {{ runtimeConfig.public.appVersion }}
+            </dd>
           </div>
           <div>
             <dt class="text-sm text-gray-600 dark:text-gray-300">{{ $t('LAST_UPDATED') }}</dt>
@@ -75,6 +77,8 @@ import LanguageSelector from '~/components/settings/LanguageSelector.vue'
 import ThemeSelector from '~/components/settings/ThemeSelector.vue'
 import MapSettings from '~/components/settings/MapSettings.vue'
 import DataManagement from '~/components/settings/DataManagement.vue'
+
+const runtimeConfig = useRuntimeConfig()
 
 definePageMeta({
   title: 'SETTINGS'
