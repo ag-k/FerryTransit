@@ -16,6 +16,74 @@ export const useRouteSearch = () => {
   const i18n = useI18n() as any;
   const logger = createLogger("useRouteSearch");
 
+  const buildRouteSignature = (route: TransitRoute): string => {
+    return route.segments
+      .map((s) => `${s.departure}->${s.arrival}@${s.ship}`)
+      .join("|");
+  };
+
+  const calculateTotalTransferWaitMs = (route: TransitRoute): number => {
+    if (route.segments.length <= 1) {
+      return 0;
+    }
+
+    let total = 0;
+    for (let i = 0; i < route.segments.length - 1; i++) {
+      const prev = route.segments[i];
+      const next = route.segments[i + 1];
+      const diff = next.departureTime.getTime() - prev.arrivalTime.getTime();
+      total += Math.max(0, diff);
+    }
+    return total;
+  };
+
+  const getRouteTripIdsKey = (route: TransitRoute): string => {
+    return route.segments.map((s) => s.tripId).join("|");
+  };
+
+  const isBetterTransferCandidate = (
+    candidate: TransitRoute,
+    current: TransitRoute
+  ): boolean => {
+    const candidateWait = calculateTotalTransferWaitMs(candidate);
+    const currentWait = calculateTotalTransferWaitMs(current);
+    if (candidateWait !== currentWait) {
+      return candidateWait < currentWait;
+    }
+
+    const candidateDeparture = candidate.departureTime.getTime();
+    const currentDeparture = current.departureTime.getTime();
+    if (candidateDeparture !== currentDeparture) {
+      return candidateDeparture < currentDeparture;
+    }
+
+    const candidateArrival = candidate.arrivalTime.getTime();
+    const currentArrival = current.arrivalTime.getTime();
+    if (candidateArrival !== currentArrival) {
+      return candidateArrival < currentArrival;
+    }
+
+    return getRouteTripIdsKey(candidate) < getRouteTripIdsKey(current);
+  };
+
+  const dedupeTransferRoutesByWaitTime = (
+    routes: TransitRoute[]
+  ): TransitRoute[] => {
+    const directRoutes = routes.filter((r) => r.segments.length <= 1);
+    const transferRoutes = routes.filter((r) => r.segments.length >= 2);
+
+    const bestBySignature = new Map<string, TransitRoute>();
+    for (const route of transferRoutes) {
+      const signature = buildRouteSignature(route);
+      const currentBest = bestBySignature.get(signature);
+      if (!currentBest || isBetterTransferCandidate(route, currentBest)) {
+        bestBySignature.set(signature, route);
+      }
+    }
+
+    return [...directRoutes, ...Array.from(bestBySignature.values())];
+  };
+
   // Initialize fare data
   onMounted(async () => {
     if (fareStore) {
@@ -112,7 +180,22 @@ export const useRouteSearch = () => {
       );
     }
 
-    return routes;
+    // De-duplicate transfer routes that have the same path + vessel sequence
+    // and differ only by transfer wait time.
+    const dedupedRoutes = dedupeTransferRoutesByWaitTime(routes);
+
+    // Keep existing sort behavior after de-duplication
+    if (isArrivalMode) {
+      dedupedRoutes.sort(
+        (a, b) => b.arrivalTime.getTime() - a.arrivalTime.getTime()
+      );
+    } else {
+      dedupedRoutes.sort(
+        (a, b) => a.departureTime.getTime() - b.departureTime.getTime()
+      );
+    }
+
+    return dedupedRoutes;
   };
 
   // Find direct routes
