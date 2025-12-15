@@ -91,6 +91,10 @@ export default defineNuxtConfig({
 
   runtimeConfig: {
     public: {
+      appVersion:
+        process.env.NUXT_PUBLIC_APP_VERSION ||
+        process.env.npm_package_version ||
+        "0.0.0",
       apiBase:
         process.env.NUXT_PUBLIC_API_BASE ||
         "https://naturebot-lab.com/ferry_transit",
