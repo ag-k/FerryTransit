@@ -254,7 +254,7 @@ describe("useRouteSearch", () => {
       );
     });
 
-    it("should exclude cancelled trips", async () => {
+    it("should include cancelled trips (match timetable behavior)", async () => {
       const store = useFerryStore();
       store.timetableData = [
         {
@@ -276,8 +276,9 @@ describe("useRouteSearch", () => {
         false
       );
 
-      // When getTripStatus returns 2 (cancelled), the trip should be excluded
-      expect(results).toHaveLength(0);
+      // When getTripStatus returns 2 (cancelled), the trip should be included with status=2
+      expect(results).toHaveLength(1);
+      expect(results[0].segments[0].status).toBe(2);
 
       // Reset mock
       mockGetTripStatus.mockReturnValue(0);
