@@ -6,8 +6,8 @@
     <StatusAlerts class="mb-6" />
 
     <!-- Search Form -->
-    <div class="bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700 mb-6">
-      <div class="bg-gray-50 dark:bg-gray-800 px-4 py-3 border-b dark:border-gray-600">
+    <div class="bg-white dark:bg-gray-800 rounded-lg overflow-hidden shadow-sm border border-gray-200 dark:border-gray-700 mb-6">
+      <div class="bg-gray-50 dark:bg-gray-800 px-4 py-3 border-b dark:border-gray-600 rounded-t-lg">
         <h3 class="text-lg font-medium dark:text-white">{{ $t('SEARCH_CONDITIONS') }}</h3>
       </div>
       <div class="p-4">
