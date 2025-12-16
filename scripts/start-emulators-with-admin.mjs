@@ -57,7 +57,7 @@ const emulatorProcess = spawn('firebase', ['emulators:start'], {
 
 // Wait for emulators to be ready by checking ports
 console.log('⏳ Waiting for emulators to start...')
-const firestoreReady = await isPortOpen(8082)
+const firestoreReady = await isPortOpen(8084)
 const authReady = await isPortOpen(9099)
 
 if (!firestoreReady || !authReady) {
@@ -79,7 +79,7 @@ try {
       ...process.env,
       GOOGLE_APPLICATION_CREDENTIALS: '', // Use emulator mode
       FIREBASE_AUTH_EMULATOR_HOST: 'localhost:9099',
-      FIRESTORE_EMULATOR_HOST: 'localhost:8082'
+      FIRESTORE_EMULATOR_HOST: 'localhost:8084'
     }
   })
   console.log('✅ Super admin registered successfully')
@@ -98,7 +98,7 @@ try {
     env: {
       ...process.env,
       FIREBASE_AUTH_EMULATOR_HOST: 'localhost:9099',
-      FIRESTORE_EMULATOR_HOST: 'localhost:8082'
+      FIRESTORE_EMULATOR_HOST: 'localhost:8084'
     }
   })
   console.log('✅ Timetable data imported successfully')
@@ -117,7 +117,7 @@ try {
     env: {
       ...process.env,
       FIREBASE_AUTH_EMULATOR_HOST: 'localhost:9099',
-      FIRESTORE_EMULATOR_HOST: 'localhost:8082'
+      FIRESTORE_EMULATOR_HOST: 'localhost:8084'
     }
   })
   console.log('✅ Fare data imported successfully')
@@ -136,7 +136,7 @@ try {
     env: {
       ...process.env,
       FIREBASE_AUTH_EMULATOR_HOST: 'localhost:9099',
-      FIRESTORE_EMULATOR_HOST: 'localhost:8082',
+      FIRESTORE_EMULATOR_HOST: 'localhost:8084',
       FIREBASE_STORAGE_EMULATOR_HOST: 'localhost:9199'
     }
   })
@@ -156,7 +156,7 @@ try {
     env: {
       ...process.env,
       FIREBASE_AUTH_EMULATOR_HOST: 'localhost:9099',
-      FIRESTORE_EMULATOR_HOST: 'localhost:8082',
+      FIRESTORE_EMULATOR_HOST: 'localhost:8084',
       FIREBASE_STORAGE_EMULATOR_HOST: 'localhost:9199'
     }
   })

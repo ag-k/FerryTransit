@@ -14,7 +14,7 @@ console.log('📅 Importing timetable data using Admin SDK...')
 
 try {
   // Initialize Firebase Admin SDK for emulator
-  process.env.FIRESTORE_EMULATOR_HOST = 'localhost:8082'
+  process.env.FIRESTORE_EMULATOR_HOST = 'localhost:8084'
   
   admin.initializeApp({
     projectId: 'oki-ferryguide'

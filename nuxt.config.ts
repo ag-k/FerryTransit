@@ -121,7 +121,7 @@ export default defineNuxtConfig({
           process.env.NUXT_PUBLIC_FIREBASE_EMULATOR_HOST || "localhost",
         ports: {
           firestore: parseInt(
-            process.env.NUXT_PUBLIC_FIRESTORE_EMULATOR_PORT || "8082"
+            process.env.NUXT_PUBLIC_FIRESTORE_EMULATOR_PORT || "8084"
           ),
           auth: parseInt(
             process.env.NUXT_PUBLIC_FIREBASE_AUTH_EMULATOR_PORT || "9099"

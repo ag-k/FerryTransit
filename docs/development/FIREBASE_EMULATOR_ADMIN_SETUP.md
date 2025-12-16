@@ -56,7 +56,7 @@ node src/scripts/setup-admin.js admin@example.com Admin123! general
 The setup script automatically configures the following environment variables for emulator mode:
 
 - `FIREBASE_AUTH_EMULATOR_HOST=localhost:9099`
-- `FIRESTORE_EMULATOR_HOST=localhost:8082`
+- `FIRESTORE_EMULATOR_HOST=localhost:8084`
 - `GOOGLE_APPLICATION_CREDENTIALS=""` (empty for emulator mode)
 
 ## Firebase Emulator UI
@@ -145,7 +145,7 @@ Make sure the Firebase emulators are running before executing this command.
 
 Ensure the following ports are available:
 - Auth Emulator: 9099
-- Firestore Emulator: 8082
+- Firestore Emulator: 8084
 - Storage Emulator: 9199
 - Functions Emulator: 5002
 - Emulator UI: 4000

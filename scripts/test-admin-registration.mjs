@@ -15,7 +15,7 @@ initializeApp({
 
 // Set emulator hosts
 process.env.FIREBASE_AUTH_EMULATOR_HOST = 'localhost:9099'
-process.env.FIRESTORE_EMULATOR_HOST = 'localhost:8082'
+process.env.FIRESTORE_EMULATOR_HOST = 'localhost:8084'
 
 const auth = getAuth()
 const db = getFirestore()
