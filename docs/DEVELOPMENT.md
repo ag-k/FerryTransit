@@ -29,10 +29,10 @@ npm run dev
 ### 3. Access Development Services
 - **Application**: http://localhost:3030
 - **Firebase Emulator UI**: http://localhost:4000
-- **Firestore Emulator**: localhost:8080
+- **Firestore Emulator**: localhost:8084
 - **Auth Emulator**: http://localhost:9099
 - **Storage Emulator**: localhost:9199
-- **Functions Emulator**: localhost:5001
+- **Functions Emulator**: localhost:5002
 
 ## 📋 Configuration
 
@@ -43,10 +43,10 @@ Key emulator settings:
 ```env
 NUXT_PUBLIC_FIREBASE_USE_EMULATORS=true
 NUXT_PUBLIC_FIREBASE_EMULATOR_HOST=localhost
-NUXT_PUBLIC_FIRESTORE_EMULATOR_PORT=8080
+NUXT_PUBLIC_FIRESTORE_EMULATOR_PORT=8084
 NUXT_PUBLIC_FIREBASE_AUTH_EMULATOR_PORT=9099
 NUXT_PUBLIC_FIREBASE_STORAGE_EMULATOR_PORT=9199
-NUXT_PUBLIC_FIREBASE_FUNCTIONS_EMULATOR_PORT=5001
+NUXT_PUBLIC_FIREBASE_FUNCTIONS_EMULATOR_PORT=5002
 ```
 
 ### Firebase Emulator Configuration
@@ -55,8 +55,8 @@ The emulators are configured in `firebase.json`:
 {
   "emulators": {
     "auth": { "port": 9099 },
-    "functions": { "port": 5001 },
-    "firestore": { "port": 8080 },
+    "functions": { "port": 5002 },
+    "firestore": { "port": 8084 },
     "hosting": { "port": 5000 },
     "storage": { "port": 9199 },
     "ui": { "enabled": true },
