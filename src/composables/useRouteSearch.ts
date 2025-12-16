@@ -7,6 +7,7 @@ import { useTimetableLoader } from "@/composables/useTimetableLoader";
 import type { Trip, TransitRoute, TransitSegment } from "@/types";
 import type { FareRoute, VesselType } from "@/types/fare";
 import { createLogger } from "~/utils/logger";
+import { isTodayJst } from "@/utils/jstDate";
 
 export const useRouteSearch = () => {
   const ferryStore = process.client ? useFerryStore() : null;
@@ -15,6 +16,13 @@ export const useRouteSearch = () => {
   const { ensureTimetableLoaded } = useTimetableLoader();
   const i18n = useI18n() as any;
   const logger = createLogger("useRouteSearch");
+
+  const getStatusForSearchDate = (trip: Trip, applyLiveStatus: boolean): number => {
+    if (!applyLiveStatus) {
+      return Number((trip as any).status ?? 0) || 0;
+    }
+    return getTripStatus(trip);
+  };
 
   const buildRouteSignature = (route: TransitRoute): string => {
     return route.segments
@@ -116,6 +124,7 @@ export const useRouteSearch = () => {
     const searchDateTime = new Date(searchDate);
     const [hours, minutes] = searchTime.split(":").map(Number);
     searchDateTime.setHours(hours, minutes, 0, 0);
+    const applyLiveStatus = isTodayJst(searchDate);
 
     // Debug logging
     logger.debug("Search params", {
@@ -124,6 +133,7 @@ export const useRouteSearch = () => {
       searchDate,
       searchTime,
       isArrivalMode,
+      applyLiveStatus,
     });
     logger.debug("Total timetable data", ferryStore?.timetableData.length || 0);
 
@@ -154,7 +164,8 @@ export const useRouteSearch = () => {
       departure,
       arrival,
       searchDateTime,
-      isArrivalMode
+      isArrivalMode,
+      applyLiveStatus
     );
 
     routes.push(...directRoutes);
@@ -166,7 +177,8 @@ export const useRouteSearch = () => {
         departure,
         arrival,
         searchDateTime,
-        isArrivalMode
+        isArrivalMode,
+        applyLiveStatus
       );
       routes.push(...transferRoutes);
     }
@@ -204,7 +216,8 @@ export const useRouteSearch = () => {
     departure: string,
     arrival: string,
     searchTime: Date,
-    isArrivalMode: boolean
+    isArrivalMode: boolean,
+    applyLiveStatus: boolean
   ): Promise<TransitRoute[]> => {
     const routes: TransitRoute[] = [];
 
@@ -259,8 +272,8 @@ export const useRouteSearch = () => {
           continue;
         }
 
-        // Check if trip is cancelled
-        const status = getTripStatus(trip);
+        // 欠航等の「運航状況（ライブ）」は当日の検索結果にのみ反映する
+        const status = getStatusForSearchDate(trip, applyLiveStatus);
         // NOTE: 時刻表と合わせて欠航便も表示対象にする（status=2 のまま返す）
 
         const fare = await calculateFare(
@@ -300,7 +313,8 @@ export const useRouteSearch = () => {
     departure: string,
     arrival: string,
     searchTime: Date,
-    isArrivalMode: boolean
+    isArrivalMode: boolean,
+    applyLiveStatus: boolean
   ): Promise<TransitRoute[]> => {
     const routes: TransitRoute[] = [];
     const processedRoutes = new Set<string>();
@@ -325,7 +339,7 @@ export const useRouteSearch = () => {
     ): { trips: Trip[]; maxStatus: number } | null => {
       const chain: Trip[] = [startTrip];
       let current = startTrip;
-      let maxStatus = getTripStatus(startTrip);
+      let maxStatus = getStatusForSearchDate(startTrip, applyLiveStatus);
 
       // 本土の港が途中経由地（出発地/目的地以外）にある便を除外
       if (current.via && isMainlandPort(current.via)) {
@@ -379,7 +393,7 @@ export const useRouteSearch = () => {
           return null;
         }
 
-        const nextStatus = getTripStatus(nextTrip);
+        const nextStatus = getStatusForSearchDate(nextTrip, applyLiveStatus);
         // NOTE: 欠航便もチェーンに含める（maxStatus に反映）
 
         chain.push(nextTrip);
@@ -424,7 +438,7 @@ export const useRouteSearch = () => {
 
       if (!isArrivalMode && firstDepartureTime < searchTime) continue;
 
-      const firstStatus = getTripStatus(firstTrip);
+      const firstStatus = getStatusForSearchDate(firstTrip, applyLiveStatus);
       // NOTE: 欠航便も候補に含める（status=2 のまま返す）
 
       if (arrivalPorts.includes(firstTrip.arrival)) continue;
