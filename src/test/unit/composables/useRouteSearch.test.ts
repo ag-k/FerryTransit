@@ -179,6 +179,41 @@ describe("useRouteSearch", () => {
       expect(results[0].transferCount).toBe(0);
     });
 
+    it("should apply live cancellation status only when the search date is today (JST)", async () => {
+      vi.useFakeTimers();
+      // 2024-01-15 12:00 JST
+      vi.setSystemTime(new Date("2024-01-15T03:00:00.000Z"));
+
+      mockGetTripStatus.mockReturnValue(2);
+
+      const store = useFerryStore();
+      store.timetableData = mockTrips;
+
+      const { searchRoutes } = useRouteSearch();
+
+      const todayResults = await searchRoutes(
+        "HONDO_SHICHIRUI",
+        "SAIGO",
+        new Date("2024-01-15T00:00:00+09:00"),
+        "08:00",
+        false
+      );
+      expect(todayResults).toHaveLength(1);
+      expect(todayResults[0].segments[0].status).toBe(2);
+
+      const nonTodayResults = await searchRoutes(
+        "HONDO_SHICHIRUI",
+        "SAIGO",
+        new Date("2024-01-16T00:00:00+09:00"),
+        "08:00",
+        false
+      );
+      expect(nonTodayResults).toHaveLength(1);
+      expect(nonTodayResults[0].segments[0].status).toBe(0);
+
+      vi.useRealTimers();
+    });
+
     it("should find transfer routes", async () => {
       const store = useFerryStore();
       store.timetableData = [

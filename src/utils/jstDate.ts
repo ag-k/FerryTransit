@@ -56,3 +56,13 @@ export function addDaysJst(date: Date, days: number): Date {
     Date.UTC(year, month - 1, day) - JST_OFFSET_MINUTES * MS_PER_MINUTE;
   return new Date(baseMs + days * MS_PER_DAY);
 }
+
+/** 2つの Date が「JSTの同一暦日」かどうか（端末TZ非依存）。 */
+export function isSameJstDay(a: Date, b: Date): boolean {
+  return formatDateYmdJst(a) === formatDateYmdJst(b);
+}
+
+/** 与えられた Date が「今日（JST）」かどうか（端末TZ非依存）。 */
+export function isTodayJst(date: Date, base: Date = new Date()): boolean {
+  return isSameJstDay(date, base);
+}
