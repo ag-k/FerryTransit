@@ -118,8 +118,8 @@
       </div>
       <!-- Route Panels -->
       <div v-for="(route, index) in displayedResults" :key="index" class="mb-4">
-        <div class="bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-blue-600 dark:border-blue-500">
-          <div class="bg-blue-600 dark:bg-blue-700 text-white px-4 py-2 flex items-center justify-between">
+        <div class="bg-white dark:bg-gray-800 rounded-lg overflow-hidden shadow-sm ring-1 ring-blue-600 dark:ring-blue-500">
+          <div class="bg-blue-600 dark:bg-blue-700 text-white px-4 py-2 flex items-center justify-between rounded-t-lg">
             <h3 class="font-medium flex items-center gap-2">
               <span
                 class="inline-flex items-center justify-center w-7 h-7 bg-white text-blue-600 dark:bg-gray-200 dark:text-blue-700 rounded-full font-bold text-sm">
