@@ -332,6 +332,87 @@ describe("IndexPage (時刻表ページ)", () => {
     });
   });
 
+  describe("運航状態（欠航表示）の当日ガード", () => {
+    it("当日以外の日付では欠航アイコンを表示しない（ライブ運航状況は反映しない）", async () => {
+      vi.useFakeTimers();
+      // 2024-01-01 12:00 JST
+      vi.setSystemTime(new Date("2024-01-01T03:00:00.000Z"));
+
+      // 検索日は翌日（非当日）
+      const nonToday = new Date("2024-01-02T00:00:00+09:00");
+      mockFerryStore.selectedDate.value = nonToday;
+      mockUseFerryData.selectedDate.value = nonToday;
+
+      // 出発地・到着地と時刻表データをセット（1件）
+      mockUseFerryData.departure.value = "HONDO_SHICHIRUI";
+      mockUseFerryData.arrival.value = "SAIGO";
+      mockUseFerryData.filteredTimetable.value = [
+        {
+          tripId: 999,
+          startDate: "2024-01-01",
+          endDate: "2024-12-31",
+          name: "FERRY_OKI",
+          departure: "HONDO_SHICHIRUI",
+          departureTime: "09:00:00" as any,
+          arrival: "SAIGO",
+          arrivalTime: "11:25:00" as any,
+          status: 0,
+          price: 3360,
+        },
+      ] as any;
+
+      // 仮に getTripStatus が欠航(2)を返しても、非当日なので UI に反映されないこと
+      mockUseFerryData.getTripStatus.mockReturnValue(2);
+
+      const wrapper = mountIndexPage();
+      await flushPromises();
+
+      expect(wrapper.find('[data-test="cancel-status-icon"]').exists()).toBe(
+        false
+      );
+
+      vi.useRealTimers();
+    });
+
+    it("当日では欠航アイコンを表示できる（ライブ運航状況を反映）", async () => {
+      vi.useFakeTimers();
+      // 2024-01-01 12:00 JST
+      vi.setSystemTime(new Date("2024-01-01T03:00:00.000Z"));
+
+      const today = new Date("2024-01-01T00:00:00+09:00");
+      mockFerryStore.selectedDate.value = today;
+      mockUseFerryData.selectedDate.value = today;
+
+      mockUseFerryData.departure.value = "HONDO_SHICHIRUI";
+      mockUseFerryData.arrival.value = "SAIGO";
+      mockUseFerryData.filteredTimetable.value = [
+        {
+          tripId: 1000,
+          startDate: "2024-01-01",
+          endDate: "2024-12-31",
+          name: "FERRY_OKI",
+          departure: "HONDO_SHICHIRUI",
+          departureTime: "09:00:00" as any,
+          arrival: "SAIGO",
+          arrivalTime: "11:25:00" as any,
+          status: 0,
+          price: 3360,
+        },
+      ] as any;
+
+      mockUseFerryData.getTripStatus.mockReturnValue(2);
+
+      const wrapper = mountIndexPage();
+      await flushPromises();
+
+      expect(wrapper.find('[data-test="cancel-status-icon"]').exists()).toBe(
+        true
+      );
+
+      vi.useRealTimers();
+    });
+  });
+
   describe("欠航アイコン", () => {
     it("欠航アイコンをクリックすると運航状況ページへ遷移する", async () => {
       mockUseFerryData.departure.value = "KURI";

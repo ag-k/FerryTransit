@@ -441,6 +441,12 @@ const formatDateTime = (date: Date) => {
 }
 
 const tripStatus = (trip: any) => {
+  // 当日(JST)以外は「運航状況（ライブ）」や alerts を結果に反映しない
+  // （未来/過去日に今日の欠航情報が混ざるのを防ぐ）
+  if (selectedDateString.value !== todayString.value) {
+    return Number(trip?.status ?? 0) || 0
+  }
+
   const alerts = (unref((ferryStore as any)?.alerts) ?? []) as any[]
   // JST基準で日付を取得（海外端末でも常にJST）
   const tripDate = formatDateYmdJst(selectedDate.value)
