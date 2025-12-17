@@ -642,22 +642,6 @@
         </div>
       </div>
 
-      <!-- Discounts -->
-      <div v-if="activeTab !== 'naikoSen'" class="mb-8">
-        <h3 class="text-xl font-medium mb-4 dark:text-white">{{ $t('DISCOUNTS') }}</h3>
-        <div class="grid md:grid-cols-2 gap-4">
-          <div v-for="(discount, key) in discounts" :key="key"
-            class="border border-gray-200 dark:border-gray-700 rounded-lg p-4 dark:bg-gray-800">
-            <h4 class="font-medium mb-2 dark:text-white">{{ translateLabel(discount.nameKey, discount.name) }}</h4>
-            <p class="text-gray-600 dark:text-gray-400">{{ translateLabel(discount.descriptionKey, discount.description)
-            }}</p>
-            <p class="mt-2 text-lg font-medium text-blue-600 dark:text-blue-400">
-              {{ Math.round((1 - discount.rate) * 100) }}% OFF
-            </p>
-          </div>
-        </div>
-      </div>
-
     </div>
   </div>
 </template>
@@ -677,7 +661,6 @@ const activeTab = ref('okiKisen')
 const okiKisenFares = ref<any[]>([])
 const naikoSenFares = ref<any[]>([])
 const rainbowJetFares = ref<any[]>([])
-const discounts = ref<any>({})
 const innerIslandFare = ref<any>(null)
 const innerIslandVehicleFare = ref<any>(null)
 const showVehicleNotes = ref(false)
@@ -1120,7 +1103,6 @@ onMounted(async () => {
     await fareStore.loadFareMaster()
 
     if (fareStore.fareMaster) {
-      discounts.value = fareStore.fareMaster.discounts
       innerIslandFare.value = fareStore.fareMaster.innerIslandFare
       innerIslandVehicleFare.value = fareStore.fareMaster.innerIslandVehicleFare
     }
