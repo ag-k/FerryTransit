@@ -101,7 +101,7 @@ test.describe('運賃表', () => {
     // 実際のページでは要素が存在することが重要
   })
 
-  test('割引情報が翻訳済みの文言で表示される', async ({ page }) => {
+  test('割引情報セクションは表示されない', async ({ page }) => {
     // デスクトップサイズに設定（レスポンシブデザインで非表示になるのを防ぐ）
     await page.setViewportSize({ width: 1280, height: 720 })
     
@@ -110,50 +110,7 @@ test.describe('運賃表', () => {
     // データが読み込まれるまで待つ
     await page.waitForLoadState('networkidle')
     
-    // 料金データが読み込まれるまで待つ
-    await page.waitForTimeout(2000)
-    
-    // 割引情報セクションまでスクロールして表示を待つ
-    const discountsHeading = page.getByRole('heading', { level: 3, name: /割引情報|Discounts/ })
-    await discountsHeading.scrollIntoViewIfNeeded()
-    await expect(discountsHeading).toBeVisible({ timeout: 10000 })
-    
-    // 割引情報が表示されるまで少し待つ（データ読み込みのため）
-    await page.waitForTimeout(1000)
-    
-    // 割引情報はh4タグで表示されるが、Playwrightのheadingロールでは認識されない可能性があるため、テキストで検索
-    // ページ全体で検索（割引情報セクションはokiKisenタブに表示される）
-    // テストデータには複数の割引が定義されている（roundTrip, group, student, disability）
-    // 割引情報が表示されるまで待つ（データ読み込みのため）
-    await page.waitForTimeout(3000)
-    
-    // 割引情報カードが表示されるまで待つ（v-forでレンダリングされる）
-    await page.waitForSelector('.border.border-gray-200, .border.border-gray-700', { timeout: 15000 })
-    
-    // 団体割引のテキストを検索（h4タグまたは.font-mediumクラス内）
-    // より具体的なセレクターを使用
-    const groupDiscount = page.locator('h4.font-medium, .font-medium').filter({ hasText: /団体割引|Group Discount/ }).first()
-    // フォールバック: 任意の要素から検索
-    const groupDiscountFallback = page.getByText(/団体割引|Group Discount/).first()
-    
-    const discountElement = await groupDiscount.count() > 0 
-      ? groupDiscount 
-      : groupDiscountFallback
-    
-    await expect(discountElement).toBeVisible({ timeout: 15000 })
-    
-    // DISCOUNT_GROUP_DESCの翻訳を確認（「15名以上の団体に適用」）
-    const groupDesc = page.locator('p.text-gray-600, p.text-gray-400').filter({ hasText: /15名以上の団体に適用|15 or more/ }).first()
-    // フォールバック: 任意の要素から検索
-    const groupDescFallback = page.getByText(/15名以上の団体に適用|15 or more/).first()
-    
-    const descElement = await groupDesc.count() > 0 
-      ? groupDesc 
-      : groupDescFallback
-    
-    await expect(descElement).toBeVisible({ timeout: 15000 })
-    
-    // 翻訳キーがそのまま表示されていないことを確認
-    await expect(page.getByText('DISCOUNT_GROUP')).toHaveCount(0)
+    // 割引情報の見出しが存在しないこと
+    await expect(page.getByRole('heading', { level: 3, name: /割引情報|Discounts/ })).toHaveCount(0)
   })
 })
