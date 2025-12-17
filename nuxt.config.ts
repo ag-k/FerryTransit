@@ -130,7 +130,7 @@ export default defineNuxtConfig({
             process.env.NUXT_PUBLIC_FIREBASE_STORAGE_EMULATOR_PORT || "9199"
           ),
           functions: parseInt(
-            process.env.NUXT_PUBLIC_FIREBASE_FUNCTIONS_EMULATOR_PORT || "5002"
+            process.env.NUXT_PUBLIC_FIREBASE_FUNCTIONS_EMULATOR_PORT || "55002"
           ),
         },
       },
