@@ -4,9 +4,15 @@ import vue from '@vitejs/plugin-vue'
 
 export default defineConfig({
   plugins: [vue()],
+  // root の `.env` が権限で読めない環境でもテストが起動できるように、
+  // Vitest 実行時の env 読み込み対象ディレクトリをテスト用に切り替える。
+  envDir: resolve(__dirname, './src/test'),
   test: {
     globals: true,
     environment: 'happy-dom',
+    // Sandbox 環境での `child_process.kill(EPERM)` を避けるため、
+    // 子プロセスではなく worker_threads を使う。
+    pool: 'threads',
     setupFiles: ['./src/test/setup.ts'],
     include: [
       'src/**/*.{test,spec}.{js,ts,jsx,tsx}',

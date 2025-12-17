@@ -151,6 +151,7 @@ const emit = defineEmits<{
 // Composables
 const { $i18n } = useNuxtApp()
 const router = useRouter()
+const localePath = useLocalePath()
 
 // Computed
 const currentLocale = computed(() => $i18n.locale.value)
@@ -177,9 +178,9 @@ const close = () => {
 const viewTimetable = () => {
   // Navigate to timetable with this port selected
   router.push({
-    path: '/timetable',
+    path: localePath('/'),
     query: {
-      from: props.port.id
+      departure: props.port.id
     }
   })
   close()
