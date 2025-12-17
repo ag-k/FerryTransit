@@ -211,8 +211,9 @@
               <tbody>
                 <tr v-for="size in vehicleSizeList" :key="`vehicle-mobile-${size.key}`"
                   class="hover:bg-gray-50 dark:hover:bg-gray-700/50">
-                  <td class="border border-gray-300 dark:border-gray-600 px-4 py-3 font-medium dark:text-gray-100">
-                    {{ size.label }}
+                  <td
+                    class="border border-gray-300 dark:border-gray-600 px-4 py-3 font-medium dark:text-gray-100 whitespace-pre-line">
+                    {{ $t(size.labelKey) }}
                   </td>
                   <td
                     class="border border-gray-300 dark:border-gray-600 px-4 py-3 text-right font-mono dark:text-gray-100">
@@ -247,8 +248,9 @@
             </thead>
             <tbody>
               <tr v-for="size in vehicleSizeList" :key="size.key" class="hover:bg-gray-50 dark:hover:bg-gray-700/50">
-                <td class="border border-gray-300 dark:border-gray-600 px-4 py-3 font-medium dark:text-gray-100">
-                  {{ size.label }}
+                <td
+                  class="border border-gray-300 dark:border-gray-600 px-4 py-3 font-medium dark:text-gray-100 whitespace-pre-line">
+                  {{ $t(size.labelKey) }}
                 </td>
                 <td
                   class="border border-gray-300 dark:border-gray-600 px-4 py-3 text-center font-mono dark:text-gray-100">
@@ -770,17 +772,17 @@ const tabs = [
 // Vehicle sizes (for old format compatibility)
 // Vehicle size list for new format
 const vehicleSizeList = [
-  { key: 'under3m', label: '3m未満' },
-  { key: 'under4m', label: '4m未満' },
-  { key: 'under5m', label: '5m未満' },
-  { key: 'under6m', label: '6m未満' },
-  { key: 'under7m', label: '7m未満' },
-  { key: 'under8m', label: '8m未満' },
-  { key: 'under9m', label: '9m未満' },
-  { key: 'under10m', label: '10m未満' },
-  { key: 'under11m', label: '11m未満' },
-  { key: 'under12m', label: '12m未満' },
-  { key: 'over12m', label: '12m以上\n1m増すごとに' }
+  { key: 'under3m', labelKey: 'VEHICLE_SIZE_UNDER_3M' },
+  { key: 'under4m', labelKey: 'VEHICLE_SIZE_UNDER_4M' },
+  { key: 'under5m', labelKey: 'VEHICLE_SIZE_UNDER_5M' },
+  { key: 'under6m', labelKey: 'VEHICLE_SIZE_UNDER_6M' },
+  { key: 'under7m', labelKey: 'VEHICLE_SIZE_UNDER_7M' },
+  { key: 'under8m', labelKey: 'VEHICLE_SIZE_UNDER_8M' },
+  { key: 'under9m', labelKey: 'VEHICLE_SIZE_UNDER_9M' },
+  { key: 'under10m', labelKey: 'VEHICLE_SIZE_UNDER_10M' },
+  { key: 'under11m', labelKey: 'VEHICLE_SIZE_UNDER_11M' },
+  { key: 'under12m', labelKey: 'VEHICLE_SIZE_UNDER_12M' },
+  { key: 'over12m', labelKey: 'VEHICLE_SIZE_OVER_12M_PER_1M' }
 ]
 
 // Computed
