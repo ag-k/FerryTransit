@@ -17,6 +17,7 @@ npm run dev:setup
 ```
 
 This script:
+
 1. Sets up the Firebase emulators
 2. Registers a super admin account with the following credentials:
    - **Email**: admin@ferry-dev.local
@@ -32,6 +33,7 @@ npm run dev:full
 ```
 
 This command:
+
 1. Starts Firebase emulators with automatic super admin registration
 2. Starts the Nuxt development server
 3. Opens both services concurrently
@@ -62,19 +64,20 @@ The setup script automatically configures the following environment variables fo
 ## Firebase Emulator UI
 
 After starting the emulators, you can access the Firebase Emulator UI at:
+
 - **URL**: http://localhost:4000
 - **Authentication**: Check the Auth tab to see the registered super admin
 - **Firestore**: Check the Firestore tab to see the admin user document
 
 ## Available Scripts
 
-| Script | Description |
-|--------|-------------|
-| `npm run dev` | Runs setup and starts Nuxt dev server |
-| `npm run dev:setup` | Runs environment setup including admin registration |
-| `npm run dev:full` | Starts emulators with admin and dev server concurrently |
-| `npm run firebase:emulators` | Starts Firebase emulators only |
-| `npm run firebase:emulators:with-admin` | Starts emulators with automatic admin registration |
+| Script                                  | Description                                             |
+| --------------------------------------- | ------------------------------------------------------- |
+| `npm run dev`                           | Runs setup and starts Nuxt dev server                   |
+| `npm run dev:setup`                     | Runs environment setup including admin registration     |
+| `npm run dev:full`                      | Starts emulators with admin and dev server concurrently |
+| `npm run firebase:emulators`            | Starts Firebase emulators only                          |
+| `npm run firebase:emulators:with-admin` | Starts emulators with automatic admin registration      |
 
 ## Testing Admin Registration
 
@@ -85,6 +88,7 @@ node scripts/test-admin-registration.mjs
 ```
 
 This script will check:
+
 1. If the user exists in Firebase Authentication
 2. If the user document exists in Firestore users collection
 3. If the admin document exists in Firestore admins collection
@@ -99,34 +103,45 @@ This script will check:
 ### Common Issues and Solutions
 
 #### 1. Project ID Mismatch Warning
+
 ```
 auth: Multiple projectIds are not recommended in single project mode
 ```
+
 **Solution**: This warning occurs when the setup script uses a different project ID than the one configured in `.firebaserc`. The setup has been updated to use `oki-ferryguide` to match the configuration.
 
 #### 2. Storage Rules Not Loaded
+
 ```
 storage: Permission denied because no Storage ruleset is currently loaded
 ```
+
 **Solution**: The storage rules configuration has been fixed in `firebase.json`. The storage target now correctly points to `oki-ferryguide`.
 
 #### 3. Java Version Warning
+
 ```
 firebase-tools will drop support for Java version < 21 soon
 ```
+
 **Solution**: This is a warning for future compatibility. For current development, Java 11+ works fine. To fix this, install JDK 21 or later.
 
 #### 4. Authentication Error
+
 ```
 Authentication Error: Your credentials are no longer valid
 ```
+
 **Solution**: This error is for production deployment and doesn't affect emulator usage. For emulator development, no authentication is required.
 
 #### 5. Port Already in Use
+
 ```
 Error: Could not start Authentication Emulator, port taken.
 ```
+
 **Solution**: The emulators are already running. You can either:
+
 - Stop the existing emulator process (Ctrl+C in the terminal where it's running)
 - Use the existing running emulators
 - Restart your terminal/computer if the process is stuck
@@ -144,15 +159,17 @@ Make sure the Firebase emulators are running before executing this command.
 ### Emulator Connection Issues
 
 Ensure the following ports are available:
+
 - Auth Emulator: 9099
 - Firestore Emulator: 8084
 - Storage Emulator: 9199
-- Functions Emulator: 5002
+- Functions Emulator: 55002
 - Emulator UI: 4000
 
 ### Permission Errors
 
 If you encounter permission errors, ensure that:
+
 1. Firebase emulators are running
 2. The setup script is executed from the project root
 3. No firewall is blocking the emulator ports
@@ -169,6 +186,7 @@ To verify that everything is working correctly:
 ## Admin Credentials Summary
 
 **Development Super Admin Account:**
+
 - **Email**: admin@ferry-dev.local
 - **Password**: Admin123!
 - **Role**: Super Admin

@@ -6,7 +6,7 @@
  */
 
 import { execSync } from 'child_process'
-import { existsSync } from 'fs'
+import { existsSync, readFileSync, writeFileSync } from 'fs'
 import { join } from 'path'
 
 const projectRoot = process.cwd()
@@ -21,6 +21,25 @@ if (!existsSync(envLocalPath)) {
   console.log('📝 Creating .env.local from .env.example...')
   execSync(`cp "${envExamplePath}" "${envLocalPath}"`, { stdio: 'inherit' })
   console.log('✅ .env.local created. Please update it with your configuration if needed.\n')
+}
+
+// Ensure default emulator ports are unlikely to collide
+try {
+  const FUNCTIONS_PORT = '55002'
+  const key = 'NUXT_PUBLIC_FIREBASE_FUNCTIONS_EMULATOR_PORT'
+  const current = readFileSync(envLocalPath, 'utf8')
+
+  const hasKey = new RegExp(`^${key}=`, 'm').test(current)
+  const updated = hasKey
+    ? current.replace(new RegExp(`^${key}=.*$`, 'm'), `${key}=${FUNCTIONS_PORT}`)
+    : `${current.replace(/\n?$/, '\n')}${key}=${FUNCTIONS_PORT}\n`
+
+  if (updated !== current) {
+    writeFileSync(envLocalPath, updated, 'utf8')
+    console.log(`✅ Set ${key}=${FUNCTIONS_PORT} in .env.local`)
+  }
+} catch (error) {
+  console.log('⚠️  Failed to update .env.local emulator port automatically')
 }
 
 // Install Firebase CLI if not available
