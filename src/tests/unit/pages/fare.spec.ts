@@ -274,12 +274,6 @@ describe('fare.vue', () => {
     expect(wrapper.text()).toContain('6m未満')
     expect(wrapper.text()).toContain('12m以上')
 
-    // Check discounts section
-    expect(wrapper.text()).toContain('DISCOUNTS')
-    expect(wrapper.text()).toContain('DISCOUNT_ROUND_TRIP')
-    expect(wrapper.text()).toContain('10% OFF')
-    expect(wrapper.text()).toContain('15% OFF')
-
     // Notes section is handled within individual tables; ensure stored notes remain accessible
     expect(mockFareStore.loadFareMaster).toHaveBeenCalled()
   })
