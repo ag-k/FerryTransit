@@ -144,7 +144,7 @@ export default defineNuxtConfig({
 
   app: {
     head: {
-      title: "隠岐航路案内 - Oki Islands Sea Line Information",
+      title: "隠岐航路案内 - Oki Route Guide",
       meta: [
         { charset: "utf-8" },
         {
