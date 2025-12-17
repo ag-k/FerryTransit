@@ -155,7 +155,7 @@ const nextDepartures = computed(() => {
 
 const viewTimetable = () => {
   router.push({
-    path: localePath('/timetable'),
+    path: localePath('/'),
     query: {
       departure: props.portId
     }

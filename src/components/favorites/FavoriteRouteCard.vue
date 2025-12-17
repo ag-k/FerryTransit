@@ -60,7 +60,7 @@
     <div class="flex space-x-2">
       <NuxtLink
         :to="{
-          path: localePath('/timetable'),
+          path: localePath('/'),
           query: {
             departure: departure,
             arrival: arrival
