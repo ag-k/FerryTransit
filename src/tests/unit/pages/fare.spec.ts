@@ -270,9 +270,9 @@ describe('fare.vue', () => {
 
     // Check vehicle fare table
     expect(wrapper.text()).toContain('VEHICLE_FARE')
-    expect(wrapper.text()).toContain('3m未満')
-    expect(wrapper.text()).toContain('6m未満')
-    expect(wrapper.text()).toContain('12m以上')
+    expect(wrapper.text()).toContain('VEHICLE_SIZE_UNDER_3M')
+    expect(wrapper.text()).toContain('VEHICLE_SIZE_UNDER_6M')
+    expect(wrapper.text()).toContain('VEHICLE_SIZE_OVER_12M_PER_1M')
 
     // Notes section is handled within individual tables; ensure stored notes remain accessible
     expect(mockFareStore.loadFareMaster).toHaveBeenCalled()
