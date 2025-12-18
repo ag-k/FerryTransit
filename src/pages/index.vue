@@ -122,7 +122,25 @@
     <!-- 時刻表 -->
     <div class="bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700">
       <div class="bg-blue-600 dark:bg-blue-700 text-white px-4 py-3 rounded-t-lg flex items-center justify-between">
-        <h3 class="text-lg font-medium">{{ $t('TIMETABLE') }}</h3>
+        <div class="flex flex-col min-w-0">
+          <div class="flex items-baseline justify-between gap-3 min-w-0">
+            <h3
+              data-test="timetable-date-title"
+              class="text-lg font-medium leading-tight truncate tabular-nums"
+            >
+              {{ headerDateLabel }}
+            </h3>
+          </div>
+          <p
+            data-test="timetable-summary"
+            class="text-xs text-blue-100/90 leading-tight mt-0.5 truncate"
+            :title="`${$t('DATE')}: ${selectedDateString} / ${$t('_FROM')}: ${departure ? $t(departure) : '-'} / ${$t('_TO')}: ${arrival ? $t(arrival) : '-'}`"
+          >
+            <span>{{ departure ? $t(departure) : '-' }}</span>
+            <span class="mx-1">→</span>
+            <span>{{ arrival ? $t(arrival) : '-' }}</span>
+          </p>
+        </div>
         <FavoriteButton v-if="departure && arrival" :type="'route'" :route="{ departure, arrival }"
           class="text-white hover:text-yellow-300" />
       </div>
@@ -275,13 +293,14 @@
     <!-- モーダル -->
     <ClientOnly>
       <CommonShipModal v-model:visible="modalVisible" :title="modalTitle" :type="modalType" :ship-id="modalShipId"
-        :content="modalContent" />
+        :port-id="modalPortId" :content="modalContent" />
     </ClientOnly>
   </div>
 </template>
 
 <script setup lang="ts">
 import { nextTick, unref } from 'vue'
+import { useI18n } from '#imports'
 import { useFerryStore } from '@/stores/ferry'
 import { useHistoryStore } from '@/stores/history'
 import { useSettingsStore } from '@/stores/settings'
@@ -289,7 +308,7 @@ import { useFerryData } from '@/composables/useFerryData'
 import FavoriteButton from '@/components/favorites/FavoriteButton.vue'
 import FerryMap from '@/components/map/FerryMap.vue'
 import StatusAlerts from '@/components/common/StatusAlerts.vue'
-import { formatDateYmdJst, parseYmdAsJstMidnight } from '@/utils/jstDate'
+import { formatDateYmdJst, getJstDateParts, parseYmdAsJstMidnight } from '@/utils/jstDate'
 
 // Store and composables
 const ferryStore = process.client ? useFerryStore() : null
@@ -314,6 +333,7 @@ const modalVisible = ref(false)
 const modalTitle = ref('')
 const modalType = ref<'ship' | 'port'>('ship')
 const modalShipId = ref('')
+const modalPortId = ref('')
 const modalContent = ref('')
 const selectedMapPort = ref<string>('')
 const selectedMapRoute = ref<{ from: string; to: string } | undefined>()
@@ -322,6 +342,18 @@ const selectedMapRoute = ref<{ from: string; to: string } | undefined>()
 const selectedDateString = computed(() => {
   // JST基準で日付を取得（海外端末でも常にJST表示）
   return formatDateYmdJst(selectedDate.value)
+})
+
+const { locale } = useI18n()
+const headerDateLabel = computed(() => {
+  const { year, month, day } = getJstDateParts(selectedDate.value)
+  // JSTの暦日を UTC の Date として組み立てて曜日を安定取得
+  const weekdayIndex = new Date(Date.UTC(year, month - 1, day)).getUTCDay()
+  const weekdayJa = ['日', '月', '火', '水', '木', '金', '土'][weekdayIndex] ?? ''
+  const weekdayEn = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'][weekdayIndex] ?? ''
+  const isJa = String(locale.value || 'ja').startsWith('ja')
+  const weekday = isJa ? weekdayJa : weekdayEn
+  return `${selectedDateString.value}(${weekday})`
 })
 
 const todayString = computed(() => {
@@ -475,15 +507,17 @@ const showShipInfo = (shipName: string) => {
   modalTitle.value = useNuxtApp().$i18n.t(shipName)
   modalType.value = 'ship'
   modalShipId.value = shipName
+  modalPortId.value = ''
   modalVisible.value = true
 }
 
 const showPortInfo = (portName: string) => {
   modalTitle.value = useNuxtApp().$i18n.t(portName)
   modalType.value = 'port'
-
-  // Get port map from store
-  modalContent.value = ferryStore?.portMaps?.[portName] || ''
+  modalShipId.value = ''
+  modalPortId.value = portName
+  // 旧 iframe は廃止。互換用に content は空にしておく
+  modalContent.value = ''
   modalVisible.value = true
 }
 
