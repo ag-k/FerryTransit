@@ -49,7 +49,7 @@
             <!-- Port map -->
             <div v-else-if="type === 'port'" class="map-container">
               <!-- Leaflet + OpenStreetMap (preferred) -->
-              <PortAreaLeafletMap v-if="portId" :port-id="portId" :title="title" />
+              <PortAreaLeafletMap v-if="portId" :port-id="portId" :title="title" :zoom="portZoom" />
               <!-- Backward compatibility: legacy iframe HTML -->
               <div v-else-if="content" class="legacy-map-iframe" v-html="content"></div>
               <div v-else class="p-4 text-sm text-gray-600 dark:text-gray-300">
@@ -80,6 +80,7 @@ interface Props {
   type?: 'ship' | 'port' | 'custom'
   shipId?: string
   portId?: string
+  portZoom?: number
   content?: string
   closeOnBackdrop?: boolean
 }

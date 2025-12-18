@@ -108,7 +108,7 @@ const mountIndexPage = () =>
         },
         CommonShipModal: {
           template: '<div v-if="visible" data-test="ship-modal">Modal</div>',
-          props: ["visible", "title", "type", "shipId", "portId", "content"],
+          props: ["visible", "title", "type", "shipId", "portId", "portZoom", "content"],
           emits: ["update:visible"],
         },
         NuxtLink: {
