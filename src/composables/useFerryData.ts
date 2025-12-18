@@ -128,19 +128,12 @@ export const useFerryData = () => {
     return trip.status || 0
   }
 
-  // 港の地図情報取得
-  const getPortMap = (portId: string): string | undefined => {
-    if (!ferryStore) return undefined
-    return ferryStore.portMaps[portId]
-  }
-
   return {
     initializeData,
     updateTimetable,
     updateShipStatus,
     reverseRoute,
     getTripStatus,
-    getPortMap,
     
     // Store states
     timetableData: computed(() => ferryStore?.timetableData || []),

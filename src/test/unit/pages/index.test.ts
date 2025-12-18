@@ -11,7 +11,6 @@ const mockFerryStore = {
   timetableData: ref([]),
   timetableLastUpdate: ref(new Date("2024-01-01T00:00:00")),
   alerts: ref([]),
-  portMaps: {},
   setDeparture: vi.fn((value: string) => {
     mockFerryStore.departure.value = value;
   }),
@@ -109,7 +108,7 @@ const mountIndexPage = () =>
         },
         CommonShipModal: {
           template: '<div v-if="visible" data-test="ship-modal">Modal</div>',
-          props: ["visible", "title", "type", "shipId", "content"],
+          props: ["visible", "title", "type", "shipId", "portId", "content"],
           emits: ["update:visible"],
         },
         NuxtLink: {
@@ -148,6 +147,9 @@ describe("IndexPage (時刻表ページ)", () => {
     vi.stubGlobal("useNuxtApp", () => ({
       $i18n: {
         t: (key: string) => key,
+        locale: {
+          value: "ja",
+        },
       },
     }));
     // @ts-expect-error global useRouter
@@ -329,6 +331,42 @@ describe("IndexPage (時刻表ページ)", () => {
           time: "00:00",
         },
       });
+    });
+  });
+
+  describe("時刻表ヘッダーのサマリー表示", () => {
+    it("出発日・出発地・目的地を表示する（未選択は '-'）", async () => {
+      mockUseFerryData.selectedDate.value = new Date("2024-01-01");
+      mockUseFerryData.departure.value = "";
+      mockUseFerryData.arrival.value = "";
+
+      const wrapper = mountIndexPage();
+      await flushPromises();
+
+      // タイトルは「日付+曜日」に置き換え
+      const title = wrapper.find('[data-test="timetable-date-title"]');
+      expect(title.exists()).toBe(true);
+      expect(title.text()).toContain("2024-01-01(月)");
+
+      const summary = wrapper.find('[data-test="timetable-summary"]');
+      expect(summary.exists()).toBe(true);
+      // 下段は「出発→目的地」のみ
+      expect(summary.text()).toContain("-→-");
+    });
+
+    it("出発地・目的地が選択されている場合は港名（キー）を表示する", async () => {
+      mockUseFerryData.selectedDate.value = new Date("2024-01-01");
+      mockUseFerryData.departure.value = "HONDO_SHICHIRUI";
+      mockUseFerryData.arrival.value = "SAIGO";
+
+      const wrapper = mountIndexPage();
+      await flushPromises();
+
+      const title = wrapper.find('[data-test="timetable-date-title"]');
+      expect(title.text()).toContain("2024-01-01(月)");
+
+      const summary = wrapper.find('[data-test="timetable-summary"]');
+      expect(summary.text()).toContain("HONDO_SHICHIRUI→SAIGO");
     });
   });
 
