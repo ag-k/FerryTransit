@@ -1,6 +1,6 @@
 <template>
   <div class="port-leaflet-root" :data-port-id="portId">
-    <div v-if="!center" class="p-4 text-sm text-gray-600 dark:text-gray-300">
+    <div v-if="points.length === 0" class="p-4 text-sm text-gray-600 dark:text-gray-300">
       {{ fallbackText }}
     </div>
     <div v-else ref="mapEl" class="port-leaflet-map" />
@@ -12,6 +12,7 @@ import { computed, onMounted, onUnmounted, ref, watch } from 'vue'
 import { PORTS_DATA } from '~/data/ports'
 
 type LatLng = { lat: number; lng: number }
+type MarkerPoint = { id: string; title: string; lat: number; lng: number }
 
 interface Props {
   portId?: string
@@ -34,25 +35,44 @@ const LEAFLET_JS_URL = 'https://unpkg.com/leaflet@1.9.4/dist/leaflet.js'
 
 const mapEl = ref<HTMLDivElement | null>(null)
 let map: any | null = null
-let marker: any | null = null
+let markerById: Map<string, any> | null = null
 
-const center = computed<LatLng | null>(() => {
+const points = computed<MarkerPoint[]>(() => {
   const id = props.portId
-  if (!id) return null
+  if (!id) return []
 
   // 通常の港は data/ports.ts の location を利用
   const port = (PORTS_DATA as any)?.[id]
   if (port?.location?.lat != null && port?.location?.lng != null) {
-    return { lat: Number(port.location.lat), lng: Number(port.location.lng) }
+    const title = String(props.title || port?.name || port?.nameEn || id)
+    return [{ id, title, lat: Number(port.location.lat), lng: Number(port.location.lng) }]
   }
 
-  // 互換: HONDO（本土）など、location を持たない ID は代表地点へ
+  // 互換: HONDO（本土）など、location を持たない ID は代表地点/複数港へ
   if (id === 'HONDO') {
-    // 七類港と境港のだいたい中間
-    return { lat: 35.5584, lng: 133.2262 }
+    const shichirui = (PORTS_DATA as any)?.HONDO_SHICHIRUI
+    const sakaiminato = (PORTS_DATA as any)?.HONDO_SAKAIMINATO
+    const list: MarkerPoint[] = []
+    if (shichirui?.location?.lat != null && shichirui?.location?.lng != null) {
+      list.push({
+        id: 'HONDO_SHICHIRUI',
+        title: String(shichirui?.name || shichirui?.nameEn || 'HONDO_SHICHIRUI'),
+        lat: Number(shichirui.location.lat),
+        lng: Number(shichirui.location.lng)
+      })
+    }
+    if (sakaiminato?.location?.lat != null && sakaiminato?.location?.lng != null) {
+      list.push({
+        id: 'HONDO_SAKAIMINATO',
+        title: String(sakaiminato?.name || sakaiminato?.nameEn || 'HONDO_SAKAIMINATO'),
+        lat: Number(sakaiminato.location.lat),
+        lng: Number(sakaiminato.location.lng)
+      })
+    }
+    return list
   }
 
-  return null
+  return []
 })
 
 const fallbackText = computed(() => {
@@ -109,7 +129,7 @@ const ensureLeafletLoaded = async () => {
 
 const createOrUpdateMap = async () => {
   if (!mapEl.value) return
-  if (!center.value) return
+  if (points.value.length === 0) return
 
   const L = await ensureLeafletLoaded()
 
@@ -124,18 +144,44 @@ const createOrUpdateMap = async () => {
       maxZoom: 19,
       attribution: '&copy; OpenStreetMap contributors'
     }).addTo(map)
+
+    markerById = new Map()
+  }
+
+  if (!markerById) markerById = new Map()
+
+  // Remove stale markers
+  const nextIds = new Set(points.value.map(p => p.id))
+  for (const [id, mk] of Array.from(markerById.entries())) {
+    if (!nextIds.has(id)) {
+      try {
+        mk.remove?.()
+      } catch {
+        // noop
+      }
+      markerById.delete(id)
+    }
+  }
+
+  // Add/update markers
+  for (const p of points.value) {
+    const existing = markerById.get(p.id)
+    if (existing) {
+      existing.setLatLng([p.lat, p.lng])
+    } else {
+      const mk = L.marker([p.lat, p.lng]).addTo(map)
+      if (p.title) mk.bindPopup(p.title)
+      markerById.set(p.id, mk)
+    }
   }
 
   // Update view
-  map.setView([center.value.lat, center.value.lng], props.zoom)
-
-  // Marker
-  if (marker) {
-    marker.setLatLng([center.value.lat, center.value.lng])
+  if (points.value.length === 1) {
+    const p = points.value[0]
+    map.setView([p.lat, p.lng], props.zoom)
   } else {
-    marker = L.marker([center.value.lat, center.value.lng]).addTo(map)
-    const popupText = props.title || props.portId || ''
-    if (popupText) marker.bindPopup(popupText)
+    const bounds = L.latLngBounds(points.value.map(p => [p.lat, p.lng]))
+    map.fitBounds(bounds, { padding: [24, 24] })
   }
 }
 
@@ -154,7 +200,7 @@ onUnmounted(() => {
     // noop
   }
   map = null
-  marker = null
+  markerById = null
 })
 </script>
 
