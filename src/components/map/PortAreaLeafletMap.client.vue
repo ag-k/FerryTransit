@@ -178,7 +178,7 @@ const createOrUpdateMap = async () => {
   // Update view
   if (points.value.length === 1) {
     const p = points.value[0]
-    map.setView([p.lat, p.lng], props.zoom)
+    map.setView([p.lat, p.lng], props.zoom, { animate: false })
   } else {
     const bounds = L.latLngBounds(points.value.map(p => [p.lat, p.lng]))
     map.fitBounds(bounds, { padding: [24, 24] })

@@ -306,7 +306,7 @@
 
     <!-- Port Info Modal -->
     <CommonShipModal v-model:visible="showPortModal" :title="getPortDisplayName(modalPortId)" type="port"
-      :port-id="modalPortId" />
+      :port-id="modalPortId" :port-zoom="modalPortZoom" />
 
     <!-- Route Map Modal -->
     <RouteMapModal v-model:visible="showMapModal" :route="selectedMapRoute" />
@@ -607,6 +607,15 @@ const modalShipId = ref('')
 const modalPortId = ref('')
 const showMapModal = ref(false)
 const selectedMapRoute = ref<TransitRoute | null>(null)
+
+const modalPortZoom = computed<number>(() => {
+  const id = modalPortId.value
+  if (!id) return 15
+  return id === 'BEPPU' ? 17
+    : id === 'HISHIURA' ? 18
+    : id === 'KURI' ? 18
+    : 15
+})
 
 function showShipInfo(shipName: string) {
   modalShipId.value = shipName
