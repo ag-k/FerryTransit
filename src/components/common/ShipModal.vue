@@ -47,7 +47,15 @@
             </div>
             
             <!-- Port map -->
-            <div v-else-if="type === 'port' && content" class="map-container" v-html="content"></div>
+            <div v-else-if="type === 'port'" class="map-container">
+              <!-- Leaflet + OpenStreetMap (preferred) -->
+              <PortAreaLeafletMap v-if="portId" :port-id="portId" :title="title" />
+              <!-- Backward compatibility: legacy iframe HTML -->
+              <div v-else-if="content" class="legacy-map-iframe" v-html="content"></div>
+              <div v-else class="p-4 text-sm text-gray-600 dark:text-gray-300">
+                地図情報がありません。
+              </div>
+            </div>
             
             <!-- Custom content slot -->
             <slot v-else></slot>
@@ -64,11 +72,14 @@
 </template>
 
 <script setup lang="ts">
+import PortAreaLeafletMap from '@/components/map/PortAreaLeafletMap.client.vue'
+
 interface Props {
   visible: boolean
   title: string
   type?: 'ship' | 'port' | 'custom'
   shipId?: string
+  portId?: string
   content?: string
   closeOnBackdrop?: boolean
 }
@@ -144,6 +155,11 @@ onUnmounted(() => {
   width: 100%;
   height: 100%;
   border: 0;
+}
+
+.legacy-map-iframe {
+  position: absolute;
+  inset: 0;
 }
 
 /* Transitions */
