@@ -293,7 +293,7 @@
     <!-- モーダル -->
     <ClientOnly>
       <CommonShipModal v-model:visible="modalVisible" :title="modalTitle" :type="modalType" :ship-id="modalShipId"
-        :port-id="modalPortId" :content="modalContent" />
+        :port-id="modalPortId" :port-zoom="modalPortZoom" :content="modalContent" />
     </ClientOnly>
   </div>
 </template>
@@ -334,6 +334,7 @@ const modalTitle = ref('')
 const modalType = ref<'ship' | 'port'>('ship')
 const modalShipId = ref('')
 const modalPortId = ref('')
+const modalPortZoom = ref(15)
 const modalContent = ref('')
 const selectedMapPort = ref<string>('')
 const selectedMapRoute = ref<{ from: string; to: string } | undefined>()
@@ -508,6 +509,7 @@ const showShipInfo = (shipName: string) => {
   modalType.value = 'ship'
   modalShipId.value = shipName
   modalPortId.value = ''
+  modalPortZoom.value = 15
   modalVisible.value = true
 }
 
@@ -516,6 +518,12 @@ const showPortInfo = (portName: string) => {
   modalType.value = 'port'
   modalShipId.value = ''
   modalPortId.value = portName
+  // 港ごとに固定のズーム値を親で決定して渡す
+  modalPortZoom.value =
+    portName === 'BEPPU' ? 17
+    : portName === 'HISHIURA' ? 18
+    : portName === 'KURI' ? 18
+    : 15
   // 旧 iframe は廃止。互換用に content は空にしておく
   modalContent.value = ''
   modalVisible.value = true
