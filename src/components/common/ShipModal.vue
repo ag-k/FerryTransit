@@ -47,13 +47,74 @@
             </div>
             
             <!-- Port map -->
-            <div v-else-if="type === 'port'" class="map-container">
-              <!-- Leaflet + OpenStreetMap (preferred) -->
-              <PortAreaLeafletMap v-if="portId" :port-id="portId" :title="title" :zoom="portZoom" />
-              <!-- Backward compatibility: legacy iframe HTML -->
-              <div v-else-if="content" class="legacy-map-iframe" v-html="content"></div>
-              <div v-else class="p-4 text-sm text-gray-600 dark:text-gray-300">
-                地図情報がありません。
+            <div v-else-if="type === 'port'">
+              <div class="map-container">
+                <!-- Leaflet + OpenStreetMap (preferred) -->
+                <PortAreaLeafletMap
+                  v-if="portId"
+                  :port-id="portId"
+                  :title="title"
+                  :zoom="portZoom"
+                  :focus="selectedBoarding?.location ? { ...selectedBoarding.location, title: selectedBoarding.label } : undefined"
+                />
+                <!-- Backward compatibility: legacy iframe HTML -->
+                <div v-else-if="content" class="legacy-map-iframe" v-html="content"></div>
+                <div v-else class="p-4 text-sm text-gray-600 dark:text-gray-300">
+                  地図情報がありません。
+                </div>
+              </div>
+
+              <!-- Boarding info -->
+              <div v-if="portBoarding.length" class="mt-4">
+                <h4 class="text-base font-semibold text-gray-900 dark:text-gray-100">乗り場</h4>
+                <div class="mt-2 space-y-3">
+                  <div
+                    v-for="item in portBoarding"
+                    :key="item.key"
+                    class="rounded-lg border bg-gray-50 dark:bg-gray-800/40 p-3"
+                    :class="[
+                      item.location ? 'cursor-pointer' : 'opacity-70',
+                      selectedBoardingKey === item.key
+                        ? 'border-blue-400 dark:border-blue-500 ring-2 ring-blue-200 dark:ring-blue-900/40'
+                        : 'border-gray-200 dark:border-gray-700'
+                    ]"
+                    @click="item.location ? (selectedBoardingKey = item.key) : undefined"
+                  >
+                    <div class="flex items-start justify-between gap-3">
+                      <div class="min-w-0">
+                        <div class="text-sm font-medium text-gray-900 dark:text-gray-100">
+                          {{ item.label }}
+                        </div>
+                        <div class="mt-1 text-sm text-gray-700 dark:text-gray-300">
+                          {{ item.place }}
+                        </div>
+                      </div>
+                      <a
+                        v-if="item.sourceUrl"
+                        class="text-xs text-blue-600 dark:text-blue-300 hover:underline whitespace-nowrap"
+                        :href="item.sourceUrl"
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        @click.stop
+                      >
+                        参照
+                      </a>
+                    </div>
+
+                    <div v-if="Array.isArray(item.shipIds) && item.shipIds.length" class="mt-2 text-xs text-gray-600 dark:text-gray-400">
+                      対象:
+                      <span class="ml-1">
+                        {{ item.shipIds.map((id: string) => (nuxtApp as any).$i18n?.t?.(id) ?? id).join(' / ') }}
+                      </span>
+                    </div>
+                    <div v-if="!item.location" class="mt-1 text-xs text-gray-600 dark:text-gray-400">
+                      （ピン位置未登録）
+                    </div>
+                    <div v-if="item.note" class="mt-1 text-xs text-gray-600 dark:text-gray-400">
+                      {{ item.note }}
+                    </div>
+                  </div>
+                </div>
               </div>
             </div>
             
@@ -73,6 +134,7 @@
 
 <script setup lang="ts">
 import PortAreaLeafletMap from '@/components/map/PortAreaLeafletMap.client.vue'
+import { PORTS_DATA } from '~/data/ports'
 
 interface Props {
   visible: boolean
@@ -89,6 +151,45 @@ const props = withDefaults(defineProps<Props>(), {
   type: 'custom',
   closeOnBackdrop: true
 })
+
+const nuxtApp = useNuxtApp()
+const currentLocale = computed(() => String((nuxtApp as any)?.$i18n?.locale?.value || 'ja'))
+
+const selectedBoardingKey = ref<string>('')
+
+const portBoarding = computed(() => {
+  if (!props.portId) return []
+  const port = (PORTS_DATA as any)?.[props.portId]
+  const items = (port?.boarding || []) as Array<any>
+  return items
+    .filter((x) => Array.isArray(x?.shipIds) && x.shipIds.length > 0 && x?.placeJa)
+    .map((x, idx) => {
+      const isJa = currentLocale.value.startsWith('ja')
+      return {
+        key: `${props.portId}-${idx}`,
+        shipIds: x.shipIds as string[],
+        label: String((isJa ? x.labelJa : x.labelEn) || x.labelJa || ''),
+        place: String((isJa ? x.placeJa : x.placeEn) || x.placeJa || ''),
+        note: String((isJa ? x.noteJa : x.noteEn) || x.noteJa || ''),
+        sourceUrl: x.sourceUrl ? String(x.sourceUrl) : '',
+        location: x.location && Number.isFinite(x.location.lat) && Number.isFinite(x.location.lng)
+          ? { lat: Number(x.location.lat), lng: Number(x.location.lng) }
+          : null
+      }
+    })
+})
+
+const selectedBoarding = computed(() => {
+  if (!selectedBoardingKey.value) return null
+  return portBoarding.value.find((x: any) => x.key === selectedBoardingKey.value) || null
+})
+
+watch(
+  () => props.portId,
+  () => {
+    selectedBoardingKey.value = ''
+  }
+)
 
 const emit = defineEmits<{
   'update:visible': [value: boolean]

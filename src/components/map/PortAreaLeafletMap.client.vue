@@ -18,6 +18,11 @@ interface Props {
   portId?: string
   title?: string
   zoom?: number
+  focus?: {
+    lat: number
+    lng: number
+    title?: string
+  }
 }
 
 const props = withDefaults(defineProps<Props>(), {
@@ -38,6 +43,18 @@ let map: any | null = null
 let markerById: Map<string, any> | null = null
 
 const points = computed<MarkerPoint[]>(() => {
+  // 乗り場など、明示的なフォーカス座標が来たらそれを優先（=ピンを移動）
+  if (props.focus && Number.isFinite(props.focus.lat) && Number.isFinite(props.focus.lng)) {
+    return [
+      {
+        id: 'FOCUS',
+        title: String(props.focus.title || props.title || props.portId || ''),
+        lat: Number(props.focus.lat),
+        lng: Number(props.focus.lng)
+      }
+    ]
+  }
+
   const id = props.portId
   if (!id) return []
 
@@ -192,6 +209,13 @@ onMounted(async () => {
 watch([() => props.portId, () => props.zoom], async () => {
   await createOrUpdateMap()
 })
+
+watch(
+  () => `${props.focus?.lat ?? ''},${props.focus?.lng ?? ''}`,
+  async () => {
+    await createOrUpdateMap()
+  }
+)
 
 onUnmounted(() => {
   try {
