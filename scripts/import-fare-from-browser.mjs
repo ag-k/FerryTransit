@@ -59,7 +59,7 @@ console.log(`   適用開始日: ${effectiveFrom}`)
 try {
   // Firebase Admin SDKの初期化
   if (useEmulator) {
-    process.env.FIRESTORE_EMULATOR_HOST = 'localhost:8084'
+    process.env.FIRESTORE_EMULATOR_HOST = 'localhost:18084'
     admin.initializeApp({
       projectId: 'oki-ferryguide'
     })
