@@ -31,6 +31,9 @@
 - コミット規約: 可能なら Conventional Commits（例: `feat(admin): ...`, `fix(storage): ...`）。日本語本文可。
 - PR 必須項目: 概要/背景、変更点、関連 Issue、UI 変更はスクリーンショット、テスト結果、影響範囲/移行手順。
 - マージ条件: Lint/型/テストがグリーンであること。
+- コミットから除外したい変更がある場合: **変更を消さずにステージングだけ外す**。`git restore` / `git clean` で作業ツリーの変更を破棄しないこと。
+  - 例: `git restore --staged <path>`（または `git reset <path>`）でステージから外す
+  - 未追跡ファイルは `git add -N <path>` で意図的に可視化してから判断する（`git clean` は最終手段）
 
 ## セキュリティ / 設定
 - 秘密情報はコミット禁止。`src/functions/.env.example` を基に `.env` を作成。
