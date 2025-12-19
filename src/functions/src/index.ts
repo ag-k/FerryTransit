@@ -8,10 +8,10 @@ admin.initializeApp()
 if (process.env.FUNCTIONS_EMULATOR === 'true') {
   try {
     admin.firestore().settings({
-      host: 'localhost:8084',
+      host: 'localhost:18084',
       ssl: false
     })
-    console.log('🔥 Functions: Connected to Firestore emulator on localhost:8084')
+    console.log('🔥 Functions: Connected to Firestore emulator on localhost:18084')
   } catch (error) {
     console.warn('⚠️ Functions: Firestore emulator connection failed:', error)
   }
