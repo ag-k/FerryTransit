@@ -48,70 +48,74 @@
             
             <!-- Port map -->
             <div v-else-if="type === 'port'">
-              <div class="map-container">
-                <!-- Leaflet + OpenStreetMap (preferred) -->
-                <PortAreaLeafletMap
-                  v-if="portId"
-                  :port-id="portId"
-                  :title="title"
-                  :zoom="portZoom"
-                  :focus="selectedBoarding?.location ? { ...selectedBoarding.location, title: selectedBoarding.label } : undefined"
-                />
-                <!-- Backward compatibility: legacy iframe HTML -->
-                <div v-else-if="content" class="legacy-map-iframe" v-html="content"></div>
-                <div v-else class="p-4 text-sm text-gray-600 dark:text-gray-300">
-                  地図情報がありません。
+              <div class="sm:flex sm:gap-4 sm:items-start">
+                <div class="sm:flex-1">
+                  <div class="map-container">
+                    <!-- Leaflet + OpenStreetMap (preferred) -->
+                    <PortAreaLeafletMap
+                      v-if="portId"
+                      :port-id="portId"
+                      :title="title"
+                      :zoom="portZoom"
+                      :focus="selectedBoarding?.location ? { ...selectedBoarding.location, title: selectedBoarding.label } : undefined"
+                    />
+                    <!-- Backward compatibility: legacy iframe HTML -->
+                    <div v-else-if="content" class="legacy-map-iframe" v-html="content"></div>
+                    <div v-else class="p-4 text-sm text-gray-600 dark:text-gray-300">
+                      地図情報がありません。
+                    </div>
+                  </div>
                 </div>
-              </div>
 
-              <!-- Boarding info -->
-              <div v-if="portBoarding.length" class="mt-4">
-                <h4 class="text-base font-semibold text-gray-900 dark:text-gray-100">乗り場</h4>
-                <div class="mt-2 space-y-3">
-                  <div
-                    v-for="item in portBoarding"
-                    :key="item.key"
-                    class="rounded-lg border bg-gray-50 dark:bg-gray-800/40 p-3"
-                    :class="[
-                      item.location ? 'cursor-pointer' : 'opacity-70',
-                      selectedBoardingKey === item.key
-                        ? 'border-blue-400 dark:border-blue-500 ring-2 ring-blue-200 dark:ring-blue-900/40'
-                        : 'border-gray-200 dark:border-gray-700'
-                    ]"
-                    @click="item.location ? (selectedBoardingKey = item.key) : undefined"
-                  >
-                    <div class="flex items-start justify-between gap-3">
-                      <div class="min-w-0">
-                        <div class="text-sm font-medium text-gray-900 dark:text-gray-100">
-                          {{ item.label }}
+                <!-- Boarding info (PC: right side) -->
+                <div v-if="portBoarding.length" class="mt-4 sm:mt-0 sm:w-80">
+                  <h4 class="text-base font-semibold text-gray-900 dark:text-gray-100">乗り場</h4>
+                  <div class="mt-2 space-y-3 sm:max-h-[420px] overflow-y-auto pr-1">
+                    <div
+                      v-for="item in portBoarding"
+                      :key="item.key"
+                      class="rounded-lg border bg-gray-50 dark:bg-gray-800/40 p-3"
+                      :class="[
+                        item.location ? 'cursor-pointer' : 'opacity-70',
+                        selectedBoardingKey === item.key
+                          ? 'border-blue-400 dark:border-blue-500 ring-2 ring-blue-200 dark:ring-blue-900/40'
+                          : 'border-gray-200 dark:border-gray-700'
+                      ]"
+                      @click="item.location ? (selectedBoardingKey = item.key) : undefined"
+                    >
+                      <div class="flex items-start justify-between gap-3">
+                        <div class="min-w-0">
+                          <div class="text-sm font-medium text-gray-900 dark:text-gray-100">
+                            {{ item.label }}
+                          </div>
+                          <div class="mt-1 text-sm text-gray-700 dark:text-gray-300">
+                            {{ item.place }}
+                          </div>
                         </div>
-                        <div class="mt-1 text-sm text-gray-700 dark:text-gray-300">
-                          {{ item.place }}
-                        </div>
+                        <a
+                          v-if="item.sourceUrl"
+                          class="text-xs text-blue-600 dark:text-blue-300 hover:underline whitespace-nowrap"
+                          :href="item.sourceUrl"
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          @click.stop
+                        >
+                          参照
+                        </a>
                       </div>
-                      <a
-                        v-if="item.sourceUrl"
-                        class="text-xs text-blue-600 dark:text-blue-300 hover:underline whitespace-nowrap"
-                        :href="item.sourceUrl"
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        @click.stop
-                      >
-                        参照
-                      </a>
-                    </div>
 
-                    <div v-if="Array.isArray(item.shipIds) && item.shipIds.length" class="mt-2 text-xs text-gray-600 dark:text-gray-400">
-                      対象:
-                      <span class="ml-1">
-                        {{ item.shipIds.map((id: string) => (nuxtApp as any).$i18n?.t?.(id) ?? id).join(' / ') }}
-                      </span>
-                    </div>
-                    <div v-if="!item.location" class="mt-1 text-xs text-gray-600 dark:text-gray-400">
-                      （ピン位置未登録）
-                    </div>
-                    <div v-if="item.note" class="mt-1 text-xs text-gray-600 dark:text-gray-400">
-                      {{ item.note }}
+                      <div v-if="Array.isArray(item.shipIds) && item.shipIds.length" class="mt-2 text-xs text-gray-600 dark:text-gray-400">
+                        対象:
+                        <span class="ml-1">
+                          {{ item.shipIds.map((id: string) => (nuxtApp as any).$i18n?.t?.(id) ?? id).join(' / ') }}
+                        </span>
+                      </div>
+                      <div v-if="!item.location" class="mt-1 text-xs text-gray-600 dark:text-gray-400">
+                        （ピン位置未登録）
+                      </div>
+                      <div v-if="item.note" class="mt-1 text-xs text-gray-600 dark:text-gray-400">
+                        {{ item.note }}
+                      </div>
                     </div>
                   </div>
                 </div>
@@ -294,6 +298,14 @@ onUnmounted(() => {
 @media (max-width: 640px) {
   .map-container {
     padding-bottom: 75%; /* 4:3 aspect ratio for mobile */
+  }
+}
+
+/* Desktop: fixed height so the boarding panel can sit on the right */
+@media (min-width: 640px) {
+  .map-container {
+    height: 420px;
+    padding-bottom: 0;
   }
 }
 </style>
