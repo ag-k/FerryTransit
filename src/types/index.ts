@@ -17,6 +17,30 @@ export interface PortAccess {
   walkingEn?: string
 }
 
+export interface PortBoardingInfo {
+  /**
+   * 対象船舶（例: ["ISOKAZE"], ["FERRY_OKI","FERRY_SHIRASHIMA","FERRY_KUNIGA"]）
+   * UI側で $t(shipId) で表示する前提
+   */
+  shipIds: string[]
+  /** 見出し（例: "内航船いそかぜ"） */
+  labelJa: string
+  labelEn?: string
+  /** 乗り場の場所/導線（例: "ターミナルビルから徒歩約2分（いそかぜ乗り場）"） */
+  placeJa: string
+  placeEn?: string
+  /** 補足（例: "フェリーどうぜんとは乗り場が異なります。"） */
+  noteJa?: string
+  noteEn?: string
+  /** 参照URL（公式/観光サイト等） */
+  sourceUrl?: string
+  /** 乗り場ピン座標（OpenStreetMap等の緯度経度） */
+  location?: {
+    lat: number
+    lng: number
+  }
+}
+
 // Port definitions
 export interface Port {
   id: string
@@ -30,6 +54,7 @@ export interface Port {
   mapIframe?: string
   facilities?: PortFacilities
   access?: PortAccess
+  boarding?: PortBoardingInfo[]
 }
 
 // Ship definitions
