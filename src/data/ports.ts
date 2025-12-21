@@ -201,6 +201,14 @@ export const PORTS_DATA: Record<string, Port> = {
     },
     boarding: [
       {
+        shipIds: ["FERRY_OKI", "FERRY_SHIRASHIMA", "FERRY_KUNIGA"],
+        labelJa: "隠岐汽船フェリー（フェリーおき等）",
+        placeJa: "別府港内（隠岐汽船フェリー乗り場）",
+        noteJa: "高速船/内航船とは乗り場が異なる場合があります。港内の案内表示をご確認ください。",
+        location: { lat: 36.1078165, lng: 133.0417934 },
+        sourceUrl: "https://www.oki-kisen.co.jp/terminal/"
+      },
+      {
         shipIds: ["ISOKAZE", "ISOKAZE_EX"],
         labelJa: "内航船いそかぜ",
         placeJa: "別府港 ターミナルビルから徒歩約2分（いそかぜ乗り場）",
