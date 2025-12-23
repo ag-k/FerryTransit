@@ -85,11 +85,18 @@
                     >
                       <div class="flex items-start justify-between gap-3">
                         <div class="min-w-0">
-                          <div class="text-sm font-medium text-gray-900 dark:text-gray-100">
+                          <div class="text-sm font-medium text-gray-900 dark:text-gray-100 inline-flex items-center gap-1.5">
                             {{ item.label }}
+                            <span v-if="item.shipIds.includes('RAINBOWJET')" class="inline-flex items-center gap-1 px-1.5 py-0.5 text-xs font-medium bg-yellow-100 text-yellow-800 dark:bg-yellow-900/30 dark:text-yellow-300 rounded">
+                              <Icon name="heroicons:exclamation-circle" class="w-3.5 h-3.5" />
+                              要予約
+                            </span>
                           </div>
-                          <div class="mt-1 text-sm text-gray-700 dark:text-gray-300">
-                            {{ item.place }}
+                          <div class="mt-1 inline-flex items-start gap-1 text-xs text-gray-700 dark:text-gray-300">
+                            <Icon name="heroicons:map-pin" class="w-4 h-4 mt-0.5 text-gray-500 dark:text-gray-400 flex-none" />
+                            <span class="min-w-0">
+                              {{ item.place }}
+                            </span>
                           </div>
                         </div>
                         <a

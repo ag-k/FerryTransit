@@ -158,17 +158,31 @@ export const PORTS_DATA: Record<string, Port> = {
     },
     boarding: [
       {
+        shipIds: ["FERRY_OKI", "FERRY_SHIRASHIMA", "FERRY_KUNIGA"],
+        labelJa: "隠岐汽船フェリー（フェリーおき等）",
+        placeJa: "菱浦港（隠岐汽船フェリー乗り場）",
+        location: { lat: 36.1048509, lng: 133.0769833 },
+        sourceUrl: "https://www.oki-kisen.co.jp/terminal/"
+      },
+      {
+        shipIds: ["RAINBOWJET"],
+        labelJa: "高速船レインボージェット",
+        placeJa: "菱浦港（レインボージェット乗り場）",
+        location: { lat: 36.1048509, lng: 133.0769833 },
+        sourceUrl: "https://www.oki-kisen.co.jp/terminal/"
+      },
+      {
         shipIds: ["ISOKAZE", "ISOKAZE_EX"],
         labelJa: "内航船いそかぜ",
         placeJa: "菱浦港内（いそかぜ乗り場）",
-        noteJa: "フェリーどうぜんとは乗り場が異なる場合があります。",
+        location: { lat: 36.1056776, lng: 133.0766876 },
         sourceUrl: "https://www.okikankou.com/inter-island-ferry/"
       },
       {
         shipIds: ["FERRY_DOZEN"],
         labelJa: "フェリーどうぜん（内航船）",
         placeJa: "菱浦港内（どうぜん乗り場）",
-        noteJa: "いそかぜとは乗り場が異なる場合があります。",
+        location: { lat: 36.1054527, lng: 133.0764842 },
         sourceUrl: "https://www.okikankou.com/inter-island-ferry/"
       }
     ]
@@ -203,8 +217,8 @@ export const PORTS_DATA: Record<string, Port> = {
       {
         shipIds: ["FERRY_OKI", "FERRY_SHIRASHIMA", "FERRY_KUNIGA"],
         labelJa: "隠岐汽船フェリー（フェリーおき等）",
-        placeJa: "別府港内（隠岐汽船フェリー乗り場）",
-        noteJa: "高速船/内航船とは乗り場が異なる場合があります。港内の案内表示をご確認ください。",
+        placeJa: "別府港第一ターミナルビル2F",
+        noteJa: "チケットは別府港第一ターミナルビル1Fにてご購入ください。",
         location: { lat: 36.1078165, lng: 133.0417934 },
         sourceUrl: "https://www.oki-kisen.co.jp/terminal/"
       },
@@ -212,23 +226,21 @@ export const PORTS_DATA: Record<string, Port> = {
         shipIds: ["ISOKAZE", "ISOKAZE_EX"],
         labelJa: "内航船いそかぜ",
         placeJa: "別府港 ターミナルビルから徒歩約2分（いそかぜ乗り場）",
-        noteJa: "フェリーどうぜんとは乗り場が異なります。",
         location: { lat: 36.1073082, lng: 133.0421124 },
         sourceUrl: "https://bewave.jp/oki/access/beppu.html"
       },
       {
         shipIds: ["FERRY_DOZEN"],
         labelJa: "フェリーどうぜん（内航船）",
-        placeJa: "別府港内（どうぜん乗り場）",
-        noteJa: "いそかぜとは乗り場が異なります。港内の案内表示をご確認ください。",
+        placeJa: "別府交通センター",
         location: { lat: 36.1088267, lng: 133.0411866 },
         sourceUrl: "https://bewave.jp/oki/access/beppu.html"
       },
       {
         shipIds: ["RAINBOWJET"],
         labelJa: "高速船レインボージェット",
-        placeJa: "別府港内（レインボージェット乗り場）",
-        noteJa: "フェリー/内航船と乗り場が異なる場合があります。港内の案内表示をご確認ください。",
+        placeJa: "別府港ターミナルビルから徒歩3分(レインボージェット乗り場)",
+        noteJa: "[要予約] チケットは別府港第一ターミナルビル1Fにてご購入ください。",
         location: { lat: 36.1072822, lng: 133.0432690 },
         sourceUrl: "https://www.oki-kisen.co.jp/terminal/"
       }
@@ -262,17 +274,24 @@ export const PORTS_DATA: Record<string, Port> = {
     },
     boarding: [
       {
+        shipIds: ["FERRY_OKI", "FERRY_SHIRASHIMA", "FERRY_KUNIGA"],
+        labelJa: "隠岐汽船フェリー（フェリーおき等）",
+        placeJa: "来居港フェリーターミナル",
+        location: { lat: 36.0249446, lng: 133.03939755 },
+        sourceUrl: "https://www.oki-kisen.co.jp/terminal/"
+      },
+      {
         shipIds: ["ISOKAZE", "ISOKAZE_EX"],
         labelJa: "内航船いそかぜ",
         placeJa: "来居港内（いそかぜ乗り場）",
-        noteJa: "来居港には営業所が無い場合があります（支払い/手続きは船内案内に従ってください）。",
+        location: { lat: 36.0243794, lng: 133.0401959 },
         sourceUrl: "https://www.okikankou.com/inter-island-ferry/"
       },
       {
         shipIds: ["FERRY_DOZEN"],
         labelJa: "フェリーどうぜん（内航船）",
         placeJa: "来居港内（どうぜん乗り場）",
-        noteJa: "いそかぜとは乗り場が異なる場合があります。港内の案内表示をご確認ください。",
+        location: { lat: 36.0247636, lng: 133.0400763 },
         sourceUrl: "https://www.okikankou.com/inter-island-ferry/"
       }
     ]
