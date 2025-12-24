@@ -32,14 +32,16 @@ export const PORTS_DATA: Record<string, Port> = {
         shipIds: ["FERRY_OKI", "FERRY_SHIRASHIMA", "FERRY_KUNIGA"],
         labelJa: "隠岐汽船フェリー（フェリーおき等）",
         placeJa: "七類港フェリーターミナル（メテオプラザ）",
+        location: { lat: 35.5712702, lng: 133.2297413 },
         noteJa: "乗船手続きはターミナル窓口・案内表示をご確認ください。",
         sourceUrl: "https://www.oki-kisen.co.jp/terminal/"
       },
       {
         shipIds: ["RAINBOWJET"],
         labelJa: "高速船レインボージェット",
-        placeJa: "七類港フェリーターミナル（高速船のりば）",
-        noteJa: "フェリーと乗り場が異なる場合があります。案内表示に従ってください。",
+        placeJa: "七類港フェリーターミナル（メテオプラザ）",
+        location: { lat: 35.5712702, lng: 133.2297413 },
+        noteJa: "乗船手続きはターミナル窓口・案内表示をご確認ください。",
         sourceUrl: "https://www.oki-kisen.co.jp/terminal/"
       }
     ]
@@ -74,15 +76,17 @@ export const PORTS_DATA: Record<string, Port> = {
       {
         shipIds: ["FERRY_OKI", "FERRY_SHIRASHIMA", "FERRY_KUNIGA"],
         labelJa: "隠岐汽船フェリー（フェリーおき等）",
-        placeJa: "境港旅客ターミナル周辺（みなとさかい交流館付近）",
+        placeJa: "境港旅客ターミナル2F",
+        location: { lat: 35.5453155, lng: 133.2227637 },
         noteJa: "乗船手続きは窓口・案内表示をご確認ください。",
         sourceUrl: "https://www.oki-kisen.co.jp/terminal/"
       },
       {
         shipIds: ["RAINBOWJET"],
         labelJa: "高速船レインボージェット",
-        placeJa: "境港旅客ターミナル（高速船のりば）",
-        noteJa: "フェリーと乗り場が異なる場合があります。案内表示に従ってください。",
+        placeJa: "境港旅客ターミナル前岸壁",
+        location: { lat: 35.5453155, lng: 133.2227637 },
+        noteJa: "乗船手続きは窓口・案内表示をご確認ください。",
         sourceUrl: "https://www.oki-kisen.co.jp/terminal/"
       }
     ]
@@ -118,14 +122,16 @@ export const PORTS_DATA: Record<string, Port> = {
         shipIds: ["FERRY_OKI", "FERRY_SHIRASHIMA", "FERRY_KUNIGA"],
         labelJa: "隠岐汽船フェリー（フェリーおき等）",
         placeJa: "西郷港フェリーターミナル",
-        noteJa: "本土便と島内便で乗り場が異なる場合があります。案内表示に従ってください。",
+        location: { lat: 36.203404, lng: 133.335062 },
+        noteJa: "フェリー・高速船切符売場にて乗船券をご購入ください",
         sourceUrl: "https://www.oki-kisen.co.jp/terminal/"
       },
       {
         shipIds: ["RAINBOWJET"],
         labelJa: "高速船レインボージェット",
         placeJa: "西郷港（高速船のりば）",
-        noteJa: "フェリーと乗り場が異なる場合があります。案内表示に従ってください。",
+        location: { lat: 36.203404, lng: 133.335062 },
+        noteJa: "フェリー・高速船切符売場にて予約番号を伝えて乗船券をご購入ください",
         sourceUrl: "https://www.oki-kisen.co.jp/terminal/"
       }
     ]
