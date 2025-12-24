@@ -21,7 +21,7 @@
              @click.stop>
           <!-- Header -->
           <div class="flex items-center justify-between p-4 sm:p-4 border-b">
-            <h3 class="text-lg sm:text-xl font-semibold">{{ title }}</h3>
+            <h3 class="text-lg sm:text-xl font-semibold">{{ headerTitle }}</h3>
             <button 
               type="button" 
               class="p-3 -m-3 sm:p-2 sm:-m-2 hover:bg-gray-100 rounded-lg transition-colors touch-manipulation"
@@ -48,15 +48,32 @@
             
             <!-- Port map -->
             <div v-else-if="type === 'port'">
+              <!-- Tab navigation for HONDO (mainland ports) -->
+              <div v-if="portId === 'HONDO'" class="mb-4 border-b border-gray-200 dark:border-gray-700">
+                <nav class="flex space-x-1" aria-label="Tabs">
+                  <button
+                    v-for="tab in hondoTabs"
+                    :key="tab.id"
+                    @click="selectedHondoPort = tab.id"
+                    class="px-4 py-2 text-sm font-medium rounded-t-lg transition-colors"
+                    :class="selectedHondoPort === tab.id
+                      ? 'bg-blue-50 dark:bg-blue-900/30 text-blue-600 dark:text-blue-400 border-b-2 border-blue-600 dark:border-blue-400'
+                      : 'text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-800/50'"
+                  >
+                    {{ tab.name }}
+                  </button>
+                </nav>
+              </div>
+
               <div class="sm:flex sm:gap-4 sm:items-start">
                 <div class="sm:flex-1">
                   <div class="map-container">
                     <!-- Leaflet + OpenStreetMap (preferred) -->
                     <PortAreaLeafletMap
-                      v-if="portId"
-                      :port-id="portId"
-                      :title="title"
-                      :zoom="portZoom"
+                      v-if="currentPortId"
+                      :port-id="currentPortId"
+                      :title="currentPortTitle"
+                      :zoom="currentPortZoom"
                       :focus="selectedBoarding?.location ? { ...selectedBoarding.location, title: selectedBoarding.label } : undefined"
                     />
                     <!-- Backward compatibility: legacy iframe HTML -->
@@ -168,16 +185,84 @@ const currentLocale = computed(() => String((nuxtApp as any)?.$i18n?.locale?.val
 
 const selectedBoardingKey = ref<string>('')
 
+// Tab management for HONDO (mainland ports)
+const selectedHondoPort = ref<'HONDO_SHICHIRUI' | 'HONDO_SAKAIMINATO'>('HONDO_SHICHIRUI')
+
+const hondoTabs = computed(() => {
+  const shichirui = (PORTS_DATA as any)?.HONDO_SHICHIRUI
+  const sakaiminato = (PORTS_DATA as any)?.HONDO_SAKAIMINATO
+  const isJa = currentLocale.value.startsWith('ja')
+  return [
+    {
+      id: 'HONDO_SHICHIRUI' as const,
+      name: String(isJa ? shichirui?.name : shichirui?.nameEn || shichirui?.name || '七類港')
+    },
+    {
+      id: 'HONDO_SAKAIMINATO' as const,
+      name: String(isJa ? sakaiminato?.name : sakaiminato?.nameEn || sakaiminato?.name || '境港')
+    }
+  ]
+})
+
+// Current port ID (HONDOの場合は選択されたタブの港ID、それ以外はそのまま)
+const currentPortId = computed(() => {
+  if (props.portId === 'HONDO') {
+    return selectedHondoPort.value
+  }
+  return props.portId
+})
+
+// Current port title
+const currentPortTitle = computed(() => {
+  if (props.portId === 'HONDO') {
+    const port = (PORTS_DATA as any)?.[selectedHondoPort.value]
+    const isJa = currentLocale.value.startsWith('ja')
+    return String(isJa ? port?.name : port?.nameEn || port?.name || selectedHondoPort.value)
+  }
+  return props.title
+})
+
+// Header title (prefer portId based formatting for port modals)
+const headerTitle = computed(() => {
+  if (props.type !== 'port') return props.title
+  const id = currentPortId.value
+  if (!id) return props.title
+
+  const isJa = currentLocale.value.startsWith('ja')
+  if (!isJa) return currentPortTitle.value
+
+  const raw = String((nuxtApp as any).$i18n?.t?.(id) ?? currentPortTitle.value)
+  const m = raw.match(/^(.+?)\((.+)\)$/)
+  if (m) {
+    const base = m[1].trim()
+    const area = m[2].trim()
+    const baseWithPort = base.endsWith('港') ? base : `${base}港`
+    return `${baseWithPort}（${area}）`
+  }
+  // No parentheses → just ensure "港" suffix if missing
+  return raw.endsWith('港') ? raw : `${raw}港`
+})
+
+// Current port zoom
+const currentPortZoom = computed(() => {
+  if (props.portId === 'HONDO') {
+    // HONDO_SHICHIRUI と HONDO_SAKAIMINATO のズームレベル（デフォルト15）
+    return 15
+  }
+  return props.portZoom || 15
+})
+
 const portBoarding = computed(() => {
-  if (!props.portId) return []
-  const port = (PORTS_DATA as any)?.[props.portId]
+  const portIdToUse = currentPortId.value
+  if (!portIdToUse) return []
+  const port = (PORTS_DATA as any)?.[portIdToUse]
   const items = (port?.boarding || []) as Array<any>
   return items
     .filter((x) => Array.isArray(x?.shipIds) && x.shipIds.length > 0 && x?.placeJa)
     .map((x, idx) => {
       const isJa = currentLocale.value.startsWith('ja')
       return {
-        key: `${props.portId}-${idx}`,
+        key: `${portIdToUse}-${idx}`,
         shipIds: x.shipIds as string[],
         label: String((isJa ? x.labelJa : x.labelEn) || x.labelJa || ''),
         place: String((isJa ? x.placeJa : x.placeEn) || x.placeJa || ''),
@@ -197,6 +282,16 @@ const selectedBoarding = computed(() => {
 
 watch(
   () => props.portId,
+  () => {
+    selectedBoardingKey.value = ''
+    if (props.portId === 'HONDO') {
+      selectedHondoPort.value = 'HONDO_SHICHIRUI'
+    }
+  }
+)
+
+watch(
+  () => selectedHondoPort.value,
   () => {
     selectedBoardingKey.value = ''
   }

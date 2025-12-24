@@ -24,13 +24,18 @@
       <Icon name="heroicons:arrow-path" class="w-8 h-8 animate-spin" />
     </div>
 
-    <!-- Port Details Modal -->
-    <PortDetailsModal
-      v-if="selectedPortData"
-      :is-open="showPortModal"
-      :port="selectedPortData"
-      @close="closePortModal"
-    />
+    <!-- Port Details Modal (unified with timetable popup) -->
+    <ClientOnly>
+      <CommonShipModal
+        v-if="props.showPortDetails && modalPortId"
+        v-model:visible="showPortModal"
+        :title="modalPortTitle"
+        type="port"
+        :port-id="modalPortId"
+        :port-zoom="modalPortZoom"
+        @close="closePortModal"
+      />
+    </ClientOnly>
   </div>
 </template>
 
@@ -38,7 +43,7 @@
 import { ref, onMounted, onUnmounted, watch, computed, nextTick } from 'vue'
 import { Loader } from '@googlemaps/js-api-loader'
 import { PORTS_DATA, ROUTES_DATA } from '~/data/ports'
-import PortDetailsModal from './PortDetailsModal.vue'
+import CommonShipModal from '~/components/common/ShipModal.vue'
 import type { Port } from '~/types'
 import type { RouteData, RoutesDataFile } from '~/types/route'
 import { getJSONData } from '~/composables/useDataPublish'
@@ -79,7 +84,18 @@ const mapListeners: google.maps.MapsEventListener[] = []
 const infoWindow = ref<google.maps.InfoWindow>()
 const isLoading = ref(false)
 const showPortModal = ref(false)
-const selectedPortData = ref<Port | null>(null)
+const modalPortId = ref<string>('')
+const modalPortZoom = computed<number>(() => {
+  const id = modalPortId.value
+  if (!id) return 15
+  return id === 'BEPPU' ? 17
+    : id === 'HISHIURA' ? 18
+    : id === 'KURI' ? 18
+    : 15
+})
+const modalPortTitle = computed(() => {
+  return modalPortId.value ? String($i18n.t(modalPortId.value)) : ''
+})
 const routesFromStorage = ref<RouteData[]>([])
 const labelOverlays = ref<Map<string, any>>(new Map())
 
@@ -201,7 +217,7 @@ const enableMap = () => {
 
 const closePortModal = () => {
   showPortModal.value = false
-  selectedPortData.value = null
+  modalPortId.value = ''
 }
 
 // Firebase Storageから航路データを取得
@@ -343,7 +359,7 @@ const addPortMarkers = () => {
     // クリックイベント
     marker.addListener('click', () => {
       if (props.showPortDetails) {
-        selectedPortData.value = port
+        modalPortId.value = port.id
         showPortModal.value = true
       }
       emit('portClick', port)
