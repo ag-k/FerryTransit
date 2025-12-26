@@ -241,7 +241,7 @@ describe('Transit Page - Fare Display', () => {
       await wrapper.vm.$nextTick()
 
       // Check that fare is displayed in route header
-      const routeHeaders = wrapper.findAll('.bg-blue-600')
+      const routeHeaders = wrapper.findAll('[data-testid="transit-result-header"]')
       expect(routeHeaders.length).toBeGreaterThan(0)
       
       const fareText = wrapper.text()
