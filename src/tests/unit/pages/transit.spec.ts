@@ -21,7 +21,12 @@ vi.mock('#app', () => ({
 vi.mock('@/composables/useRouteSearch', () => ({
   useRouteSearch: () => ({
     searchRoutes: vi.fn().mockResolvedValue([]),
-    formatTime: vi.fn(time => time),
+    formatTime: vi.fn((time: any) => {
+      if (time instanceof Date) {
+        return time.toISOString().slice(11, 16) // HH:MM
+      }
+      return String(time ?? '')
+    }),
     calculateDuration: vi.fn(() => '1h 30m'),
     getPortDisplayName: vi.fn(port => port)
   })
@@ -156,6 +161,127 @@ describe('Transit Page', () => {
   it('renders correctly', () => {
     const wrapper = createWrapper()
     expect(wrapper.find('h2').text()).toBe('TRANSIT')
+  })
+
+  it('shows CANCELLED badge in result header when the route includes a cancelled segment', async () => {
+    const wrapper = createWrapper()
+    const toDate = (time: string): Date => new Date(`2024-01-01T${time}:00`)
+
+    wrapper.vm.searchResults = [
+      {
+        segments: [
+          {
+            tripId: 'cancelled-seg-1',
+            ship: 'FERRY_OKI',
+            departure: 'HONDO',
+            arrival: 'SAIGO',
+            departureTime: toDate('08:00'),
+            arrivalTime: toDate('09:00'),
+            status: 2,
+            fare: 1000
+          }
+        ],
+        departureTime: toDate('08:00'),
+        arrivalTime: toDate('09:00'),
+        totalFare: 1000,
+        transferCount: 0
+      }
+    ]
+
+    await wrapper.vm.$nextTick()
+
+    expect(wrapper.find('[data-testid="route-badge-cancelled"]').exists()).toBe(true)
+  })
+
+  it('shows CHANGED badge in result header when the route includes a changed segment', async () => {
+    const wrapper = createWrapper()
+    const toDate = (time: string): Date => new Date(`2024-01-01T${time}:00`)
+
+    wrapper.vm.searchResults = [
+      {
+        segments: [
+          {
+            tripId: 'changed-seg-1',
+            ship: 'FERRY_OKI',
+            departure: 'HONDO',
+            arrival: 'SAIGO',
+            departureTime: toDate('08:00'),
+            arrivalTime: toDate('09:00'),
+            status: 3,
+            fare: 1000
+          }
+        ],
+        departureTime: toDate('08:00'),
+        arrivalTime: toDate('09:00'),
+        totalFare: 1000,
+        transferCount: 0
+      }
+    ]
+
+    await wrapper.vm.$nextTick()
+
+    expect(wrapper.find('[data-testid="route-badge-changed"]').exists()).toBe(true)
+  })
+
+  it('shows concise departure and arrival times in result header', async () => {
+    const wrapper = createWrapper()
+    const toDate = (time: string): Date => new Date(`2024-01-01T${time}:00`)
+
+    wrapper.vm.searchResults = [
+      {
+        segments: [
+          {
+            tripId: 'time-seg-1',
+            ship: 'FERRY_OKI',
+            departure: 'HONDO',
+            arrival: 'SAIGO',
+            departureTime: toDate('08:00'),
+            arrivalTime: toDate('09:00'),
+            status: 0,
+            fare: 1000
+          }
+        ],
+        departureTime: toDate('08:00'),
+        arrivalTime: toDate('09:00'),
+        totalFare: 1000,
+        transferCount: 0
+      }
+    ]
+
+    await wrapper.vm.$nextTick()
+
+    expect(wrapper.find('[data-testid="transit-result-header"]').text()).toContain('08:00→09:00')
+  })
+
+  it('does not show CANCELLED badge in result header when the route has no cancelled segments', async () => {
+    const wrapper = createWrapper()
+    const toDate = (time: string): Date => new Date(`2024-01-01T${time}:00`)
+
+    wrapper.vm.searchResults = [
+      {
+        segments: [
+          {
+            tripId: 'normal-seg-1',
+            ship: 'FERRY_OKI',
+            departure: 'HONDO',
+            arrival: 'SAIGO',
+            departureTime: toDate('08:00'),
+            arrivalTime: toDate('09:00'),
+            status: 0,
+            fare: 1000
+          }
+        ],
+        departureTime: toDate('08:00'),
+        arrivalTime: toDate('09:00'),
+        totalFare: 1000,
+        transferCount: 0
+      }
+    ]
+
+    await wrapper.vm.$nextTick()
+
+    expect(wrapper.find('[data-testid="route-badge-cancelled"]').exists()).toBe(false)
+    expect(wrapper.find('[data-testid="route-badge-changed"]').exists()).toBe(false)
   })
 
   it('search button is disabled when departure or arrival is not selected', () => {
