@@ -119,21 +119,57 @@
       <!-- Route Panels -->
       <div v-for="(route, index) in displayedResults" :key="index" class="mb-4">
         <div class="bg-white dark:bg-gray-800 rounded-lg overflow-hidden shadow-sm ring-1 ring-blue-600 dark:ring-blue-500">
-          <div class="bg-blue-600 dark:bg-blue-700 text-white px-4 py-2 flex items-center justify-between rounded-t-lg">
-            <h3 class="font-medium flex items-center gap-2">
+          <div
+            class="bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 px-4 py-2 flex items-center justify-between rounded-t-lg border-b border-gray-200 dark:border-gray-700"
+            data-testid="transit-result-header"
+          >
+            <h3 class="font-medium flex items-center gap-3 min-w-0">
               <span
-                class="inline-flex items-center justify-center w-7 h-7 bg-white text-blue-600 dark:bg-gray-200 dark:text-blue-700 rounded-full font-bold text-sm">
+                class="inline-flex items-center justify-center w-7 h-7 bg-blue-600 text-white dark:bg-blue-600 dark:text-white rounded-full font-bold text-sm">
                 {{ index + 1 }}
               </span>
-              <span>
-                {{ calculateDuration(route.departureTime, route.arrivalTime) }} /
-                <span v-if="route.totalFare > 0">¥{{ route.totalFare.toLocaleString() }}</span>
-                <span v-else class="text-yellow-300">{{ $t('FARE_UNAVAILABLE') }}</span>
-              </span>
+
+              <!-- 中央ブロック: (時刻 + 所要時間/料金) -->
+              <div class="flex flex-col sm:flex-row sm:items-center sm:gap-2 min-w-0 flex-1">
+                <!-- 1行目（モバイル）: 時刻 -->
+                <span
+                  class="text-sm font-semibold tabular-nums text-gray-700 dark:text-gray-200 truncate"
+                  data-testid="transit-header-times"
+                >
+                  {{ formatTime(route.departureTime) }}→{{ formatTime(route.arrivalTime) }}
+                </span>
+
+                <!-- 2行目（モバイル）: 所要時間/料金 -->
+                <span class="text-sm text-gray-700 dark:text-gray-200 truncate" data-testid="transit-header-summary">
+                  {{ calculateDuration(route.departureTime, route.arrivalTime) }} /
+                  <span v-if="route.totalFare > 0">¥{{ route.totalFare.toLocaleString() }}</span>
+                  <span v-else class="text-yellow-700 dark:text-yellow-300">{{ $t('FARE_UNAVAILABLE') }}</span>
+                </span>
+              </div>
+
+              <!-- 右ブロック: バッジ（欠航/変更あり） -->
+              <div class="flex items-center gap-2 shrink-0">
+                <span
+                  v-if="hasCancelledSegment(route)"
+                  class="inline-flex items-center rounded-md bg-red-600/95 px-2 py-1 text-xs font-bold text-white ring-1 ring-white/25"
+                  :title="$t('CANCELLED')"
+                  data-testid="route-badge-cancelled"
+                >
+                  {{ $t('CANCELLED') }}
+                </span>
+                <span
+                  v-if="hasChangedSegment(route)"
+                  class="inline-flex items-center rounded-md bg-yellow-300 px-2 py-1 text-xs font-bold text-gray-900 ring-1 ring-black/10 dark:bg-yellow-400"
+                  :title="$t('CHANGED')"
+                  data-testid="route-badge-changed"
+                >
+                  {{ $t('CHANGED') }}
+                </span>
+              </div>
             </h3>
             <div class="flex items-center gap-2">
               <button
-                class="text-white hover:text-yellow-300 focus:outline-none focus:ring-2 focus:ring-yellow-300 rounded p-1"
+                class="text-gray-600 hover:text-blue-600 dark:text-gray-200 dark:hover:text-yellow-300 focus:outline-none focus:ring-2 focus:ring-blue-500 dark:focus:ring-yellow-300 rounded p-1"
                 :title="$t('SHOW_ON_MAP')" @click="showRouteMap(route)">
                 <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24"
                   stroke="currentColor">
@@ -142,7 +178,7 @@
                 </svg>
               </button>
               <FavoriteButton :type="'route'" :route="{ departure: departure, arrival: arrival }"
-                class="text-white hover:text-yellow-300" />
+                class="text-gray-600 hover:text-blue-600 dark:text-gray-200 dark:hover:text-yellow-300" />
             </div>
           </div>
           <div class="p-4">
@@ -389,6 +425,14 @@ const sortOption = ref<SortKey>('recommended')
 // Composables
 const { searchRoutes, formatTime, calculateDuration, getPortDisplayName } = useRouteSearch()
 const { t } = useI18n()
+
+const hasCancelledSegment = (route: TransitRoute): boolean => {
+  return Array.isArray(route?.segments) && route.segments.some(s => s.status === 2)
+}
+
+const hasChangedSegment = (route: TransitRoute): boolean => {
+  return Array.isArray(route?.segments) && route.segments.some(s => s.status === 3)
+}
 
 const cloneRouteForState = (route: TransitRoute): TransitRoute => {
   const segments = Array.isArray(route.segments)
