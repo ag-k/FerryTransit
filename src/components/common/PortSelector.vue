@@ -1,5 +1,5 @@
 <template>
-  <div class="mb-4">
+  <div :class="containerClass">
     <label
       v-if="label"
       :for="buttonId"
@@ -136,10 +136,12 @@ interface Props {
   hondoPorts?: string[]
   dozenPorts?: string[]
   dogoPorts?: string[]
+  margin?: 'normal' | 'tight' | 'none'
 }
 
 const props = withDefaults(defineProps<Props>(), {
-  disabled: false
+  disabled: false,
+  margin: 'normal'
 })
 
 const emit = defineEmits<{
@@ -149,6 +151,12 @@ const emit = defineEmits<{
 
 const ferryStore = process.client ? useFerryStore() : null
 const favoriteStore = process.client ? useFavoriteStore() : null
+
+const containerClass = computed(() => {
+  if (props.margin === 'none') return ''
+  if (props.margin === 'tight') return 'mb-2'
+  return 'mb-4'
+})
 
 const hondoPorts = computed(() => (Array.isArray(props.hondoPorts) ? props.hondoPorts : (ferryStore?.hondoPorts || [])))
 const dozenPorts = computed(() => (Array.isArray(props.dozenPorts) ? props.dozenPorts : (ferryStore?.dozenPorts || [])))
