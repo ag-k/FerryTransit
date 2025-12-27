@@ -6,11 +6,10 @@
     <StatusAlerts class="mb-6" />
 
     <!-- Search Form -->
-    <div class="bg-white dark:bg-gray-800 rounded-lg overflow-hidden shadow-sm border border-gray-200 dark:border-gray-700 mb-6">
-      <div class="p-4">
-        <h3 class="sr-only">{{ $t('SEARCH_CONDITIONS') }}</h3>
-        <!-- Port Selection -->
-        <div class="mb-4">
+    <div class="mb-6">
+      <h3 class="sr-only">{{ $t('SEARCH_CONDITIONS') }}</h3>
+      <!-- Port Selection -->
+      <div class="mb-4">
           <!-- Mobile: TimetableForm と同じ（2つのセレクト + 右側に入替ボタン） -->
           <div class="md:hidden">
             <div class="flex items-start gap-2">
@@ -24,7 +23,6 @@
                       :disabled-ports="[arrival]"
                     />
                   </div>
-                  <FavoriteButton v-if="departure" :type="'port'" :port="departure" class="mt-8" />
                 </div>
 
                 <div class="flex items-start gap-2">
@@ -36,7 +34,6 @@
                       :disabled-ports="[departure]"
                     />
                   </div>
-                  <FavoriteButton v-if="arrival" :type="'port'" :port="arrival" class="mt-8" />
                 </div>
               </div>
 
@@ -71,7 +68,6 @@
                       :disabled-ports="[arrival]"
                     />
                   </div>
-                  <FavoriteButton v-if="departure" :type="'port'" :port="departure" class="mt-8" />
                 </div>
               </div>
 
@@ -101,52 +97,50 @@
                       :disabled-ports="[departure]"
                     />
                   </div>
-                  <FavoriteButton v-if="arrival" :type="'port'" :port="arrival" class="mt-8" />
                 </div>
               </div>
             </div>
           </div>
         </div>
 
-        <!-- Date and Time Selection -->
-        <div class="grid md:grid-cols-2 gap-4 mb-4">
-          <!-- Date Selection -->
-          <div>
-            <DatePicker v-model="date" :label="$t('DATE')" :min-date="today" />
-          </div>
-
-          <!-- Time Selection -->
-          <div>
-            <label :for="timeInputId" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">{{
-              $t('TIME') }}</label>
-            <div class="flex">
-              <select v-model="isArrivalMode"
-                class="px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-l-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:text-white"
-                style="min-width: 140px">
-                <option :value="false">{{ $t('DEPARTURE_AFTER') }}</option>
-                <option :value="true">{{ $t('ARRIVE_BY') }}</option>
-              </select>
-              <input :id="timeInputId" v-model="time" type="time"
-                class="flex-1 px-3 py-2 border border-l-0 border-gray-300 dark:border-gray-600 rounded-r-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:text-white">
-            </div>
-          </div>
-        </div>
-
-        <!-- Search Button -->
+      <!-- Date and Time Selection -->
+      <div class="grid md:grid-cols-2 gap-4 mb-4">
+        <!-- Date Selection -->
         <div>
-          <button type="button"
-            class="w-full px-8 py-3 text-base bg-blue-600 text-white rounded-lg hover:bg-blue-700 dark:bg-blue-500 dark:hover:bg-blue-600 active:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 dark:focus:ring-offset-gray-800 transform active:scale-95 transition-all duration-150 disabled:bg-gray-400 dark:disabled:bg-gray-600 disabled:cursor-not-allowed disabled:transform-none flex items-center justify-center shadow-sm hover:shadow-md"
-            :disabled="!canSearch || isSearching" @click="handleSearch">
-            <span v-if="isSearching"
-              class="inline-block animate-spin rounded-full h-4 w-4 border-b-2 border-white mr-2"></span>
-            <svg v-else xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-2" fill="none" viewBox="0 0 24 24"
-              stroke="currentColor">
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
-            </svg>
-            {{ $t('SEARCH') }}
-          </button>
+          <DatePicker v-model="date" :label="$t('DATE')" :min-date="today" />
         </div>
+
+        <!-- Time Selection -->
+        <div>
+          <label :for="timeInputId" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">{{
+            $t('TIME') }}</label>
+          <div class="flex">
+            <select v-model="isArrivalMode"
+              class="px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-l-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:text-white"
+              style="min-width: 140px">
+              <option :value="false">{{ $t('DEPARTURE_AFTER') }}</option>
+              <option :value="true">{{ $t('ARRIVE_BY') }}</option>
+            </select>
+            <input :id="timeInputId" v-model="time" type="time"
+              class="flex-1 px-3 py-2 border border-l-0 border-gray-300 dark:border-gray-600 rounded-r-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:text-white">
+          </div>
+        </div>
+      </div>
+
+      <!-- Search Button -->
+      <div>
+        <button type="button"
+          class="w-full px-8 py-3 text-base bg-blue-600 text-white rounded-lg hover:bg-blue-700 dark:bg-blue-500 dark:hover:bg-blue-600 active:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 dark:focus:ring-offset-gray-800 transform active:scale-95 transition-all duration-150 disabled:bg-gray-400 dark:disabled:bg-gray-600 disabled:cursor-not-allowed disabled:transform-none flex items-center justify-center shadow-sm hover:shadow-md"
+          :disabled="!canSearch || isSearching" @click="handleSearch">
+          <span v-if="isSearching"
+            class="inline-block animate-spin rounded-full h-4 w-4 border-b-2 border-white mr-2"></span>
+          <svg v-else xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-2" fill="none" viewBox="0 0 24 24"
+            stroke="currentColor">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+              d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+          </svg>
+          {{ $t('SEARCH') }}
+        </button>
       </div>
     </div>
 
