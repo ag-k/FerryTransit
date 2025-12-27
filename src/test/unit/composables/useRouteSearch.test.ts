@@ -914,6 +914,28 @@ describe("useRouteSearch", () => {
       expect(duration).toMatch(/25/);
       expect(duration).toMatch(/(分|MINUTES)/);
     });
+
+    it('should format duration for English as "h/min" with spaces', () => {
+      const store = useFerryStore();
+      store.timetableData = mockTrips;
+
+      // Override mocked translations for this test only
+      const prevMinutes = translations.MINUTES;
+      const prevHours = translations.HOURS;
+      translations.MINUTES = " min";
+      translations.HOURS = " h ";
+
+      const { calculateDuration } = useRouteSearch();
+      const start = new Date("2024-01-15T09:00:00");
+      const end = new Date("2024-01-15T11:25:00");
+
+      const duration = calculateDuration(start, end);
+      expect(duration).toBe("2 h 25 min");
+
+      // Restore
+      translations.MINUTES = prevMinutes;
+      translations.HOURS = prevHours;
+    });
   });
 
   describe("getPortDisplayName", () => {
