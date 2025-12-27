@@ -6,7 +6,8 @@
     <div v-if="menuOpen" class="fixed inset-0 bg-black bg-opacity-50 dark:bg-opacity-70 z-40 lg:hidden"
       @click="closeMenu"></div>
 
-    <div class="container mx-auto lg:px-4">
+    <div
+      class="container mx-auto pl-[max(env(safe-area-inset-left),1rem)] pr-[max(env(safe-area-inset-right),1rem)]">
       <div class="flex items-center justify-between h-[44px] lg:h-auto lg:py-4">
         <div class="flex items-center">
           <NuxtLink
@@ -35,7 +36,7 @@
         </button>
 
         <div
-          class="fixed lg:static inset-x-0 top-[68px] sm:top-[73px] lg:top-auto bg-blue-600 dark:bg-gray-900 lg:bg-transparent lg:dark:bg-transparent w-full lg:w-auto lg:flex lg:items-center px-4 lg:px-0 pb-4 lg:pb-0 shadow-lg lg:shadow-none z-40 lg:z-auto"
+          class="fixed lg:static inset-x-0 top-[68px] sm:top-[73px] lg:top-auto bg-blue-600 dark:bg-gray-900 lg:bg-transparent lg:dark:bg-transparent w-full lg:w-auto lg:flex lg:items-center pl-[max(env(safe-area-inset-left),1rem)] pr-[max(env(safe-area-inset-right),1rem)] lg:px-0 pb-4 lg:pb-0 shadow-lg lg:shadow-none z-40 lg:z-auto"
           :class="{ 'hidden': !menuOpen }" id="navbarNav">
           <ul class="lg:flex lg:items-center lg:space-x-1 space-y-2 lg:space-y-0">
             <li>
@@ -142,7 +143,8 @@
     <!-- News Section -->
     <div v-if="latestNews.length > 0"
       class="bg-yellow-50 dark:bg-gray-800 border-b border-yellow-200 dark:border-gray-700">
-      <div class="container mx-auto px-2 sm:px-4 py-2 sm:py-3">
+      <div
+        class="container mx-auto pl-[max(env(safe-area-inset-left),0.5rem)] pr-[max(env(safe-area-inset-right),0.5rem)] sm:pl-[max(env(safe-area-inset-left),1rem)] sm:pr-[max(env(safe-area-inset-right),1rem)] py-2 sm:py-3">
         <!-- Latest News -->
         <div class="flex items-start space-x-2 sm:space-x-3">
           <svg class="w-4 h-4 sm:w-5 sm:h-5 text-yellow-600 dark:text-yellow-500 mt-0.5 flex-shrink-0" fill="none"
