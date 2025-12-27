@@ -18,12 +18,6 @@
                   @update:model-value="$emit('update:departure', $event)"
                 />
               </div>
-              <FavoriteButton
-                v-if="departure"
-                :type="'port'"
-                :port="departure"
-                class="mt-8"
-              />
             </div>
           </div>
 
@@ -41,12 +35,6 @@
                   @update:model-value="$emit('update:arrival', $event)"
                 />
               </div>
-              <FavoriteButton
-                v-if="arrival"
-                :type="'port'"
-                :port="arrival"
-                class="mt-8"
-              />
             </div>
           </div>
         </div>
@@ -81,12 +69,6 @@
                 @update:model-value="$emit('update:departure', $event)"
               />
             </div>
-            <FavoriteButton
-              v-if="departure"
-              :type="'port'"
-              :port="departure"
-              class="mt-7"
-            />
           </div>
         </div>
 
@@ -115,12 +97,6 @@
                 @update:model-value="$emit('update:arrival', $event)"
               />
             </div>
-            <FavoriteButton
-              v-if="arrival"
-              :type="'port'"
-              :port="arrival"
-              class="mt-7"
-            />
           </div>
         </div>
       </div>
@@ -129,7 +105,6 @@
 </template>
 
 <script setup lang="ts">
-import FavoriteButton from '@/components/favorites/FavoriteButton.vue'
 import PortSelector from '@/components/common/PortSelector.vue'
 
 defineProps<{
