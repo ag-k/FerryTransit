@@ -337,7 +337,21 @@
     <!-- No Results -->
     <div v-else-if="hasSearched && !isSearching"
       class="bg-blue-100 dark:bg-blue-900/30 border border-blue-200 dark:border-gray-700 text-blue-800 dark:text-blue-300 px-4 py-3 rounded">
-      {{ $t('NO_ROUTES_FOUND') }}
+      <div class="flex flex-col gap-3">
+        <p class="font-medium">
+          {{ $t('NO_ROUTES_FOUND') }}
+        </p>
+        <button
+          type="button"
+          class="inline-flex items-center justify-center px-4 py-2 text-sm font-medium rounded-md border transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-500
+            border-blue-600 dark:border-blue-400 text-blue-700 dark:text-blue-200 bg-white/90 dark:bg-gray-800 hover:bg-blue-50 dark:hover:bg-gray-700 disabled:opacity-60 disabled:cursor-not-allowed"
+          :disabled="!canSearch || isSearching"
+          data-testid="transit-retry-search"
+          @click="retrySearchWithAdjustedTime"
+        >
+          {{ retrySearchLabel }}
+        </button>
+      </div>
     </div>
 
     <!-- Route Details Modal -->
@@ -655,12 +669,58 @@ const displayedResults = computed(() => {
   return sortedResults.value.slice(0, displayLimit.value)
 })
 
+const RETRY_TIME_SHIFT_MINUTES = 60
+
+const retrySearchLabel = computed(() => {
+  return isArrivalMode.value
+    ? t('TRANSIT_RETRY_LATER', { minutes: RETRY_TIME_SHIFT_MINUTES })
+    : t('TRANSIT_RETRY_EARLIER', { minutes: RETRY_TIME_SHIFT_MINUTES })
+})
+
 // Methods
 function getCurrentTimeString(): string {
   const now = new Date()
   const hours = Math.floor(now.getHours() / 1) * 1
   const minutes = Math.floor(now.getMinutes() / 15) * 15
   return `${hours.toString().padStart(2, '0')}:${minutes.toString().padStart(2, '0')}`
+}
+
+function buildSearchDateTime(baseDate: Date, timeStr: string): Date {
+  const dt = new Date(baseDate)
+  const [h, m] = (timeStr || '00:00').split(':').map(Number)
+  dt.setHours(Number.isFinite(h) ? h : 0, Number.isFinite(m) ? m : 0, 0, 0)
+  return dt
+}
+
+function formatHHMM(dt: Date): string {
+  const hh = String(dt.getHours()).padStart(2, '0')
+  const mm = String(dt.getMinutes()).padStart(2, '0')
+  return `${hh}:${mm}`
+}
+
+function clampToMinDateTime(dt: Date): Date {
+  // DatePicker の min-date は「今日」なので、今日より前に落ちる場合は今日の 00:00 に丸める
+  const min = new Date(today)
+  min.setHours(0, 0, 0, 0)
+  if (dt.getTime() < min.getTime()) {
+    return min
+  }
+  return dt
+}
+
+async function retrySearchWithAdjustedTime() {
+  if (!canSearch.value || isSearching.value) return
+
+  const deltaMinutes = isArrivalMode.value ? RETRY_TIME_SHIFT_MINUTES : -RETRY_TIME_SHIFT_MINUTES
+  const current = buildSearchDateTime(date.value, time.value)
+  const next = new Date(current.getTime() + deltaMinutes * 60 * 1000)
+  const clamped = clampToMinDateTime(next)
+
+  // date は日付のみを保持し、time は HH:MM で保持
+  date.value = new Date(clamped.getFullYear(), clamped.getMonth(), clamped.getDate())
+  time.value = formatHHMM(clamped)
+
+  await handleSearch()
 }
 
 function reverseRoute() {
