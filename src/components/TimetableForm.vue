@@ -8,26 +8,15 @@
             <div class="flex items-start gap-2">
               <div class="flex-1">
                 <label class="block text-base font-medium text-gray-700 dark:text-gray-100 mb-2">{{ $t('_FROM') }}</label>
-                <select
-                  class="w-full px-3 py-3 text-base border border-gray-300 dark:border-gray-600 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-800 dark:text-gray-100 touch-manipulation"
-                  :value="departure" @change="$emit('update:departure', $event.target.value)">
-                  <option value="" disabled>{{ $t('DEPARTURE') }}</option>
-                  <optgroup :label="$t('MAINLAND')" class="font-medium">
-                    <option v-for="port in hondoPorts" :key="port" :value="port" class="pl-2">
-                      {{ $t(port) }}
-                    </option>
-                  </optgroup>
-                  <optgroup :label="$t('DOZEN')" class="font-medium">
-                    <option v-for="port in dozenPorts" :key="port" :value="port" class="pl-2">
-                      {{ $t(port) }}
-                    </option>
-                  </optgroup>
-                  <optgroup :label="$t('DOGO')" class="font-medium">
-                    <option v-for="port in dogoPorts" :key="port" :value="port" class="pl-2">
-                      {{ $t(port) }}
-                    </option>
-                  </optgroup>
-                </select>
+                <PortSelector
+                  :model-value="departure"
+                  :placeholder="$t('DEPARTURE')"
+                  :disabled-ports="arrival ? [arrival] : []"
+                  :hondo-ports="hondoPorts"
+                  :dozen-ports="dozenPorts"
+                  :dogo-ports="dogoPorts"
+                  @update:model-value="$emit('update:departure', $event)"
+                />
               </div>
               <FavoriteButton
                 v-if="departure"
@@ -42,26 +31,15 @@
             <div class="flex items-start gap-2">
               <div class="flex-1">
                 <label class="block text-base font-medium text-gray-700 dark:text-gray-100 mb-2">{{ $t('_TO') }}</label>
-                <select
-                  class="w-full px-3 py-3 text-base border border-gray-300 dark:border-gray-600 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-800 dark:text-gray-100 touch-manipulation"
-                  :value="arrival" @change="$emit('update:arrival', $event.target.value)">
-                  <option value="" disabled>{{ $t('ARRIVAL') }}</option>
-                  <optgroup :label="$t('MAINLAND')" class="font-medium">
-                    <option v-for="port in hondoPorts" :key="port" :value="port" class="pl-2">
-                      {{ $t(port) }}
-                    </option>
-                  </optgroup>
-                  <optgroup :label="$t('DOZEN')" class="font-medium">
-                    <option v-for="port in dozenPorts" :key="port" :value="port" class="pl-2">
-                      {{ $t(port) }}
-                    </option>
-                  </optgroup>
-                  <optgroup :label="$t('DOGO')" class="font-medium">
-                    <option v-for="port in dogoPorts" :key="port" :value="port" class="pl-2">
-                      {{ $t(port) }}
-                    </option>
-                  </optgroup>
-                </select>
+                <PortSelector
+                  :model-value="arrival"
+                  :placeholder="$t('ARRIVAL')"
+                  :disabled-ports="departure ? [departure] : []"
+                  :hondo-ports="hondoPorts"
+                  :dozen-ports="dozenPorts"
+                  :dogo-ports="dogoPorts"
+                  @update:model-value="$emit('update:arrival', $event)"
+                />
               </div>
               <FavoriteButton
                 v-if="arrival"
@@ -93,26 +71,15 @@
           <div class="flex items-start gap-2">
             <div class="flex-1">
               <label class="block text-sm font-medium text-gray-700 dark:text-gray-100 mb-1">{{ $t('_FROM') }}</label>
-              <select
-                class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-800 dark:text-gray-100"
-                :value="departure" @change="$emit('update:departure', $event.target.value)">
-                <option value="" disabled>{{ $t('DEPARTURE') }}</option>
-                <optgroup :label="$t('MAINLAND')" class="font-medium">
-                  <option v-for="port in hondoPorts" :key="port" :value="port" class="pl-2">
-                    {{ $t(port) }}
-                  </option>
-                </optgroup>
-                <optgroup :label="$t('DOZEN')" class="font-medium">
-                  <option v-for="port in dozenPorts" :key="port" :value="port" class="pl-2">
-                    {{ $t(port) }}
-                  </option>
-                </optgroup>
-                <optgroup :label="$t('DOGO')" class="font-medium">
-                  <option v-for="port in dogoPorts" :key="port" :value="port" class="pl-2">
-                    {{ $t(port) }}
-                  </option>
-                </optgroup>
-              </select>
+              <PortSelector
+                :model-value="departure"
+                :placeholder="$t('DEPARTURE')"
+                :disabled-ports="arrival ? [arrival] : []"
+                :hondo-ports="hondoPorts"
+                :dozen-ports="dozenPorts"
+                :dogo-ports="dogoPorts"
+                @update:model-value="$emit('update:departure', $event)"
+              />
             </div>
             <FavoriteButton
               v-if="departure"
@@ -138,26 +105,15 @@
           <div class="flex items-start gap-2">
             <div class="flex-1">
               <label class="block text-sm font-medium text-gray-700 dark:text-gray-100 mb-1">{{ $t('_TO') }}</label>
-              <select
-                class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-800 dark:text-gray-100"
-                :value="arrival" @change="$emit('update:arrival', $event.target.value)">
-                <option value="" disabled>{{ $t('ARRIVAL') }}</option>
-                <optgroup :label="$t('MAINLAND')" class="font-medium">
-                  <option v-for="port in hondoPorts" :key="port" :value="port" class="pl-2">
-                    {{ $t(port) }}
-                  </option>
-                </optgroup>
-                <optgroup :label="$t('DOZEN')" class="font-medium">
-                  <option v-for="port in dozenPorts" :key="port" :value="port" class="pl-2">
-                    {{ $t(port) }}
-                  </option>
-                </optgroup>
-                <optgroup :label="$t('DOGO')" class="font-medium">
-                  <option v-for="port in dogoPorts" :key="port" :value="port" class="pl-2">
-                    {{ $t(port) }}
-                  </option>
-                </optgroup>
-              </select>
+              <PortSelector
+                :model-value="arrival"
+                :placeholder="$t('ARRIVAL')"
+                :disabled-ports="departure ? [departure] : []"
+                :hondo-ports="hondoPorts"
+                :dozen-ports="dozenPorts"
+                :dogo-ports="dogoPorts"
+                @update:model-value="$emit('update:arrival', $event)"
+              />
             </div>
             <FavoriteButton
               v-if="arrival"
@@ -174,6 +130,7 @@
 
 <script setup lang="ts">
 import FavoriteButton from '@/components/favorites/FavoriteButton.vue'
+import PortSelector from '@/components/common/PortSelector.vue'
 
 defineProps<{
   departure: string
