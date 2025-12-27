@@ -1,5 +1,5 @@
 <template>
-  <div class="container max-w-[1000px] mx-auto px-4 py-8">
+  <div class="container max-w-[1000px] mx-auto px-4 py-4">
     <h2 class="hidden lg:block text-2xl font-semibold mb-6 dark:text-white">{{ $t('TRANSIT') }}</h2>
 
     <!-- Current status alerts -->
@@ -9,11 +9,11 @@
     <div class="mb-6">
       <h3 class="sr-only">{{ $t('SEARCH_CONDITIONS') }}</h3>
       <!-- Port Selection -->
-      <div class="mb-4">
+      <div class="mb-3">
           <!-- Mobile: TimetableForm と同じ（2つのセレクト + 右側に入替ボタン） -->
           <div class="md:hidden">
             <div class="flex items-start gap-2">
-              <div class="flex-grow space-y-4">
+              <div class="flex-grow space-y-2">
                 <div class="flex items-start gap-2">
                   <div class="flex-1">
                     <PortSelector
@@ -21,6 +21,7 @@
                       :label="$t('_FROM')"
                       :placeholder="$t('DEPARTURE')"
                       :disabled-ports="[arrival]"
+                      margin="none"
                     />
                   </div>
                 </div>
@@ -32,6 +33,7 @@
                       :label="$t('_TO')"
                       :placeholder="$t('ARRIVAL')"
                       :disabled-ports="[departure]"
+                      margin="none"
                     />
                   </div>
                 </div>
@@ -66,6 +68,7 @@
                       :label="$t('_FROM')"
                       :placeholder="$t('DEPARTURE')"
                       :disabled-ports="[arrival]"
+                      margin="none"
                     />
                   </div>
                 </div>
@@ -95,6 +98,7 @@
                       :label="$t('_TO')"
                       :placeholder="$t('ARRIVAL')"
                       :disabled-ports="[departure]"
+                      margin="none"
                     />
                   </div>
                 </div>
@@ -104,20 +108,21 @@
         </div>
 
       <!-- Date and Time Selection -->
-      <div class="grid md:grid-cols-2 gap-4 mb-4">
+      <div class="grid md:grid-cols-2 gap-3 mb-3">
         <!-- Date Selection -->
         <div>
-          <DatePicker v-model="date" :label="$t('DATE')" :min-date="today" />
+          <DatePicker v-model="date" :min-date="today" margin="none" size="compact" />
         </div>
 
         <!-- Time Selection -->
         <div>
-          <label :for="timeInputId" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">{{
-            $t('TIME') }}</label>
+          <span class="sr-only">{{ $t('TIME') }}</span>
           <div class="flex">
             <select v-model="isArrivalMode"
               class="px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-l-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:text-white"
-              style="min-width: 140px">
+              style="min-width: 140px"
+              :aria-label="$t('TIME')"
+            >
               <option :value="false">{{ $t('DEPARTURE_AFTER') }}</option>
               <option :value="true">{{ $t('ARRIVE_BY') }}</option>
             </select>
