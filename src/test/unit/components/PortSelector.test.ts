@@ -3,6 +3,7 @@ import { mount } from '@vue/test-utils'
 import { setActivePinia, createPinia } from 'pinia'
 import PortSelector from '@/components/common/PortSelector.vue'
 import { useFerryStore } from '@/stores/ferry'
+import { useFavoriteStore } from '@/stores/favorite'
 
 describe('PortSelector', () => {
   beforeEach(() => {
@@ -19,68 +20,77 @@ describe('PortSelector', () => {
       global: {
         mocks: {
           $t: (key: string) => key
+        },
+        stubs: {
+          Teleport: true
         }
       }
     })
 
-    expect(wrapper.find('select').exists()).toBe(true)
-    expect(wrapper.findAll('optgroup')).toHaveLength(3)
+    expect(wrapper.find('[data-testid="port-selector-button"]').exists()).toBe(true)
   })
 
-  it('displays port options grouped by region', () => {
+  it('displays port options grouped by region', async () => {
     const wrapper = mount(PortSelector, {
       props: defaultProps,
       global: {
         mocks: {
           $t: (key: string) => key
+        },
+        stubs: {
+          Teleport: true
         }
       }
     })
 
-    const optgroups = wrapper.findAll('optgroup')
-    expect(optgroups[0].attributes('label')).toBe('MAINLAND')
-    expect(optgroups[1].attributes('label')).toBe('DOZEN')
-    expect(optgroups[2].attributes('label')).toBe('DOGO')
+    await wrapper.find('[data-testid="port-selector-button"]').trigger('click')
+    expect(wrapper.find('[data-testid="port-selector-modal"]').exists()).toBe(true)
+    expect(wrapper.find('[data-testid="port-section-mainland"]').exists()).toBe(true)
+    expect(wrapper.find('[data-testid="port-section-dozen"]').exists()).toBe(true)
+    expect(wrapper.find('[data-testid="port-section-dogo"]').exists()).toBe(true)
   })
 
-  it('shows correct ports in each group', () => {
+  it('shows correct ports in each group', async () => {
     const store = useFerryStore()
     const wrapper = mount(PortSelector, {
       props: defaultProps,
       global: {
         mocks: {
           $t: (key: string) => key
+        },
+        stubs: {
+          Teleport: true
         }
       }
     })
 
-    const optgroups = wrapper.findAll('optgroup')
-    
-    // Check mainland ports
-    const mainlandOptions = optgroups[0].findAll('option')
-    expect(mainlandOptions).toHaveLength(store.hondoPorts.length)
-    
-    // Check dozen ports
-    const dozenOptions = optgroups[1].findAll('option')
-    expect(dozenOptions).toHaveLength(store.dozenPorts.length)
-    
-    // Check dogo ports
-    const dogoOptions = optgroups[2].findAll('option')
-    expect(dogoOptions).toHaveLength(store.dogoPorts.length)
+    await wrapper.find('[data-testid="port-selector-button"]').trigger('click')
+
+    const mainlandButtons = wrapper.find('[data-testid="port-section-mainland"]').findAll('button')
+    const dozenButtons = wrapper.find('[data-testid="port-section-dozen"]').findAll('button')
+    const dogoButtons = wrapper.find('[data-testid="port-section-dogo"]').findAll('button')
+
+    expect(mainlandButtons).toHaveLength(store.hondoPorts.length)
+    expect(dozenButtons).toHaveLength(store.dozenPorts.length)
+    expect(dogoButtons).toHaveLength(store.dogoPorts.length)
   })
 
-  it('emits update:modelValue when selection changes', async () => {
+  it('emits update:modelValue when selecting a port in the modal', async () => {
     const wrapper = mount(PortSelector, {
       props: defaultProps,
       global: {
         mocks: {
           $t: (key: string) => key
+        },
+        stubs: {
+          Teleport: true
         }
       }
     })
 
-    const select = wrapper.find('select')
-    await select.setValue('SAIGO')
+    await wrapper.find('[data-testid="port-selector-button"]').trigger('click')
+    const saigoButton = wrapper.find('[data-testid="port-section-dogo"]').find('button')
+    await saigoButton.trigger('click')
 
     expect(wrapper.emitted('update:modelValue')).toBeTruthy()
     expect(wrapper.emitted('update:modelValue')[0][0]).toBe('SAIGO')
@@ -97,6 +107,9 @@ describe('PortSelector', () => {
       global: {
         mocks: {
           $t: (key: string) => key
+        },
+        stubs: {
+          Teleport: true
         }
       }
     })
@@ -113,13 +126,15 @@ describe('PortSelector', () => {
       global: {
         mocks: {
           $t: (key: string) => key
+        },
+        stubs: {
+          Teleport: true
         }
       }
     })
 
-    const placeholderOption = wrapper.find('option[disabled]')
-    expect(placeholderOption.exists()).toBe(true)
-    expect(placeholderOption.text()).toBe('Choose a port')
+    const button = wrapper.find('[data-testid="port-selector-button"]')
+    expect(button.text()).toContain('Choose a port')
   })
 
   it('shows hint when provided', () => {
@@ -131,6 +146,9 @@ describe('PortSelector', () => {
       global: {
         mocks: {
           $t: (key: string) => key
+        },
+        stubs: {
+          Teleport: true
         }
       }
     })
@@ -138,7 +156,7 @@ describe('PortSelector', () => {
     expect(wrapper.find('small.text-gray-500').text()).toBe('Select departure port')
   })
 
-  it('disables select when disabled prop is true', () => {
+  it('disables button when disabled prop is true', () => {
     const wrapper = mount(PortSelector, {
       props: {
         ...defaultProps,
@@ -147,15 +165,18 @@ describe('PortSelector', () => {
       global: {
         mocks: {
           $t: (key: string) => key
+        },
+        stubs: {
+          Teleport: true
         }
       }
     })
 
-    const select = wrapper.find('select')
-    expect(select.attributes('disabled')).toBeDefined()
+    const button = wrapper.find('[data-testid="port-selector-button"]')
+    expect(button.attributes('disabled')).toBeDefined()
   })
 
-  it('disables specific ports when disabledPorts is provided', () => {
+  it('disables specific ports when disabledPorts is provided', async () => {
     const wrapper = mount(PortSelector, {
       props: {
         ...defaultProps,
@@ -164,15 +185,22 @@ describe('PortSelector', () => {
       global: {
         mocks: {
           $t: (key: string) => key
+        },
+        stubs: {
+          Teleport: true
         }
       }
     })
 
-    const saigoOption = wrapper.find('option[value="SAIGO"]')
-    const beppuOption = wrapper.find('option[value="BEPPU"]')
-    
-    expect(saigoOption.attributes('disabled')).toBeDefined()
-    expect(beppuOption.attributes('disabled')).toBeDefined()
+    await wrapper.find('[data-testid="port-selector-button"]').trigger('click')
+
+    const saigoButton = wrapper.findAll('button').find(b => b.text() === 'SAIGO')
+    const beppuButton = wrapper.findAll('button').find(b => b.text() === 'BEPPU')
+
+    expect(saigoButton).toBeTruthy()
+    expect(beppuButton).toBeTruthy()
+    expect(saigoButton!.attributes('disabled')).toBeDefined()
+    expect(beppuButton!.attributes('disabled')).toBeDefined()
   })
 
   it('reflects the current modelValue', () => {
@@ -184,11 +212,39 @@ describe('PortSelector', () => {
       global: {
         mocks: {
           $t: (key: string) => key
+        },
+        stubs: {
+          Teleport: true
         }
       }
     })
 
-    const select = wrapper.find('select')
-    expect(select.element.value).toBe('HONDO_SHICHIRUI')
+    const button = wrapper.find('[data-testid="port-selector-button"]')
+    expect(button.text()).toContain('HONDO_SHICHIRUI')
+  })
+
+  it('shows favorites section on top when favorite ports exist', async () => {
+    const favoriteStore = useFavoriteStore()
+    favoriteStore.addFavoritePort({ portCode: 'SAIGO' })
+
+    const wrapper = mount(PortSelector, {
+      props: defaultProps,
+      global: {
+        mocks: {
+          $t: (key: string) => key
+        },
+        stubs: {
+          Teleport: true
+        }
+      }
+    })
+
+    await wrapper.find('[data-testid="port-selector-button"]').trigger('click')
+
+    expect(wrapper.find('[data-testid="port-section-favorites"]').exists()).toBe(true)
+
+    const sectionEls = wrapper.findAll('section')
+    expect(sectionEls.length).toBeGreaterThan(0)
+    expect(sectionEls[0].attributes('data-testid')).toBe('port-section-favorites')
   })
 })
