@@ -135,6 +135,8 @@
   "SORT_EASY": "楽 (乗り換えが少ない)",
   "DURATION": "所要時間",
   "NO_ROUTES_FOUND": "該当する経路が見つかりませんでした",
+  "TRANSIT_RETRY_EARLIER": "{minutes}分早い時刻で再検索",
+  "TRANSIT_RETRY_LATER": "{minutes}分遅い時刻で再検索",
   "ROUTE_DETAILS": "経路詳細",
   "LEG": "区間",
   "SHOW_MORE": "もっと見る",

@@ -4,10 +4,14 @@ import { createTestingPinia } from '@pinia/testing'
 import Transit from '~/pages/transit.vue'
 import type { TransitRoute } from '@/types'
 
+const flushPromises = () => new Promise(resolve => setTimeout(resolve, 0))
+
+let routeQuery: Record<string, any> = {}
+
 // Mock the router
 vi.mock('#app', () => ({
   useRoute: () => ({
-    query: {}
+    query: routeQuery
   }),
   useHead: vi.fn(),
   useNuxtApp: () => ({
@@ -17,10 +21,29 @@ vi.mock('#app', () => ({
   })
 }))
 
+// Nuxt の auto-import で useRoute が vue-router 側を参照するケースに備えてこちらもモック
+vi.mock('vue-router', () => ({
+  useRoute: () => ({
+    query: routeQuery
+  })
+}))
+
+// Nuxt の auto-import 集約 (#imports) から useRoute を参照するケースもあるので上書き
+vi.mock('#imports', async (importOriginal) => {
+  const actual = await importOriginal<any>()
+  return {
+    ...actual,
+    useRoute: () => ({
+      query: routeQuery
+    })
+  }
+})
+
 // Mock composables
+const searchRoutesMock = vi.fn().mockResolvedValue([])
 vi.mock('@/composables/useRouteSearch', () => ({
   useRouteSearch: () => ({
-    searchRoutes: vi.fn().mockResolvedValue([]),
+    searchRoutes: searchRoutesMock,
     formatTime: vi.fn((time: any) => {
       if (time instanceof Date) {
         return time.toISOString().slice(11, 16) // HH:MM
@@ -161,6 +184,78 @@ describe('Transit Page', () => {
   it('renders correctly', () => {
     const wrapper = createWrapper()
     expect(wrapper.find('h2').text()).toBe('TRANSIT')
+  })
+
+  it('shows retry search button on empty results and searches with earlier time in departure mode', async () => {
+    const wrapper = createWrapper()
+    // onMounted による初期化（URLパラメータ反映）を待つ
+    await flushPromises()
+    await wrapper.vm.$nextTick()
+
+    // 検索済み・結果0件状態を作る
+    wrapper.vm.departure = 'HONDO'
+    wrapper.vm.arrival = 'SAIGO'
+    wrapper.vm.isArrivalMode = false
+    const d = new Date()
+    d.setHours(0, 0, 0, 0)
+    wrapper.vm.date = d
+    wrapper.vm.time = '10:00'
+    wrapper.vm.hasSearched = true
+    wrapper.vm.searchResults = []
+    await wrapper.vm.$nextTick()
+
+    const retryBtn = wrapper.find('[data-testid="transit-retry-search"]')
+    expect(retryBtn.exists()).toBe(true)
+    expect(wrapper.vm.time).toBe('10:00')
+
+    searchRoutesMock.mockClear()
+    await retryBtn.trigger('click')
+    await flushPromises()
+
+    expect(searchRoutesMock).toHaveBeenCalledTimes(1)
+    // handleSearch(departure, arrival, date, time, isArrivalMode)
+    expect(searchRoutesMock).toHaveBeenCalledWith(
+      'HONDO',
+      'SAIGO',
+      expect.any(Date),
+      '09:00',
+      false
+    )
+  })
+
+  it('searches with later time in arrival mode when retry is clicked', async () => {
+    const wrapper = createWrapper()
+    // onMounted による初期化（URLパラメータ反映）を待つ
+    await flushPromises()
+    await wrapper.vm.$nextTick()
+
+    wrapper.vm.departure = 'HONDO'
+    wrapper.vm.arrival = 'SAIGO'
+    wrapper.vm.isArrivalMode = true
+    const d = new Date()
+    d.setHours(0, 0, 0, 0)
+    wrapper.vm.date = d
+    wrapper.vm.time = '10:00'
+    wrapper.vm.hasSearched = true
+    wrapper.vm.searchResults = []
+    await wrapper.vm.$nextTick()
+
+    const retryBtn = wrapper.find('[data-testid="transit-retry-search"]')
+    expect(retryBtn.exists()).toBe(true)
+    expect(wrapper.vm.time).toBe('10:00')
+
+    searchRoutesMock.mockClear()
+    await retryBtn.trigger('click')
+    await flushPromises()
+
+    expect(searchRoutesMock).toHaveBeenCalledTimes(1)
+    expect(searchRoutesMock).toHaveBeenCalledWith(
+      'HONDO',
+      'SAIGO',
+      expect.any(Date),
+      '11:00',
+      true
+    )
   })
 
   it('shows CANCELLED badge in result header when the route includes a cancelled segment', async () => {
