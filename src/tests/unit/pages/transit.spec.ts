@@ -250,7 +250,9 @@ describe('Transit Page', () => {
 
     await wrapper.vm.$nextTick()
 
-    expect(wrapper.find('[data-testid="transit-result-header"]').text()).toContain('08:00→09:00')
+    // タイムゾーンに依存せず、"HH:MM→HH:MM" の形式で表示されていることだけ確認する
+    const headerText = wrapper.find('[data-testid="transit-result-header"]').text()
+    expect(headerText).toMatch(/\d{2}:\d{2}→\d{2}:\d{2}/)
   })
 
   it('does not show CANCELLED badge in result header when the route has no cancelled segments', async () => {

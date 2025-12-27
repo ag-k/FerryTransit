@@ -7,46 +7,103 @@
 
     <!-- Search Form -->
     <div class="bg-white dark:bg-gray-800 rounded-lg overflow-hidden shadow-sm border border-gray-200 dark:border-gray-700 mb-6">
-      <div class="bg-gray-50 dark:bg-gray-800 px-4 py-3 border-b dark:border-gray-600 rounded-t-lg">
-        <h3 class="text-lg font-medium dark:text-white">{{ $t('SEARCH_CONDITIONS') }}</h3>
-      </div>
       <div class="p-4">
+        <h3 class="sr-only">{{ $t('SEARCH_CONDITIONS') }}</h3>
         <!-- Port Selection -->
-        <div class="grid md:grid-cols-12 gap-4 mb-4">
-          <div class="md:col-span-5">
+        <div class="mb-4">
+          <!-- Mobile: TimetableForm と同じ（2つのセレクト + 右側に入替ボタン） -->
+          <div class="md:hidden">
             <div class="flex items-start gap-2">
-              <div class="flex-1">
-                <PortSelector v-model="departure" :label="$t('_FROM')" :placeholder="$t('DEPARTURE')"
-                  :disabled-ports="[arrival]" />
+              <div class="flex-grow space-y-4">
+                <div class="flex items-start gap-2">
+                  <div class="flex-1">
+                    <PortSelector
+                      v-model="departure"
+                      :label="$t('_FROM')"
+                      :placeholder="$t('DEPARTURE')"
+                      :disabled-ports="[arrival]"
+                    />
+                  </div>
+                  <FavoriteButton v-if="departure" :type="'port'" :port="departure" class="mt-8" />
+                </div>
+
+                <div class="flex items-start gap-2">
+                  <div class="flex-1">
+                    <PortSelector
+                      v-model="arrival"
+                      :label="$t('_TO')"
+                      :placeholder="$t('ARRIVAL')"
+                      :disabled-ports="[departure]"
+                    />
+                  </div>
+                  <FavoriteButton v-if="arrival" :type="'port'" :port="arrival" class="mt-8" />
+                </div>
               </div>
-              <FavoriteButton v-if="departure" :type="'port'" :port="departure" class="mt-8" />
+
+              <div class="flex items-center self-center">
+                <button
+                  type="button"
+                  class="p-3 text-base border border-blue-600 dark:border-blue-400 text-blue-600 dark:text-blue-200 rounded-md hover:bg-blue-50 dark:hover:bg-blue-900/20 transition-colors flex-shrink-0 touch-manipulation"
+                  title="出発地と到着地を入れ替え"
+                  aria-label="Reverse route"
+                  @click="reverseRoute"
+                >
+                  <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" fill="currentColor"
+                    viewBox="0 0 16 16" aria-hidden="true">
+                    <path fill-rule="evenodd"
+                      d="M11.5 15a.5.5 0 0 0 .5-.5V2.707l3.146 3.147a.5.5 0 0 0 .708-.708l-4-4a.5.5 0 0 0-.708 0l-4 4a.5.5 0 1 0 .708.708L11 2.707V14.5a.5.5 0 0 0 .5.5zm-7-14a.5.5 0 0 1 .5.5v11.793l3.146-3.147a.5.5 0 0 1 .708.708l-4 4a.5.5 0 0 1-.708 0l-4-4a.5.5 0 0 1 .708-.708L4 13.293V1.5a.5.5 0 0 1 .5-.5z" />
+                  </svg>
+                </button>
+              </div>
             </div>
           </div>
 
-          <div class="md:col-span-2 flex items-center justify-center md:items-end mb-4">
-            <button type="button"
-              class="p-3 md:px-4 md:py-2 text-base border border-blue-600 dark:border-blue-400 text-blue-600 dark:text-blue-200 rounded-md hover:bg-blue-50 dark:hover:bg-blue-900/20 transition-colors flex-shrink-0 touch-manipulation"
-              title="出発地と到着地を入れ替え" aria-label="Reverse route" @click="reverseRoute">
-              <svg class="md:hidden" xmlns="http://www.w3.org/2000/svg" width="20" height="20" fill="currentColor"
-                viewBox="0 0 16 16" aria-hidden="true">
-                <path fill-rule="evenodd"
-                  d="M11.5 15a.5.5 0 0 0 .5-.5V2.707l3.146 3.147a.5.5 0 0 0 .708-.708l-4-4a.5.5 0 0 0-.708 0l-4 4a.5.5 0 1 0 .708.708L11 2.707V14.5a.5.5 0 0 0 .5.5zm-7-14a.5.5 0 0 1 .5.5v11.793l3.146-3.147a.5.5 0 0 1 .708.708l-4 4a.5.5 0 0 1-.708 0l-4-4a.5.5 0 0 1 .708-.708L4 13.293V1.5a.5.5 0 0 1 .5-.5z" />
-              </svg>
-              <svg class="hidden md:inline" xmlns="http://www.w3.org/2000/svg" width="20" height="20"
-                fill="currentColor" viewBox="0 0 16 16" aria-hidden="true">
-                <path fill-rule="evenodd"
-                  d="M1 11.5a.5.5 0 0 0 .5.5h11.793l-3.147 3.146a.5.5 0 0 0 .708.708l4-4a.5.5 0 0 0 0-.708l-4-4a.5.5 0 0 0-.708.708L13.293 11H1.5a.5.5 0 0 0-.5.5zm14-7a.5.5 0 0 1-.5.5H2.707l3.147 3.146a.5.5 0 1 1-.708.708l-4-4a.5.5 0 0 1 0-.708l4-4a.5.5 0 1 1 .708.708L2.707 4H14.5a.5.5 0 0 1 .5.5z" />
-              </svg>
-            </button>
-          </div>
-
-          <div class="md:col-span-5">
-            <div class="flex items-start gap-2">
-              <div class="flex-1">
-                <PortSelector v-model="arrival" :label="$t('_TO')" :placeholder="$t('ARRIVAL')"
-                  :disabled-ports="[departure]" />
+          <!-- Desktop: 従来どおり（横並び） -->
+          <div class="hidden md:block">
+            <div class="grid md:grid-cols-12 gap-4">
+              <div class="md:col-span-5">
+                <div class="flex items-start gap-2">
+                  <div class="flex-1">
+                    <PortSelector
+                      v-model="departure"
+                      :label="$t('_FROM')"
+                      :placeholder="$t('DEPARTURE')"
+                      :disabled-ports="[arrival]"
+                    />
+                  </div>
+                  <FavoriteButton v-if="departure" :type="'port'" :port="departure" class="mt-8" />
+                </div>
               </div>
-              <FavoriteButton v-if="arrival" :type="'port'" :port="arrival" class="mt-8" />
+
+              <div class="md:col-span-2 flex items-end justify-center">
+                <button
+                  type="button"
+                  class="px-4 py-2 text-base border border-blue-600 dark:border-blue-400 text-blue-600 dark:text-blue-200 rounded-md hover:bg-blue-50 dark:hover:bg-blue-900/20 transition-colors flex-shrink-0 touch-manipulation"
+                  title="出発地と到着地を入れ替え"
+                  aria-label="Reverse route"
+                  @click="reverseRoute"
+                >
+                  <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20"
+                    fill="currentColor" viewBox="0 0 16 16" aria-hidden="true">
+                    <path fill-rule="evenodd"
+                      d="M1 11.5a.5.5 0 0 0 .5.5h11.793l-3.147 3.146a.5.5 0 0 0 .708.708l4-4a.5.5 0 0 0 0-.708l-4-4a.5.5 0 0 0-.708.708L13.293 11H1.5a.5.5 0 0 0-.5.5zm14-7a.5.5 0 0 1-.5.5H2.707l3.147 3.146a.5.5 0 1 1-.708.708l-4-4a.5.5 0 0 1 0-.708l4-4a.5.5 0 1 1 .708.708L2.707 4H14.5a.5.5 0 0 1 .5.5z" />
+                  </svg>
+                </button>
+              </div>
+
+              <div class="md:col-span-5">
+                <div class="flex items-start gap-2">
+                  <div class="flex-1">
+                    <PortSelector
+                      v-model="arrival"
+                      :label="$t('_TO')"
+                      :placeholder="$t('ARRIVAL')"
+                      :disabled-ports="[departure]"
+                    />
+                  </div>
+                  <FavoriteButton v-if="arrival" :type="'port'" :port="arrival" class="mt-8" />
+                </div>
+              </div>
             </div>
           </div>
         </div>
