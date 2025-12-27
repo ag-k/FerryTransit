@@ -299,6 +299,8 @@
   "DEPARTURE_AFTER": "Departure time",
   "LEG": "Leg",
   "NO_ROUTES_FOUND": "No routes found",
+  "TRANSIT_RETRY_EARLIER": "Search again {minutes} min earlier",
+  "TRANSIT_RETRY_LATER": "Search again {minutes} min later",
   "ROUTE_DETAILS": "Route Details",
   "SEARCH": "Search",
   "SEARCH_RESULTS": "Search Results",
