@@ -1,11 +1,11 @@
 <template>
-  <div class="mb-4">
+  <div :class="containerClass">
     <label v-if="label" :for="inputId" class="block text-base sm:text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">{{ label }}</label>
     <div class="flex">
       <input 
         :id="inputId"
         type="date" 
-        class="flex-1 px-3 py-3 sm:py-2 text-base sm:text-sm border border-gray-300 dark:border-gray-600 rounded-l-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:text-white disabled:bg-gray-100 disabled:text-gray-500 disabled:cursor-not-allowed touch-manipulation"
+        :class="inputClass"
         :value="modelValueString"
         :min="minDateString"
         :max="maxDateString"
@@ -15,7 +15,7 @@
       <button 
         v-if="showTodayButton"
         type="button" 
-        class="px-4 sm:px-4 py-3 sm:py-2 text-base sm:text-sm border border-l-0 border-gray-300 dark:border-gray-600 rounded-r-md bg-gray-50 dark:bg-gray-600 hover:bg-gray-100 dark:hover:bg-gray-500 dark:text-white focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 disabled:bg-gray-100 disabled:text-gray-400 disabled:cursor-not-allowed transition-colors touch-manipulation"
+        :class="todayButtonClass"
         :disabled="disabled"
         @click="selectToday"
       >
@@ -37,11 +37,15 @@ interface Props {
   maxDate?: Date
   disabled?: boolean
   showTodayButton?: boolean
+  margin?: 'normal' | 'tight' | 'none'
+  size?: 'normal' | 'compact'
 }
 
 const props = withDefaults(defineProps<Props>(), {
   disabled: false,
-  showTodayButton: true
+  showTodayButton: true,
+  margin: 'normal',
+  size: 'normal'
 })
 
 const emit = defineEmits<{
@@ -50,6 +54,28 @@ const emit = defineEmits<{
 
 // Unique ID for accessibility
 const inputId = `date-picker-${Math.random().toString(36).substr(2, 9)}`
+
+const containerClass = computed(() => {
+  if (props.margin === 'none') return ''
+  if (props.margin === 'tight') return 'mb-2'
+  return 'mb-4'
+})
+
+const inputClass = computed(() => {
+  const base = 'flex-1 px-3 border border-gray-300 dark:border-gray-600 rounded-l-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:text-white disabled:bg-gray-100 disabled:text-gray-500 disabled:cursor-not-allowed touch-manipulation'
+  if (props.size === 'compact') {
+    return `${base} py-2 text-base`
+  }
+  return `${base} py-3 sm:py-2 text-base sm:text-sm`
+})
+
+const todayButtonClass = computed(() => {
+  const base = 'px-4 sm:px-4 border border-l-0 border-gray-300 dark:border-gray-600 rounded-r-md bg-gray-50 dark:bg-gray-600 hover:bg-gray-100 dark:hover:bg-gray-500 dark:text-white focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 disabled:bg-gray-100 disabled:text-gray-400 disabled:cursor-not-allowed transition-colors touch-manipulation'
+  if (props.size === 'compact') {
+    return `${base} py-2 text-base`
+  }
+  return `${base} py-3 sm:py-2 text-base sm:text-sm`
+})
 
 // Computed properties for date strings
 const modelValueString = computed(() => {
