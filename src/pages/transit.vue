@@ -74,10 +74,10 @@
                 </div>
               </div>
 
-              <div class="md:col-span-2 flex items-end justify-center">
+              <div class="md:col-span-2 flex justify-center mt-7">
                 <button
                   type="button"
-                  class="px-4 py-2 text-base border border-blue-600 dark:border-blue-400 text-blue-600 dark:text-blue-200 rounded-md hover:bg-blue-50 dark:hover:bg-blue-900/20 transition-colors flex-shrink-0 touch-manipulation"
+                  class="px-3 py-2 text-base border border-blue-600 dark:border-blue-400 text-blue-600 dark:text-blue-200 rounded-md hover:bg-blue-50 dark:hover:bg-blue-900/20 transition-colors flex-shrink-0 touch-manipulation"
                   title="出発地と到着地を入れ替え"
                   aria-label="Reverse route"
                   @click="reverseRoute"
