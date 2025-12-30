@@ -1,35 +1,56 @@
 <template>
   <nav 
-    class="lg:hidden fixed bottom-0 left-0 right-0 bg-white dark:bg-gray-900 border-t border-gray-200 dark:border-gray-700 z-30 safe-area-bottom transition-all duration-200"
+    aria-label="Global navigation"
+    class="lg:hidden fixed bottom-0 left-0 right-0 bg-white/90 dark:bg-gray-900/80 border-t border-gray-200/80 dark:border-gray-700/80 z-30 safe-area-bottom transition-all duration-200 backdrop-blur"
     :style="{ paddingBottom: `${totalBottomPadding}px` }"
   >
-    <div class="flex justify-around">
-      <NuxtLink 
-        v-for="item in navItems" 
-        :key="item.path"
-        :to="item.path"
-        class="flex flex-col items-center py-2 px-2 min-w-0 flex-1 text-xs touch-manipulation transition-colors duration-200"
-        :class="[
-          isActive(item.path) 
-            ? 'text-blue-600 dark:text-blue-200' 
-            : 'text-gray-600 dark:text-gray-300 hover:text-gray-800 dark:hover:text-gray-100'
-        ]"
-      >
-        <svg 
-          class="w-6 h-6 mb-1 flex-shrink-0" 
-          fill="none"
-          stroke="currentColor" 
-          viewBox="0 0 24 24"
+    <div class="mx-auto max-w-screen-lg px-2">
+      <div class="grid grid-cols-4">
+        <NuxtLink 
+          v-for="item in navItems" 
+          :key="item.path"
+          :to="item.path"
+          class="group relative flex flex-col items-center justify-center min-w-0 flex-1 touch-manipulation transition-colors duration-200 py-2"
+          :class="[
+            isActive(item.path) 
+              ? 'text-blue-700 dark:text-blue-200' 
+              : 'text-gray-600 dark:text-gray-300 hover:text-gray-900 dark:hover:text-gray-100'
+          ]"
+          :aria-current="isActive(item.path) ? 'page' : undefined"
+          :data-testid="`bottom-nav-item-${item.label}`"
         >
-          <path 
-            stroke-linecap="round" 
-            stroke-linejoin="round" 
-            stroke-width="2" 
-            :d="item.icon"
-          />
-        </svg>
-        <span class="truncate w-full text-center font-medium">{{ $t(item.label) }}</span>
-      </NuxtLink>
+          <span
+            class="relative flex items-center justify-center w-10 h-10 rounded-xl transition-colors duration-200"
+            :class="isActive(item.path)
+              ? 'bg-blue-50 dark:bg-slate-800'
+              : 'bg-transparent group-active:bg-gray-100 dark:group-active:bg-slate-800/60'"
+          >
+            <svg 
+              class="w-6 h-6 flex-shrink-0" 
+              fill="none"
+              stroke="currentColor" 
+              viewBox="0 0 24 24"
+            >
+              <path 
+                stroke-linecap="round" 
+                stroke-linejoin="round" 
+                stroke-width="2" 
+                :d="item.icon"
+              />
+            </svg>
+          </span>
+
+          <span class="mt-0.5 truncate w-full text-center text-[11px] leading-tight font-medium">
+            {{ $t(item.label) }}
+          </span>
+
+          <span
+            v-if="isActive(item.path)"
+            class="absolute -top-px left-1/2 -translate-x-1/2 h-1 w-8 rounded-b bg-blue-600 dark:bg-blue-300"
+            aria-hidden="true"
+          ></span>
+        </NuxtLink>
+      </div>
     </div>
   </nav>
 </template>
@@ -96,24 +117,16 @@ const navItems = computed(() => [
 
 // Check if current route is active
 const isActive = (path: string) => {
-  // For exact path match
-  if (route.path === path) {
-    return true
+  const normalize = (p: string) => {
+    let s = p
+    // strip locale prefix: /en, /en/, /ja, /ja/ ...
+    s = s.replace(/^\/[a-z]{2}(?=\/|$)/, '')
+    if (s === '') s = '/'
+    // normalize trailing slash
+    if (s.length > 1) s = s.replace(/\/$/, '')
+    return s
   }
-  
-  // For root path (/), only match exactly, not as a suffix
-  if (path === '/' || path.endsWith('/')) {
-    const pathWithoutLocale = path.replace(/^\/[a-z]{2}/, '')
-    return route.path === pathWithoutLocale
-  }
-  
-  // For other paths, check if the current path ends with the path segment
-  // but only if it's a meaningful segment (not empty)
-  const pathSegment = path.split('/').pop()
-  if (pathSegment && pathSegment !== '') {
-    return route.path.endsWith(`/${pathSegment}`) || route.path.endsWith(`${pathSegment}`)
-  }
-  
-  return false
+
+  return normalize(route.path) === normalize(path)
 }
 </script>
