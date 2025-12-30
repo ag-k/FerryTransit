@@ -11,7 +11,7 @@
       >
         {{ $t('_FROM') }}
       </div>
-      <div class="flex-1 min-w-0">
+      <div class="flex-1 min-w-0 relative">
         <PortSelector
           v-model="departureProxy"
           class="route-endpoints__selector"
@@ -23,6 +23,23 @@
           :dogo-ports="dogoPorts"
           margin="none"
         />
+        <button
+          v-if="departureProxy && !disabled"
+          type="button"
+          class="absolute right-2 top-1/2 -translate-y-1/2 p-2 rounded-md text-gray-400 hover:text-gray-700 hover:bg-gray-100 dark:hover:bg-gray-700 dark:text-gray-300 dark:hover:text-white transition-colors touch-manipulation"
+          :aria-label="$t('CLEAR')"
+          :title="$t('CLEAR')"
+          data-testid="route-endpoints-clear-departure"
+          @click.stop.prevent="clearDeparture"
+        >
+          <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" viewBox="0 0 16 16" aria-hidden="true">
+            <path
+              fill-rule="evenodd"
+              d="M3.72 3.72a.75.75 0 0 1 1.06 0L8 6.94l3.22-3.22a.75.75 0 1 1 1.06 1.06L9.06 8l3.22 3.22a.75.75 0 1 1-1.06 1.06L8 9.06l-3.22 3.22a.75.75 0 1 1-1.06-1.06L6.94 8 3.72 4.78a.75.75 0 0 1 0-1.06Z"
+              clip-rule="evenodd"
+            />
+          </svg>
+        </button>
       </div>
     </div>
 
@@ -67,7 +84,7 @@
       >
         {{ $t('_TO') }}
       </div>
-      <div class="flex-1 min-w-0">
+      <div class="flex-1 min-w-0 relative">
         <PortSelector
           v-model="arrivalProxy"
           class="route-endpoints__selector"
@@ -79,6 +96,23 @@
           :dogo-ports="dogoPorts"
           margin="none"
         />
+        <button
+          v-if="arrivalProxy && !disabled"
+          type="button"
+          class="absolute right-2 top-1/2 -translate-y-1/2 p-2 rounded-md text-gray-400 hover:text-gray-700 hover:bg-gray-100 dark:hover:bg-gray-700 dark:text-gray-300 dark:hover:text-white transition-colors touch-manipulation"
+          :aria-label="$t('CLEAR')"
+          :title="$t('CLEAR')"
+          data-testid="route-endpoints-clear-arrival"
+          @click.stop.prevent="clearArrival"
+        >
+          <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" viewBox="0 0 16 16" aria-hidden="true">
+            <path
+              fill-rule="evenodd"
+              d="M3.72 3.72a.75.75 0 0 1 1.06 0L8 6.94l3.22-3.22a.75.75 0 1 1 1.06 1.06L9.06 8l3.22 3.22a.75.75 0 1 1-1.06 1.06L8 9.06l-3.22 3.22a.75.75 0 1 1-1.06-1.06L6.94 8 3.72 4.78a.75.75 0 0 1 0-1.06Z"
+              clip-rule="evenodd"
+            />
+          </svg>
+        </button>
       </div>
     </div>
   </div>
@@ -124,6 +158,14 @@ const disabledArrivalPorts = computed(() => (props.departure ? [props.departure]
 
 const disabled = computed(() => Boolean(props.disabled))
 const showVia = computed(() => Boolean(props.showVia))
+
+const clearDeparture = () => {
+  departureProxy.value = ''
+}
+
+const clearArrival = () => {
+  arrivalProxy.value = ''
+}
 </script>
 
 <style scoped>
@@ -131,7 +173,8 @@ const showVia = computed(() => Boolean(props.showVia))
   border: 0 !important;
   border-radius: 0 !important;
   background: transparent !important;
-  padding: 0.75rem 0.75rem !important;
+  /* 右側にクリア(✗)ボタン領域を確保 */
+  padding: 0.75rem 2.75rem 0.75rem 0.75rem !important;
   min-height: 44px;
 }
 
