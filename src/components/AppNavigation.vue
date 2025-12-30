@@ -19,11 +19,11 @@
     </transition>
 
     <div
-      class="container mx-auto pl-[max(env(safe-area-inset-left),1rem)] pr-[max(env(safe-area-inset-right),1rem)]">
+      class="container mx-auto pl-[max(env(safe-area-inset-left),1rem)] pr-[env(safe-area-inset-right)] lg:pr-[max(env(safe-area-inset-right),1rem)]">
       <div class="flex items-center justify-between h-[44px] lg:h-auto lg:py-4">
         <div class="flex items-center">
           <NuxtLink
-            class="text-base sm:text-xl font-medium hover:opacity-80 transition-opacity pt-0 pb-2 lg:py-2 flex-1 lg:flex-none"
+            class="text-base sm:text-xl font-medium hover:opacity-80 transition-opacity flex items-center h-full py-0 flex-1 lg:flex-none lg:py-2"
             :to="localePath('/')">
             <span class="hidden lg:inline font-bold">{{ $t('TITLE') }}</span>
             <span class="lg:hidden flex items-center">
