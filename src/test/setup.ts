@@ -44,6 +44,7 @@ declare global {
   var useNews: typeof vi.fn
   var useFareDisplay: typeof vi.fn
   var useFareStore: typeof vi.fn
+  var useAndroidNavigation: typeof vi.fn
 }
 
 // グローバル関数の定義
@@ -153,6 +154,11 @@ global.useFareStore = vi.fn(() => ({
   loadFareMaster: vi.fn(() => Promise.resolve()),
   getFareByRoute: vi.fn(),
   getRoutesByVesselType: vi.fn(() => [])
+}))
+
+global.useAndroidNavigation = vi.fn(() => ({
+  isAndroid: ref(false),
+  navigationBarHeight: ref(0)
 }))
 
 // localStorageのモック
