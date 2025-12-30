@@ -103,27 +103,60 @@
           </ul>
 
           <!-- Language switcher -->
-          <div class="lg:ml-6 mt-3 lg:mt-0 relative">
-            <button
-              class="flex items-center px-4 py-3 lg:py-2 rounded-lg transition-colors w-full lg:w-auto justify-between text-base lg:text-sm touch-manipulation lg:hover:bg-blue-700 lg:dark:hover:bg-gray-700 hover:bg-gray-100 dark:hover:bg-slate-800"
-              type="button" :aria-expanded="langMenuOpen" @click="toggleLangMenu">
-              <span>{{ currentLocaleName }}</span>
-              <svg class="w-5 h-5 ml-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path>
-              </svg>
-            </button>
-            <ul v-if="langMenuOpen"
-              class="absolute left-0 right-0 lg:left-auto lg:right-0 mt-2 bg-white dark:bg-slate-700 text-gray-800 dark:text-gray-200 rounded shadow-lg lg:min-w-[150px] z-50 border border-gray-200 dark:border-gray-600">
-              <li v-for="locale in availableLocales" :key="locale.code">
-                <!-- Language switcher button -->
+          <div class="lg:ml-6 mt-3 lg:mt-0">
+            <!-- Mobile: segmented selector -->
+            <div v-if="isMobile" class="px-4">
+              <div
+                class="w-full inline-flex rounded-lg bg-gray-100 dark:bg-slate-800 p-1"
+                role="group"
+                aria-label="Language"
+                data-testid="app-nav-language-segment"
+              >
                 <button
-                  class="block w-full text-left px-4 py-3 bg-white dark:bg-gray-800 hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors text-base touch-manipulation dark:text-white"
-                  :class="{ 'bg-gray-100 dark:bg-gray-900 dark:text-white font-medium': locale.code === $i18n.locale }"
-                  @click="switchLocale(locale.code)">
-                  {{ locale.name }}
+                  v-for="lng in locales"
+                  :key="lng.code"
+                  type="button"
+                  class="flex-1 px-3 py-2 rounded-md text-sm font-medium transition-colors touch-manipulation"
+                  :class="lng.code === locale
+                    ? 'bg-white text-blue-700 shadow dark:bg-slate-900 dark:text-blue-200'
+                    : 'text-gray-700 hover:bg-white/60 dark:text-gray-200 dark:hover:bg-slate-900/60'"
+                  :aria-pressed="lng.code === locale"
+                  :data-testid="`app-nav-lang-${lng.code}`"
+                  @click="switchLocale(lng.code)"
+                >
+                  {{ lng.name }}
                 </button>
-              </li>
-            </ul>
+              </div>
+            </div>
+
+            <!-- Desktop: dropdown (existing behavior) -->
+            <div v-else class="relative">
+              <button
+                class="flex items-center px-4 py-3 lg:py-2 rounded-lg transition-colors w-full lg:w-auto justify-between text-base lg:text-sm touch-manipulation lg:hover:bg-blue-700 lg:dark:hover:bg-gray-700 hover:bg-gray-100 dark:hover:bg-slate-800"
+                type="button"
+                :aria-expanded="langMenuOpen"
+                @click="toggleLangMenu"
+              >
+                <span>{{ currentLocaleName }}</span>
+                <svg class="w-5 h-5 ml-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path>
+                </svg>
+              </button>
+              <ul
+                v-if="langMenuOpen"
+                class="absolute left-0 right-0 lg:left-auto lg:right-0 mt-2 bg-white dark:bg-slate-700 text-gray-800 dark:text-gray-200 rounded shadow-lg lg:min-w-[150px] z-50 border border-gray-200 dark:border-gray-600"
+              >
+                <li v-for="loc in availableLocales" :key="loc.code">
+                  <button
+                    class="block w-full text-left px-4 py-3 bg-white dark:bg-gray-800 hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors text-base touch-manipulation dark:text-white"
+                    :class="{ 'bg-gray-100 dark:bg-gray-900 dark:text-white font-medium': loc.code === $i18n.locale }"
+                    @click="switchLocale(loc.code)"
+                  >
+                    {{ loc.name }}
+                  </button>
+                </li>
+              </ul>
+            </div>
           </div>
           </div>
         </transition>
