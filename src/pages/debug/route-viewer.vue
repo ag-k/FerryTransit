@@ -68,6 +68,8 @@ const initMap = async () => {
       center: { lat: 36.0, lng: 133.2 },
       zoom: 7,
       mapTypeId: 'terrain',
+      // 「地図 / 航空写真」切り替え（MapTypeControl）を非表示
+      mapTypeControl: false,
     })
     mapReady.value = true
     if (routeData.value) drawRoute()
