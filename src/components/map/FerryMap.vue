@@ -267,6 +267,8 @@ const initializeMap = async () => {
       gestureHandling: 'greedy',
       fullscreenControl: true,
       zoomControl: true,
+      // 「地図 / 航空写真」切り替え（MapTypeControl）を非表示
+      mapTypeControl: false,
       streetViewControl: false
     })
 
