@@ -1,5 +1,5 @@
 <template>
-  <div class="container mx-auto px-4 py-8 max-w-[1000px]">
+  <div class="container mx-auto px-4 py-4 max-w-[1000px]">
     <h2 class="hidden lg:block text-2xl font-semibold mb-6 dark:text-white">{{ $t('TIMETABLE') }}</h2>
 
     <!-- Current status alerts -->
@@ -49,40 +49,23 @@
     <ClientOnly>
       <div class="mb-4">
         <div class="w-full md:w-1/3">
-          <!-- Mobile: Label on the left -->
-          <div class="md:hidden">
-            <div class="flex items-center">
-              <label class="text-sm font-medium text-gray-700 dark:text-gray-200 mr-3 w-16">{{ $t('DATE') }}</label>
-              <input type="date"
-                class="flex-1 px-3 py-2 text-sm border border-gray-300 dark:border-gray-600 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-800 dark:text-white"
-                :value="selectedDateString" :min="todayString" @change="handleDateChange">
-            </div>
-          </div>
-          <!-- Desktop: Label on top -->
-          <div class="hidden md:block">
-            <label class="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-2">{{ $t('DATE') }}</label>
-            <input type="date"
-              class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-800 dark:text-white"
-              :value="selectedDateString" :min="todayString" @change="handleDateChange">
-          </div>
+          <!-- 乗換案内（/transit）と同じ DatePicker 表示に統一（時刻なし） -->
+          <DatePicker :model-value="selectedDate" :min-date="today" margin="none" size="compact"
+            @update:model-value="handleDateChange" />
         </div>
       </div>
       <template #fallback>
         <div class="mb-4">
           <div class="w-full md:w-1/3">
-            <div class="md:hidden">
-              <div class="flex items-center">
-                <label class="text-sm font-bold mr-2 min-w-[60px] dark:text-white">{{ $t('DATE') }}</label>
-                <input type="date"
-                  class="flex-1 px-2 py-1 text-sm border border-gray-300 dark:border-gray-600 rounded-md bg-gray-100 dark:bg-slate-700 dark:text-gray-200"
-                  disabled>
-              </div>
-            </div>
-            <div class="hidden md:block">
-              <label class="block text-sm font-bold mb-1 dark:text-white">{{ $t('DATE') }}</label>
+            <div class="flex">
               <input type="date"
-                class="w-full px-2 py-1 text-sm border border-gray-300 dark:border-gray-600 rounded-md bg-gray-100 dark:bg-slate-700 dark:text-gray-200"
+                class="flex-1 px-3 py-2 text-base border border-gray-300 dark:border-gray-600 rounded-l-md bg-gray-100 dark:bg-slate-700 dark:text-gray-200"
                 disabled>
+              <button type="button"
+                class="px-4 py-2 text-base border border-l-0 border-gray-300 dark:border-gray-600 rounded-r-md bg-gray-100 dark:bg-slate-700 dark:text-gray-200"
+                disabled>
+                {{ $t('TODAY') }}
+              </button>
             </div>
           </div>
         </div>
@@ -124,18 +107,12 @@
       <div class="bg-blue-600 dark:bg-blue-700 text-white px-4 py-3 rounded-t-lg flex items-center justify-between">
         <div class="flex flex-col min-w-0">
           <div class="flex items-baseline justify-between gap-3 min-w-0">
-            <h3
-              data-test="timetable-date-title"
-              class="text-lg font-medium leading-tight truncate tabular-nums"
-            >
+            <h3 data-test="timetable-date-title" class="text-lg font-medium leading-tight truncate tabular-nums">
               {{ headerDateLabel }}
             </h3>
           </div>
-          <p
-            data-test="timetable-summary"
-            class="text-xs text-blue-100/90 leading-tight mt-0.5 truncate"
-            :title="`${$t('DATE')}: ${selectedDateString} / ${$t('_FROM')}: ${departure ? $t(departure) : '-'} / ${$t('_TO')}: ${arrival ? $t(arrival) : '-'}`"
-          >
+          <p data-test="timetable-summary" class="text-xs text-blue-100/90 leading-tight mt-0.5 truncate"
+            :title="`${$t('DATE')}: ${selectedDateString} / ${$t('_FROM')}: ${departure ? $t(departure) : '-'} / ${$t('_TO')}: ${arrival ? $t(arrival) : '-'}`">
             <span>{{ departure ? $t(departure) : '-' }}</span>
             <span class="mx-1">→</span>
             <span>{{ arrival ? $t(arrival) : '-' }}</span>
@@ -200,15 +177,9 @@
                   :class="{ 'line-through opacity-60': tripStatus(trip) === 2 }">
                   <td class="px-3 sm:px-4 py-4 sm:py-3">
                     <div class="flex items-center gap-1 min-h-[20px]">
-                      <button
-                        v-if="tripStatus(trip) === 2"
-                        type="button"
-                        data-test="cancel-status-icon"
-                        class="inline-flex items-center text-red-600 dark:text-red-300"
-                        :title="$t('OPERATION_STATUS')"
-                        aria-label="運航状況を見る"
-                        @click.stop="navigateToStatus"
-                      >
+                      <button v-if="tripStatus(trip) === 2" type="button" data-test="cancel-status-icon"
+                        class="inline-flex items-center text-red-600 dark:text-red-300" :title="$t('OPERATION_STATUS')"
+                        aria-label="運航状況を見る" @click.stop="navigateToStatus">
                         <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" fill="currentColor"
                           viewBox="0 0 16 16">
                           <path
@@ -267,18 +238,17 @@
       </ClientOnly>
 
       <!-- 時刻表最終更新日 -->
-      <div v-if="ferryStore?.timetableLastUpdate"
+      <div v-if="ferryStore.lastFetchTime"
         class="px-4 py-3 bg-gray-50 dark:bg-gray-700/50 border-t border-gray-200 dark:border-gray-600 rounded-b-lg">
         <p class="text-xs text-gray-500 dark:text-gray-400 text-center">
-          {{ $t('TIMETABLE_LAST_UPDATE') }}: {{ formatDateTime(ferryStore.timetableLastUpdate) }}
+          {{ $t('TIMETABLE_LAST_UPDATE') }}: {{ formatDateTime(ferryStore.lastFetchTime) }}
         </p>
       </div>
 
       <!-- 乗換を含むルートを検索ボタン -->
-      <div v-if="showTransferSearchButton" class="px-4 py-3 bg-gray-50 dark:bg-gray-700/50 border-t border-gray-200 dark:border-gray-600">
-        <button
-          type="button"
-          data-test="transfer-search-button"
+      <div v-if="showTransferSearchButton"
+        class="px-4 py-3 bg-gray-50 dark:bg-gray-700/50 border-t border-gray-200 dark:border-gray-600">
+        <button type="button" data-test="transfer-search-button"
           class="w-full py-2.5 px-4 bg-blue-600 hover:bg-blue-700 dark:bg-blue-500 dark:hover:bg-blue-600 text-white font-medium rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 dark:focus:ring-offset-gray-800 transform active:scale-[0.98] transition-all duration-150 shadow-sm hover:shadow-md flex items-center justify-center gap-2"
           @click="navigateToTransit">
           <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -299,8 +269,8 @@
 </template>
 
 <script setup lang="ts">
-import { nextTick, unref } from 'vue'
-import { useI18n } from '#imports'
+import { nextTick, onMounted, ref, computed, watch, unref } from 'vue'
+import { useHead, useI18n, useRoute, useRouter } from '#imports'
 import { useFerryStore } from '@/stores/ferry'
 import { useHistoryStore } from '@/stores/history'
 import { useSettingsStore } from '@/stores/settings'
@@ -308,12 +278,13 @@ import { useFerryData } from '@/composables/useFerryData'
 import FavoriteButton from '@/components/favorites/FavoriteButton.vue'
 import FerryMap from '@/components/map/FerryMap.vue'
 import StatusAlerts from '@/components/common/StatusAlerts.vue'
-import { formatDateYmdJst, getJstDateParts, parseYmdAsJstMidnight } from '@/utils/jstDate'
+import DatePicker from '@/components/common/DatePicker.vue'
+import { formatDateYmdJst, getJstDateParts, getTodayJstMidnight } from '@/utils/jstDate'
 
 // Store and composables
-const ferryStore = process.client ? useFerryStore() : null
-const historyStore = process.client ? useHistoryStore() : null
-const settingsStore = process.client ? useSettingsStore() : null
+const ferryStore = useFerryStore()
+const historyStore = useHistoryStore()
+const settingsStore = useSettingsStore()
 const {
   filteredTimetable,
   getTripStatus,
@@ -339,13 +310,15 @@ const modalContent = ref('')
 const selectedMapPort = ref<string>('')
 const selectedMapRoute = ref<{ from: string; to: string } | undefined>()
 
+const today = getTodayJstMidnight()
+
 // Computed properties
 const selectedDateString = computed(() => {
   // JST基準で日付を取得（海外端末でも常にJST表示）
   return formatDateYmdJst(selectedDate.value)
 })
 
-const { locale } = useI18n()
+const { locale, t } = useI18n()
 const headerDateLabel = computed(() => {
   const { year, month, day } = getJstDateParts(selectedDate.value)
   // JSTの暦日を UTC の Date として組み立てて曜日を安定取得
@@ -365,9 +338,15 @@ const todayString = computed(() => {
 const sortedTimetable = computed(() => {
   return [...filteredTimetable.value].sort((a, b) => {
     // 時刻を "H:mm" から "HH:mm" 形式に正規化
-    const normalizeTime = (time: string): string => {
-      const [hours, minutes] = time.split(':')
-      return `${hours.padStart(2, '0')}:${minutes}`
+    const normalizeTime = (time: string | Date): string => {
+      if (time instanceof Date) {
+        const hh = String(time.getHours()).padStart(2, '0')
+        const mm = String(time.getMinutes()).padStart(2, '0')
+        return `${hh}:${mm}`
+      }
+      const raw = String(time ?? '')
+      const [hours = '0', minutes = '0'] = raw.split(':')
+      return `${String(hours).padStart(2, '0')}:${String(minutes).padStart(2, '0')}`
     }
 
     const timeA = new Date(`2000-01-01T${normalizeTime(a.departureTime)}`).getTime()
@@ -391,15 +370,11 @@ const showTransferSearchButton = computed(() => {
 })
 
 // Methods
-const handleDateChange = (event: Event) => {
-  const target = event.target as HTMLInputElement
-  const newDate = parseYmdAsJstMidnight(target.value)
-  if (ferryStore) {
-    ferryStore.setSelectedDate(newDate)
-  }
+const handleDateChange = (newDate: Date) => {
+  ferryStore.setSelectedDate(newDate)
 
   // Add to search history if route is selected
-  if (departure.value && arrival.value && historyStore) {
+  if (departure.value && arrival.value) {
     historyStore.addSearchHistory({
       type: 'timetable',
       departure: departure.value,
@@ -410,12 +385,10 @@ const handleDateChange = (event: Event) => {
 }
 
 const handleDepartureChange = (value: string) => {
-  if (ferryStore) {
-    ferryStore.setDeparture(value)
-  }
+  ferryStore.setDeparture(value)
 
   // Add to search history if both ports are selected
-  if (value && arrival.value && historyStore) {
+  if (value && arrival.value) {
     historyStore.addSearchHistory({
       type: 'timetable',
       departure: value,
@@ -426,12 +399,10 @@ const handleDepartureChange = (value: string) => {
 }
 
 const handleArrivalChange = (value: string) => {
-  if (ferryStore) {
-    ferryStore.setArrival(value)
-  }
+  ferryStore.setArrival(value)
 
   // Add to search history if both ports are selected
-  if (departure.value && value && historyStore) {
+  if (departure.value && value) {
     historyStore.addSearchHistory({
       type: 'timetable',
       departure: departure.value,
@@ -442,14 +413,12 @@ const handleArrivalChange = (value: string) => {
 }
 
 const reverseRoute = () => {
-  if (ferryStore) {
-    const temp = departure.value
-    ferryStore.setDeparture(arrival.value)
-    ferryStore.setArrival(temp)
-  }
+  const temp = departure.value
+  ferryStore.setDeparture(arrival.value)
+  ferryStore.setArrival(temp)
 
   // Add to search history after reversing
-  if (departure.value && arrival.value && historyStore) {
+  if (departure.value && arrival.value) {
     historyStore.addSearchHistory({
       type: 'timetable',
       departure: arrival.value,
@@ -459,12 +428,20 @@ const reverseRoute = () => {
   }
 }
 
-const formatTime = (time: string) => {
-  return time.substring(0, 5)
+const formatTime = (time: string | Date) => {
+  if (time instanceof Date) {
+    const hh = String(time.getHours()).padStart(2, '0')
+    const mm = String(time.getMinutes()).padStart(2, '0')
+    return `${hh}:${mm}`
+  }
+  return String(time ?? '').substring(0, 5)
 }
 
-const formatDateTime = (date: Date) => {
-  return date.toLocaleString('ja-JP', {
+const formatDateTime = (date: Date | string | null | undefined) => {
+  if (!date) return '-'
+  const dateObj = date instanceof Date ? date : new Date(date)
+  if (Number.isNaN(dateObj.getTime())) return '-'
+  return dateObj.toLocaleString('ja-JP', {
     year: 'numeric',
     month: '2-digit',
     day: '2-digit',
@@ -505,7 +482,7 @@ const tripStatus = (trip: any) => {
 }
 
 const showShipInfo = (shipName: string) => {
-  modalTitle.value = useNuxtApp().$i18n.t(shipName)
+  modalTitle.value = t(shipName)
   modalType.value = 'ship'
   modalShipId.value = shipName
   modalPortId.value = ''
@@ -514,16 +491,16 @@ const showShipInfo = (shipName: string) => {
 }
 
 const showPortInfo = (portName: string) => {
-  modalTitle.value = useNuxtApp().$i18n.t(portName)
+  modalTitle.value = t(portName)
   modalType.value = 'port'
   modalShipId.value = ''
   modalPortId.value = portName
   // 港ごとに固定のズーム値を親で決定して渡す
   modalPortZoom.value =
     portName === 'BEPPU' ? 17
-    : portName === 'HISHIURA' ? 18
-    : portName === 'KURI' ? 18
-    : 15
+      : portName === 'HISHIURA' ? 18
+        : portName === 'KURI' ? 18
+          : 15
   // 旧 iframe は廃止。互換用に content は空にしておく
   modalContent.value = ''
   modalVisible.value = true
@@ -546,7 +523,8 @@ const handleMapRouteSelect = (route: { from: string; to: string }) => {
 
 // 地図表示の切り替え
 const toggleMapDisplay = () => {
-  settingsStore.setMapEnabled(!settingsStore.mapEnabled)
+  // NOTE: テスト用の global 宣言や Pinia plugin の型拡張の影響で actions が型上見えない場合があるため any 経由で呼ぶ
+  ; (settingsStore as any).setMapEnabled(!settingsStore.mapEnabled)
 }
 
 // 乗換案内画面に遷移
@@ -561,7 +539,7 @@ const navigateToTransit = () => {
   const month = String(selectedDate.value.getMonth() + 1).padStart(2, '0')
   const day = String(selectedDate.value.getDate()).padStart(2, '0')
   const dateStr = `${year}-${month}-${day}`
-  
+
   router.push({
     path: '/transit',
     query: {
@@ -633,6 +611,6 @@ onMounted(async () => {
 
 // Page metadata
 useHead({
-  title: `${useNuxtApp().$i18n.t('TIMETABLE')} - ${useNuxtApp().$i18n.t('TITLE')}`
+  title: `${t('TIMETABLE')} - ${t('TITLE')}`
 })
 </script>
