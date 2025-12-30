@@ -3,8 +3,20 @@
     class="bg-blue-600 dark:bg-gray-900 text-white relative border-b border-transparent dark:border-gray-700 safe-area-top"
     :style="{ paddingTop: `${totalTopPadding}px` }">
     <!-- Mobile menu overlay -->
-    <div v-if="menuOpen" class="fixed inset-0 bg-black bg-opacity-50 dark:bg-opacity-70 z-40 lg:hidden"
-      @click="closeMenu"></div>
+    <transition
+      enter-active-class="transition duration-200 ease-out"
+      enter-from-class="opacity-0"
+      enter-to-class="opacity-100"
+      leave-active-class="transition duration-150 ease-in"
+      leave-from-class="opacity-100"
+      leave-to-class="opacity-0"
+    >
+      <div
+        v-if="isMobile && menuOpen"
+        class="fixed inset-0 bg-black/50 dark:bg-black/70 z-40 lg:hidden backdrop-blur-[2px]"
+        @click="closeMenu"
+      ></div>
+    </transition>
 
     <div
       class="container mx-auto pl-[max(env(safe-area-inset-left),1rem)] pr-[max(env(safe-area-inset-right),1rem)]">
@@ -23,7 +35,10 @@
 
         <button
           class="lg:hidden relative min-w-[44px] min-h-[44px] p-2 rounded hover:bg-blue-700 dark:hover:bg-slate-800 transition-colors z-50 touch-manipulation flex items-center justify-center ml-auto"
-          type="button" aria-controls="navbarNav" :aria-expanded="menuOpen" aria-label="Toggle navigation"
+          type="button"
+          aria-controls="navbarNav"
+          :aria-expanded="menuOpen"
+          aria-label="メニューを開閉"
           style="user-select: none; -webkit-user-select: none; -webkit-touch-callout: none;" @click.stop="toggleMenu"
           @touchstart.passive="() => { }">
           <svg v-if="!menuOpen" class="w-6 h-6 pointer-events-none" fill="none" stroke="currentColor"
@@ -35,88 +50,62 @@
           </svg>
         </button>
 
-        <div
-          class="fixed lg:static inset-x-0 top-[68px] sm:top-[73px] lg:top-auto bg-blue-600 dark:bg-gray-900 lg:bg-transparent lg:dark:bg-transparent w-full lg:w-auto lg:flex lg:items-center pl-[max(env(safe-area-inset-left),1rem)] pr-[max(env(safe-area-inset-right),1rem)] lg:px-0 pb-4 lg:pb-0 shadow-lg lg:shadow-none z-40 lg:z-auto"
-          :class="{ 'hidden': !menuOpen }" id="navbarNav">
-          <ul class="lg:flex lg:items-center lg:space-x-1 space-y-2 lg:space-y-0">
-            <li>
+        <transition
+          enter-active-class="transition duration-200 ease-out"
+          enter-from-class="opacity-0 -translate-y-2"
+          enter-to-class="opacity-100 translate-y-0"
+          leave-active-class="transition duration-150 ease-in"
+          leave-from-class="opacity-100 translate-y-0"
+          leave-to-class="opacity-0 -translate-y-2"
+        >
+          <div
+            v-show="!isMobile || menuOpen"
+            id="navbarNav"
+            class="fixed lg:static inset-x-0 lg:inset-auto bg-white dark:bg-slate-900 text-gray-900 dark:text-gray-100 lg:bg-transparent lg:dark:bg-transparent lg:text-white w-full lg:w-auto lg:flex lg:items-center pl-[max(env(safe-area-inset-left),1rem)] pr-[max(env(safe-area-inset-right),1rem)] lg:px-0 pb-4 lg:pb-0 shadow-xl lg:shadow-none z-40 lg:z-auto border-b border-gray-200/80 dark:border-gray-800/80 lg:border-none overflow-y-auto overscroll-contain"
+            :style="{
+              top: `${mobileMenuTop}px`,
+              maxHeight: mobileMenuMaxHeight
+            }"
+            data-testid="app-navigation-mobile-panel"
+          >
+            <ul class="lg:flex lg:items-center lg:space-x-1 space-y-1 lg:space-y-0 pt-2 lg:pt-0">
+            <li v-for="item in menuItems" :key="item.matchPath">
               <NuxtLink
-                class="block px-4 py-4 lg:py-2 rounded hover:bg-blue-700 dark:hover:bg-gray-700 transition-colors text-base lg:text-sm touch-manipulation"
-                :class="{ 'bg-blue-700 dark:bg-gray-700 font-medium': $route.path === '/' }" :to="localePath('/')"
-                @click="closeMenu">
-                {{ $t('TIMETABLE') }}
-              </NuxtLink>
-            </li>
-            <li>
-              <NuxtLink
-                class="block px-4 py-4 lg:py-2 rounded hover:bg-blue-700 dark:hover:bg-gray-700 transition-colors text-base lg:text-sm touch-manipulation"
-                :class="{ 'bg-blue-700 dark:bg-gray-700 font-medium': $route.path === '/transit' }"
-                :to="localePath('/transit')" @click="closeMenu">
-                {{ $t('TRANSIT') }}
-              </NuxtLink>
-            </li>
-            <li>
-              <NuxtLink
-                class="block px-4 py-4 lg:py-2 rounded hover:bg-blue-700 dark:hover:bg-gray-700 transition-colors text-base lg:text-sm touch-manipulation"
-                :class="{ 'bg-blue-700 dark:bg-gray-700 font-medium': $route.path === '/status' }"
-                :to="localePath('/status')" @click="closeMenu">
-                {{ $t('STATUS') }}
-              </NuxtLink>
-            </li>
-            <li>
-              <NuxtLink
-                class="block px-4 py-4 lg:py-2 rounded hover:bg-blue-700 dark:hover:bg-gray-700 transition-colors text-base lg:text-sm touch-manipulation"
-                :class="{ 'bg-blue-700 dark:bg-gray-700 font-medium': $route.path === '/fare' }"
-                :to="localePath('/fare')" @click="closeMenu">
-                {{ $t('FARE_TABLE') }}
-              </NuxtLink>
-            </li>
-            <li v-if="isCalendarEnabled">
-              <NuxtLink
-                class="block px-4 py-4 lg:py-2 rounded hover:bg-blue-700 dark:hover:bg-gray-700 transition-colors text-base lg:text-sm touch-manipulation"
-                :class="{ 'bg-blue-700 dark:bg-gray-700 font-medium': $route.path === '/calendar' }"
-                :to="localePath('/calendar')" @click="closeMenu">
-                {{ $t('CALENDAR') }}
-              </NuxtLink>
-            </li>
-            <li>
-              <NuxtLink
-                class="block px-4 py-4 lg:py-2 rounded hover:bg-blue-700 dark:hover:bg-gray-700 transition-colors text-base lg:text-sm touch-manipulation"
-                :class="{ 'bg-blue-700 dark:bg-gray-700 font-medium': $route.path === '/favorites' }"
-                :to="localePath('/favorites')" @click="closeMenu">
-                {{ $t('favorites.title') }}
-              </NuxtLink>
-            </li>
-            <li>
-              <NuxtLink
-                class="block px-4 py-4 lg:py-2 rounded hover:bg-blue-700 dark:hover:bg-gray-700 transition-colors text-base lg:text-sm touch-manipulation"
-                :class="{ 'bg-blue-700 dark:bg-gray-700 font-medium': $route.path === '/history' }"
-                :to="localePath('/history')" @click="closeMenu">
-                {{ $t('history.title') }}
-              </NuxtLink>
-            </li>
-            <li>
-              <NuxtLink
-                class="block px-4 py-4 lg:py-2 rounded hover:bg-blue-700 dark:hover:bg-gray-700 transition-colors text-base lg:text-sm touch-manipulation"
-                :class="{ 'bg-blue-700 dark:bg-gray-700 font-medium': $route.path === '/about' }"
-                :to="localePath('/about')" @click="closeMenu">
-                {{ $t('ABOUT_APP') }}
-              </NuxtLink>
-            </li>
-            <li>
-              <NuxtLink
-                class="block px-4 py-4 lg:py-2 rounded hover:bg-blue-700 dark:hover:bg-gray-700 transition-colors text-base lg:text-sm touch-manipulation"
-                :class="{ 'bg-blue-700 dark:bg-gray-700 font-medium': $route.path === '/settings' }"
-                :to="localePath('/settings')" @click="closeMenu">
-                {{ $t('SETTINGS') }}
+                class="block px-4 py-3 lg:py-2 rounded-lg transition-colors text-base lg:text-sm touch-manipulation"
+                :class="isRouteActive(item.matchPath)
+                  ? 'bg-blue-50 text-blue-800 dark:bg-slate-800 dark:text-blue-200 font-medium lg:bg-blue-700 lg:text-white lg:dark:bg-gray-700'
+                  : 'hover:bg-gray-100 dark:hover:bg-slate-800 lg:hover:bg-blue-700 lg:dark:hover:bg-gray-700'"
+                :to="item.to"
+                :data-testid="`app-nav-item-${item.label}`"
+                @click="closeMenu"
+              >
+                <span class="flex items-center gap-3">
+                  <svg
+                    v-if="isMobile"
+                    class="w-5 h-5 opacity-90 flex-shrink-0"
+                    fill="none"
+                    stroke="currentColor"
+                    viewBox="0 0 24 24"
+                    aria-hidden="true"
+                    :data-testid="`app-nav-icon-${item.label}`"
+                  >
+                    <path
+                      stroke-linecap="round"
+                      stroke-linejoin="round"
+                      stroke-width="2"
+                      :d="item.icon"
+                    />
+                  </svg>
+                  <span>{{ $t(item.label) }}</span>
+                </span>
               </NuxtLink>
             </li>
           </ul>
 
           <!-- Language switcher -->
-          <div class="lg:ml-6 mt-4 lg:mt-0 relative">
+          <div class="lg:ml-6 mt-3 lg:mt-0 relative">
             <button
-              class="flex items-center px-4 py-4 lg:py-2 rounded hover:bg-blue-700 dark:hover:bg-gray-700 transition-colors w-full lg:w-auto justify-between text-base lg:text-sm touch-manipulation"
+              class="flex items-center px-4 py-3 lg:py-2 rounded-lg transition-colors w-full lg:w-auto justify-between text-base lg:text-sm touch-manipulation lg:hover:bg-blue-700 lg:dark:hover:bg-gray-700 hover:bg-gray-100 dark:hover:bg-slate-800"
               type="button" :aria-expanded="langMenuOpen" @click="toggleLangMenu">
               <span>{{ currentLocaleName }}</span>
               <svg class="w-5 h-5 ml-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -136,7 +125,8 @@
               </li>
             </ul>
           </div>
-        </div>
+          </div>
+        </transition>
       </div>
     </div>
 
@@ -231,14 +221,99 @@ const isMobile = ref(true)
 
 // 総合的な上部パディングを計算
 const totalTopPadding = computed(() => {
-  // モバイル版では0を返す
-  if (isMobile.value) {
-    return 0
-  }
   const safeArea = envSafeAreaTop.value || 0
   const androidStatus = isAndroid.value ? Math.max(statusBarHeight.value, 24) : 0 // Androidは最低24pxを確保
-  return Math.max(safeArea, androidStatus, 8) // 最低8pxを確保
+  // モバイルでは「上に被る」事故を避けるため、最小でも safe-area/status を尊重する
+  if (isMobile.value) {
+    return Math.max(safeArea, androidStatus)
+  }
+  return Math.max(safeArea, androidStatus, 8) // デスクトップでは最低8pxを確保
 })
+
+const mobileHeaderHeight = 44
+const mobileMenuTop = computed(() => mobileHeaderHeight + totalTopPadding.value)
+const mobileMenuMaxHeight = computed(() => `calc(100dvh - ${mobileMenuTop.value}px)`)
+
+const menuItems = computed(() => {
+  const items: Array<{ to: string, matchPath: string, label: string, icon: string }> = [
+    {
+      to: localePath('/'),
+      matchPath: '/',
+      label: 'TIMETABLE',
+      icon: 'M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z'
+    },
+    {
+      to: localePath('/transit'),
+      matchPath: '/transit',
+      label: 'TRANSIT',
+      icon: 'M13 7h8m0 0v8m0-8l-8 8-4-4-6 6'
+    },
+    {
+      to: localePath('/status'),
+      matchPath: '/status',
+      label: 'STATUS',
+      icon: 'M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z'
+    },
+    {
+      to: localePath('/fare'),
+      matchPath: '/fare',
+      label: 'FARE_TABLE',
+      icon: 'M4 6h16M4 10h16M9 14h6M9 18h6'
+    }
+  ]
+
+  if (isCalendarEnabled.value) {
+    items.push({
+      to: localePath('/calendar'),
+      matchPath: '/calendar',
+      label: 'CALENDAR',
+      icon: 'M8 7V3m8 4V3M4 11h16M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z'
+    })
+  }
+
+  items.push(
+    {
+      to: localePath('/favorites'),
+      matchPath: '/favorites',
+      label: 'favorites.title',
+      icon: 'M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z'
+    },
+    {
+      to: localePath('/history'),
+      matchPath: '/history',
+      label: 'history.title',
+      icon: 'M12 8v4l3 3M3 12a9 9 0 101.8-5.4L3 8m0-5v5h5'
+    },
+    {
+      to: localePath('/about'),
+      matchPath: '/about',
+      label: 'ABOUT_APP',
+      icon: 'M13 16h-1v-4h-1m1-4h.01M12 20a8 8 0 110-16 8 8 0 010 16z'
+    },
+    {
+      to: localePath('/settings'),
+      matchPath: '/settings',
+      label: 'SETTINGS',
+      icon: 'M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z M15 12a3 3 0 11-6 0 3 3 0 016 0z'
+    }
+  )
+
+  return items
+})
+
+const normalizePath = (p: string) => {
+  let s = p
+  // strip locale prefix: /en, /en/, /ja, /ja/ ...
+  s = s.replace(/^\/[a-z]{2}(?=\/|$)/, '')
+  if (s === '') s = '/'
+  // normalize trailing slash
+  if (s.length > 1) s = s.replace(/\/$/, '')
+  return s
+}
+
+const isRouteActive = (rawPath: string) => {
+  return normalizePath(route.path) === normalizePath(rawPath)
+}
 
 // 画面サイズを判定する関数
 const updateIsMobile = () => {
@@ -324,13 +399,7 @@ onMounted(() => {
 
 // Current page title for mobile header
 const currentPageTitle = computed(() => {
-  // Remove locale prefix from path (e.g., /en/fare -> /fare)
-  let path = route.path
-  if (path.startsWith('/en/')) {
-    path = path.substring(3)
-  } else if (path === '/en') {
-    path = '/'
-  }
+  const path = normalizePath(route.path)
 
   if (path === '/') return t('TIMETABLE')
   if (path === '/transit') return t('TRANSIT')
@@ -422,6 +491,21 @@ watch(route, () => {
   closeMenu()
 })
 
+const onKeydown = (e: KeyboardEvent) => {
+  if (e.key === 'Escape') {
+    closeMenu()
+  }
+}
+
+watch(menuOpen, (open) => {
+  if (!process.client) return
+  if (open) {
+    window.addEventListener('keydown', onKeydown)
+  } else {
+    window.removeEventListener('keydown', onKeydown)
+  }
+})
+
 // Watch locale changes (news content is already reactive via computed)
 
 // Close menus on click outside
@@ -453,6 +537,7 @@ onUnmounted(() => {
     document.removeEventListener('click', handleClickOutside)
     document.removeEventListener('touchstart', handleClickOutside)
   }
+  window.removeEventListener('keydown', onKeydown)
   window.removeEventListener('resize', updateIsMobile)
   // Ensure body scroll is restored
   document.body.style.overflow = ''
