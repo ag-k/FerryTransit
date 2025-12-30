@@ -5,6 +5,7 @@
       <RouteEndpointsSelector
         :departure="departure"
         :arrival="arrival"
+        :show-via="false"
         :hondo-ports="hondoPorts"
         :dozen-ports="dozenPorts"
         :dogo-ports="dogoPorts"

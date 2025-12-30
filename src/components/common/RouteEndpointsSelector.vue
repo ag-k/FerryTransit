@@ -27,8 +27,12 @@
     </div>
 
     <!-- Middle row: +via + swap -->
-    <div class="flex items-center justify-between border-t border-gray-200 dark:border-gray-700">
+    <div
+      class="flex items-center border-t border-gray-200 dark:border-gray-700"
+      :class="showVia ? 'justify-between' : 'justify-end'"
+    >
       <button
+        v-if="showVia"
         type="button"
         class="px-3 py-2 text-sm font-medium text-blue-600 dark:text-blue-200 hover:underline disabled:opacity-50 disabled:cursor-not-allowed"
         :disabled="disabled"
@@ -86,6 +90,7 @@ import PortSelector from '@/components/common/PortSelector.vue'
 type Props = {
   departure: string
   arrival: string
+  showVia?: boolean
   disabled?: boolean
   hondoPorts?: string[]
   dozenPorts?: string[]
@@ -93,6 +98,7 @@ type Props = {
 }
 
 const props = withDefaults(defineProps<Props>(), {
+  showVia: true,
   disabled: false
 })
 
@@ -117,6 +123,7 @@ const disabledDeparturePorts = computed(() => (props.arrival ? [props.arrival] :
 const disabledArrivalPorts = computed(() => (props.departure ? [props.departure] : []))
 
 const disabled = computed(() => Boolean(props.disabled))
+const showVia = computed(() => Boolean(props.showVia))
 </script>
 
 <style scoped>
