@@ -15,6 +15,7 @@
       data-testid="port-selector-button"
       class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md text-left focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:text-white disabled:bg-gray-100 disabled:text-gray-500 disabled:cursor-not-allowed flex items-center justify-between gap-3"
       :disabled="disabled"
+      :aria-label="label || placeholder || $t('SELECT')"
       :aria-haspopup="'dialog'"
       :aria-expanded="isOpen ? 'true' : 'false'"
       @click="open"
