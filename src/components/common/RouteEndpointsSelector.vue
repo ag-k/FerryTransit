@@ -153,8 +153,36 @@ const arrivalProxy = computed({
   set: (value: string) => emit('update:arrival', value)
 })
 
-const disabledDeparturePorts = computed(() => (props.arrival ? [props.arrival] : []))
-const disabledArrivalPorts = computed(() => (props.departure ? [props.departure] : []))
+const defaultMainlandPorts = ['HONDO', 'HONDO_SHICHIRUI', 'HONDO_SAKAIMINATO']
+const mainlandPorts = computed(() => {
+  const ports = Array.isArray(props.hondoPorts) && props.hondoPorts.length > 0 ? props.hondoPorts : defaultMainlandPorts
+  return ports
+})
+
+const isMainlandPort = (port: string | undefined): boolean => {
+  if (!port) return false
+  return mainlandPorts.value.includes(port)
+}
+
+const disabledDeparturePorts = computed(() => {
+  const disabledPorts = new Set<string>()
+  if (props.arrival) disabledPorts.add(props.arrival)
+  // 本土港同士の組み合わせを禁止: 目的地が本土港なら、出発地側は本土港を選べない
+  if (isMainlandPort(props.arrival)) {
+    for (const p of mainlandPorts.value) disabledPorts.add(p)
+  }
+  return Array.from(disabledPorts)
+})
+
+const disabledArrivalPorts = computed(() => {
+  const disabledPorts = new Set<string>()
+  if (props.departure) disabledPorts.add(props.departure)
+  // 本土港同士の組み合わせを禁止: 出発地が本土港なら、目的地側は本土港を選べない
+  if (isMainlandPort(props.departure)) {
+    for (const p of mainlandPorts.value) disabledPorts.add(p)
+  }
+  return Array.from(disabledPorts)
+})
 
 const disabled = computed(() => Boolean(props.disabled))
 const showVia = computed(() => Boolean(props.showVia))
@@ -166,6 +194,21 @@ const clearDeparture = () => {
 const clearArrival = () => {
   arrivalProxy.value = ''
 }
+
+// 既に本土港同士になっている状態（URL/地図/履歴など経由）を補正
+watch(
+  () => [props.departure, props.arrival] as const,
+  ([dep, arr]) => {
+    // SSRでは window が無いので何もしない（CSR/テスト環境のみ補正）
+    if (typeof window === 'undefined') return
+    if (!dep || !arr) return
+    if (isMainlandPort(dep) && isMainlandPort(arr)) {
+      // ルール違反時は目的地側を優先的にクリア
+      emit('update:arrival', '')
+    }
+  },
+  { immediate: true }
+)
 </script>
 
 <style scoped>
