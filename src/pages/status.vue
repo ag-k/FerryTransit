@@ -12,7 +12,7 @@
     <div v-else class="grid md:grid-cols-2 gap-6">
       <!-- いそかぜ Status -->
       <div>
-        <div class="rounded-lg shadow-sm h-full" :class="getStatusCardContainerClass(shipStatus.isokaze)">
+        <div class="rounded-lg overflow-hidden shadow-sm h-full" :class="getStatusCardContainerClass(shipStatus.isokaze)">
           <div class="px-4 py-3 border-b" :class="getStatusCardHeaderClass(shipStatus.isokaze)">
             <h3 class="text-lg font-bold">{{ $t('ISOKAZE') }}</h3>
           </div>
@@ -126,7 +126,7 @@
 
       <!-- どうぜん Status -->
       <div>
-        <div class="rounded-lg shadow-sm h-full" :class="getStatusCardContainerClass(shipStatus.dozen)">
+        <div class="rounded-lg overflow-hidden shadow-sm h-full" :class="getStatusCardContainerClass(shipStatus.dozen)">
           <div class="px-4 py-3 border-b" :class="getStatusCardHeaderClass(shipStatus.dozen)">
             <h3 class="text-lg font-bold">{{ $t('FERRY_DOZEN') }}</h3>
           </div>
@@ -240,7 +240,7 @@
 
       <!-- Ferry Status -->
       <div class="md:col-span-2">
-        <div class="rounded-lg shadow-sm" :class="getFerryCardContainerClass(shipStatus.ferry)">
+        <div class="rounded-lg overflow-hidden shadow-sm" :class="getFerryCardContainerClass(shipStatus.ferry)">
           <div class="px-4 py-3 border-b" :class="getFerryCardHeaderClass(shipStatus.ferry)">
             <h3 class="text-lg font-bold">{{ $t('OKI_KISEN_FERRY') }}</h3>
           </div>
