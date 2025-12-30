@@ -212,7 +212,7 @@
                 <tr v-for="size in vehicleSizeList" :key="`vehicle-mobile-${size.key}`"
                   class="hover:bg-gray-50 dark:hover:bg-gray-700/50">
                   <td
-                    class="border border-gray-300 dark:border-gray-600 px-4 py-3 font-medium dark:text-gray-100 whitespace-pre-line">
+                    class="border border-gray-300 dark:border-gray-600 px-4 py-3 font-normal dark:text-gray-100 whitespace-pre-line">
                     {{ $t(size.labelKey) }}
                   </td>
                   <td
@@ -249,7 +249,7 @@
             <tbody>
               <tr v-for="size in vehicleSizeList" :key="size.key" class="hover:bg-gray-50 dark:hover:bg-gray-700/50">
                 <td
-                  class="border border-gray-300 dark:border-gray-600 px-4 py-3 font-medium dark:text-gray-100 whitespace-pre-line">
+                  class="border border-gray-300 dark:border-gray-600 px-4 py-3 font-normal dark:text-gray-100 whitespace-pre-line">
                   {{ $t(size.labelKey) }}
                 </td>
                 <td
