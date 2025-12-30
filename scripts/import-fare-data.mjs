@@ -14,7 +14,7 @@ console.log('💰 Importing fare data using Admin SDK...')
 
 try {
   // Initialize Firebase Admin SDK for emulator
-  process.env.FIRESTORE_EMULATOR_HOST = 'localhost:18084'
+  process.env.FIRESTORE_EMULATOR_HOST = 'localhost:8095'
 
   admin.initializeApp({
     projectId: 'oki-ferryguide'
