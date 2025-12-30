@@ -39,6 +39,7 @@ describe('RouteEndpointsSelector', () => {
       props: {
         departure: '',
         arrival: '',
+        hondoPorts: ['HONDO', 'HONDO_SHICHIRUI', 'HONDO_SAKAIMINATO'],
         ...props
       },
       global: {
@@ -86,6 +87,19 @@ describe('RouteEndpointsSelector', () => {
     expect(wrapper.emitted('update:departure')!.at(-1)![0]).toBe('')
 
     await wrapper.find('[data-testid="route-endpoints-clear-arrival"]').trigger('click')
+    expect(wrapper.emitted('update:arrival')).toBeTruthy()
+    expect(wrapper.emitted('update:arrival')!.at(-1)![0]).toBe('')
+  })
+
+  it('disables mainland ports when the other side is mainland', () => {
+    const wrapper = mountComponent({ departure: '', arrival: 'HONDO_SHICHIRUI' })
+    const stubs = wrapper.findAllComponents(PortSelectorStub)
+    const depStub = stubs.find(w => w.props('placeholder') === 'DEPARTURE')!
+    expect(depStub.props('disabledPorts')).toEqual(expect.arrayContaining(['HONDO', 'HONDO_SHICHIRUI', 'HONDO_SAKAIMINATO']))
+  })
+
+  it('auto-clears arrival when both departure and arrival are mainland ports', () => {
+    const wrapper = mountComponent({ departure: 'HONDO_SHICHIRUI', arrival: 'HONDO_SAKAIMINATO' })
     expect(wrapper.emitted('update:arrival')).toBeTruthy()
     expect(wrapper.emitted('update:arrival')!.at(-1)![0]).toBe('')
   })
