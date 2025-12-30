@@ -16,7 +16,12 @@ vi.mock('vue-i18n', async () => {
   const vue = await import('vue')
   return {
     useI18n: () => ({
-      locale: vue.ref('ja')
+      locale: vue.ref('ja'),
+      t: (key: string) => {
+        if (key === 'HONDO') return '七類(松江市)または境港(境港市)'
+        if (key === 'SAIGO') return '西郷(隠岐の島町)'
+        return key
+      }
     })
   }
 })
@@ -89,6 +94,28 @@ describe('FavoriteRouteCard', () => {
       arrival: 'SAIGO'
     })
   })
+
+  it('港IDが ports データに無い場合でも i18n 表示にフォールバックする（HONDO）', () => {
+    const wrapper = mount(FavoriteRouteCard, {
+      props: {
+        departure: 'HONDO',
+        arrival: 'SAIGO'
+      },
+      global: {
+        stubs: {
+          NuxtLink: NuxtLinkStub,
+          FavoriteButton: { template: '<button />' },
+          ConfirmDialog: { template: '<div />', props: ['isOpen'] }
+        },
+        config: {
+          globalProperties: {
+            $t: (key: string) => key
+          }
+        }
+      }
+    })
+
+    expect(wrapper.text()).toContain('七類(松江市)または境港(境港市)')
+    expect(wrapper.text()).toContain('西郷(隠岐の島町)')
+  })
 })
-
-

@@ -129,7 +129,7 @@ const emit = defineEmits<{
 const router = useRouter()
 const ferryStore = process.client ? useFerryStore() : null
 const favoriteStore = process.client ? useFavoriteStore() : null
-const { locale } = useI18n()
+const { locale, t } = useI18n()
 const localePath = useLocalePath()
 const logger = createLogger('FavoriteRouteCard')
 
@@ -143,24 +143,28 @@ onMounted(() => {
 })
 
 const getDeparturePortName = (portId: string) => {
-  if (!isMounted.value || !ferryStore || !ferryStore.ports || !Array.isArray(ferryStore.ports)) return portId
+  if (!portId) return ''
+  const translated = String(t(portId))
+  if (!isMounted.value || !ferryStore || !ferryStore.ports || !Array.isArray(ferryStore.ports)) return translated || portId
   try {
     const port = ferryStore.ports.find(p => p.PORT_ID === portId)
-    return port ? (locale.value === 'ja' ? port.PLACE_NAME_JA : port.PLACE_NAME_EN) : portId
+    return port ? (locale.value === 'ja' ? port.PLACE_NAME_JA : port.PLACE_NAME_EN) : (translated || portId)
   } catch (e) {
     logger.error('Error getting departure port name', e)
-    return portId
+    return translated || portId
   }
 }
 
 const getArrivalPortName = (portId: string) => {
-  if (!isMounted.value || !ferryStore || !ferryStore.ports || !Array.isArray(ferryStore.ports)) return portId
+  if (!portId) return ''
+  const translated = String(t(portId))
+  if (!isMounted.value || !ferryStore || !ferryStore.ports || !Array.isArray(ferryStore.ports)) return translated || portId
   try {
     const port = ferryStore.ports.find(p => p.PORT_ID === portId)
-    return port ? (locale.value === 'ja' ? port.PLACE_NAME_JA : port.PLACE_NAME_EN) : portId
+    return port ? (locale.value === 'ja' ? port.PLACE_NAME_JA : port.PLACE_NAME_EN) : (translated || portId)
   } catch (e) {
     logger.error('Error getting arrival port name', e)
-    return portId
+    return translated || portId
   }
 }
 
