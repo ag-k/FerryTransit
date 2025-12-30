@@ -15,7 +15,11 @@ vi.mock('vue-i18n', async () => {
   const vue = await import('vue')
   return {
     useI18n: () => ({
-      locale: vue.ref('ja')
+      locale: vue.ref('ja'),
+      t: (key: string) => {
+        if (key === 'HONDO') return '七類(松江市)または境港(境港市)'
+        return key
+      }
     })
   }
 })
@@ -81,6 +85,26 @@ describe('FavoritePortCard', () => {
       }
     })
   })
+
+  it('HONDO（本土の総称）は i18n で日本語表示される', () => {
+    const wrapper = mount(FavoritePortCard, {
+      props: {
+        portId: 'HONDO',
+        portCode: 'HONDO'
+      },
+      global: {
+        stubs: {
+          FavoriteButton: { template: '<button />' },
+          ConfirmDialog: { template: '<div />', props: ['isOpen'] }
+        },
+        config: {
+          globalProperties: {
+            $t: (key: string) => key
+          }
+        }
+      }
+    })
+
+    expect(wrapper.text()).toContain('七類(松江市)または境港(境港市)')
+  })
 })
-
-
