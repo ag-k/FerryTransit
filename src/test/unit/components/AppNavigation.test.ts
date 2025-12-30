@@ -57,5 +57,10 @@ describe('AppNavigation', () => {
     expect(wrapper.find('[data-testid="app-nav-icon-history.title"]').exists()).toBe(true)
     expect(wrapper.find('[data-testid="app-nav-icon-ABOUT_APP"]').exists()).toBe(true)
     expect(wrapper.find('[data-testid="app-nav-icon-SETTINGS"]').exists()).toBe(true)
+
+    // Language segmented selector (mobile)
+    expect(wrapper.find('[data-testid="app-nav-language-segment"]').exists()).toBe(true)
+    expect(wrapper.find('[data-testid="app-nav-lang-ja"]').exists()).toBe(true)
+    expect(wrapper.find('[data-testid="app-nav-lang-en"]').exists()).toBe(true)
   })
 })
