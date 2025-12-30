@@ -75,6 +75,21 @@ describe('RouteEndpointsSelector', () => {
     expect(wrapper.emitted('update:arrival')![0][0]).toBe('SAIGO')
   })
 
+  it('shows clear buttons when values are set and emits empty string when cleared', async () => {
+    const wrapper = mountComponent({ departure: 'HONDO_SHICHIRUI', arrival: 'SAIGO' })
+
+    expect(wrapper.find('[data-testid="route-endpoints-clear-departure"]').exists()).toBe(true)
+    expect(wrapper.find('[data-testid="route-endpoints-clear-arrival"]').exists()).toBe(true)
+
+    await wrapper.find('[data-testid="route-endpoints-clear-departure"]').trigger('click')
+    expect(wrapper.emitted('update:departure')).toBeTruthy()
+    expect(wrapper.emitted('update:departure')!.at(-1)![0]).toBe('')
+
+    await wrapper.find('[data-testid="route-endpoints-clear-arrival"]').trigger('click')
+    expect(wrapper.emitted('update:arrival')).toBeTruthy()
+    expect(wrapper.emitted('update:arrival')!.at(-1)![0]).toBe('')
+  })
+
   it('emits reverse when swap button is clicked', async () => {
     const wrapper = mountComponent()
     await wrapper.find('button[aria-label="Reverse route"]').trigger('click')
