@@ -34,7 +34,7 @@ const PortSelectorStub = defineComponent({
 })
 
 describe('RouteEndpointsSelector', () => {
-  const mountComponent = (props?: Partial<{ departure: string; arrival: string; disabled: boolean }>) => {
+  const mountComponent = (props?: Partial<{ departure: string; arrival: string; disabled: boolean; showVia: boolean }>) => {
     return mount(RouteEndpointsSelector, {
       props: {
         departure: '',
@@ -85,5 +85,11 @@ describe('RouteEndpointsSelector', () => {
     const wrapper = mountComponent()
     await wrapper.find('[data-testid="route-endpoints-add-via"]').trigger('click')
     expect(wrapper.emitted('addVia')).toBeTruthy()
+  })
+
+  it('hides +via button when showVia is false', () => {
+    const wrapper = mountComponent({ showVia: false })
+    expect(wrapper.find('[data-testid="route-endpoints-add-via"]').exists()).toBe(false)
+    expect(wrapper.find('button[aria-label="Reverse route"]').exists()).toBe(true)
   })
 })
