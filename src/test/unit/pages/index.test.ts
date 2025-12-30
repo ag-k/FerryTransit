@@ -4,6 +4,17 @@ import { setActivePinia, createPinia } from "pinia";
 import { ref } from "vue";
 import IndexPage from "@/pages/index.vue";
 
+// index.vue は Nuxt の auto-import を明示 import（#imports）で参照するため、テスト側でも #imports をモックする
+vi.mock("#imports", () => ({
+  useHead: vi.fn(),
+  useI18n: () => ({
+    locale: { value: "ja" },
+    t: (key: string) => key,
+  }),
+  useRoute: () => (global as any).useRoute(),
+  useRouter: () => (global as any).useRouter(),
+}));
+
 const mockFerryStore = {
   departure: ref(""),
   arrival: ref(""),
