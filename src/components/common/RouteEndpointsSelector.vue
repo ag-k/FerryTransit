@@ -6,7 +6,7 @@
     <!-- From -->
     <div class="flex items-stretch">
       <div
-        class="w-20 shrink-0 bg-green-600 text-white flex items-center justify-center text-sm font-semibold border-r border-gray-300 dark:border-gray-600"
+        class="w-20 shrink-0 bg-blue-600 text-white flex items-center justify-center text-sm font-semibold border-r border-gray-300 dark:border-gray-600"
         data-testid="route-endpoints-from-label"
       >
         {{ $t('_FROM') }}
@@ -58,7 +58,7 @@
     <!-- To -->
     <div class="flex items-stretch border-t border-gray-200 dark:border-gray-700">
       <div
-        class="w-20 shrink-0 bg-green-600 text-white flex items-center justify-center text-sm font-semibold border-r border-gray-300 dark:border-gray-600"
+        class="w-20 shrink-0 bg-blue-600 text-white flex items-center justify-center text-sm font-semibold border-r border-gray-300 dark:border-gray-600"
         data-testid="route-endpoints-to-label"
       >
         {{ $t('_TO') }}
