@@ -10,65 +10,14 @@
       <h3 class="sr-only">{{ $t('SEARCH_CONDITIONS') }}</h3>
       <!-- Port Selection -->
       <div class="mb-3">
-          <!-- Mobile: 添付デザインに合わせた独自UI（左ラベル + 中央の+経由 + 右の入替ボタン） -->
-          <div class="md:hidden">
-            <RouteEndpointsSelector
-              :departure="departure"
-              :arrival="arrival"
-              @update:departure="departure = $event"
-              @update:arrival="arrival = $event"
-              @reverse="reverseRoute"
-            />
-          </div>
-
-          <!-- Desktop: 従来どおり（横並び） -->
-          <div class="hidden md:block">
-            <div class="grid md:grid-cols-12 gap-4">
-              <div class="md:col-span-5">
-                <div class="flex items-start gap-2">
-                  <div class="flex-1">
-                    <PortSelector
-                      v-model="departure"
-                      :label="$t('_FROM')"
-                      :placeholder="$t('DEPARTURE')"
-                      :disabled-ports="[arrival]"
-                      margin="none"
-                    />
-                  </div>
-                </div>
-              </div>
-
-              <div class="md:col-span-2 flex justify-center mt-7">
-                <button
-                  type="button"
-                  class="px-3 py-2 text-base border border-blue-600 dark:border-blue-400 text-blue-600 dark:text-blue-200 rounded-md hover:bg-blue-50 dark:hover:bg-blue-900/20 transition-colors flex-shrink-0 touch-manipulation"
-                  title="出発地と到着地を入れ替え"
-                  aria-label="Reverse route"
-                  @click="reverseRoute"
-                >
-                  <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20"
-                    fill="currentColor" viewBox="0 0 16 16" aria-hidden="true">
-                    <path fill-rule="evenodd"
-                      d="M1 11.5a.5.5 0 0 0 .5.5h11.793l-3.147 3.146a.5.5 0 0 0 .708.708l4-4a.5.5 0 0 0 0-.708l-4-4a.5.5 0 0 0-.708.708L13.293 11H1.5a.5.5 0 0 0-.5.5zm14-7a.5.5 0 0 1-.5.5H2.707l3.147 3.146a.5.5 0 1 1-.708.708l-4-4a.5.5 0 0 1 0-.708l4-4a.5.5 0 1 1 .708.708L2.707 4H14.5a.5.5 0 0 1 .5.5z" />
-                  </svg>
-                </button>
-              </div>
-
-              <div class="md:col-span-5">
-                <div class="flex items-start gap-2">
-                  <div class="flex-1">
-                    <PortSelector
-                      v-model="arrival"
-                      :label="$t('_TO')"
-                      :placeholder="$t('ARRIVAL')"
-                      :disabled-ports="[departure]"
-                      margin="none"
-                    />
-                  </div>
-                </div>
-              </div>
-            </div>
-          </div>
+          <!-- Mobile/PC: 添付デザインに合わせた独自UIに統一 -->
+          <RouteEndpointsSelector
+            :departure="departure"
+            :arrival="arrival"
+            @update:departure="departure = $event"
+            @update:arrival="arrival = $event"
+            @reverse="reverseRoute"
+          />
         </div>
 
       <!-- Date and Time Selection -->
@@ -388,7 +337,6 @@ import { nextTick, getCurrentInstance, markRaw } from 'vue'
 import { useRouteSearch } from '@/composables/useRouteSearch'
 import { useHistoryStore } from '@/stores/history'
 import { useFerryStore } from '@/stores/ferry'
-import PortSelector from '@/components/common/PortSelector.vue'
 import RouteEndpointsSelector from '@/components/common/RouteEndpointsSelector.vue'
 import DatePicker from '@/components/common/DatePicker.vue'
 import CommonShipModal from '@/components/common/ShipModal.vue'
