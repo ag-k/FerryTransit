@@ -111,7 +111,7 @@ const emit = defineEmits<{
 const router = useRouter()
 const ferryStore = process.client ? useFerryStore() : null
 const favoriteStore = process.client ? useFavoriteStore() : null
-const { locale } = useI18n()
+const { locale, t } = useI18n()
 const localePath = useLocalePath()
 const logger = createLogger('FavoritePortCard')
 
@@ -138,13 +138,23 @@ const portInfo = computed(() => {
 })
 
 const getPortName = (portId: string) => {
-  if (!isMounted.value || !ferryStore || !ferryStore.ports || !Array.isArray(ferryStore.ports)) return portId
+  if (!portId) return ''
+
+  // i18n キーがある場合（例: HONDO/SAIGO/...）はそれを優先して表示できるようにする
+  // NOTE: i18n にキーが無い場合はデフォルトでキー文字列が返ることが多い
+  const translated = String(t(portId))
+
+  // store がまだ準備できていない/SSR 等の場合でも、最低限 i18n で表示できるようにする
+  if (!isMounted.value || !ferryStore || !ferryStore.ports || !Array.isArray(ferryStore.ports)) {
+    return translated || portId
+  }
+
   try {
     const port = ferryStore.ports.find(p => p.PORT_ID === portId)
-    return port ? (locale.value === 'ja' ? port.PLACE_NAME_JA : port.PLACE_NAME_EN) : portId
+    return port ? (locale.value === 'ja' ? port.PLACE_NAME_JA : port.PLACE_NAME_EN) : (translated || portId)
   } catch (e) {
     logger.error('Error getting port name', e)
-    return portId
+    return translated || portId
   }
 }
 
