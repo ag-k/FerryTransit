@@ -15,7 +15,7 @@ initializeApp({
 
 // Set emulator hosts
 process.env.FIREBASE_AUTH_EMULATOR_HOST = 'localhost:9099'
-process.env.FIRESTORE_EMULATOR_HOST = 'localhost:18084'
+process.env.FIRESTORE_EMULATOR_HOST = 'localhost:8095'
 
 const auth = getAuth()
 const db = getFirestore()
@@ -23,7 +23,7 @@ const db = getFirestore()
 async function testAdminRegistration() {
   try {
     console.log('🔍 Testing super admin registration...\n')
-    
+
     // Check if user exists in Auth
     try {
       const user = await auth.getUserByEmail('admin@ferry-dev.local')
@@ -36,7 +36,7 @@ async function testAdminRegistration() {
       console.log('❌ User not found in Authentication:', error.message)
       return
     }
-    
+
     // Check if user exists in Firestore
     try {
       // First get the user UID from auth
@@ -51,7 +51,7 @@ async function testAdminRegistration() {
     } catch (error) {
       console.log('\n❌ Error checking Firestore users:', error.message)
     }
-    
+
     // Check if admin exists in Firestore admins collection
     try {
       // First get the user UID from auth
@@ -66,9 +66,9 @@ async function testAdminRegistration() {
     } catch (error) {
       console.log('\n❌ Error checking Firestore admins:', error.message)
     }
-    
+
     console.log('\n🎉 Admin registration test completed!')
-    
+
   } catch (error) {
     console.error('❌ Test failed:', error)
   }
