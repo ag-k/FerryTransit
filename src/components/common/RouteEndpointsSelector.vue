@@ -132,7 +132,8 @@ type Props = {
 }
 
 const props = withDefaults(defineProps<Props>(), {
-  showVia: true,
+  // 経由は未実装のためデフォルトでは非表示（必要になったら呼び出し側で showVia を明示的に true にする）
+  showVia: false,
   disabled: false
 })
 
