@@ -58,7 +58,8 @@ describe('RouteEndpointsSelector', () => {
     expect(wrapper.find('[data-testid="route-endpoints-selector"]').exists()).toBe(true)
     expect(wrapper.find('[data-testid="route-endpoints-from-label"]').text()).toBe('_FROM')
     expect(wrapper.find('[data-testid="route-endpoints-to-label"]').text()).toBe('_TO')
-    expect(wrapper.find('[data-testid="route-endpoints-add-via"]').text()).toContain('VIA')
+    // 経由は未実装のためデフォルトでは非表示
+    expect(wrapper.find('[data-testid="route-endpoints-add-via"]').exists()).toBe(false)
     expect(wrapper.find('button[aria-label="Reverse route"]').exists()).toBe(true)
   })
 
@@ -111,13 +112,13 @@ describe('RouteEndpointsSelector', () => {
   })
 
   it('emits addVia when +via is clicked', async () => {
-    const wrapper = mountComponent()
+    const wrapper = mountComponent({ showVia: true })
     await wrapper.find('[data-testid="route-endpoints-add-via"]').trigger('click')
     expect(wrapper.emitted('addVia')).toBeTruthy()
   })
 
-  it('hides +via button when showVia is false', () => {
-    const wrapper = mountComponent({ showVia: false })
+  it('hides +via button by default', () => {
+    const wrapper = mountComponent()
     expect(wrapper.find('[data-testid="route-endpoints-add-via"]').exists()).toBe(false)
     expect(wrapper.find('button[aria-label="Reverse route"]').exists()).toBe(true)
   })
