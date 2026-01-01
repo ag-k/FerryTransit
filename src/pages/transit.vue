@@ -166,7 +166,7 @@
                   <td class="py-2 pl-4">
                     <a href="#" class="text-blue-600 dark:text-blue-200 hover:underline"
                       @click.prevent="showPortInfo(route.segments[0].departure)">
-                      {{ getPortDisplayName(route.segments[0].departure) }}
+                      ⚓ {{ getPortDisplayName(route.segments[0].departure) }}
                     </a>
                   </td>
                   <td class="py-2"></td>
@@ -205,7 +205,7 @@
                     <td class="py-2 pl-4">
                       <a href="#" class="text-blue-600 dark:text-blue-200 hover:underline"
                         @click.prevent="showPortInfo(segment.arrival)">
-                        {{ getPortDisplayName(segment.arrival) }}
+                        ⚓ {{ getPortDisplayName(segment.arrival) }}
                       </a>
                       <span class="text-xs text-gray-600 dark:text-gray-400 ml-2">
                         ({{ $t('TRANSFER') }}) {{ formatTransferWaitTime(segment.arrivalTime, route.segments[segIndex +
@@ -222,7 +222,7 @@
                   <td class="py-2 pl-4">
                     <a href="#" class="text-blue-600 dark:text-blue-200 hover:underline"
                       @click.prevent="showPortInfo(route.segments[route.segments.length - 1].arrival)">
-                      {{ getPortDisplayName(route.segments[route.segments.length - 1].arrival) }}
+                      ⚓ {{ getPortDisplayName(route.segments[route.segments.length - 1].arrival) }}
                     </a>
                   </td>
                   <td class="py-2 font-medium dark:text-gray-100">
@@ -282,7 +282,7 @@
               <div class="grid grid-cols-1 md:grid-cols-5 gap-2">
                 <div class="md:col-span-2 dark:text-gray-300">
                   <strong>{{ formatTime(segment.departureTime) }}</strong><br>
-                  {{ getPortDisplayName(segment.departure) }}
+                  ⚓ {{ getPortDisplayName(segment.departure) }}
                 </div>
                 <div class="md:col-span-1 text-center">
                   <div class="mt-2 dark:text-gray-300">→</div>
@@ -290,7 +290,7 @@
                 </div>
                 <div class="md:col-span-2 text-right dark:text-gray-300">
                   <strong>{{ formatTime(segment.arrivalTime) }}</strong><br>
-                  {{ getPortDisplayName(segment.arrival) }}
+                  ⚓ {{ getPortDisplayName(segment.arrival) }}
                 </div>
               </div>
               <div class="mt-2">
