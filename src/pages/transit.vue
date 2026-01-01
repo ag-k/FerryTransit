@@ -187,7 +187,7 @@
                         <span v-else-if="segment.status === 4" class="mr-2 text-green-600 dark:text-green-300">+</span>
                         <a href="#" class="text-blue-600 dark:text-blue-200 hover:underline"
                           @click.prevent="showShipInfo(segment.ship)">
-                          {{ $t(segment.ship) }}
+                          🚢 {{ $t(segment.ship) }}
                         </a>
                       </div>
                     </td>
@@ -286,7 +286,7 @@
                 </div>
                 <div class="md:col-span-1 text-center">
                   <div class="mt-2 dark:text-gray-300">→</div>
-                  <small class="text-gray-500 dark:text-gray-300">{{ $t(segment.ship) }}</small>
+                  <small class="text-gray-500 dark:text-gray-300">🚢 {{ $t(segment.ship) }}</small>
                 </div>
                 <div class="md:col-span-2 text-right dark:text-gray-300">
                   <strong>{{ formatTime(segment.arrivalTime) }}</strong><br>
