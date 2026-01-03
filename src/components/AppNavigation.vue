@@ -19,7 +19,7 @@
     </transition>
 
     <div
-      class="container mx-auto pl-[max(env(safe-area-inset-left),1rem)] pr-[env(safe-area-inset-right)] lg:pr-[max(env(safe-area-inset-right),1rem)]">
+      class="w-full pl-[calc(16px+env(safe-area-inset-left))] pr-[env(safe-area-inset-right)] lg:pr-[calc(16px+env(safe-area-inset-right))]">
       <div class="flex items-center justify-between h-[44px] lg:h-auto lg:py-4">
         <div class="flex items-center">
           <NuxtLink
