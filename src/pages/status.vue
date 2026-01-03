@@ -10,6 +10,60 @@
 
     <!-- Status cards -->
     <div v-else class="grid md:grid-cols-2 gap-6">
+      <!-- Ferry Status -->
+      <div class="md:col-span-2">
+        <div class="rounded-lg overflow-hidden shadow-sm" :class="getFerryCardContainerClass(shipStatus.ferry)">
+          <div class="px-4 py-3 border-b" :class="getFerryCardHeaderClass(shipStatus.ferry)">
+            <h3 class="text-lg font-bold">{{ $t('OKI_KISEN_FERRY') }}</h3>
+          </div>
+          <div class="p-4">
+            <div v-if="shipStatus.ferry" class="grid md:grid-cols-2 gap-6">
+              <div>
+                <h6 class="font-semibold mb-2 dark:text-white">{{ $t('FERRY') }}</h6>
+                <p class="mb-2 dark:text-gray-300">
+                  <strong>{{ $t('STATUS') }}:</strong>
+                  <span :class="getOperationClass(shipStatus.ferry.ferryState)">
+                    {{ shipStatus.ferry.ferryState }}
+                  </span>
+                </p>
+                <p v-if="shipStatus.ferry.ferryComment" class="mb-2 dark:text-gray-300">
+                  <strong>{{ $t('COMMENT') }}:</strong> {{ shipStatus.ferry.ferryComment }}
+                </p>
+              </div>
+              <div>
+                <h6 class="font-semibold mb-2 dark:text-white">{{ $t('RAINBOWJET') }}</h6>
+                <p class="mb-2 dark:text-gray-300">
+                  <strong>{{ $t('STATUS') }}:</strong>
+                  <span :class="getOperationClass(shipStatus.ferry.fastFerryState)">
+                    {{ shipStatus.ferry.fastFerryState }}
+                  </span>
+                </p>
+                <p v-if="shipStatus.ferry.fastFerryComment" class="mb-2 dark:text-gray-300">
+                  <strong>{{ $t('COMMENT') }}:</strong> {{ shipStatus.ferry.fastFerryComment }}
+                </p>
+              </div>
+              <div class="md:col-span-2 mt-4">
+                <div class="grid md:grid-cols-2 gap-4">
+                  <div>
+                    <p class="mb-2 dark:text-gray-200">
+                      <strong>{{ $t('TODAY_WAVE') }}:</strong> {{ shipStatus.ferry.todayWave || '-' }}
+                    </p>
+                  </div>
+                  <div>
+                    <p class="mb-2 dark:text-gray-200">
+                      <strong>{{ $t('TOMORROW_WAVE') }}:</strong> {{ shipStatus.ferry.tomorrowWave || '-' }}
+                    </p>
+                  </div>
+                </div>
+              </div>
+            </div>
+            <div v-else>
+              <p class="text-gray-500 dark:text-gray-300">{{ $t('NO_STATUS_INFO') }}</p>
+            </div>
+          </div>
+        </div>
+      </div>
+
       <!-- いそかぜ Status -->
       <div>
         <div class="rounded-lg overflow-hidden shadow-sm h-full" :class="getStatusCardContainerClass(shipStatus.isokaze)">
@@ -229,60 +283,6 @@
                 <p v-if="shipStatus.dozen.updated" class="text-gray-500 dark:text-gray-300 text-sm">
                   {{ $t('LAST_UPDATE') }}: {{ formatDateTime(shipStatus.dozen.updated) }}
                 </p>
-              </div>
-            </div>
-            <div v-else>
-              <p class="text-gray-500 dark:text-gray-300">{{ $t('NO_STATUS_INFO') }}</p>
-            </div>
-          </div>
-        </div>
-      </div>
-
-      <!-- Ferry Status -->
-      <div class="md:col-span-2">
-        <div class="rounded-lg overflow-hidden shadow-sm" :class="getFerryCardContainerClass(shipStatus.ferry)">
-          <div class="px-4 py-3 border-b" :class="getFerryCardHeaderClass(shipStatus.ferry)">
-            <h3 class="text-lg font-bold">{{ $t('OKI_KISEN_FERRY') }}</h3>
-          </div>
-          <div class="p-4">
-            <div v-if="shipStatus.ferry" class="grid md:grid-cols-2 gap-6">
-              <div>
-                <h6 class="font-semibold mb-2 dark:text-white">{{ $t('FERRY') }}</h6>
-                <p class="mb-2 dark:text-gray-300">
-                  <strong>{{ $t('STATUS') }}:</strong>
-                  <span :class="getOperationClass(shipStatus.ferry.ferryState)">
-                    {{ shipStatus.ferry.ferryState }}
-                  </span>
-                </p>
-                <p v-if="shipStatus.ferry.ferryComment" class="mb-2 dark:text-gray-300">
-                  <strong>{{ $t('COMMENT') }}:</strong> {{ shipStatus.ferry.ferryComment }}
-                </p>
-              </div>
-              <div>
-                <h6 class="font-semibold mb-2 dark:text-white">{{ $t('RAINBOWJET') }}</h6>
-                <p class="mb-2 dark:text-gray-300">
-                  <strong>{{ $t('STATUS') }}:</strong>
-                  <span :class="getOperationClass(shipStatus.ferry.fastFerryState)">
-                    {{ shipStatus.ferry.fastFerryState }}
-                  </span>
-                </p>
-                <p v-if="shipStatus.ferry.fastFerryComment" class="mb-2 dark:text-gray-300">
-                  <strong>{{ $t('COMMENT') }}:</strong> {{ shipStatus.ferry.fastFerryComment }}
-                </p>
-              </div>
-              <div class="md:col-span-2 mt-4">
-                <div class="grid md:grid-cols-2 gap-4">
-                  <div>
-                    <p class="mb-2 dark:text-gray-200">
-                      <strong>{{ $t('TODAY_WAVE') }}:</strong> {{ shipStatus.ferry.todayWave || '-' }}
-                    </p>
-                  </div>
-                  <div>
-                    <p class="mb-2 dark:text-gray-200">
-                      <strong>{{ $t('TOMORROW_WAVE') }}:</strong> {{ shipStatus.ferry.tomorrowWave || '-' }}
-                    </p>
-                  </div>
-                </div>
               </div>
             </div>
             <div v-else>
