@@ -209,6 +209,27 @@
                             d="M16 8A8 8 0 1 1 0 8a8 8 0 0 1 16 0zM8.5 4.5a.5.5 0 0 0-1 0v3h-3a.5.5 0 0 0 0 1h3v3a.5.5 0 0 0 1 0v-3h3a.5.5 0 0 0 0-1h-3v-3z" />
                         </svg>
                       </span>
+                      <!-- 船種全体の運航状況に変更がある場合の注意マーク（便ごとのステータスが通常の場合のみ表示） -->
+                      <button
+                        v-else-if="getShipStatusAlert(trip.name)"
+                        type="button"
+                        data-test="ship-status-alert-icon"
+                        class="inline-flex items-center"
+                        :class="{
+                          'text-red-600 dark:text-red-300': getShipStatusAlert(trip.name)?.severity === 'danger',
+                          'text-yellow-600 dark:text-yellow-300': getShipStatusAlert(trip.name)?.severity === 'warning',
+                          'text-green-600 dark:text-green-300': getShipStatusAlert(trip.name)?.severity === 'info'
+                        }"
+                        :title="$t('OPERATION_STATUS')"
+                        aria-label="運航状況を見る"
+                        @click.stop="navigateToStatus"
+                      >
+                        <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" fill="currentColor"
+                          viewBox="0 0 16 16">
+                          <path
+                            d="M8.982 1.566a1.13 1.13 0 0 0-1.96 0L.165 13.233c-.457.778.091 1.767.98 1.767h13.713c.889 0 1.438-.99.98-1.767L8.982 1.566zM8 5c.535 0 .954.462.9.995l-.35 3.507a.552.552 0 0 1-1.1 0L7.1 5.995A.905.905 0 0 1 8 5zm.002 6a1 1 0 1 1 0 2 1 1 0 0 1 0-2z" />
+                        </svg>
+                      </button>
                       <a href="#"
                         class="text-blue-600 dark:text-blue-200 hover:underline font-medium inline-block py-1 -my-1 px-2 -mx-2 touch-manipulation"
                         @click.prevent="showShipInfo(trip.name)">
@@ -486,6 +507,64 @@ const tripStatus = (trip: any) => {
 
   // アラートが無い場合は、時刻表データ/運航状況から判定（trip.status=2 も反映）
   return getTripStatus(trip)
+}
+
+// 船種の運航状況に変更があるかチェック（当日のみ）
+const getShipStatusAlert = (shipName: string): { hasAlert: boolean; severity: 'warning' | 'danger' | 'info' } | null => {
+  // 当日以外は表示しない
+  if (selectedDateString.value !== todayString.value) {
+    return null
+  }
+
+  const status = ferryStore?.shipStatus
+  if (!status) return null
+
+  // いそかぜ
+  if (shipName === 'ISOKAZE') {
+    if (status.isokaze?.status && status.isokaze.status !== 0) {
+      // status: 1=全便欠航, 2=部分欠航, 3=変更, 4=運航再開
+      if (status.isokaze.status === 1) return { hasAlert: true, severity: 'danger' }
+      if (status.isokaze.status === 4) return { hasAlert: true, severity: 'info' }
+      return { hasAlert: true, severity: 'warning' }
+    }
+    return null
+  }
+
+  // フェリーどうぜん
+  if (shipName === 'FERRY_DOZEN') {
+    if (status.dozen?.status && status.dozen.status !== 0) {
+      if (status.dozen.status === 1) return { hasAlert: true, severity: 'danger' }
+      if (status.dozen.status === 4) return { hasAlert: true, severity: 'info' }
+      return { hasAlert: true, severity: 'warning' }
+    }
+    return null
+  }
+
+  // 隠岐汽船フェリー（おき、しらしま、くにが）
+  if (['FERRY_OKI', 'FERRY_SHIRASHIMA', 'FERRY_KUNIGA'].includes(shipName)) {
+    const ferryState = status.ferry?.ferryState || status.ferry?.ferry_state
+    if (ferryState && !['定期運航', '通常運航', '平常運航', 'Normal Operation', 'Normal Service'].includes(ferryState)) {
+      if (ferryState.includes('欠航') || ferryState.includes('Cancelled') || ferryState.includes('Canceled')) {
+        return { hasAlert: true, severity: 'danger' }
+      }
+      return { hasAlert: true, severity: 'warning' }
+    }
+    return null
+  }
+
+  // レインボージェット
+  if (shipName === 'RAINBOWJET') {
+    const fastFerryState = status.ferry?.fastFerryState || status.ferry?.fast_ferry_state
+    if (fastFerryState && !['( in Operation )', '定期運航', '通常運航', '平常運航', 'Normal Operation', 'Normal Service'].includes(fastFerryState)) {
+      if (fastFerryState.includes('欠航') || fastFerryState.includes('Cancelled') || fastFerryState.includes('Canceled')) {
+        return { hasAlert: true, severity: 'danger' }
+      }
+      return { hasAlert: true, severity: 'warning' }
+    }
+    return null
+  }
+
+  return null
 }
 
 const showShipInfo = (shipName: string) => {
