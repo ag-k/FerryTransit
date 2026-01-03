@@ -185,6 +185,21 @@
                         <span v-else-if="segment.status === 3"
                           class="mr-2 text-yellow-600 dark:text-yellow-300">⚠</span>
                         <span v-else-if="segment.status === 4" class="mr-2 text-green-600 dark:text-green-300">+</span>
+                        <!-- 船種全体の運航状況に変更がある場合の注意マーク（便ごとのステータスが通常の場合のみ表示） -->
+                        <button
+                          v-else-if="getShipStatusAlert(segment.ship)"
+                          type="button"
+                          data-test="ship-status-alert-icon"
+                          class="mr-2 inline-flex items-center"
+                          :class="{
+                            'text-red-600 dark:text-red-300': getShipStatusAlert(segment.ship)?.severity === 'danger',
+                            'text-yellow-600 dark:text-yellow-300': getShipStatusAlert(segment.ship)?.severity === 'warning',
+                            'text-green-600 dark:text-green-300': getShipStatusAlert(segment.ship)?.severity === 'info'
+                          }"
+                          :title="$t('OPERATION_STATUS')"
+                          aria-label="運航状況を見る"
+                          @click.stop="navigateToStatus"
+                        >⚠</button>
                         <a href="#" class="text-blue-600 dark:text-blue-200 hover:underline"
                           @click.prevent="showShipInfo(segment.ship)">
                           🚢 {{ $t(segment.ship) }}
@@ -689,6 +704,72 @@ const modalPortZoom = computed<number>(() => {
     : id === 'KURI' ? 18
     : 15
 })
+
+// 船種の運航状況に変更があるかチェック（当日のみ）
+const getShipStatusAlert = (shipName: string): { hasAlert: boolean; severity: 'warning' | 'danger' | 'info' } | null => {
+  // 当日以外は表示しない
+  const todayStr = new Date().toISOString().slice(0, 10)
+  const dateStr = date.value.toISOString().slice(0, 10)
+  if (dateStr !== todayStr) {
+    return null
+  }
+
+  const status = ferryStore?.shipStatus
+  if (!status) return null
+
+  // いそかぜ
+  if (shipName === 'ISOKAZE') {
+    if (status.isokaze?.status && status.isokaze.status !== 0) {
+      // status: 1=全便欠航, 2=部分欠航, 3=変更, 4=運航再開
+      if (status.isokaze.status === 1) return { hasAlert: true, severity: 'danger' }
+      if (status.isokaze.status === 4) return { hasAlert: true, severity: 'info' }
+      return { hasAlert: true, severity: 'warning' }
+    }
+    return null
+  }
+
+  // フェリーどうぜん
+  if (shipName === 'FERRY_DOZEN') {
+    if (status.dozen?.status && status.dozen.status !== 0) {
+      if (status.dozen.status === 1) return { hasAlert: true, severity: 'danger' }
+      if (status.dozen.status === 4) return { hasAlert: true, severity: 'info' }
+      return { hasAlert: true, severity: 'warning' }
+    }
+    return null
+  }
+
+  // 隠岐汽船フェリー（おき、しらしま、くにが）
+  if (['FERRY_OKI', 'FERRY_SHIRASHIMA', 'FERRY_KUNIGA'].includes(shipName)) {
+    const ferryState = status.ferry?.ferryState || status.ferry?.ferry_state
+    if (ferryState && !['定期運航', '通常運航', '平常運航', 'Normal Operation', 'Normal Service'].includes(ferryState)) {
+      if (ferryState.includes('欠航') || ferryState.includes('Cancelled') || ferryState.includes('Canceled')) {
+        return { hasAlert: true, severity: 'danger' }
+      }
+      return { hasAlert: true, severity: 'warning' }
+    }
+    return null
+  }
+
+  // レインボージェット
+  if (shipName === 'RAINBOWJET') {
+    const fastFerryState = status.ferry?.fastFerryState || status.ferry?.fast_ferry_state
+    if (fastFerryState && !['( in Operation )', '定期運航', '通常運航', '平常運航', 'Normal Operation', 'Normal Service'].includes(fastFerryState)) {
+      if (fastFerryState.includes('欠航') || fastFerryState.includes('Cancelled') || fastFerryState.includes('Canceled')) {
+        return { hasAlert: true, severity: 'danger' }
+      }
+      return { hasAlert: true, severity: 'warning' }
+    }
+    return null
+  }
+
+  return null
+}
+
+// 運航状況ページに遷移
+function navigateToStatus() {
+  const router = useRouter()
+  router.push({ path: '/status' })
+}
 
 function showShipInfo(shipName: string) {
   modalShipId.value = shipName
