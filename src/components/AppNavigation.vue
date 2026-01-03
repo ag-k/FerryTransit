@@ -71,18 +71,20 @@
             <ul class="lg:flex lg:items-center lg:space-x-1 space-y-1 lg:space-y-0 pt-2 lg:pt-0">
             <li v-for="item in menuItems" :key="item.matchPath">
               <NuxtLink
-                class="block px-4 py-3 lg:py-2 rounded-lg transition-colors text-base lg:text-sm touch-manipulation"
+                class="block px-4 py-3 lg:py-2 rounded-lg transition-colors text-base lg:text-sm font-bold touch-manipulation"
                 :class="isRouteActive(item.matchPath)
-                  ? 'bg-blue-50 text-blue-800 dark:bg-slate-800 dark:text-blue-200 font-medium lg:bg-blue-700 lg:text-white lg:dark:bg-gray-700'
+                  ? 'bg-blue-50 text-blue-800 dark:bg-slate-800 dark:text-blue-200 lg:bg-blue-700 lg:text-white lg:dark:bg-gray-700'
                   : 'hover:bg-gray-100 dark:hover:bg-slate-800 lg:hover:bg-blue-700 lg:dark:hover:bg-gray-700'"
                 :to="item.to"
+                :aria-label="item.label === 'SETTINGS' ? $t(item.label) : undefined"
                 :data-testid="`app-nav-item-${item.label}`"
                 @click="closeMenu"
               >
-                <span class="flex items-center gap-3">
+                <span class="flex items-center gap-3 lg:gap-0 xl:gap-3">
                   <svg
-                    v-if="isMobile"
+                    v-if="isMobile || item.label === 'SETTINGS'"
                     class="w-5 h-5 opacity-90 flex-shrink-0"
+                    :class="{ 'lg:block xl:hidden': item.label === 'SETTINGS' }"
                     fill="none"
                     stroke="currentColor"
                     viewBox="0 0 24 24"
@@ -96,7 +98,7 @@
                       :d="item.icon"
                     />
                   </svg>
-                  <span>{{ $t(item.label) }}</span>
+                  <span :class="{ 'lg:hidden xl:inline': item.label === 'SETTINGS' }">{{ $t(item.label) }}</span>
                 </span>
               </NuxtLink>
             </li>
@@ -134,13 +136,14 @@
               type="button"
               :aria-expanded="langMenuOpen"
               aria-haspopup="listbox"
+              :aria-label="currentLocaleName"
               @click="toggleLangMenu"
             >
-              <svg class="w-5 h-5 mr-1.5" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
+              <svg class="w-5 h-5 xl:mr-1.5" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 12a9 9 0 01-9 9m9-9a9 9 0 00-9-9m9 9H3m9 9a9 9 0 01-9-9m9 9c1.657 0 3-4.03 3-9s-1.343-9-3-9m0 18c-1.657 0-3-4.03-3-9s1.343-9 3-9m-9 9a9 9 0 019-9"></path>
               </svg>
-              <span>{{ currentLocaleName }}</span>
-              <svg class="w-4 h-4 ml-1.5 transition-transform" :class="{ 'rotate-180': langMenuOpen }" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
+              <span class="hidden xl:inline">{{ currentLocaleName }}</span>
+              <svg class="hidden xl:block w-4 h-4 ml-1.5 transition-transform" :class="{ 'rotate-180': langMenuOpen }" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path>
               </svg>
             </button>
