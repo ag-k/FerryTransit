@@ -43,16 +43,46 @@
                 </p>
               </div>
               <div class="md:col-span-2 mt-4">
-                <div class="grid md:grid-cols-2 gap-4">
-                  <div>
-                    <p class="mb-2 dark:text-gray-200">
-                      <strong>{{ $t('TODAY_WAVE') }}:</strong> {{ shipStatus.ferry.todayWave || '-' }}
-                    </p>
-                  </div>
-                  <div>
-                    <p class="mb-2 dark:text-gray-200">
-                      <strong>{{ $t('TOMORROW_WAVE') }}:</strong> {{ shipStatus.ferry.tomorrowWave || '-' }}
-                    </p>
+                <div class="rounded-lg border border-sky-200/70 bg-gradient-to-br from-sky-50 via-white to-blue-50 p-5 shadow-sm dark:border-slate-600 dark:from-slate-800 dark:via-slate-800/90 dark:to-slate-700">
+                  <div class="grid grid-cols-2 gap-3 md:grid-cols-3 md:items-stretch md:gap-4">
+                    <div
+                      class="col-span-2 rounded-md border border-sky-200/80 bg-white/80 px-3 py-3 text-center text-sm font-semibold uppercase tracking-[0.18em] text-sky-700 shadow-sm dark:border-slate-500 dark:bg-slate-800/80 dark:text-sky-200 md:col-span-1 md:self-center">
+                      {{ $t('WAVE_HEIGHT') }}
+                    </div>
+                    <div
+                      class="rounded-md border border-white/70 bg-white/70 px-4 py-3 text-center shadow-sm dark:border-slate-600 dark:bg-slate-900/40">
+                      <div class="mt-1 flex flex-col items-center gap-1 md:flex-row md:gap-2">
+                        <p class="text-sm font-semibold uppercase tracking-[0.18em] text-sky-700 dark:text-sky-200">
+                          {{ $t('TODAY') }}
+                        </p>
+                        <p class="text-lg font-semibold text-slate-800 dark:text-slate-100">
+                          {{ todayWaveParts.value }}
+                        </p>
+                        <p v-if="todayWaveParts.unit" class="text-sm font-semibold text-slate-600 dark:text-slate-200">
+                          {{ todayWaveParts.unit }}
+                        </p>
+                      </div>
+                      <p v-if="todayWaveParts.note" class="mt-1 text-xs text-slate-500 dark:text-slate-300">
+                        {{ todayWaveParts.note }}
+                      </p>
+                    </div>
+                    <div
+                      class="rounded-md border border-white/70 bg-white/70 px-4 py-3 text-center shadow-sm dark:border-slate-600 dark:bg-slate-900/40">
+                      <div class="mt-1 flex flex-col items-center gap-1 md:flex-row md:gap-2">
+                        <p class="text-sm font-semibold uppercase tracking-[0.18em] text-sky-700 dark:text-sky-200">
+                          {{ $t('TOMORROW') }}
+                        </p>
+                        <p class="text-lg font-semibold text-slate-800 dark:text-slate-100">
+                          {{ tomorrowWaveParts.value }}
+                        </p>
+                        <p v-if="tomorrowWaveParts.unit" class="text-sm font-semibold text-slate-600 dark:text-slate-200">
+                          {{ tomorrowWaveParts.unit }}
+                        </p>
+                      </div>
+                      <p v-if="tomorrowWaveParts.note" class="mt-1 text-xs text-slate-500 dark:text-slate-300">
+                        {{ tomorrowWaveParts.note }}
+                      </p>
+                    </div>
                   </div>
                 </div>
               </div>
@@ -319,6 +349,7 @@
 import { useFerryStore } from '@/stores/ferry'
 import { useFerryData } from '@/composables/useFerryData'
 import type { ShipStatus, FerryStatus } from '~/types'
+import { splitWaveValue } from '@/utils/wave'
 
 const ferryStore = process.client ? useFerryStore() : null
 const { updateShipStatus } = useFerryData()
@@ -532,6 +563,9 @@ const formatReason = (reason?: string | null) => {
 }
 
 const getTripDepartureTime = (trip: any) => formatShipTime(trip?.departure_time || trip?.departureTime)
+
+const todayWaveParts = computed(() => splitWaveValue(shipStatus.value?.ferry?.todayWave ?? null))
+const tomorrowWaveParts = computed(() => splitWaveValue(shipStatus.value?.ferry?.tomorrowWave ?? null))
 
 const refreshStatus = async () => {
   isLoading.value = true
