@@ -7,7 +7,7 @@
     "build": "nuxt build",
     "dev": "npm run dev:setup && cp .env.local .env && nuxt dev",
     "dev:setup": "node scripts/dev-setup.mjs",
-    "dev:full": "concurrently \"npm run firebase:emulators:with-data\" \"npm run dev\"",
+    "dev:full": "concurrently -k --kill-others-on-fail --kill-signal SIGINT --names \"emulators,nuxt\" \"npm run firebase:emulators:with-data\" \"npm run dev\"",
     "generate": "nuxt generate",
     "preview": "nuxt preview",
     "postinstall": "nuxt prepare",

@@ -57,6 +57,7 @@ coverage/
 
 # Firebase emulator data
 emulator-data/
+firebase-export-*/
 
 # Claude local settings
 .claude/settings.local.json
