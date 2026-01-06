@@ -66,24 +66,26 @@
               </div>
               <div class="md:col-span-2 mt-3">
                 <div class="rounded-lg border border-sky-200/70 bg-gradient-to-br from-sky-50 via-white to-blue-50 p-3 shadow-sm dark:border-slate-600 dark:from-slate-800 dark:via-slate-800/90 dark:to-slate-700">
-                  <div class="flex items-start justify-between gap-3">
-                    <p class="text-xs font-semibold tracking-[0.12em] text-sky-900/80 dark:text-sky-200">
-                      {{ $t('WAVE_HEIGHT') }}
-                    </p>
-                    <div class="flex flex-wrap justify-end gap-x-4 gap-y-1 text-xs font-semibold text-slate-800 dark:text-slate-100 tabular-nums">
-                      <p class="whitespace-nowrap">
-                        <span class="mr-1 text-slate-500 dark:text-slate-300">{{ $t('TODAY') }}</span>
-                        {{ todayWaveParts.value }}<span v-if="todayWaveParts.unit" class="ml-0.5 text-slate-600 dark:text-slate-200">{{ todayWaveParts.unit }}</span>
+                  <div class="mx-auto w-full max-w-[460px]">
+                    <div class="flex items-start justify-between gap-2 md:items-center">
+                      <p class="text-xs font-semibold tracking-[0.12em] text-sky-900/80 dark:text-sky-200">
+                        {{ $t('WAVE_HEIGHT') }}
                       </p>
-                      <p class="whitespace-nowrap">
-                        <span class="mr-1 text-slate-500 dark:text-slate-300">{{ $t('TOMORROW') }}</span>
-                        {{ tomorrowWaveParts.value }}<span v-if="tomorrowWaveParts.unit" class="ml-0.5 text-slate-600 dark:text-slate-200">{{ tomorrowWaveParts.unit }}</span>
-                      </p>
+                      <div class="flex flex-wrap justify-end gap-x-3 gap-y-1 tabular-nums md:flex-nowrap md:gap-x-5">
+                        <p class="whitespace-nowrap text-sm font-semibold text-slate-800 dark:text-slate-100">
+                          <span class="mr-1 text-slate-500 dark:text-slate-300">{{ $t('TODAY') }}</span>
+                          {{ todayWaveParts.value }}<span v-if="todayWaveParts.unit" class="ml-0.5 text-slate-600 dark:text-slate-200">{{ todayWaveParts.unit }}</span>
+                        </p>
+                        <p class="whitespace-nowrap text-sm font-semibold text-slate-800 dark:text-slate-100">
+                          <span class="mr-1 text-slate-500 dark:text-slate-300">{{ $t('TOMORROW') }}</span>
+                          {{ tomorrowWaveParts.value }}<span v-if="tomorrowWaveParts.unit" class="ml-0.5 text-slate-600 dark:text-slate-200">{{ tomorrowWaveParts.unit }}</span>
+                        </p>
+                      </div>
                     </div>
-                  </div>
-                  <div v-if="todayWaveParts.note || tomorrowWaveParts.note" class="mt-1 text-[11px] leading-snug text-slate-500 dark:text-slate-300">
-                    <p v-if="todayWaveParts.note">{{ todayWaveParts.note }}</p>
-                    <p v-if="tomorrowWaveParts.note">{{ tomorrowWaveParts.note }}</p>
+                    <div v-if="todayWaveParts.note || tomorrowWaveParts.note" class="mt-1 text-[11px] leading-snug text-slate-500 dark:text-slate-300">
+                      <p v-if="todayWaveParts.note">{{ todayWaveParts.note }}</p>
+                      <p v-if="tomorrowWaveParts.note">{{ tomorrowWaveParts.note }}</p>
+                    </div>
                   </div>
                 </div>
               </div>
