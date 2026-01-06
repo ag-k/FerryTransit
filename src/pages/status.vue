@@ -15,8 +15,8 @@
         <div class="rounded-lg overflow-hidden shadow-sm" :class="getFerryCardContainerClass(shipStatus.ferry)">
           <div class="px-4 py-3 border-b flex items-center justify-between gap-3" :class="getFerryCardHeaderClass(shipStatus.ferry)">
             <h3 class="text-lg font-bold">{{ $t('OKI_KISEN_FERRY') }}</h3>
-            <p v-if="lastFetchTime" class="text-xs font-semibold text-white/90">
-              {{ $t('LAST_UPDATE') }}: {{ formatDateTime(lastFetchTime) }}
+            <p v-if="ferryUpdatedAt" class="text-xs font-semibold text-white/90">
+              {{ $t('LAST_UPDATE') }}: {{ formatDateTime(ferryUpdatedAt) }}
             </p>
           </div>
           <div class="p-4">
@@ -370,8 +370,8 @@
     </div>
 
     <!-- Last update time -->
-    <div v-if="lastFetchTime" class="text-center text-gray-500 dark:text-gray-300 mt-2">
-      <small>{{ $t('LAST_UPDATE') }}: {{ formatDateTime(lastFetchTime) }}</small>
+    <div v-if="updatedAtForDisplay" class="text-center text-gray-500 dark:text-gray-300 mt-2">
+      <small>{{ $t('LAST_UPDATE') }}: {{ formatDateTime(updatedAtForDisplay) }}</small>
     </div>
   </div>
 </template>
@@ -392,6 +392,19 @@ const isLoading = ref(false)
 // Store data
 const shipStatus = computed(() => ferryStore?.shipStatus || {})
 const lastFetchTime = computed(() => ferryStore?.lastFetchTime || null)
+const ferryUpdatedAt = computed(() => shipStatus.value?.ferry?.updated_at || null)
+const updatedAtForDisplay = computed(() => {
+  // Prefer API-provided timestamps; fall back to store fetch time
+  return (
+    shipStatus.value?.ferry?.updated_at ||
+    shipStatus.value?.isokaze?.updated_at ||
+    shipStatus.value?.isokaze?.updated ||
+    shipStatus.value?.dozen?.updated_at ||
+    shipStatus.value?.dozen?.updated ||
+    lastFetchTime.value ||
+    null
+  )
+})
 
 // Methods
 const getStatusClass = (status?: number | null) => {
