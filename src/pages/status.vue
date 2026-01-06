@@ -9,7 +9,7 @@
     </div>
 
     <!-- Status cards -->
-    <div v-else class="grid md:grid-cols-2 gap-6">
+    <div v-else class="grid md:grid-cols-2 gap-x-6 gap-y-4">
       <!-- Ferry Status -->
       <div class="md:col-span-2">
         <div class="rounded-lg overflow-hidden shadow-sm" :class="getFerryCardContainerClass(shipStatus.ferry)">
@@ -25,11 +25,11 @@
             </p>
           </div>
           <div class="p-4">
-            <div v-if="shipStatus.ferry" class="grid md:grid-cols-2 gap-6">
+            <div v-if="shipStatus.ferry" class="grid md:grid-cols-2 gap-x-6 gap-y-4">
               <div>
-                <div class="rounded-lg border border-slate-200/70 bg-white/70 p-4 shadow-sm dark:border-slate-700 dark:bg-slate-900/40">
+                <div class="rounded-lg border border-slate-200/70 bg-white/70 p-4 shadow-sm dark:border-slate-700 dark:bg-slate-900/40 h-full flex flex-col">
                   <div class="flex items-start justify-between gap-3">
-                    <h6 class="text-sm font-semibold text-slate-800 dark:text-slate-100">{{ $t('FERRY') }}</h6>
+                    <h6 class="text-sm font-semibold text-slate-800 dark:text-slate-100">{{ $t('OKI_KISEN_FERRY_FLEET_LABEL') }}</h6>
                     <span
                       class="inline-flex items-center rounded-full px-2.5 py-1 text-xs font-semibold ring-1 ring-inset"
                       :class="getOperationBadgeClass(shipStatus.ferry.ferryState)"
@@ -39,9 +39,6 @@
                   </div>
 
                   <div v-if="shipStatus.ferry.ferryComment" class="mt-3 rounded-md border border-slate-200/70 bg-slate-50/70 p-3 dark:border-slate-700 dark:bg-slate-950/30">
-                    <p class="text-xs font-semibold text-slate-600 dark:text-slate-200">
-                      {{ $t('COMMENT') }}
-                    </p>
                     <p class="mt-1 text-sm leading-relaxed text-slate-700 dark:text-slate-200">
                       {{ shipStatus.ferry.ferryComment }}
                     </p>
@@ -49,7 +46,7 @@
                 </div>
               </div>
               <div>
-                <div class="rounded-lg border border-slate-200/70 bg-white/70 p-4 shadow-sm dark:border-slate-700 dark:bg-slate-900/40">
+                <div class="rounded-lg border border-slate-200/70 bg-white/70 p-4 shadow-sm dark:border-slate-700 dark:bg-slate-900/40 h-full flex flex-col">
                   <div class="flex items-start justify-between gap-3">
                     <h6 class="text-sm font-semibold text-slate-800 dark:text-slate-100">{{ $t('RAINBOWJET') }}</h6>
                     <span
@@ -61,16 +58,13 @@
                   </div>
 
                   <div v-if="shipStatus.ferry.fastFerryComment" class="mt-3 rounded-md border border-slate-200/70 bg-slate-50/70 p-3 dark:border-slate-700 dark:bg-slate-950/30">
-                    <p class="text-xs font-semibold text-slate-600 dark:text-slate-200">
-                      {{ $t('COMMENT') }}
-                    </p>
                     <p class="mt-1 text-sm leading-relaxed text-slate-700 dark:text-slate-200">
                       {{ shipStatus.ferry.fastFerryComment }}
                     </p>
                   </div>
                 </div>
               </div>
-              <div class="md:col-span-2 mt-4">
+              <div class="md:col-span-2 mt-3">
                 <div class="rounded-lg border border-sky-200/70 bg-gradient-to-br from-sky-50 via-white to-blue-50 p-5 shadow-sm dark:border-slate-600 dark:from-slate-800 dark:via-slate-800/90 dark:to-slate-700">
                   <div class="grid grid-cols-2 gap-3 md:grid-cols-3 md:items-stretch md:gap-4">
                     <div
@@ -138,7 +132,7 @@
             </p>
           </div>
           <div class="p-4">
-            <div class="grid md:grid-cols-2 gap-6">
+            <div class="grid md:grid-cols-2 gap-x-6 gap-y-4">
               <!-- いそかぜ -->
               <div>
                 <div class="rounded-lg border border-slate-200/70 bg-white/70 p-4 shadow-sm dark:border-slate-700 dark:bg-slate-900/40">
@@ -163,9 +157,6 @@
                     </div>
 
                     <div v-if="shipStatus.isokaze.comment" class="mt-3 rounded-md border border-slate-200/70 bg-slate-50/70 p-3 dark:border-slate-700 dark:bg-slate-950/30">
-                      <p class="text-xs font-semibold text-slate-600 dark:text-slate-200">
-                        {{ $t('COMMENT') }}
-                      </p>
                       <p class="mt-1 text-sm leading-relaxed text-slate-700 dark:text-slate-200">
                         {{ shipStatus.isokaze.comment }}
                       </p>
@@ -284,9 +275,6 @@
                     </div>
 
                     <div v-if="shipStatus.dozen.comment" class="mt-3 rounded-md border border-slate-200/70 bg-slate-50/70 p-3 dark:border-slate-700 dark:bg-slate-950/30">
-                      <p class="text-xs font-semibold text-slate-600 dark:text-slate-200">
-                        {{ $t('COMMENT') }}
-                      </p>
                       <p class="mt-1 text-sm leading-relaxed text-slate-700 dark:text-slate-200">
                         {{ shipStatus.dozen.comment }}
                       </p>
