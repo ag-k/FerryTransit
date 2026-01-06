@@ -115,7 +115,7 @@
         </button>
         <button
           data-test="timetable-add"
-          class="w-full sm:w-auto px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 transition-colors"
+          class="w-full sm:w-auto px-4 py-2 bg-blue-700 text-white rounded-md hover:bg-blue-800 transition-colors"
           @click="showAddModal = true"
         >
           <PlusIcon class="h-5 w-5 inline mr-1" />
@@ -166,7 +166,7 @@
         <div class="flex items-center gap-1">
           <button
             data-test="timetable-edit"
-            class="p-2 text-blue-600 hover:text-blue-900 dark:text-blue-400 dark:hover:text-blue-300 hover:bg-blue-50 dark:hover:bg-blue-900/20 rounded transition-colors"
+            class="p-2 text-blue-700 hover:text-blue-900 dark:text-blue-400 dark:hover:text-blue-300 hover:bg-blue-50 dark:hover:bg-blue-900/20 rounded transition-colors"
             title="編集"
             aria-label="時刻表を編集"
             @click="editTimetable(row)"
@@ -535,7 +535,7 @@ const getStatusClass = (status: number) => {
     case 1: return 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-200'
     case 2: return 'bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-200'
     case 3: return 'bg-orange-100 text-orange-800 dark:bg-orange-900 dark:text-orange-200'
-    case 4: return 'bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-200'
+    case 4: return 'bg-blue-100 text-blue-900 dark:bg-blue-900 dark:text-blue-200'
     default: return 'bg-gray-100 text-gray-800 dark:bg-gray-900 dark:text-gray-200'
   }
 }

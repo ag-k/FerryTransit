@@ -32,7 +32,7 @@
                 <!-- Loading indicator -->
                 <div v-if="isLoading" class="absolute inset-0 flex items-center justify-center bg-gray-100 dark:bg-gray-700">
                   <div class="flex flex-col items-center">
-                    <div class="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600"></div>
+                    <div class="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-700"></div>
                     <p class="mt-2 text-gray-600 dark:text-gray-300">{{ $t('LOADING_MAP') }}</p>
                   </div>
                 </div>

@@ -30,7 +30,7 @@ class="p-2 rounded hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors da
 
       <!-- Loading state -->
       <div v-if="isLoading" class="text-center py-12">
-        <div class="inline-block animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>
+        <div class="inline-block animate-spin rounded-full h-8 w-8 border-b-2 border-blue-700"></div>
         <p class="mt-4 text-gray-600 dark:text-gray-400">{{ $t('LOADING') }}...</p>
       </div>
 
@@ -51,7 +51,7 @@ v-else-if="error"
             <span class="dark:text-gray-100">{{ $t('HOLIDAY') }}</span>
           </div>
           <div class="flex items-center gap-2">
-            <div class="w-4 h-4 bg-blue-100 dark:bg-blue-900/30 border border-blue-300 dark:border-blue-600 rounded">
+            <div class="w-4 h-4 bg-blue-100 dark:bg-blue-900/30 border border-blue-300 dark:border-blue-700 rounded">
             </div>
             <span class="dark:text-gray-100">{{ $t('SPECIAL_OPERATION') }}</span>
           </div>
@@ -88,7 +88,7 @@ v-for="(day, dayIndex) in week" :key="dayIndex"
                     </div>
 
                     <!-- Special operation -->
-                    <div v-if="day.specialOperation" class="text-xs text-blue-700 dark:text-blue-400 leading-tight">
+                    <div v-if="day.specialOperation" class="text-xs text-blue-800 dark:text-blue-400 leading-tight">
                       <span v-if="day.specialOperation.operationType === 'reduced'">
                         {{ $t('REDUCED_OPERATION') }}
                       </span>
@@ -125,9 +125,9 @@ v-for="holiday in monthHolidays" :key="holiday.date"
           <div class="space-y-2">
             <div
 v-for="op in monthSpecialOperations" :key="op.date"
-              class="bg-blue-50 dark:bg-blue-900/40 border border-blue-200 dark:border-blue-700 rounded-lg p-4">
+              class="bg-blue-50 dark:bg-blue-900/40 border border-blue-200 dark:border-blue-800 rounded-lg p-4">
               <div class="font-medium dark:text-white">{{ formatDate(op.date, 'long') }}</div>
-              <div class="text-blue-700 dark:text-blue-300">{{ $t(op.descriptionKey) }}</div>
+              <div class="text-blue-800 dark:text-blue-300">{{ $t(op.descriptionKey) }}</div>
             </div>
           </div>
         </div>

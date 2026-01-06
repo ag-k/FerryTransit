@@ -57,7 +57,7 @@
                     @click="selectedHondoPort = tab.id"
                     class="px-4 py-2 text-sm font-medium rounded-t-lg transition-colors"
                     :class="selectedHondoPort === tab.id
-                      ? 'bg-blue-50 dark:bg-blue-900/30 text-blue-600 dark:text-blue-400 border-b-2 border-blue-600 dark:border-blue-400'
+                      ? 'bg-blue-50 dark:bg-blue-900/30 text-blue-700 dark:text-blue-400 border-b-2 border-blue-700 dark:border-blue-400'
                       : 'text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-800/50'"
                   >
                     {{ tab.name }}
@@ -118,7 +118,7 @@
                         </div>
                         <a
                           v-if="item.sourceUrl"
-                          class="text-xs text-blue-600 dark:text-blue-300 hover:underline whitespace-nowrap"
+                          class="text-xs text-blue-700 dark:text-blue-300 hover:underline whitespace-nowrap"
                           :href="item.sourceUrl"
                           target="_blank"
                           rel="noopener noreferrer"

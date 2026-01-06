@@ -35,7 +35,7 @@
       </div>
       <button
         :disabled="isLoading"
-        class="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 disabled:bg-gray-400"
+        class="px-4 py-2 bg-blue-700 text-white rounded-md hover:bg-blue-800 disabled:bg-gray-400"
         @click="refreshData"
       >
         <ArrowPathIcon class="h-5 w-5 inline mr-1" :class="{ 'animate-spin': isLoading }" />
@@ -265,7 +265,7 @@
           <div class="text-sm text-gray-500 dark:text-gray-400 mt-1">成功検索数</div>
         </div>
         <div class="text-center">
-          <div class="text-2xl font-bold text-blue-600 dark:text-blue-400">
+          <div class="text-2xl font-bold text-blue-700 dark:text-blue-400">
             {{ conversionStats.conversionRate.toFixed(1) }}%
           </div>
           <div class="text-sm text-gray-500 dark:text-gray-400 mt-1">コンバージョン率</div>

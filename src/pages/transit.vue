@@ -48,7 +48,7 @@
       <!-- Search Button -->
       <div>
         <button type="button"
-          class="w-full px-8 py-3 text-base bg-blue-600 text-white rounded-lg hover:bg-blue-700 dark:bg-blue-500 dark:hover:bg-blue-600 active:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 dark:focus:ring-offset-gray-800 transform active:scale-95 transition-all duration-150 disabled:bg-gray-400 dark:disabled:bg-gray-600 disabled:cursor-not-allowed disabled:transform-none flex items-center justify-center shadow-sm hover:shadow-md"
+          class="w-full px-8 py-3 text-base bg-blue-700 text-white rounded-lg hover:bg-blue-800 dark:bg-blue-500 dark:hover:bg-blue-700 active:bg-blue-800 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 dark:focus:ring-offset-gray-800 transform active:scale-95 transition-all duration-150 disabled:bg-gray-400 dark:disabled:bg-gray-600 disabled:cursor-not-allowed disabled:transform-none flex items-center justify-center shadow-sm hover:shadow-md"
           :disabled="!canSearch || isSearching" @click="handleSearch">
           <span v-if="isSearching"
             class="inline-block animate-spin rounded-full h-4 w-4 border-b-2 border-white mr-2"></span>
@@ -77,7 +77,7 @@
               :aria-selected="sortOption === option.value"
               class="px-3 py-2 text-sm font-medium rounded-md border transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 flex items-center justify-center"
               :class="sortOption === option.value
-                ? 'bg-blue-600 text-white border-blue-600 shadow-sm'
+                ? 'bg-blue-700 text-white border-blue-700 shadow-sm'
                 : 'border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-300 bg-white dark:bg-gray-800 hover:bg-blue-50 dark:hover:bg-gray-700'"
               @click="sortOption = option.value">
               {{ $t(option.labelKey) }}
@@ -87,14 +87,14 @@
       </div>
       <!-- Route Panels -->
       <div v-for="(route, index) in displayedResults" :key="index" class="mb-4">
-        <div class="bg-white dark:bg-gray-800 rounded-lg overflow-hidden shadow-sm ring-1 ring-blue-600 dark:ring-blue-500">
+        <div class="bg-white dark:bg-gray-800 rounded-lg overflow-hidden shadow-sm ring-1 ring-blue-700 dark:ring-blue-500">
           <div
             class="bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 px-4 py-2 flex items-center justify-between rounded-t-lg border-b border-gray-200 dark:border-gray-700"
             data-testid="transit-result-header"
           >
             <h3 class="font-medium flex items-center gap-3 min-w-0">
               <span
-                class="inline-flex items-center justify-center w-7 h-7 bg-blue-600 text-white dark:bg-blue-600 dark:text-white rounded-full font-bold text-sm">
+                class="inline-flex items-center justify-center w-7 h-7 bg-blue-700 text-white dark:bg-blue-700 dark:text-white rounded-full font-bold text-sm">
                 {{ index + 1 }}
               </span>
 
@@ -138,7 +138,7 @@
             </h3>
             <div class="flex items-center gap-2">
               <button
-                class="text-gray-600 hover:text-blue-600 dark:text-gray-200 dark:hover:text-yellow-300 focus:outline-none focus:ring-2 focus:ring-blue-500 dark:focus:ring-yellow-300 rounded p-1"
+                class="text-gray-600 hover:text-blue-700 dark:text-gray-200 dark:hover:text-yellow-300 focus:outline-none focus:ring-2 focus:ring-blue-500 dark:focus:ring-yellow-300 rounded p-1"
                 :title="$t('SHOW_ON_MAP')" @click="showRouteMap(route)">
                 <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24"
                   stroke="currentColor">
@@ -147,7 +147,7 @@
                 </svg>
               </button>
               <FavoriteButton :type="'route'" :route="{ departure: departure, arrival: arrival }"
-                class="text-gray-600 hover:text-blue-600 dark:text-gray-200 dark:hover:text-yellow-300" />
+                class="text-gray-600 hover:text-blue-700 dark:text-gray-200 dark:hover:text-yellow-300" />
             </div>
           </div>
           <div class="p-4">
@@ -161,10 +161,10 @@
               </thead>
               <tbody>
                 <!-- Departure -->
-                <tr class="bg-[#D8ECF3] dark:bg-blue-900/40">
+                <tr class="bg-blue-50/80 dark:bg-slate-900/60">
                   <td class="py-2 pl-4 pr-4 text-left dark:text-gray-100">{{ formatTime(route.departureTime) }}</td>
                   <td class="py-2 pl-4">
-                    <a href="#" class="text-blue-600 dark:text-blue-200 hover:underline"
+                    <a href="#" class="text-blue-700 dark:text-blue-200 hover:underline"
                       @click.prevent="showPortInfo(route.segments[0].departure)">
                       ⚓ {{ getPortDisplayName(route.segments[0].departure) }}
                     </a>
@@ -200,7 +200,7 @@
                           aria-label="運航状況を見る"
                           @click.stop="navigateToStatus"
                         >⚠</button>
-                        <a href="#" class="text-blue-600 dark:text-blue-200 hover:underline"
+                        <a href="#" class="text-blue-700 dark:text-blue-200 hover:underline"
                           @click.prevent="showShipInfo(segment.ship)">
                           🚢 {{ $t(segment.ship) }}
                         </a>
@@ -213,12 +213,12 @@
                   </tr>
 
                   <!-- Transfer Port (if not last segment) -->
-                  <tr v-if="segIndex < route.segments.length - 1" class="bg-[#D8ECF3] dark:bg-blue-900/40">
+                  <tr v-if="segIndex < route.segments.length - 1" class="bg-blue-50/80 dark:bg-slate-900/60">
                     <td class="py-2 pl-4 pr-4 text-left dark:text-gray-100 whitespace-pre-line">
                       {{ formatTransferPortTimes(segment.arrivalTime, route.segments[segIndex + 1].departureTime) }}
                     </td>
                     <td class="py-2 pl-4">
-                      <a href="#" class="text-blue-600 dark:text-blue-200 hover:underline"
+                      <a href="#" class="text-blue-700 dark:text-blue-200 hover:underline"
                         @click.prevent="showPortInfo(segment.arrival)">
                         ⚓ {{ getPortDisplayName(segment.arrival) }}
                       </a>
@@ -232,10 +232,10 @@
                 </template>
 
                 <!-- Arrival -->
-                <tr class="bg-[#D8ECF3] dark:bg-blue-900/40">
+                <tr class="bg-blue-50/80 dark:bg-slate-900/60">
                   <td class="py-2 pl-4 pr-4 text-left dark:text-gray-100">{{ formatTime(route.arrivalTime) }}</td>
                   <td class="py-2 pl-4">
-                    <a href="#" class="text-blue-600 dark:text-blue-200 hover:underline"
+                    <a href="#" class="text-blue-700 dark:text-blue-200 hover:underline"
                       @click.prevent="showPortInfo(route.segments[route.segments.length - 1].arrival)">
                       ⚓ {{ getPortDisplayName(route.segments[route.segments.length - 1].arrival) }}
                     </a>
@@ -254,7 +254,7 @@
       <!-- Show More Button -->
       <div v-if="searchResults.length > displayLimit" class="mt-4">
         <button
-          class="w-full py-3 bg-blue-600 hover:bg-blue-700 dark:bg-blue-500 dark:hover:bg-blue-600 text-white font-medium rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 dark:focus:ring-offset-gray-900 transform active:scale-[0.98] transition-all duration-150 shadow-sm hover:shadow-md"
+          class="w-full py-3 bg-blue-700 hover:bg-blue-800 dark:bg-blue-500 dark:hover:bg-blue-700 text-white font-medium rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 dark:focus:ring-offset-gray-900 transform active:scale-[0.98] transition-all duration-150 shadow-sm hover:shadow-md"
           @click="showMore">
           {{ $t('MORE_BUTTON') }}
         </button>
@@ -263,7 +263,7 @@
 
     <!-- No Results -->
     <div v-else-if="hasSearched && !isSearching"
-      class="bg-blue-100 dark:bg-blue-900/30 border border-blue-200 dark:border-gray-700 text-blue-800 dark:text-blue-300 px-4 py-3 rounded">
+      class="bg-blue-100 dark:bg-blue-900/30 border border-blue-200 dark:border-gray-700 text-blue-900 dark:text-blue-300 px-4 py-3 rounded">
       <div class="flex flex-col gap-3">
         <p class="font-medium">
           {{ $t('NO_ROUTES_FOUND') }}
@@ -271,7 +271,7 @@
         <button
           type="button"
           class="inline-flex items-center justify-center px-4 py-2 text-sm font-medium rounded-md border transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-500
-            border-blue-600 dark:border-blue-400 text-blue-700 dark:text-blue-200 bg-white/90 dark:bg-gray-800 hover:bg-blue-50 dark:hover:bg-gray-700 disabled:opacity-60 disabled:cursor-not-allowed"
+            border-blue-700 dark:border-blue-400 text-blue-800 dark:text-blue-200 bg-white/90 dark:bg-gray-800 hover:bg-blue-50 dark:hover:bg-gray-700 disabled:opacity-60 disabled:cursor-not-allowed"
           :disabled="!canSearch || isSearching"
           data-testid="transit-retry-search"
           @click="retrySearchWithAdjustedTime"
@@ -289,7 +289,7 @@
             <div class="p-4">
               <h6 class="text-sm text-gray-600 dark:text-gray-300 mb-2 flex items-center gap-2">
                 <span
-                  class="inline-flex items-center justify-center w-5 h-5 bg-blue-600 text-white dark:bg-blue-700 rounded-full font-bold text-xs">
+                  class="inline-flex items-center justify-center w-5 h-5 bg-blue-700 text-white dark:bg-blue-800 rounded-full font-bold text-xs">
                   {{ index + 1 }}
                 </span>
                 <span>{{ $t('LEG') }}</span>

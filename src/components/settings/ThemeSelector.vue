@@ -11,7 +11,7 @@
         class="w-full text-left px-4 py-3 rounded-lg border transition-colors duration-200"
         :class="[
           uiStore?.theme === theme.value 
-            ? 'bg-blue-50 dark:bg-blue-900/40 border-blue-500 dark:border-blue-400 text-blue-700 dark:text-blue-200' 
+            ? 'bg-blue-50 dark:bg-blue-900/40 border-blue-500 dark:border-blue-400 text-blue-800 dark:text-blue-200' 
             : 'bg-white dark:bg-gray-800 border-gray-300 dark:border-gray-600 hover:bg-gray-50 dark:hover:bg-gray-700 dark:text-gray-100'
         ]"
       >
@@ -63,7 +63,7 @@
           </div>
           <svg
             v-if="uiStore?.theme === theme.value"
-            class="w-5 h-5 text-blue-600 dark:text-blue-400"
+            class="w-5 h-5 text-blue-700 dark:text-blue-400"
             fill="currentColor"
             viewBox="0 0 20 20"
           >

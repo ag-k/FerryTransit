@@ -14,7 +14,7 @@
           <div
             v-for="(point, index) in normalizedData"
             :key="index"
-            class="flex-1 bg-blue-500 dark:bg-blue-600 rounded-t-sm hover:bg-blue-600 dark:hover:bg-blue-700 transition-colors relative group"
+            class="flex-1 bg-blue-500 dark:bg-blue-700 rounded-t-sm hover:bg-blue-700 dark:hover:bg-blue-800 transition-colors relative group"
             :style="{ height: `${point.percentage}%` }"
           >
             <div class="absolute -top-8 left-1/2 transform -translate-x-1/2 bg-gray-900 dark:bg-gray-700 text-white text-xs rounded px-2 py-1 opacity-0 group-hover:opacity-100 transition-opacity">
@@ -83,7 +83,7 @@
             class="flex-1"
           >
             <div
-              class="bg-blue-500 dark:bg-blue-600 rounded-t-sm hover:bg-blue-600 dark:hover:bg-blue-700 transition-colors relative group"
+              class="bg-blue-500 dark:bg-blue-700 rounded-t-sm hover:bg-blue-700 dark:hover:bg-blue-800 transition-colors relative group"
               :style="{ height: `${point.percentage}%` }"
             >
               <div class="absolute -top-8 left-1/2 transform -translate-x-1/2 bg-gray-900 dark:bg-gray-700 text-white text-xs rounded px-2 py-1 opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap">

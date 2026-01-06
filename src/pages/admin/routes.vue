@@ -71,7 +71,7 @@
               :class="{
                 'text-green-600': value === 'google_transit',
                 'text-yellow-600': value === 'google_driving',
-                'text-blue-600': value === 'manual',
+                'text-blue-700': value === 'manual',
                 'text-gray-600': value === 'custom' || value === 'google_routes' || value === 'overpass_osm'
               }"
             >
@@ -89,7 +89,7 @@
           </template>
           <template #row-actions="{ row }">
             <button
-              class="text-blue-600 hover:text-blue-900 dark:text-blue-400 dark:hover:text-blue-300"
+              class="text-blue-700 hover:text-blue-900 dark:text-blue-400 dark:hover:text-blue-300"
               @click.stop="openDetails(row)"
             >
               詳細
@@ -107,7 +107,7 @@
         <div class="space-y-4">
           <button
             :disabled="isFetching"
-            class="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md shadow-sm text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 disabled:opacity-50 disabled:cursor-not-allowed"
+            class="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md shadow-sm text-white bg-blue-700 hover:bg-blue-800 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 disabled:opacity-50 disabled:cursor-not-allowed"
             @click="fetchAllRoutes"
           >
             <Icon
@@ -154,7 +154,7 @@
           </div>
           <div class="mt-2 w-full bg-gray-200 rounded-full h-2">
             <div
-              class="bg-blue-600 h-2 rounded-full transition-all duration-300"
+              class="bg-blue-700 h-2 rounded-full transition-all duration-300"
               :style="{ width: `${(progress.current / progress.total) * 100}%` }"
             ></div>
           </div>
@@ -201,7 +201,7 @@
                     :class="{
                       'text-green-600': route.source === 'google_transit',
                       'text-yellow-600': route.source === 'google_driving',
-                      'text-blue-600': route.source === 'manual',
+                      'text-blue-700': route.source === 'manual',
                       'text-gray-600': route.source === 'custom'
                     }"
                   >
@@ -317,7 +317,7 @@
                 <div class="bg-gray-50 dark:bg-gray-700 px-6 py-4 sm:flex sm:flex-row-reverse">
                   <button
                     type="button"
-                    class="w-full inline-flex justify-center rounded-md border border-transparent shadow-sm px-4 py-2 text-base font-medium text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 sm:ml-3 sm:w-auto sm:text-sm"
+                    class="w-full inline-flex justify-center rounded-md border border-transparent shadow-sm px-4 py-2 text-base font-medium text-white bg-blue-700 hover:bg-blue-800 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 sm:ml-3 sm:w-auto sm:text-sm"
                     @click="closeDetails"
                   >
                     閉じる

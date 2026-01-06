@@ -35,7 +35,7 @@
               <div class="mt-4 space-y-4">
                 <!-- Port Type -->
                 <div>
-                  <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-200">
+                  <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-900 dark:bg-blue-900 dark:text-blue-200">
                     {{ $t(`port.type.${port.type}`) }}
                   </span>
                 </div>
@@ -102,7 +102,7 @@
                 <div class="mt-6 flex space-x-3">
                   <button
                     type="button"
-                    class="flex-1 inline-flex justify-center rounded-md border border-transparent bg-blue-100 px-4 py-2 text-sm font-medium text-blue-900 hover:bg-blue-200 focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 focus-visible:ring-offset-2 dark:bg-blue-900 dark:text-blue-100 dark:hover:bg-blue-800"
+                    class="flex-1 inline-flex justify-center rounded-md border border-transparent bg-blue-100 px-4 py-2 text-sm font-medium text-blue-900 hover:bg-blue-200 focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 focus-visible:ring-offset-2 dark:bg-blue-900 dark:text-blue-100 dark:hover:bg-blue-900"
                     @click="viewTimetable"
                   >
                     {{ $t('TIMETABLE') }}

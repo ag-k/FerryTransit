@@ -156,7 +156,7 @@ export default defineNuxtConfig({
           name: "description",
           content: "島根県隠岐諸島のフェリー・内航船の時刻表と乗換案内",
         },
-        { name: "theme-color", content: "#3B82F6" },
+        { name: "theme-color", content: "#0047AB" },
         { name: "apple-mobile-web-app-capable", content: "yes" },
         { name: "mobile-web-app-capable", content: "yes" },
         { name: "apple-mobile-web-app-status-bar-style", content: "default" },

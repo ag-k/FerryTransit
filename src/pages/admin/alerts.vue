@@ -38,10 +38,10 @@
       </div>
       <div class="bg-blue-50 dark:bg-blue-900/20 rounded-lg p-4" data-test="summary-other">
         <div class="flex items-center">
-          <InformationCircleIcon class="h-8 w-8 text-blue-600 dark:text-blue-400" />
+          <InformationCircleIcon class="h-8 w-8 text-blue-700 dark:text-blue-400" />
           <div class="ml-3">
             <p class="text-sm font-medium text-gray-900 dark:text-gray-100">臨時・変更</p>
-            <p class="text-2xl font-bold text-blue-600 dark:text-blue-400">{{ statusSummary.other }}</p>
+            <p class="text-2xl font-bold text-blue-700 dark:text-blue-400">{{ statusSummary.other }}</p>
           </div>
         </div>
       </div>
@@ -124,7 +124,7 @@
               </div>
               <div class="flex space-x-2 ml-4">
                 <button
-                  class="text-blue-600 hover:text-blue-900 dark:text-blue-400"
+                  class="text-blue-700 hover:text-blue-900 dark:text-blue-400"
                   aria-label="edit-alert"
                   @click="editAlert(alert)"
                 >
@@ -386,7 +386,7 @@ const getAlertStatusClass = (status: number) => {
     case 1: return 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-200'
     case 2: return 'bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-200'
     case 3: return 'bg-orange-100 text-orange-800 dark:bg-orange-900 dark:text-orange-200'
-    case 4: return 'bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-200'
+    case 4: return 'bg-blue-100 text-blue-900 dark:bg-blue-900 dark:text-blue-200'
     default: return 'bg-gray-100 text-gray-800 dark:bg-gray-900 dark:text-gray-200'
   }
 }

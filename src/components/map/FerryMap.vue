@@ -5,7 +5,7 @@
       <p>{{ $t('map.disabled') }}</p>
       <button
         @click="enableMap"
-        class="mt-2 px-4 py-2 bg-blue-500 text-white rounded-md hover:bg-blue-600"
+        class="mt-2 px-4 py-2 bg-blue-500 text-white rounded-md hover:bg-blue-700"
       >
         {{ $t('map.enable') }}
       </button>
@@ -404,8 +404,8 @@ const getMarkerIcon = (active: boolean): google.maps.Icon | google.maps.Symbol =
     strokeWeight: active ? 2 : 1
   } as any
   if (active) {
-    base.fillColor = '#2563EB' // blue-600
-    base.strokeColor = '#1D4ED8' // blue-700
+    base.fillColor = '#2563EB' // blue-700
+    base.strokeColor = '#1D4ED8' // blue-800
   } else {
     base.fillColor = '#9CA3AF' // gray-400
     base.strokeColor = '#6B7280' // gray-500

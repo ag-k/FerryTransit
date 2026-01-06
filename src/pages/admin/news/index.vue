@@ -52,7 +52,7 @@
           {{ isPublishing ? '公開中...' : 'データ公開' }}
         </button>
         <button
-          class="w-full sm:w-auto px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 transition-colors"
+          class="w-full sm:w-auto px-4 py-2 bg-blue-700 text-white rounded-md hover:bg-blue-800 transition-colors"
           @click="navigateTo('/admin/news/edit')"
         >
           <PlusIcon class="h-5 w-5 inline mr-1" />
@@ -81,7 +81,7 @@
       </div>
       <p class="text-gray-600 dark:text-gray-400 mb-4">{{ loadError }}</p>
       <button
-        class="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700"
+        class="px-4 py-2 bg-blue-700 text-white rounded-md hover:bg-blue-800"
         @click="refreshData"
       >
         <ArrowPathIcon class="h-5 w-5 inline mr-1" />
@@ -97,7 +97,7 @@
       </p>
       <button
         v-if="!filterCategory && !filterStatus"
-        class="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700"
+        class="px-4 py-2 bg-blue-700 text-white rounded-md hover:bg-blue-800"
         @click="navigateTo('/admin/news/edit')"
       >
         <PlusIcon class="h-5 w-5 inline mr-1" />
@@ -146,7 +146,7 @@
               <EyeIcon class="h-5 w-5" />
             </button>
             <button
-              class="p-2 text-blue-600 hover:text-blue-900 dark:text-blue-400 dark:hover:text-blue-300 hover:bg-blue-50 dark:hover:bg-blue-900/20 rounded transition-colors"
+              class="p-2 text-blue-700 hover:text-blue-900 dark:text-blue-400 dark:hover:text-blue-300 hover:bg-blue-50 dark:hover:bg-blue-900/20 rounded transition-colors"
               title="編集"
               @click="editNews(row)"
             >
@@ -266,7 +266,7 @@ const filteredNews = computed(() => {
 const getCategoryClass = (category: string) => {
   switch (category) {
     case 'announcement':
-      return 'bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-200'
+      return 'bg-blue-100 text-blue-900 dark:bg-blue-900 dark:text-blue-200'
     case 'maintenance':
       return 'bg-orange-100 text-orange-800 dark:bg-orange-900 dark:text-orange-200'
     case 'feature':

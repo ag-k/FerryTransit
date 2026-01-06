@@ -19,8 +19,8 @@
       </div>
       
       <!-- Navigation simulation -->
-      <nav class="bg-blue-600 dark:bg-gray-900 text-white p-4 rounded">
-        <p>Navigation test: bg-blue-600 dark:bg-gray-900</p>
+      <nav class="bg-blue-700 dark:bg-gray-900 text-white p-4 rounded">
+        <p>Navigation test: bg-blue-700 dark:bg-gray-900</p>
       </nav>
       
       <!-- Test with different gray shades -->

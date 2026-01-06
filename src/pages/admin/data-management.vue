@@ -18,11 +18,11 @@
         <div class="flex items-center justify-between mb-4">
           <component
             :is="dataType.icon"
-            class="h-8 w-8 text-blue-600 dark:text-blue-400"
+            class="h-8 w-8 text-blue-700 dark:text-blue-400"
           />
           <span
             v-if="selectedDataType?.id === dataType.id"
-            class="text-blue-600 dark:text-blue-400"
+            class="text-blue-700 dark:text-blue-400"
           >
             <CheckCircleIcon class="h-6 w-6" />
           </span>
@@ -58,7 +58,7 @@
               ファイルをドラッグ＆ドロップまたは
             </p>
             <label class="cursor-pointer">
-              <span class="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 inline-block">
+              <span class="px-4 py-2 bg-blue-700 text-white rounded-md hover:bg-blue-800 inline-block">
                 ファイルを選択
               </span>
               <input
@@ -109,7 +109,7 @@
             </button>
             <button
               :disabled="!selectedFile || !isValidated || isImporting"
-              class="px-6 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 disabled:bg-gray-400"
+              class="px-6 py-2 bg-blue-700 text-white rounded-md hover:bg-blue-800 disabled:bg-gray-400"
               @click="importData"
             >
               <CloudArrowUpIcon class="h-5 w-5 inline mr-1" />
@@ -136,7 +136,7 @@
                 :class="[
                   'px-4 py-2 rounded-md border',
                   selectedFormat === format.id
-                    ? 'border-blue-500 bg-blue-50 dark:bg-blue-900/20 text-blue-600 dark:text-blue-400'
+                    ? 'border-blue-500 bg-blue-50 dark:bg-blue-900/20 text-blue-700 dark:text-blue-400'
                     : 'border-gray-300 dark:border-gray-600 hover:bg-gray-50 dark:hover:bg-gray-700'
                 ]"
                 @click="selectedFormat = format.id"
@@ -188,7 +188,7 @@
             </template>
             <template #row-actions="{ row }">
               <button
-                class="text-blue-600 hover:text-blue-900 dark:text-blue-400 dark:hover:text-blue-300 mr-3"
+                class="text-blue-700 hover:text-blue-900 dark:text-blue-400 dark:hover:text-blue-300 mr-3"
                 @click="downloadBackup(row)"
               >
                 <ArrowDownTrayIcon class="h-5 w-5" />

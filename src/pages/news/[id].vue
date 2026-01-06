@@ -26,7 +26,7 @@
       </p>
       <NuxtLink
         to="/news"
-        class="inline-flex items-center text-blue-600 dark:text-blue-400 hover:underline"
+        class="inline-flex items-center text-blue-700 dark:text-blue-400 hover:underline"
       >
         <svg class="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
           <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7" />
@@ -83,7 +83,7 @@
             </span>
             <span
               v-if="newsItem.isPinned"
-              class="text-blue-600 dark:text-blue-400"
+              class="text-blue-700 dark:text-blue-400"
               :title="$t('news.pinned')"
               data-testid="pinned-icon"
             >
@@ -120,7 +120,7 @@
       <div class="mt-12 pt-8 border-t border-gray-200 dark:border-gray-700">
         <NuxtLink
           to="/news"
-          class="inline-flex items-center text-blue-600 dark:text-blue-400 hover:underline"
+          class="inline-flex items-center text-blue-700 dark:text-blue-400 hover:underline"
         >
           <svg class="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7" />
@@ -268,7 +268,7 @@ const vSafeHtml: Directive<HTMLElement, string> = {
 const getCategoryClass = (category: string) => {
   switch (category) {
     case 'announcement':
-      return 'bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-200'
+      return 'bg-blue-100 text-blue-900 dark:bg-blue-900 dark:text-blue-200'
     case 'maintenance':
       return 'bg-orange-100 text-orange-800 dark:bg-orange-900 dark:text-orange-200'
     case 'feature':

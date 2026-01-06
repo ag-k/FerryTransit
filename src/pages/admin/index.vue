@@ -44,7 +44,7 @@
             class="flex items-center justify-between"
           >
             <div class="flex items-center">
-              <span class="w-8 h-8 rounded-full bg-blue-100 dark:bg-blue-900 flex items-center justify-center text-sm font-medium text-blue-600 dark:text-blue-300">
+              <span class="w-8 h-8 rounded-full bg-blue-100 dark:bg-blue-900 flex items-center justify-center text-sm font-medium text-blue-700 dark:text-blue-300">
                 {{ index + 1 }}
               </span>
               <span class="ml-3 text-sm text-gray-900 dark:text-white">

@@ -65,7 +65,7 @@ describe('ToggleSwitch', () => {
     expect(label.classes()).toContain('bg-gray-300')
 
     await wrapper.setProps({ checked: true })
-    expect(label.classes()).toContain('bg-blue-600')
+    expect(label.classes()).toContain('bg-blue-700')
   })
 
   it('説明がない場合は説明要素が表示されない', () => {

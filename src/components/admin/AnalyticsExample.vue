@@ -7,7 +7,7 @@
       <h3 class="font-semibold mb-2">Page View Tracking:</h3>
       <button 
         @click="trackPageView" 
-        class="px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600"
+        class="px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-700"
       >
         Track Current Page View
       </button>

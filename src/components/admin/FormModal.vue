@@ -154,7 +154,7 @@ const iconColorClass = computed(() => {
 
 const iconTextColorClass = computed(() => {
   const colors = {
-    info: 'text-blue-600 dark:text-blue-400',
+    info: 'text-blue-700 dark:text-blue-400',
     success: 'text-green-600 dark:text-green-400',
     warning: 'text-yellow-600 dark:text-yellow-400',
     danger: 'text-red-600 dark:text-red-400'
@@ -164,7 +164,7 @@ const iconTextColorClass = computed(() => {
 
 const primaryButtonClass = computed(() => {
   const colors = {
-    info: 'bg-blue-600 hover:bg-blue-700 focus:ring-blue-500',
+    info: 'bg-blue-700 hover:bg-blue-800 focus:ring-blue-500',
     success: 'bg-green-600 hover:bg-green-700 focus:ring-green-500',
     warning: 'bg-yellow-600 hover:bg-yellow-700 focus:ring-yellow-500',
     danger: 'bg-red-600 hover:bg-red-700 focus:ring-red-500'
