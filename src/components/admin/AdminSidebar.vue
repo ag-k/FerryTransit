@@ -38,7 +38,7 @@
                 :to="item.href"
                 :class="[
                   isActive(item.href)
-                    ? 'bg-blue-50 dark:bg-gray-700 text-blue-700 dark:text-blue-200'
+                    ? 'bg-blue-50 dark:bg-gray-700 text-blue-800 dark:text-blue-200'
                     : 'text-gray-600 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700',
                   'group flex items-center px-2 py-2 text-sm font-medium rounded-md'
                 ]"

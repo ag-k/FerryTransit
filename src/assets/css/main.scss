@@ -6,12 +6,39 @@
 // Custom styles
 body {
   font-family: 'Noto Sans JP', 'Roboto', sans-serif;
+  background-color: hsl(var(--app-bg));
+  color: hsl(var(--app-fg));
 }
 
 // Android navigation bar height variable
 :root {
   --android-navigation-bar-height: 20px;
   --android-status-bar-height: 24px;
+
+  // Modern app palette (HSL components: "H S% L%")
+  // Light
+  --app-bg: 210 40% 98%;        // slate-50
+  --app-surface: 0 0% 100%;     // white
+  --app-surface-2: 210 40% 96%; // slate-100
+  --app-border: 214 32% 91%;    // slate-200
+  --app-fg: 222 47% 11%;        // slate-900
+  --app-muted: 215 16% 47%;     // slate-500
+
+  // Accent
+  // Cobalt blue accent (approx #0047AB)
+  --app-primary: 215 100% 34%;
+  // Slightly lighter cobalt-ish (for hover/secondary)
+  --app-primary-2: 217 91% 60%; // blue-500 (#3B82F6)
+}
+
+.dark {
+  // Dark
+  --app-bg: 222 47% 5%;         // slate-950
+  --app-surface: 222 47% 11%;   // slate-900
+  --app-surface-2: 215 28% 17%; // slate-800
+  --app-border: 215 28% 17%;    // slate-800
+  --app-fg: 210 40% 98%;        // slate-50
+  --app-muted: 215 20% 65%;     // slate-300/400
 }
 
 @media screen and (-webkit-device-pixel-ratio: 0) and (min-resolution: .001dpcm) {
@@ -43,16 +70,16 @@ body {
 }
 
 ::-webkit-scrollbar-track {
-  background: #f1f1f1;
+  background: hsl(var(--app-bg));
 }
 
 ::-webkit-scrollbar-thumb {
-  background: #888;
+  background: hsl(var(--app-border));
   border-radius: 4px;
 }
 
 ::-webkit-scrollbar-thumb:hover {
-  background: #555;
+  background: hsl(var(--app-muted));
 }
 
 // Enhanced scrollbar hiding for Chrome
@@ -429,7 +456,7 @@ body {
     // フォーカス時のスタイル強化
     &:focus {
       --tw-ring-opacity: 0.3;
-      --tw-ring-color: rgba(59, 130, 246, var(--tw-ring-opacity));
+      --tw-ring-color: rgba(0, 71, 171, var(--tw-ring-opacity));
       box-shadow: 0 0 0 calc(2px + var(--tw-ring-offset-width)) var(--tw-ring-color);
     }
   }

@@ -96,7 +96,7 @@
             <input
               v-model="formData.hasDetail"
               type="checkbox"
-              class="rounded border-gray-300 text-blue-600 shadow-sm focus:border-blue-300 focus:ring focus:ring-blue-200 focus:ring-opacity-50"
+              class="rounded border-gray-300 text-blue-700 shadow-sm focus:border-blue-300 focus:ring focus:ring-blue-200 focus:ring-opacity-50"
             >
             <span class="ml-2 text-sm text-gray-700 dark:text-gray-300">
               詳細ページを作成する
@@ -178,7 +178,7 @@
             <input
               v-model="formData.isPinned"
               type="checkbox"
-              class="rounded border-gray-300 text-blue-600"
+              class="rounded border-gray-300 text-blue-700"
             >
             <span class="ml-2 text-sm text-gray-700 dark:text-gray-300">
               重要なお知らせとして固定表示する
@@ -207,7 +207,7 @@
             </button>
             <button
               type="submit"
-              class="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 disabled:bg-gray-400"
+              class="px-4 py-2 bg-blue-700 text-white rounded-md hover:bg-blue-800 disabled:bg-gray-400"
               :disabled="isSaving"
             >
               <CheckIcon v-if="!isSaving" class="h-5 w-5 inline mr-1" />
@@ -310,7 +310,7 @@ const publishDateString = ref('')
 const getCategoryClass = (category: string | undefined) => {
   switch (category) {
     case 'announcement':
-      return 'bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-200'
+      return 'bg-blue-100 text-blue-900 dark:bg-blue-900 dark:text-blue-200'
     case 'maintenance':
       return 'bg-orange-100 text-orange-800 dark:bg-orange-900 dark:text-orange-200'
     case 'feature':

@@ -13,7 +13,7 @@
         :class="[
           'px-4 py-2 rounded-full text-sm font-medium transition-colors',
           selectedCategory === null
-            ? 'active bg-blue-600 text-white'
+            ? 'active bg-blue-700 text-white'
             : 'bg-gray-200 dark:bg-gray-700 text-gray-700 dark:text-gray-300 hover:bg-gray-300 dark:hover:bg-gray-600'
         ]"
         @click="selectedCategory = null"
@@ -26,7 +26,7 @@
         :class="[
           'px-4 py-2 rounded-full text-sm font-medium transition-colors',
           selectedCategory === category
-            ? 'active bg-blue-600 text-white'
+            ? 'active bg-blue-700 text-white'
             : 'bg-gray-200 dark:bg-gray-700 text-gray-700 dark:text-gray-300 hover:bg-gray-300 dark:hover:bg-gray-600'
         ]"
         @click="selectedCategory = category"
@@ -95,7 +95,7 @@
               </span>
               <span
                 v-if="news.isPinned"
-                class="text-blue-600 dark:text-blue-400"
+                class="text-blue-700 dark:text-blue-400"
                 :title="$t('news.pinned')"
               >
                 <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
@@ -121,7 +121,7 @@
           <NuxtLink
             v-if="news.hasDetail"
             :to="`/news/${news.id}`"
-            class="inline-flex items-center text-blue-600 dark:text-blue-400 hover:underline"
+            class="inline-flex items-center text-blue-700 dark:text-blue-400 hover:underline"
           >
             {{ $t('news.readMore') }}
             <svg class="w-4 h-4 ml-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -151,7 +151,7 @@
           :class="[
             'px-4 py-2 rounded-md border transition-colors',
             currentPage === page
-              ? 'bg-blue-600 text-white border-blue-600'
+              ? 'bg-blue-700 text-white border-blue-700'
               : 'bg-white dark:bg-gray-800 border-gray-300 dark:border-gray-600 hover:bg-gray-50 dark:hover:bg-gray-700'
           ]"
           @click="currentPage = page"
@@ -260,7 +260,7 @@ const getLocalizedContent = (news: any) => {
 const getCategoryClass = (category: string) => {
   switch (category) {
     case 'announcement':
-      return 'bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-200'
+      return 'bg-blue-100 text-blue-900 dark:bg-blue-900 dark:text-blue-200'
     case 'maintenance':
       return 'bg-orange-100 text-orange-800 dark:bg-orange-900 dark:text-orange-200'
     case 'feature':

@@ -47,7 +47,7 @@
                 'px-4 py-2 rounded-md transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-offset-2 dark:focus:ring-offset-gray-800',
                 confirmType === 'danger'
                   ? 'bg-red-600 hover:bg-red-700 text-white focus:ring-red-500'
-                  : 'bg-blue-600 hover:bg-blue-700 text-white focus:ring-blue-500'
+                  : 'bg-blue-700 hover:bg-blue-800 text-white focus:ring-blue-500'
               ]"
             >
               {{ confirmText }}

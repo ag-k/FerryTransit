@@ -51,7 +51,7 @@
             rel="noopener noreferrer"
             class="flex items-center justify-between px-4 py-3 bg-gray-50 dark:bg-gray-600 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-500 transition-colors duration-200"
           >
-            <span class="text-blue-600 dark:text-blue-200">{{ $t('DEVELOPER_SITE') }}</span>
+            <span class="text-blue-700 dark:text-blue-200">{{ $t('DEVELOPER_SITE') }}</span>
             <svg
               class="w-5 h-5 text-gray-400 dark:text-gray-300"
               fill="none"

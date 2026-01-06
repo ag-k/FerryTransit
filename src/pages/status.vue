@@ -4,7 +4,7 @@
 
     <!-- Loading state -->
     <div v-if="isLoading" class="text-center py-12">
-      <div class="inline-block animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>
+      <div class="inline-block animate-spin rounded-full h-8 w-8 border-b-2 border-blue-700"></div>
       <span class="sr-only">Loading...</span>
     </div>
 
@@ -326,7 +326,7 @@
     <!-- Refresh button -->
     <div class="text-center mt-8">
       <button
-        class="inline-flex items-center px-4 py-2 border border-blue-600 dark:border-blue-400 text-blue-600 dark:text-blue-400 rounded hover:bg-blue-50 dark:hover:bg-blue-900/20 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+        class="inline-flex items-center px-4 py-2 border border-blue-700 dark:border-blue-400 text-blue-700 dark:text-blue-400 rounded hover:bg-blue-50 dark:hover:bg-blue-900/20 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
         :disabled="isLoading" @click="refreshStatus">
         <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="mr-2"
           viewBox="0 0 16 16">
@@ -368,7 +368,7 @@ const getStatusClass = (status?: number | null) => {
     return ''
   }
   switch (status) {
-    case 0: return 'text-blue-600 dark:text-blue-300'
+    case 0: return 'text-blue-700 dark:text-blue-300'
     case 1: return 'text-red-600 dark:text-red-300'
     case 2: return 'text-yellow-600 dark:text-yellow-300'
     case 3: return 'text-yellow-600 dark:text-yellow-300'
@@ -416,7 +416,7 @@ const statusContainerClassMap: Record<StatusVariant, string> = {
 
 const statusHeaderClassMap: Record<StatusVariant, string> = {
   default: 'border-gray-200 bg-gray-100 text-gray-900 dark:bg-slate-700 dark:border-gray-600 dark:text-white',
-  info: 'border-blue-600 bg-blue-600 text-white dark:bg-blue-700 dark:border-blue-500',
+  info: 'border-blue-700 bg-blue-700 text-white dark:bg-blue-800 dark:border-blue-500',
   danger: 'border-red-600 bg-red-600 text-white dark:bg-red-700 dark:border-red-600',
   warning: 'border-yellow-400 bg-yellow-400 text-gray-900 dark:bg-yellow-500 dark:border-yellow-400 dark:text-gray-900',
   success: 'border-green-600 bg-green-600 text-white dark:bg-green-700 dark:border-green-600'

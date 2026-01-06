@@ -76,7 +76,7 @@ const getToastClasses = (type: string) => {
     case 'warning':
       return 'bg-yellow-50 dark:bg-yellow-900/50 text-yellow-800 dark:text-yellow-200'
     case 'info':
-      return 'bg-blue-50 dark:bg-blue-900/50 text-blue-800 dark:text-blue-200'
+      return 'bg-blue-50 dark:bg-blue-900/50 text-blue-900 dark:text-blue-200'
     default:
       return 'bg-gray-50 dark:bg-gray-900/50 text-gray-800 dark:text-gray-200'
   }

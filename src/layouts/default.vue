@@ -1,5 +1,5 @@
 <template>
-  <div class="min-h-screen flex flex-col bg-white dark:bg-slate-950 transition-colors">
+  <div class="min-h-screen flex flex-col bg-slate-50 text-slate-900 dark:bg-slate-950 dark:text-slate-50 transition-colors">
     <AppNavigation />
     
     <!-- Alerts -->
@@ -25,10 +25,10 @@
     <!-- Toast Container -->
     <ToastContainer />
     
-    <footer class="mt-auto py-3 bg-gray-100 dark:bg-slate-900">
+    <footer class="mt-auto py-3 bg-white/70 dark:bg-slate-900/60 border-t border-slate-200/60 dark:border-slate-800/80 backdrop-blur">
       <div class="container mx-auto px-4">
-        <p class="text-gray-600 dark:text-gray-300 text-center mb-0">
-          Powered by <a href="https://oki-digilab.com/" target="_blank" class="text-blue-600 hover:text-blue-800 dark:text-blue-300 dark:hover:text-blue-200">隠岐デジタルラボ</a>
+        <p class="text-slate-600 dark:text-slate-300 text-center mb-0">
+          Powered by <a href="https://oki-digilab.com/" target="_blank" class="text-blue-800 hover:text-blue-900 dark:text-blue-300 dark:hover:text-blue-200">隠岐デジタルラボ</a>
         </p>
       </div>
     </footer>
@@ -50,4 +50,3 @@ const removeAlert = (index: number) => {
   }
 }
 </script>
-

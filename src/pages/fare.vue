@@ -4,7 +4,7 @@
 
     <!-- Loading state -->
     <div v-if="isLoading" class="text-center py-12">
-      <div class="inline-block animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>
+      <div class="inline-block animate-spin rounded-full h-8 w-8 border-b-2 border-blue-700"></div>
       <p class="mt-4 text-gray-600 dark:text-gray-400">{{ $t('LOADING') }}...</p>
     </div>
 
@@ -23,7 +23,7 @@
           style="scrollbar-width: none; -ms-overflow-style: none;">
           <button v-for="tab in tabs" :key="tab.id" :class="[
             activeTab === tab.id
-              ? 'border-blue-500 text-blue-600 dark:text-blue-400'
+              ? 'border-blue-500 text-blue-700 dark:text-blue-400'
               : 'border-transparent text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-300 hover:border-gray-300 dark:hover:border-gray-600',
             'whitespace-nowrap py-4 px-1 border-b-2 font-medium text-sm transition-colors flex-shrink-0 mx-4 first:ml-0 last:mr-0'
           ]" style="-webkit-user-select: none;" @click="activeTab = tab.id">
@@ -55,7 +55,7 @@
             <nav class="flex flex-wrap gap-2" aria-label="Passenger categories" role="tablist">
               <button v-for="category in passengerCategories" :key="category.id" :class="[
                 okiKisenPassengerActiveCategory === category.id
-                  ? 'bg-blue-600 text-white border border-blue-600'
+                  ? 'bg-blue-700 text-white border border-blue-700'
                   : 'bg-white text-gray-700 dark:bg-gray-800 dark:text-gray-200 border border-gray-300 dark:border-gray-600',
                 'px-3 py-1.5 rounded-full text-sm font-medium transition-colors'
               ]" type="button" role="tab" :aria-selected="okiKisenPassengerActiveCategory === category.id"
@@ -66,7 +66,7 @@
             <nav class="flex flex-wrap gap-2 md:hidden" aria-label="Seat classes" role="tablist">
               <button v-for="seatClass in seatClasses" :key="`seat-class-tab-${seatClass.key}`" :class="[
                 okiKisenActiveSeatClass === seatClass.key
-                  ? 'bg-blue-50 text-blue-700 border border-blue-500 dark:bg-blue-900/40 dark:text-blue-200 dark:border-blue-700'
+                  ? 'bg-blue-50 text-blue-800 border border-blue-500 dark:bg-blue-900/40 dark:text-blue-200 dark:border-blue-800'
                   : 'bg-white text-gray-700 dark:bg-gray-800 dark:text-gray-200 border border-gray-300 dark:border-gray-600',
                 'px-3 py-1.5 rounded-full text-sm font-medium transition-colors'
               ]" type="button" role="tab" :aria-selected="okiKisenActiveSeatClass === seatClass.key"
@@ -158,9 +158,9 @@
         <!-- Disability discount information -->
         <div
           v-if="okiKisenPassengerActiveCategory === 'disabledAdult' || okiKisenPassengerActiveCategory === 'disabledChild'"
-          class="mt-6 p-4 bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 rounded-lg">
+          class="mt-6 p-4 bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-900 rounded-lg">
           <h5 class="font-semibold text-blue-900 dark:text-blue-100 mb-3">{{ $t('DISABILITY_DISCOUNT_TITLE') }}</h5>
-          <div class="text-sm text-blue-800 dark:text-blue-200 space-y-3">
+          <div class="text-sm text-blue-900 dark:text-blue-200 space-y-3">
             <div>
               <p class="font-medium mb-2">{{ $t('DISABILITY_DISCOUNT_CONDITIONS_TITLE') }}</p>
               <p class="mb-2">{{ $t('DISABILITY_CERTIFICATE_REQUIRED') }}</p>
@@ -181,14 +181,14 @@
         <h4
           class="text-2xl font-bold mt-12 mb-4 text-gray-900 dark:text-white border-b border-gray-200 dark:border-gray-700 pb-2">
           {{ $t('VEHICLE_FARE') }}</h4>
-        <div class="mb-6 p-3 bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 rounded-lg">
-          <p class="text-sm text-blue-800 dark:text-blue-200">{{ $t('VEHICLE_DRIVER_TICKET_INCLUDED') }}</p>
+        <div class="mb-6 p-3 bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-900 rounded-lg">
+          <p class="text-sm text-blue-900 dark:text-blue-200">{{ $t('VEHICLE_DRIVER_TICKET_INCLUDED') }}</p>
         </div>
         <div class="md:hidden mb-8">
           <nav class="flex flex-wrap gap-2 mb-3" aria-label="Vehicle routes" role="tablist">
             <button v-for="group in okiKisenRouteGroups" :key="`vehicle-route-tab-${group.id}`" :class="[
               okiKisenVehicleActiveRoute === group.id
-                ? 'bg-blue-50 text-blue-700 border border-blue-500 dark:bg-blue-900/40 dark:text-blue-200 dark:border-blue-700'
+                ? 'bg-blue-50 text-blue-800 border border-blue-500 dark:bg-blue-900/40 dark:text-blue-200 dark:border-blue-800'
                 : 'bg-white text-gray-700 dark:bg-gray-800 dark:text-gray-200 border border-gray-300 dark:border-gray-600',
               'px-3 py-1.5 rounded-full text-sm font-medium transition-colors'
             ]" type="button" role="tab" :aria-selected="okiKisenVehicleActiveRoute === group.id"
@@ -319,7 +319,7 @@
         </div>
         <div class="mt-4 text-center">
           <a href="https://www.oki-kisen.co.jp/fare/" target="_blank" rel="noopener noreferrer"
-            class="inline-flex items-center px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white text-sm font-medium rounded-lg transition-colors duration-200">
+            class="inline-flex items-center px-4 py-2 bg-blue-700 hover:bg-blue-800 text-white text-sm font-medium rounded-lg transition-colors duration-200">
             {{ $t('FARE_DETAILS') }}
             <svg class="ml-2 w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
@@ -348,7 +348,7 @@
           <div class="flex flex-wrap gap-2 mb-3">
             <button v-for="category in passengerCategories" :key="category.id" :class="[
               naikoSenPassengerActiveCategory === category.id
-                ? 'bg-blue-600 text-white border border-blue-600'
+                ? 'bg-blue-700 text-white border border-blue-700'
                 : 'bg-white text-gray-700 dark:bg-gray-800 dark:text-gray-200 border border-gray-300 dark:border-gray-600',
               'px-3 py-1.5 rounded-full text-sm font-medium transition-colors'
             ]" @click="naikoSenPassengerActiveCategory = category.id">
@@ -488,7 +488,7 @@
         </div>
         <div class="mt-4 text-center">
           <a href="https://www.okikankou.com/fee_detail/" target="_blank" rel="noopener noreferrer"
-            class="inline-flex items-center px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white text-sm font-medium rounded-lg transition-colors duration-200">
+            class="inline-flex items-center px-4 py-2 bg-blue-700 hover:bg-blue-800 text-white text-sm font-medium rounded-lg transition-colors duration-200">
             {{ $t('INNER_ISLAND_FARE_DETAILS') }}
             <svg class="ml-2 w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
@@ -517,7 +517,7 @@
           <div class="flex flex-wrap gap-2 mb-3">
             <button v-for="category in passengerCategories" :key="category.id" :class="[
               rainbowJetPassengerActiveCategory === category.id
-                ? 'bg-blue-600 text-white border border-blue-600'
+                ? 'bg-blue-700 text-white border border-blue-700'
                 : 'bg-white text-gray-700 dark:bg-gray-800 dark:text-gray-200 border border-gray-300 dark:border-gray-600',
               'px-3 py-1.5 rounded-full text-sm font-medium transition-colors'
             ]" @click="rainbowJetPassengerActiveCategory = category.id">
@@ -591,9 +591,9 @@
         <!-- Disability discount information -->
         <div
           v-if="rainbowJetPassengerActiveCategory === 'disabledAdult' || rainbowJetPassengerActiveCategory === 'disabledChild'"
-          class="md:hidden mt-6 p-4 bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 rounded-lg">
+          class="md:hidden mt-6 p-4 bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-900 rounded-lg">
           <h5 class="font-semibold text-blue-900 dark:text-blue-100 mb-3">{{ $t('DISABILITY_DISCOUNT_TITLE') }}</h5>
-          <div class="text-sm text-blue-800 dark:text-blue-200 space-y-3">
+          <div class="text-sm text-blue-900 dark:text-blue-200 space-y-3">
             <div>
               <p class="font-medium mb-2">{{ $t('DISABILITY_DISCOUNT_CONDITIONS_TITLE') }}</p>
               <p class="mb-2">{{ $t('DISABILITY_CERTIFICATE_REQUIRED') }}</p>
@@ -613,9 +613,9 @@
 
         <!-- Disability discount information (desktop always visible) -->
         <div
-          class="hidden md:block mt-6 p-4 bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 rounded-lg">
+          class="hidden md:block mt-6 p-4 bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-900 rounded-lg">
           <h5 class="font-semibold text-blue-900 dark:text-blue-100 mb-3">{{ $t('DISABILITY_DISCOUNT_TITLE') }}</h5>
-          <div class="text-sm text-blue-800 dark:text-blue-200 space-y-3">
+          <div class="text-sm text-blue-900 dark:text-blue-200 space-y-3">
             <div>
               <p class="font-medium mb-2">{{ $t('DISABILITY_DISCOUNT_CONDITIONS_TITLE') }}</p>
               <p class="mb-2">{{ $t('DISABILITY_CERTIFICATE_REQUIRED') }}</p>
@@ -634,7 +634,7 @@
         </div>
         <div class="mt-4 text-center">
           <a href="https://www.oki-kisen.co.jp/fare/" target="_blank" rel="noopener noreferrer"
-            class="inline-flex items-center px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white text-sm font-medium rounded-lg transition-colors duration-200">
+            class="inline-flex items-center px-4 py-2 bg-blue-700 hover:bg-blue-800 text-white text-sm font-medium rounded-lg transition-colors duration-200">
             {{ $t('FARE_DETAILS') }}
             <svg class="ml-2 w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"

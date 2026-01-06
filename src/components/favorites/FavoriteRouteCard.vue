@@ -14,7 +14,7 @@
       <div class="flex items-center justify-between mb-3">
         <div class="flex items-center space-x-2">
           <svg
-            class="w-5 h-5 text-blue-600 dark:text-blue-400"
+            class="w-5 h-5 text-blue-700 dark:text-blue-400"
             fill="none"
             stroke="currentColor"
             viewBox="0 0 24 24"
@@ -78,7 +78,7 @@
             arrival: arrival
           }
         }"
-        class="flex-1 px-3 py-2 bg-blue-600 dark:bg-blue-700 text-white rounded-md hover:bg-blue-700 dark:hover:bg-blue-600 transition-colors duration-200 text-sm font-medium text-center"
+        class="flex-1 px-3 py-2 bg-blue-700 dark:bg-blue-800 text-white rounded-md hover:bg-blue-800 dark:hover:bg-blue-700 transition-colors duration-200 text-sm font-medium text-center"
       >
         {{ $t('TRANSIT') }}
       </NuxtLink>

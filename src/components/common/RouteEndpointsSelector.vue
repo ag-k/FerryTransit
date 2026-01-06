@@ -6,7 +6,7 @@
     <!-- From -->
     <div class="flex items-stretch">
       <div
-        class="w-20 shrink-0 bg-blue-600 text-white flex items-center justify-center text-sm font-semibold border-r border-gray-300 dark:border-gray-600"
+        class="w-20 shrink-0 bg-blue-700 text-white flex items-center justify-center text-sm font-semibold border-r border-gray-300 dark:border-gray-600"
         data-testid="route-endpoints-from-label"
       >
         {{ $t('_FROM') }}
@@ -51,7 +51,7 @@
       <button
         v-if="showVia"
         type="button"
-        class="px-3 py-2 text-sm font-medium text-blue-600 dark:text-blue-200 hover:underline disabled:opacity-50 disabled:cursor-not-allowed"
+        class="px-3 py-2 text-sm font-medium text-blue-700 dark:text-blue-200 hover:underline disabled:opacity-50 disabled:cursor-not-allowed"
         :disabled="disabled"
         data-testid="route-endpoints-add-via"
         @click="$emit('addVia')"
@@ -61,7 +61,7 @@
 
       <button
         type="button"
-        class="p-3 text-base text-blue-600 dark:text-blue-200 hover:bg-blue-50 dark:hover:bg-blue-900/20 transition-colors touch-manipulation"
+        class="p-3 text-base text-blue-700 dark:text-blue-200 hover:bg-blue-50 dark:hover:bg-blue-900/20 transition-colors touch-manipulation"
         title="出発地と到着地を入れ替え"
         aria-label="Reverse route"
         :disabled="disabled"
@@ -79,7 +79,7 @@
     <!-- To -->
     <div class="flex items-stretch border-t border-gray-200 dark:border-gray-700">
       <div
-        class="w-20 shrink-0 bg-blue-600 text-white flex items-center justify-center text-sm font-semibold border-r border-gray-300 dark:border-gray-600"
+        class="w-20 shrink-0 bg-blue-700 text-white flex items-center justify-center text-sm font-semibold border-r border-gray-300 dark:border-gray-600"
         data-testid="route-endpoints-to-label"
       >
         {{ $t('_TO') }}

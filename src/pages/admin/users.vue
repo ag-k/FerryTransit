@@ -17,7 +17,7 @@
           :key="tab.id"
           :class="[
             activeTab === tab.id
-              ? 'bg-blue-100 text-blue-700 dark:bg-blue-900 dark:text-blue-200'
+              ? 'bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-200'
               : 'text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200',
             'px-3 py-2 font-medium text-sm rounded-md'
           ]"
@@ -49,7 +49,7 @@
       <!-- ユーザー一覧 -->
       <div class="bg-white dark:bg-gray-800 rounded-lg shadow overflow-hidden">
         <div v-if="loading" class="p-8 text-center">
-          <div class="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto"></div>
+          <div class="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-700 mx-auto"></div>
           <p class="mt-4 text-gray-600 dark:text-gray-400">読み込み中...</p>
         </div>
 
@@ -115,7 +115,7 @@
                     </span>
                     <span 
                       v-else-if="user.admin"
-                      class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-blue-100 text-blue-800"
+                      class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-blue-100 text-blue-900"
                     >
                       管理者
                     </span>
@@ -145,7 +145,7 @@
                   </td>
                   <td class="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
                     <button
-                      class="text-blue-600 hover:text-blue-900 dark:text-blue-400 dark:hover:text-blue-300 mr-3"
+                      class="text-blue-700 hover:text-blue-900 dark:text-blue-400 dark:hover:text-blue-300 mr-3"
                       :disabled="!canEditUser(user)"
                       @click="editUser(user)"
                     >

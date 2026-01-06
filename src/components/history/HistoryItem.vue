@@ -53,7 +53,7 @@
 
       <div class="flex flex-col sm:flex-row items-end sm:items-center space-y-2 sm:space-y-0 sm:space-x-2 ml-4">
         <button
-          class="px-3 py-1 bg-blue-600 dark:bg-blue-700 text-white rounded-md hover:bg-blue-700 dark:hover:bg-blue-600 transition-colors duration-200 text-sm"
+          class="px-3 py-1 bg-blue-700 dark:bg-blue-800 text-white rounded-md hover:bg-blue-800 dark:hover:bg-blue-700 transition-colors duration-200 text-sm"
           @click="$emit('search')"
         >
           {{ $t('history.searchAgain') }}

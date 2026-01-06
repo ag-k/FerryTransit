@@ -21,7 +21,7 @@
         </span>
         <span
           v-if="news.isPinned"
-          class="text-blue-600 dark:text-blue-400"
+          class="text-blue-700 dark:text-blue-400"
         >
           <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
             <path d="M5 4a2 2 0 012-2h6a2 2 0 012 2v14l-5-2.5L5 18V4z" />
@@ -46,7 +46,7 @@
     <button
       v-if="!expanded && news.hasDetail"
       @click="$emit('expand', news.id)"
-      class="mt-3 text-sm text-blue-600 dark:text-blue-400 hover:underline"
+      class="mt-3 text-sm text-blue-700 dark:text-blue-400 hover:underline"
     >
       {{ $t('news.readMore') }}
     </button>
@@ -92,7 +92,7 @@ const getLocalizedContent = (news: News) => {
 const getCategoryClass = (category: string) => {
   switch (category) {
     case 'announcement':
-      return 'bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-200'
+      return 'bg-blue-100 text-blue-900 dark:bg-blue-900 dark:text-blue-200'
     case 'maintenance':
       return 'bg-orange-100 text-orange-800 dark:bg-orange-900 dark:text-orange-200'
     case 'feature':

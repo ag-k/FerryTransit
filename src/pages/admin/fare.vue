@@ -12,7 +12,7 @@
       <nav class="flex space-x-4" aria-label="Tabs">
         <button v-for="tab in tabs" :key="tab.id" :class="[
           activeTab === tab.id
-            ? 'bg-blue-100 text-blue-700 dark:bg-blue-900 dark:text-blue-200'
+            ? 'bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-200'
             : 'text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200',
           'px-3 py-2 font-medium text-sm rounded-md'
         ]" @click="activeTab = tab.id">
@@ -37,7 +37,7 @@
           {{ isPublishing ? '公開中...' : 'データ公開' }}
         </button>
         <button :disabled="isLoadingStorage"
-          class="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 disabled:bg-gray-400"
+          class="px-4 py-2 bg-blue-700 text-white rounded-md hover:bg-blue-800 disabled:bg-gray-400"
           @click="showStorageDataModal = true; loadStorageData()">
           <EyeIcon class="h-5 w-5 inline mr-1" />
           {{ isLoadingStorage ? '読み込み中...' : 'Storage データ確認' }}
@@ -77,7 +77,7 @@
                 新しい版
               </button>
               <button v-if="activeVersionId" :disabled="isDeletingVersion || isEditingVersion"
-                class="px-3 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 disabled:bg-blue-400 text-sm"
+                class="px-3 py-2 bg-blue-700 text-white rounded-md hover:bg-blue-800 disabled:bg-blue-400 text-sm"
                 @click="openEditVersionModal">
                 <PencilIcon class="h-4 w-4 inline mr-1" />
                 版を編集
@@ -89,7 +89,7 @@
                 版を削除
               </button>
             </template>
-            <button class="px-3 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 text-sm" @click="showEditModal = true">
+            <button class="px-3 py-2 bg-blue-700 text-white rounded-md hover:bg-blue-800 text-sm" @click="showEditModal = true">
               <PencilIcon class="h-4 w-4 inline mr-1" />
               {{ activeTab === 'discount' ? '割引編集' : '料金編集' }}
             </button>
@@ -236,7 +236,7 @@
                 <p class="text-sm text-gray-500 dark:text-gray-400 mt-1">
                   {{ resolveDiscountDescription(discount) }}
                 </p>
-                <p class="text-lg font-bold text-blue-600 dark:text-blue-400 mt-2">
+                <p class="text-lg font-bold text-blue-700 dark:text-blue-400 mt-2">
                   {{ formatDiscountPercent(discount) }}% 割引
                 </p>
               </div>
@@ -484,7 +484,7 @@
 
           <div class="pt-2">
             <button type="button"
-              class="inline-flex items-center rounded-md border border-dashed border-blue-300 dark:border-blue-500 px-3 py-2 text-sm font-medium text-blue-600 dark:text-blue-300 hover:bg-blue-50 dark:hover:bg-blue-900/20 transition"
+              class="inline-flex items-center rounded-md border border-dashed border-blue-300 dark:border-blue-500 px-3 py-2 text-sm font-medium text-blue-700 dark:text-blue-300 hover:bg-blue-50 dark:hover:bg-blue-900/20 transition"
               @click="addDiscount()">
               <PlusIcon class="mr-1 h-4 w-4" />
               割引を追加
@@ -635,7 +635,7 @@
               <dt class="text-gray-500 dark:text-gray-400">ダウンロードURL</dt>
               <dd class="text-gray-900 dark:text-white font-medium break-all">
                 <a v-if="storageDownloadUrl" :href="storageDownloadUrl" target="_blank" rel="noopener noreferrer"
-                  class="text-blue-600 dark:text-blue-400 hover:underline">
+                  class="text-blue-700 dark:text-blue-400 hover:underline">
                   {{ storageDownloadUrl }}
                 </a>
                 <span v-else>取得できませんでした</span>
@@ -707,7 +707,7 @@
           <div class="flex justify-between items-center mb-3">
             <h3 class="text-lg font-medium text-gray-900 dark:text-white">JSON データ</h3>
             <button @click="copyStorageDataToClipboard"
-              class="px-3 py-1 text-sm bg-blue-600 text-white rounded hover:bg-blue-700">
+              class="px-3 py-1 text-sm bg-blue-700 text-white rounded hover:bg-blue-800">
               コピー
             </button>
           </div>

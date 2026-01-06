@@ -111,7 +111,7 @@
 
     <!-- 時刻表 -->
     <div class="bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700">
-      <div class="bg-blue-600 dark:bg-blue-700 text-white px-4 py-3 rounded-t-lg flex items-center justify-between">
+      <div class="bg-blue-700 dark:bg-blue-800 text-white px-4 py-3 rounded-t-lg flex items-center justify-between">
         <div class="flex flex-col min-w-0">
           <div class="flex items-baseline justify-between gap-3 min-w-0">
             <h3 data-test="timetable-date-title" class="text-lg font-medium leading-tight truncate tabular-nums">
@@ -131,7 +131,7 @@
       <ClientOnly>
         <div class="p-0">
           <div v-if="isLoading" class="text-center py-6">
-            <div class="inline-block animate-spin rounded-full h-6 w-6 border-b-2 border-blue-600"></div>
+            <div class="inline-block animate-spin rounded-full h-6 w-6 border-b-2 border-blue-700"></div>
             <span class="sr-only">Loading...</span>
           </div>
 
@@ -164,14 +164,14 @@
                   </th>
                   <th class="px-3 sm:px-4 py-3 text-right font-medium text-gray-700 dark:text-gray-100">
                     <a href="#"
-                      class="text-blue-600 dark:text-blue-200 hover:underline font-semibold inline-block py-1 -my-1 px-2 -mx-2 touch-manipulation"
+                      class="text-blue-700 dark:text-blue-200 hover:underline font-semibold inline-block py-1 -my-1 px-2 -mx-2 touch-manipulation"
                       @click.prevent="showPortInfo(departure)">
                       {{ $t(departure) }}
                     </a>
                   </th>
                   <th class="px-3 sm:px-4 py-3 text-right font-medium text-gray-700 dark:text-gray-100">
                     <a href="#"
-                      class="text-blue-600 dark:text-blue-200 hover:underline font-semibold inline-block py-1 -my-1 px-2 -mx-2 touch-manipulation"
+                      class="text-blue-700 dark:text-blue-200 hover:underline font-semibold inline-block py-1 -my-1 px-2 -mx-2 touch-manipulation"
                       @click.prevent="showPortInfo(arrival)">
                       {{ $t(arrival) }}
                     </a>
@@ -231,7 +231,7 @@
                         </svg>
                       </button>
                       <a href="#"
-                        class="text-blue-600 dark:text-blue-200 hover:underline font-medium inline-block py-1 -my-1 px-2 -mx-2 touch-manipulation"
+                        class="text-blue-700 dark:text-blue-200 hover:underline font-medium inline-block py-1 -my-1 px-2 -mx-2 touch-manipulation"
                         @click.prevent="showShipInfo(trip.name)">
                         {{ $t(trip.name) }}
                       </a>
@@ -277,7 +277,7 @@
       <div v-if="showTransferSearchButton"
         class="px-4 py-3 bg-gray-50 dark:bg-gray-700/50 border-t border-gray-200 dark:border-gray-600">
         <button type="button" data-test="transfer-search-button"
-          class="w-full py-2.5 px-4 bg-blue-600 hover:bg-blue-700 dark:bg-blue-500 dark:hover:bg-blue-600 text-white font-medium rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 dark:focus:ring-offset-gray-800 transform active:scale-[0.98] transition-all duration-150 shadow-sm hover:shadow-md flex items-center justify-center gap-2"
+          class="w-full py-2.5 px-4 bg-blue-700 hover:bg-blue-800 dark:bg-blue-500 dark:hover:bg-blue-700 text-white font-medium rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 dark:focus:ring-offset-gray-800 transform active:scale-[0.98] transition-all duration-150 shadow-sm hover:shadow-md flex items-center justify-center gap-2"
           @click="navigateToTransit">
           <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
