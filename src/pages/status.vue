@@ -13,34 +13,65 @@
       <!-- Ferry Status -->
       <div class="md:col-span-2">
         <div class="rounded-lg overflow-hidden shadow-sm" :class="getFerryCardContainerClass(shipStatus.ferry)">
-          <div class="px-4 py-3 border-b" :class="getFerryCardHeaderClass(shipStatus.ferry)">
+          <div class="px-4 py-3 border-b flex items-center justify-between gap-3" :class="getFerryCardHeaderClass(shipStatus.ferry)">
             <h3 class="text-lg font-bold">{{ $t('OKI_KISEN_FERRY') }}</h3>
+            <p v-if="lastFetchTime" class="text-xs font-semibold text-white/90">
+              {{ $t('LAST_UPDATE') }}: {{ formatDateTime(lastFetchTime) }}
+            </p>
           </div>
           <div class="p-4">
             <div v-if="shipStatus.ferry" class="grid md:grid-cols-2 gap-6">
               <div>
-                <h6 class="font-semibold mb-2 dark:text-white">{{ $t('FERRY') }}</h6>
-                <p class="mb-2 dark:text-gray-300">
-                  <strong>{{ $t('STATUS') }}:</strong>
-                  <span :class="getOperationClass(shipStatus.ferry.ferryState)">
-                    {{ shipStatus.ferry.ferryState }}
-                  </span>
-                </p>
-                <p v-if="shipStatus.ferry.ferryComment" class="mb-2 dark:text-gray-300">
-                  <strong>{{ $t('COMMENT') }}:</strong> {{ shipStatus.ferry.ferryComment }}
-                </p>
+                <div class="rounded-lg border border-slate-200/70 bg-white/70 p-4 shadow-sm dark:border-slate-700 dark:bg-slate-900/40">
+                  <div class="flex items-start justify-between gap-3">
+                    <h6 class="text-sm font-semibold text-slate-800 dark:text-slate-100">{{ $t('FERRY') }}</h6>
+                    <span
+                      class="inline-flex items-center rounded-full px-2.5 py-1 text-xs font-semibold ring-1 ring-inset"
+                      :class="getOperationBadgeClass(shipStatus.ferry.ferryState)"
+                    >
+                      {{ shipStatus.ferry.ferryState }}
+                    </span>
+                  </div>
+
+                  <p class="mt-2 text-xs font-semibold uppercase tracking-[0.14em] text-slate-500 dark:text-slate-300">
+                    {{ $t('STATUS') }}
+                  </p>
+
+                  <div v-if="shipStatus.ferry.ferryComment" class="mt-3 rounded-md border border-slate-200/70 bg-slate-50/70 p-3 dark:border-slate-700 dark:bg-slate-950/30">
+                    <p class="text-xs font-semibold text-slate-600 dark:text-slate-200">
+                      {{ $t('COMMENT') }}
+                    </p>
+                    <p class="mt-1 text-sm leading-relaxed text-slate-700 dark:text-slate-200">
+                      {{ shipStatus.ferry.ferryComment }}
+                    </p>
+                  </div>
+                </div>
               </div>
               <div>
-                <h6 class="font-semibold mb-2 dark:text-white">{{ $t('RAINBOWJET') }}</h6>
-                <p class="mb-2 dark:text-gray-300">
-                  <strong>{{ $t('STATUS') }}:</strong>
-                  <span :class="getOperationClass(shipStatus.ferry.fastFerryState)">
-                    {{ shipStatus.ferry.fastFerryState }}
-                  </span>
-                </p>
-                <p v-if="shipStatus.ferry.fastFerryComment" class="mb-2 dark:text-gray-300">
-                  <strong>{{ $t('COMMENT') }}:</strong> {{ shipStatus.ferry.fastFerryComment }}
-                </p>
+                <div class="rounded-lg border border-slate-200/70 bg-white/70 p-4 shadow-sm dark:border-slate-700 dark:bg-slate-900/40">
+                  <div class="flex items-start justify-between gap-3">
+                    <h6 class="text-sm font-semibold text-slate-800 dark:text-slate-100">{{ $t('RAINBOWJET') }}</h6>
+                    <span
+                      class="inline-flex items-center rounded-full px-2.5 py-1 text-xs font-semibold ring-1 ring-inset"
+                      :class="getOperationBadgeClass(shipStatus.ferry.fastFerryState)"
+                    >
+                      {{ shipStatus.ferry.fastFerryState }}
+                    </span>
+                  </div>
+
+                  <p class="mt-2 text-xs font-semibold uppercase tracking-[0.14em] text-slate-500 dark:text-slate-300">
+                    {{ $t('STATUS') }}
+                  </p>
+
+                  <div v-if="shipStatus.ferry.fastFerryComment" class="mt-3 rounded-md border border-slate-200/70 bg-slate-50/70 p-3 dark:border-slate-700 dark:bg-slate-950/30">
+                    <p class="text-xs font-semibold text-slate-600 dark:text-slate-200">
+                      {{ $t('COMMENT') }}
+                    </p>
+                    <p class="mt-1 text-sm leading-relaxed text-slate-700 dark:text-slate-200">
+                      {{ shipStatus.ferry.fastFerryComment }}
+                    </p>
+                  </div>
+                </div>
               </div>
               <div class="md:col-span-2 mt-4">
                 <div class="rounded-lg border border-sky-200/70 bg-gradient-to-br from-sky-50 via-white to-blue-50 p-5 shadow-sm dark:border-slate-600 dark:from-slate-800 dark:via-slate-800/90 dark:to-slate-700">
@@ -408,7 +439,7 @@ type StatusVariant = 'default' | 'info' | 'danger' | 'warning' | 'success'
 
 const statusContainerClassMap: Record<StatusVariant, string> = {
   default: 'border border-gray-200 bg-white dark:bg-slate-800 dark:border-gray-700',
-  info: 'border border-blue-200 bg-blue-50 dark:bg-blue-900/40 dark:border-blue-400',
+  info: 'border border-blue-200/70 bg-gradient-to-br from-blue-50 via-white to-slate-50 dark:border-blue-500/40 dark:from-slate-900 dark:via-slate-900/80 dark:to-slate-950/60',
   danger: 'border border-red-200 bg-red-50 dark:bg-red-900/40 dark:border-red-400',
   warning: 'border border-yellow-200 bg-yellow-50 dark:bg-yellow-900/40 dark:border-yellow-400',
   success: 'border border-green-200 bg-green-50 dark:bg-green-900/40 dark:border-green-400'
@@ -416,7 +447,7 @@ const statusContainerClassMap: Record<StatusVariant, string> = {
 
 const statusHeaderClassMap: Record<StatusVariant, string> = {
   default: 'border-gray-200 bg-gray-100 text-gray-900 dark:bg-slate-700 dark:border-gray-600 dark:text-white',
-  info: 'border-blue-700 bg-blue-700 text-white dark:bg-blue-800 dark:border-blue-500',
+  info: 'border-blue-800 bg-blue-800 text-white dark:bg-blue-900 dark:border-blue-700',
   danger: 'border-red-600 bg-red-600 text-white dark:bg-red-700 dark:border-red-600',
   warning: 'border-yellow-400 bg-yellow-400 text-gray-900 dark:bg-yellow-500 dark:border-yellow-400 dark:text-gray-900',
   success: 'border-green-600 bg-green-600 text-white dark:bg-green-700 dark:border-green-600'
@@ -477,6 +508,33 @@ const getOperationClass = (state: string) => {
   if (state === 'Conditional Operation') return 'text-yellow-600 dark:text-yellow-300'
 
   return ''
+}
+
+const getOperationBadgeClass = (state: string) => {
+  // Japanese
+  if (state === '通常運航' || state === '平常運航') {
+    return 'bg-emerald-50 text-emerald-700 ring-emerald-200 dark:bg-emerald-900/30 dark:text-emerald-200 dark:ring-emerald-800'
+  }
+  if (state === '欠航') {
+    return 'bg-red-50 text-red-700 ring-red-200 dark:bg-red-900/30 dark:text-red-200 dark:ring-red-800'
+  }
+  if (state === '条件付き運航') {
+    return 'bg-amber-50 text-amber-800 ring-amber-200 dark:bg-amber-900/30 dark:text-amber-200 dark:ring-amber-800'
+  }
+
+  // English
+  if (state === 'Normal Operation' || state === 'Normal Service') {
+    return 'bg-emerald-50 text-emerald-700 ring-emerald-200 dark:bg-emerald-900/30 dark:text-emerald-200 dark:ring-emerald-800'
+  }
+  if (state === 'Cancelled' || state === 'Canceled') {
+    return 'bg-red-50 text-red-700 ring-red-200 dark:bg-red-900/30 dark:text-red-200 dark:ring-red-800'
+  }
+  if (state === 'Conditional Operation') {
+    return 'bg-amber-50 text-amber-800 ring-amber-200 dark:bg-amber-900/30 dark:text-amber-200 dark:ring-amber-800'
+  }
+
+  // Fallback: cobalt-ish accent
+  return 'bg-blue-50 text-blue-800 ring-blue-200 dark:bg-blue-900/30 dark:text-blue-200 dark:ring-blue-800'
 }
 
 const formatDateTime = (dateString: string | Date | null) => {
