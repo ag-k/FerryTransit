@@ -125,229 +125,238 @@
         </div>
       </div>
 
-      <!-- いそかぜ Status -->
-      <div>
-        <div class="rounded-lg overflow-hidden shadow-sm h-full" :class="getStatusCardContainerClass(shipStatus.isokaze)">
-          <div class="px-4 py-3 border-b" :class="getStatusCardHeaderClass(shipStatus.isokaze)">
-            <h3 class="text-lg font-bold">{{ $t('ISOKAZE') }}</h3>
+      <!-- 島前内航船（いそかぜ + フェリーどうぜん） -->
+      <div class="md:col-span-2">
+        <div class="rounded-lg overflow-hidden shadow-sm border border-slate-200/70 bg-white/60 dark:border-slate-700 dark:bg-slate-900/30">
+          <div class="px-4 py-3 border-b flex items-center justify-between gap-3 bg-slate-100/70 text-slate-900 dark:bg-slate-800/70 dark:text-slate-50 dark:border-slate-700">
+            <h3 class="text-lg font-bold">{{ $t('DOZEN_LOCAL_SHIPS') }}</h3>
+            <p v-if="localShipsUpdatedAt" class="text-xs font-semibold text-slate-600 dark:text-slate-200">
+              {{ $t('LAST_UPDATE') }}: {{ formatDateTime(localShipsUpdatedAt) }}
+            </p>
           </div>
           <div class="p-4">
-            <div v-if="shipStatus.isokaze">
-              <div class="space-y-3">
-                <p class="text-sm dark:text-gray-200">
-                  <strong>{{ $t('STATUS') }}:</strong>
-                  <span :class="getStatusClass(shipStatus.isokaze?.status)" class="ml-1">
-                    {{ getStatusText(shipStatus.isokaze?.status, 'isokaze') }}
-                  </span>
-                </p>
-                <p v-if="shipStatus.isokaze.summary" class="text-sm dark:text-gray-300">
-                  <strong>{{ $t('SUMMARY') }}:</strong>
-                  <span class="ml-1">{{ shipStatus.isokaze.summary }}</span>
-                </p>
-                <div v-if="shouldShowDetailBlock(shipStatus.isokaze, 'isokaze')"
-                  class="mt-2 space-y-4 border-t border-gray-200 pt-4 dark:border-gray-700" data-test="isokaze-detail">
-                  <div v-if="hasOperationInfo(shipStatus.isokaze)" class="space-y-2">
-                    <h4 class="text-sm font-semibold text-gray-700 dark:text-gray-200">
-                      {{ $t('DEPARTURE') }}/{{ $t('ARRIVAL') }}
-                    </h4>
-                    <div class="overflow-x-auto rounded-md border border-gray-200 dark:border-gray-700">
-                      <table class="min-w-full text-sm" data-test="isokaze-operation-table">
-                        <thead class="bg-gray-50 text-gray-700 dark:bg-slate-700 dark:text-gray-200">
-                          <tr>
-                            <th class="px-3 py-2 text-left font-medium">{{ $t('DEPARTURE') }}</th>
-                            <th class="px-3 py-2 text-left font-medium">{{ $t('DEPARTURE_TIME') }}</th>
-                            <th class="px-3 py-2 text-left font-medium">{{ $t('ARRIVAL') }}</th>
-                          </tr>
-                        </thead>
-                        <tbody>
-                          <tr class="border-t border-gray-200 dark:border-gray-700">
-                            <td class="px-3 py-2 dark:text-gray-200">{{ formatPortLabel(shipStatus.isokaze?.departure)
-                            }}</td>
-                            <td class="px-3 py-2 dark:text-gray-200">{{
-                              formatShipTime(getStartTimeValue(shipStatus.isokaze)) }}</td>
-                            <td class="px-3 py-2 dark:text-gray-200">{{ formatPortLabel(shipStatus.isokaze?.arrival) }}
-                            </td>
-                          </tr>
-                        </tbody>
-                      </table>
+            <div class="grid md:grid-cols-2 gap-6">
+              <!-- いそかぜ -->
+              <div>
+                <div class="rounded-lg overflow-hidden shadow-sm h-full" :class="getStatusCardContainerClass(shipStatus.isokaze)">
+                  <div class="px-4 py-3 border-b" :class="getStatusCardHeaderClass(shipStatus.isokaze)">
+                    <h3 class="text-lg font-bold">{{ $t('ISOKAZE') }}</h3>
+                  </div>
+                  <div class="p-4">
+                    <div v-if="shipStatus.isokaze">
+                      <div class="space-y-3">
+                        <p class="text-sm dark:text-gray-200">
+                          <strong>{{ $t('STATUS') }}:</strong>
+                          <span :class="getStatusClass(shipStatus.isokaze?.status)" class="ml-1">
+                            {{ getStatusText(shipStatus.isokaze?.status, 'isokaze') }}
+                          </span>
+                        </p>
+                        <p v-if="shipStatus.isokaze.summary" class="text-sm dark:text-gray-300">
+                          <strong>{{ $t('SUMMARY') }}:</strong>
+                          <span class="ml-1">{{ shipStatus.isokaze.summary }}</span>
+                        </p>
+                        <div v-if="shouldShowDetailBlock(shipStatus.isokaze, 'isokaze')"
+                          class="mt-2 space-y-4 border-t border-gray-200 pt-4 dark:border-gray-700" data-test="isokaze-detail">
+                          <div v-if="hasOperationInfo(shipStatus.isokaze)" class="space-y-2">
+                            <h4 class="text-sm font-semibold text-gray-700 dark:text-gray-200">
+                              {{ $t('DEPARTURE') }}/{{ $t('ARRIVAL') }}
+                            </h4>
+                            <div class="overflow-x-auto rounded-md border border-gray-200 dark:border-gray-700">
+                              <table class="min-w-full text-sm" data-test="isokaze-operation-table">
+                                <thead class="bg-gray-50 text-gray-700 dark:bg-slate-700 dark:text-gray-200">
+                                  <tr>
+                                    <th class="px-3 py-2 text-left font-medium">{{ $t('DEPARTURE') }}</th>
+                                    <th class="px-3 py-2 text-left font-medium">{{ $t('DEPARTURE_TIME') }}</th>
+                                    <th class="px-3 py-2 text-left font-medium">{{ $t('ARRIVAL') }}</th>
+                                  </tr>
+                                </thead>
+                                <tbody>
+                                  <tr class="border-t border-gray-200 dark:border-gray-700">
+                                    <td class="px-3 py-2 dark:text-gray-200">{{ formatPortLabel(shipStatus.isokaze?.departure)
+                                    }}</td>
+                                    <td class="px-3 py-2 dark:text-gray-200">{{
+                                      formatShipTime(getStartTimeValue(shipStatus.isokaze)) }}</td>
+                                    <td class="px-3 py-2 dark:text-gray-200">{{ formatPortLabel(shipStatus.isokaze?.arrival) }}
+                                    </td>
+                                  </tr>
+                                </tbody>
+                              </table>
+                            </div>
+                          </div>
+                          <div v-if="shouldShowReason(shipStatus.isokaze, 'isokaze')" class="text-sm dark:text-gray-300">
+                            <strong class="text-gray-700 dark:text-gray-200">{{ $t('REASON') }}:</strong>
+                            <span class="ml-1">{{ formatReason(shipStatus.isokaze.reason) }}</span>
+                          </div>
+                          <div v-if="getShipTrips(shipStatus.isokaze?.extraShips).length" class="space-y-2"
+                            data-test="isokaze-extra-section">
+                            <h4 class="text-sm font-semibold text-gray-700 dark:text-gray-200">{{ $t('EXTRA_SHIPS') }}</h4>
+                            <div class="overflow-x-auto rounded-md border border-gray-200 dark:border-gray-700">
+                              <table class="min-w-full text-sm" data-test="isokaze-extra-table">
+                                <thead class="bg-gray-50 text-gray-700 dark:bg-slate-700 dark:text-gray-200">
+                                  <tr>
+                                    <th class="px-3 py-2 text-left font-medium">{{ $t('DEPARTURE') }}</th>
+                                    <th class="px-3 py-2 text-left font-medium">{{ $t('DEPARTURE_TIME') }}</th>
+                                    <th class="px-3 py-2 text-left font-medium">{{ $t('ARRIVAL') }}</th>
+                                  </tr>
+                                </thead>
+                                <tbody>
+                                  <tr v-for="(trip, index) in getShipTrips(shipStatus.isokaze?.extraShips)"
+                                    :key="`isokaze-extra-${index}`" class="border-t border-gray-200 dark:border-gray-700">
+                                    <td class="px-3 py-2 dark:text-gray-200">{{ formatPortLabel(trip?.departure) }}</td>
+                                    <td class="px-3 py-2 dark:text-gray-200">{{ getTripDepartureTime(trip) }}</td>
+                                    <td class="px-3 py-2 dark:text-gray-200">{{ formatTripArrival(trip) }}</td>
+                                  </tr>
+                                </tbody>
+                              </table>
+                            </div>
+                          </div>
+                          <div v-else-if="getShipTrips(shipStatus.isokaze?.lastShips).length" class="space-y-2"
+                            data-test="isokaze-last-section">
+                            <h4 class="text-sm font-semibold text-gray-700 dark:text-gray-200">{{ $t('LAST_SHIPS') }}</h4>
+                            <div class="overflow-x-auto rounded-md border border-gray-200 dark:border-gray-700">
+                              <table class="min-w-full text-sm" data-test="isokaze-last-table">
+                                <thead class="bg-gray-50 text-gray-700 dark:bg-slate-700 dark:text-gray-200">
+                                  <tr>
+                                    <th class="px-3 py-2 text-left font-medium">{{ $t('DEPARTURE') }}</th>
+                                    <th class="px-3 py-2 text-left font-medium">{{ $t('DEPARTURE_TIME') }}</th>
+                                    <th class="px-3 py-2 text-left font-medium">{{ $t('ARRIVAL') }}</th>
+                                  </tr>
+                                </thead>
+                                <tbody>
+                                  <tr v-for="(trip, index) in getShipTrips(shipStatus.isokaze?.lastShips)"
+                                    :key="`isokaze-last-${index}`" class="border-t border-gray-200 dark:border-gray-700">
+                                    <td class="px-3 py-2 dark:text-gray-200">{{ formatPortLabel(trip?.departure) }}</td>
+                                    <td class="px-3 py-2 dark:text-gray-200">{{ getTripDepartureTime(trip) }}</td>
+                                    <td class="px-3 py-2 dark:text-gray-200">{{ formatTripArrival(trip) }}</td>
+                                  </tr>
+                                </tbody>
+                              </table>
+                            </div>
+                          </div>
+                          <div v-if="shipStatus.isokaze.comment" class="text-sm dark:text-gray-300">
+                            <strong class="text-gray-700 dark:text-gray-200">{{ $t('COMMENT') }}:</strong>
+                            <span class="ml-1">{{ shipStatus.isokaze.comment }}</span>
+                          </div>
+                        </div>
+                      </div>
                     </div>
-                  </div>
-                  <div v-if="shouldShowReason(shipStatus.isokaze, 'isokaze')" class="text-sm dark:text-gray-300">
-                    <strong class="text-gray-700 dark:text-gray-200">{{ $t('REASON') }}:</strong>
-                    <span class="ml-1">{{ formatReason(shipStatus.isokaze.reason) }}</span>
-                  </div>
-                  <div v-if="getShipTrips(shipStatus.isokaze?.extraShips).length" class="space-y-2"
-                    data-test="isokaze-extra-section">
-                    <h4 class="text-sm font-semibold text-gray-700 dark:text-gray-200">{{ $t('EXTRA_SHIPS') }}</h4>
-                    <div class="overflow-x-auto rounded-md border border-gray-200 dark:border-gray-700">
-                      <table class="min-w-full text-sm" data-test="isokaze-extra-table">
-                        <thead class="bg-gray-50 text-gray-700 dark:bg-slate-700 dark:text-gray-200">
-                          <tr>
-                            <th class="px-3 py-2 text-left font-medium">{{ $t('DEPARTURE') }}</th>
-                            <th class="px-3 py-2 text-left font-medium">{{ $t('DEPARTURE_TIME') }}</th>
-                            <th class="px-3 py-2 text-left font-medium">{{ $t('ARRIVAL') }}</th>
-                          </tr>
-                        </thead>
-                        <tbody>
-                          <tr v-for="(trip, index) in getShipTrips(shipStatus.isokaze?.extraShips)"
-                            :key="`isokaze-extra-${index}`" class="border-t border-gray-200 dark:border-gray-700">
-                            <td class="px-3 py-2 dark:text-gray-200">{{ formatPortLabel(trip?.departure) }}</td>
-                            <td class="px-3 py-2 dark:text-gray-200">{{ getTripDepartureTime(trip) }}</td>
-                            <td class="px-3 py-2 dark:text-gray-200">{{ formatTripArrival(trip) }}</td>
-                          </tr>
-                        </tbody>
-                      </table>
+                    <div v-else>
+                      <p class="text-gray-500 dark:text-gray-300">{{ $t('NO_STATUS_INFO') }}</p>
                     </div>
-                  </div>
-                  <div v-else-if="getShipTrips(shipStatus.isokaze?.lastShips).length" class="space-y-2"
-                    data-test="isokaze-last-section">
-                    <h4 class="text-sm font-semibold text-gray-700 dark:text-gray-200">{{ $t('LAST_SHIPS') }}</h4>
-                    <div class="overflow-x-auto rounded-md border border-gray-200 dark:border-gray-700">
-                      <table class="min-w-full text-sm" data-test="isokaze-last-table">
-                        <thead class="bg-gray-50 text-gray-700 dark:bg-slate-700 dark:text-gray-200">
-                          <tr>
-                            <th class="px-3 py-2 text-left font-medium">{{ $t('DEPARTURE') }}</th>
-                            <th class="px-3 py-2 text-left font-medium">{{ $t('DEPARTURE_TIME') }}</th>
-                            <th class="px-3 py-2 text-left font-medium">{{ $t('ARRIVAL') }}</th>
-                          </tr>
-                        </thead>
-                        <tbody>
-                          <tr v-for="(trip, index) in getShipTrips(shipStatus.isokaze?.lastShips)"
-                            :key="`isokaze-last-${index}`" class="border-t border-gray-200 dark:border-gray-700">
-                            <td class="px-3 py-2 dark:text-gray-200">{{ formatPortLabel(trip?.departure) }}</td>
-                            <td class="px-3 py-2 dark:text-gray-200">{{ getTripDepartureTime(trip) }}</td>
-                            <td class="px-3 py-2 dark:text-gray-200">{{ formatTripArrival(trip) }}</td>
-                          </tr>
-                        </tbody>
-                      </table>
-                    </div>
-                  </div>
-                  <div v-if="shipStatus.isokaze.comment" class="text-sm dark:text-gray-300">
-                    <strong class="text-gray-700 dark:text-gray-200">{{ $t('COMMENT') }}:</strong>
-                    <span class="ml-1">{{ shipStatus.isokaze.comment }}</span>
                   </div>
                 </div>
-                <p v-if="shipStatus.isokaze.updated" class="text-gray-500 dark:text-gray-300 text-sm">
-                  {{ $t('LAST_UPDATE') }}: {{ formatDateTime(shipStatus.isokaze.updated) }}
-                </p>
               </div>
-            </div>
-            <div v-else>
-              <p class="text-gray-500 dark:text-gray-300">{{ $t('NO_STATUS_INFO') }}</p>
-            </div>
-          </div>
-        </div>
-      </div>
 
-      <!-- どうぜん Status -->
-      <div>
-        <div class="rounded-lg overflow-hidden shadow-sm h-full" :class="getStatusCardContainerClass(shipStatus.dozen)">
-          <div class="px-4 py-3 border-b" :class="getStatusCardHeaderClass(shipStatus.dozen)">
-            <h3 class="text-lg font-bold">{{ $t('FERRY_DOZEN') }}</h3>
-          </div>
-          <div class="p-4">
-            <div v-if="shipStatus.dozen">
-              <div class="space-y-3">
-                <p class="text-sm dark:text-gray-200">
-                  <strong>{{ $t('STATUS') }}:</strong>
-                  <span :class="getStatusClass(shipStatus.dozen?.status)" class="ml-1">
-                    {{ getStatusText(shipStatus.dozen?.status, 'dozen') }}
-                  </span>
-                </p>
-                <p v-if="shipStatus.dozen.summary" class="text-sm dark:text-gray-300">
-                  <strong>{{ $t('SUMMARY') }}:</strong>
-                  <span class="ml-1">{{ shipStatus.dozen.summary }}</span>
-                </p>
-                <div v-if="shouldShowDetailBlock(shipStatus.dozen, 'dozen')"
-                  class="mt-2 space-y-4 border-t border-gray-200 pt-4 dark:border-gray-700" data-test="dozen-detail">
-                  <div v-if="hasOperationInfo(shipStatus.dozen)" class="space-y-2">
-                    <h4 class="text-sm font-semibold text-gray-700 dark:text-gray-200">
-                      {{ $t('DEPARTURE') }}/{{ $t('ARRIVAL') }}
-                    </h4>
-                    <div class="overflow-x-auto rounded-md border border-gray-200 dark:border-gray-700">
-                      <table class="min-w-full text-sm" data-test="dozen-operation-table">
-                        <thead class="bg-gray-50 text-gray-700 dark:bg-slate-700 dark:text-gray-200">
-                          <tr>
-                            <th class="px-3 py-2 text-left font-medium">{{ $t('DEPARTURE') }}</th>
-                            <th class="px-3 py-2 text-left font-medium">{{ $t('DEPARTURE_TIME') }}</th>
-                            <th class="px-3 py-2 text-left font-medium">{{ $t('ARRIVAL') }}</th>
-                          </tr>
-                        </thead>
-                        <tbody>
-                          <tr class="border-t border-gray-200 dark:border-gray-700">
-                            <td class="px-3 py-2 dark:text-gray-200">{{ formatPortLabel(shipStatus.dozen?.departure) }}
-                            </td>
-                            <td class="px-3 py-2 dark:text-gray-200">{{
-                              formatShipTime(getStartTimeValue(shipStatus.dozen)) }}</td>
-                            <td class="px-3 py-2 dark:text-gray-200">{{ formatPortLabel(shipStatus.dozen?.arrival) }}
-                            </td>
-                          </tr>
-                        </tbody>
-                      </table>
+              <!-- フェリーどうぜん -->
+              <div>
+                <div class="rounded-lg overflow-hidden shadow-sm h-full" :class="getStatusCardContainerClass(shipStatus.dozen)">
+                  <div class="px-4 py-3 border-b" :class="getStatusCardHeaderClass(shipStatus.dozen)">
+                    <h3 class="text-lg font-bold">{{ $t('FERRY_DOZEN') }}</h3>
+                  </div>
+                  <div class="p-4">
+                    <div v-if="shipStatus.dozen">
+                      <div class="space-y-3">
+                        <p class="text-sm dark:text-gray-200">
+                          <strong>{{ $t('STATUS') }}:</strong>
+                          <span :class="getStatusClass(shipStatus.dozen?.status)" class="ml-1">
+                            {{ getStatusText(shipStatus.dozen?.status, 'dozen') }}
+                          </span>
+                        </p>
+                        <p v-if="shipStatus.dozen.summary" class="text-sm dark:text-gray-300">
+                          <strong>{{ $t('SUMMARY') }}:</strong>
+                          <span class="ml-1">{{ shipStatus.dozen.summary }}</span>
+                        </p>
+                        <div v-if="shouldShowDetailBlock(shipStatus.dozen, 'dozen')"
+                          class="mt-2 space-y-4 border-t border-gray-200 pt-4 dark:border-gray-700" data-test="dozen-detail">
+                          <div v-if="hasOperationInfo(shipStatus.dozen)" class="space-y-2">
+                            <h4 class="text-sm font-semibold text-gray-700 dark:text-gray-200">
+                              {{ $t('DEPARTURE') }}/{{ $t('ARRIVAL') }}
+                            </h4>
+                            <div class="overflow-x-auto rounded-md border border-gray-200 dark:border-gray-700">
+                              <table class="min-w-full text-sm" data-test="dozen-operation-table">
+                                <thead class="bg-gray-50 text-gray-700 dark:bg-slate-700 dark:text-gray-200">
+                                  <tr>
+                                    <th class="px-3 py-2 text-left font-medium">{{ $t('DEPARTURE') }}</th>
+                                    <th class="px-3 py-2 text-left font-medium">{{ $t('DEPARTURE_TIME') }}</th>
+                                    <th class="px-3 py-2 text-left font-medium">{{ $t('ARRIVAL') }}</th>
+                                  </tr>
+                                </thead>
+                                <tbody>
+                                  <tr class="border-t border-gray-200 dark:border-gray-700">
+                                    <td class="px-3 py-2 dark:text-gray-200">{{ formatPortLabel(shipStatus.dozen?.departure) }}
+                                    </td>
+                                    <td class="px-3 py-2 dark:text-gray-200">{{
+                                      formatShipTime(getStartTimeValue(shipStatus.dozen)) }}</td>
+                                    <td class="px-3 py-2 dark:text-gray-200">{{ formatPortLabel(shipStatus.dozen?.arrival) }}
+                                    </td>
+                                  </tr>
+                                </tbody>
+                              </table>
+                            </div>
+                          </div>
+                          <div v-if="shouldShowReason(shipStatus.dozen, 'dozen')" class="text-sm dark:text-gray-300">
+                            <strong class="text-gray-700 dark:text-gray-200">{{ $t('REASON') }}:</strong>
+                            <span class="ml-1">{{ formatReason(shipStatus.dozen.reason) }}</span>
+                          </div>
+                          <div v-if="getShipTrips(shipStatus.dozen?.extraShips).length" class="space-y-2"
+                            data-test="dozen-extra-section">
+                            <h4 class="text-sm font-semibold text-gray-700 dark:text-gray-200">{{ $t('EXTRA_SHIPS') }}</h4>
+                            <div class="overflow-x-auto rounded-md border border-gray-200 dark:border-gray-700">
+                              <table class="min-w-full text-sm" data-test="dozen-extra-table">
+                                <thead class="bg-gray-50 text-gray-700 dark:bg-slate-700 dark:text-gray-200">
+                                  <tr>
+                                    <th class="px-3 py-2 text-left font-medium">{{ $t('DEPARTURE') }}</th>
+                                    <th class="px-3 py-2 text-left font-medium">{{ $t('DEPARTURE_TIME') }}</th>
+                                    <th class="px-3 py-2 text-left font-medium">{{ $t('ARRIVAL') }}</th>
+                                  </tr>
+                                </thead>
+                                <tbody>
+                                  <tr v-for="(trip, index) in getShipTrips(shipStatus.dozen?.extraShips)"
+                                    :key="`dozen-extra-${index}`" class="border-t border-gray-200 dark:border-gray-700">
+                                    <td class="px-3 py-2 dark:text-gray-200">{{ formatPortLabel(trip?.departure) }}</td>
+                                    <td class="px-3 py-2 dark:text-gray-200">{{ getTripDepartureTime(trip) }}</td>
+                                    <td class="px-3 py-2 dark:text-gray-200">{{ formatTripArrival(trip) }}</td>
+                                  </tr>
+                                </tbody>
+                              </table>
+                            </div>
+                          </div>
+                          <div v-else-if="getShipTrips(shipStatus.dozen?.lastShips).length" class="space-y-2"
+                            data-test="dozen-last-section">
+                            <h4 class="text-sm font-semibold text-gray-700 dark:text-gray-200">{{ $t('LAST_SHIPS') }}</h4>
+                            <div class="overflow-x-auto rounded-md border border-gray-200 dark:border-gray-700">
+                              <table class="min-w-full text-sm" data-test="dozen-last-table">
+                                <thead class="bg-gray-50 text-gray-700 dark:bg-slate-700 dark:text-gray-200">
+                                  <tr>
+                                    <th class="px-3 py-2 text-left font-medium">{{ $t('DEPARTURE') }}</th>
+                                    <th class="px-3 py-2 text-left font-medium">{{ $t('DEPARTURE_TIME') }}</th>
+                                    <th class="px-3 py-2 text-left font-medium">{{ $t('ARRIVAL') }}</th>
+                                  </tr>
+                                </thead>
+                                <tbody>
+                                  <tr v-for="(trip, index) in getShipTrips(shipStatus.dozen?.lastShips)"
+                                    :key="`dozen-last-${index}`" class="border-t border-gray-200 dark:border-gray-700">
+                                    <td class="px-3 py-2 dark:text-gray-200">{{ formatPortLabel(trip?.departure) }}</td>
+                                    <td class="px-3 py-2 dark:text-gray-200">{{ getTripDepartureTime(trip) }}</td>
+                                    <td class="px-3 py-2 dark:text-gray-200">{{ formatTripArrival(trip) }}</td>
+                                  </tr>
+                                </tbody>
+                              </table>
+                            </div>
+                          </div>
+                          <div v-if="shipStatus.dozen.comment" class="text-sm dark:text-gray-300">
+                            <strong class="text-gray-700 dark:text-gray-200">{{ $t('COMMENT') }}:</strong>
+                            <span class="ml-1">{{ shipStatus.dozen.comment }}</span>
+                          </div>
+                        </div>
+                      </div>
                     </div>
-                  </div>
-                  <div v-if="shouldShowReason(shipStatus.dozen, 'dozen')" class="text-sm dark:text-gray-300">
-                    <strong class="text-gray-700 dark:text-gray-200">{{ $t('REASON') }}:</strong>
-                    <span class="ml-1">{{ formatReason(shipStatus.dozen.reason) }}</span>
-                  </div>
-                  <div v-if="getShipTrips(shipStatus.dozen?.extraShips).length" class="space-y-2"
-                    data-test="dozen-extra-section">
-                    <h4 class="text-sm font-semibold text-gray-700 dark:text-gray-200">{{ $t('EXTRA_SHIPS') }}</h4>
-                    <div class="overflow-x-auto rounded-md border border-gray-200 dark:border-gray-700">
-                      <table class="min-w-full text-sm" data-test="dozen-extra-table">
-                        <thead class="bg-gray-50 text-gray-700 dark:bg-slate-700 dark:text-gray-200">
-                          <tr>
-                            <th class="px-3 py-2 text-left font-medium">{{ $t('DEPARTURE') }}</th>
-                            <th class="px-3 py-2 text-left font-medium">{{ $t('DEPARTURE_TIME') }}</th>
-                            <th class="px-3 py-2 text-left font-medium">{{ $t('ARRIVAL') }}</th>
-                          </tr>
-                        </thead>
-                        <tbody>
-                          <tr v-for="(trip, index) in getShipTrips(shipStatus.dozen?.extraShips)"
-                            :key="`dozen-extra-${index}`" class="border-t border-gray-200 dark:border-gray-700">
-                            <td class="px-3 py-2 dark:text-gray-200">{{ formatPortLabel(trip?.departure) }}</td>
-                            <td class="px-3 py-2 dark:text-gray-200">{{ getTripDepartureTime(trip) }}</td>
-                            <td class="px-3 py-2 dark:text-gray-200">{{ formatTripArrival(trip) }}</td>
-                          </tr>
-                        </tbody>
-                      </table>
+                    <div v-else>
+                      <p class="text-gray-500 dark:text-gray-300">{{ $t('NO_STATUS_INFO') }}</p>
                     </div>
-                  </div>
-                  <div v-else-if="getShipTrips(shipStatus.dozen?.lastShips).length" class="space-y-2"
-                    data-test="dozen-last-section">
-                    <h4 class="text-sm font-semibold text-gray-700 dark:text-gray-200">{{ $t('LAST_SHIPS') }}</h4>
-                    <div class="overflow-x-auto rounded-md border border-gray-200 dark:border-gray-700">
-                      <table class="min-w-full text-sm" data-test="dozen-last-table">
-                        <thead class="bg-gray-50 text-gray-700 dark:bg-slate-700 dark:text-gray-200">
-                          <tr>
-                            <th class="px-3 py-2 text-left font-medium">{{ $t('DEPARTURE') }}</th>
-                            <th class="px-3 py-2 text-left font-medium">{{ $t('DEPARTURE_TIME') }}</th>
-                            <th class="px-3 py-2 text-left font-medium">{{ $t('ARRIVAL') }}</th>
-                          </tr>
-                        </thead>
-                        <tbody>
-                          <tr v-for="(trip, index) in getShipTrips(shipStatus.dozen?.lastShips)"
-                            :key="`dozen-last-${index}`" class="border-t border-gray-200 dark:border-gray-700">
-                            <td class="px-3 py-2 dark:text-gray-200">{{ formatPortLabel(trip?.departure) }}</td>
-                            <td class="px-3 py-2 dark:text-gray-200">{{ getTripDepartureTime(trip) }}</td>
-                            <td class="px-3 py-2 dark:text-gray-200">{{ formatTripArrival(trip) }}</td>
-                          </tr>
-                        </tbody>
-                      </table>
-                    </div>
-                  </div>
-                  <div v-if="shipStatus.dozen.comment" class="text-sm dark:text-gray-300">
-                    <strong class="text-gray-700 dark:text-gray-200">{{ $t('COMMENT') }}:</strong>
-                    <span class="ml-1">{{ shipStatus.dozen.comment }}</span>
                   </div>
                 </div>
-                <p v-if="shipStatus.dozen.updated" class="text-gray-500 dark:text-gray-300 text-sm">
-                  {{ $t('LAST_UPDATE') }}: {{ formatDateTime(shipStatus.dozen.updated) }}
-                </p>
               </div>
-            </div>
-            <div v-else>
-              <p class="text-gray-500 dark:text-gray-300">{{ $t('NO_STATUS_INFO') }}</p>
             </div>
           </div>
         </div>
@@ -393,6 +402,30 @@ const isLoading = ref(false)
 const shipStatus = computed(() => ferryStore?.shipStatus || {})
 const lastFetchTime = computed(() => ferryStore?.lastFetchTime || null)
 const ferryUpdatedAt = computed(() => shipStatus.value?.ferry?.updated_at || null)
+const pickLatestTimestamp = (values: Array<string | null | undefined>) => {
+  let best: string | null = null
+  let bestTime = -1
+  for (const v of values) {
+    if (!v) continue
+    const t = Date.parse(v)
+    if (Number.isNaN(t)) continue
+    if (t > bestTime) {
+      best = v
+      bestTime = t
+    }
+  }
+  return best
+}
+
+const localShipsUpdatedAt = computed(() => {
+  return pickLatestTimestamp([
+    shipStatus.value?.isokaze?.updated_at,
+    shipStatus.value?.isokaze?.updated,
+    shipStatus.value?.dozen?.updated_at,
+    shipStatus.value?.dozen?.updated
+  ])
+})
+
 const updatedAtForDisplay = computed(() => {
   // Prefer API-provided timestamps; fall back to store fetch time
   return (
