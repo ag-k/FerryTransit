@@ -110,11 +110,11 @@
               {{ formatHeaderTimestamp(localShipsUpdatedAt) }}
             </p>
           </div>
-          <div class="p-4">
-            <div class="grid md:grid-cols-2 gap-x-6 gap-y-4">
+          <div class="p-3 sm:p-4">
+            <div class="grid md:grid-cols-2 gap-x-6 gap-y-3 sm:gap-y-4">
               <!-- いそかぜ -->
               <div>
-                <div class="rounded-lg border border-slate-200/70 bg-white/70 p-4 shadow-sm dark:border-slate-700 dark:bg-slate-900/40">
+                <div class="rounded-lg border border-slate-200/70 bg-white/70 p-3 sm:p-4 shadow-sm dark:border-slate-700 dark:bg-slate-900/40">
                   <div v-if="shipStatus.isokaze">
                     <div class="flex items-start justify-between gap-3">
                       <h6 class="text-sm font-semibold text-slate-800 dark:text-slate-100">{{ $t('ISOKAZE') }}</h6>
@@ -232,7 +232,7 @@
 
               <!-- フェリーどうぜん -->
               <div>
-                <div class="rounded-lg border border-slate-200/70 bg-white/70 p-4 shadow-sm dark:border-slate-700 dark:bg-slate-900/40">
+                <div class="rounded-lg border border-slate-200/70 bg-white/70 p-3 sm:p-4 shadow-sm dark:border-slate-700 dark:bg-slate-900/40">
                   <div v-if="shipStatus.dozen">
                     <div class="flex items-start justify-between gap-3">
                       <h6 class="text-sm font-semibold text-slate-800 dark:text-slate-100">{{ $t('FERRY_DOZEN') }}</h6>
