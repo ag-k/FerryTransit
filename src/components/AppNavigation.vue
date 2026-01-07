@@ -27,7 +27,7 @@
             :to="localePath('/')">
             <span class="hidden lg:inline font-bold">{{ $t('TITLE') }}</span>
             <span class="lg:hidden flex items-center">
-              <span class="text-sm">{{ $t('TITLE') }}</span>
+              <span class="text-sm font-bold">{{ $t('TITLE') }}</span>
               <span v-if="currentPageTitle" class="ml-1 text-xs opacity-80">/ {{ currentPageTitle }}</span>
             </span>
           </NuxtLink>
