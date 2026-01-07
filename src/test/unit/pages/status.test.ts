@@ -117,7 +117,8 @@ describe('StatusPage', () => {
     const detailBlock = wrapper.find('[data-test="isokaze-detail"]')
     expect(detailBlock.exists()).toBe(true)
     expect(detailBlock.text()).toContain('荒天のため')
-    expect(detailBlock.text()).toContain('最新情報に注意')
+    // コメントは詳細ブロックとは別セクションに表示される
+    expect(wrapper.text()).toContain('最新情報に注意')
 
     const extraTable = wrapper.find('[data-test="isokaze-extra-table"]')
     expect(extraTable.exists()).toBe(true)

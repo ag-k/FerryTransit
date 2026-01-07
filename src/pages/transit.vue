@@ -48,7 +48,7 @@
       <!-- Search Button -->
       <div>
         <button type="button"
-          class="w-full px-8 py-3 text-base bg-blue-700 text-white rounded-lg hover:bg-blue-800 dark:bg-blue-500 dark:hover:bg-blue-700 active:bg-blue-800 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 dark:focus:ring-offset-gray-800 transform active:scale-95 transition-all duration-150 disabled:bg-gray-400 dark:disabled:bg-gray-600 disabled:cursor-not-allowed disabled:transform-none flex items-center justify-center shadow-sm hover:shadow-md"
+          class="w-full px-8 py-3 text-base font-semibold text-white rounded-lg bg-gradient-to-b from-blue-700 to-blue-800 dark:from-blue-500 dark:to-blue-600 hover:from-blue-600 hover:to-blue-700 dark:hover:from-blue-400 dark:hover:to-blue-500 active:from-blue-700 active:to-blue-800 focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 focus-visible:ring-offset-2 dark:focus-visible:ring-blue-400 dark:focus-visible:ring-offset-slate-950 transform active:scale-95 transition-all duration-150 disabled:bg-none disabled:bg-gray-400 dark:disabled:bg-gray-600 disabled:ring-0 disabled:cursor-not-allowed disabled:transform-none flex items-center justify-center shadow-md hover:shadow-lg disabled:shadow-none ring-1 ring-white/15 dark:ring-white/10"
           :disabled="!canSearch || isSearching" @click="handleSearch">
           <span v-if="isSearching"
             class="inline-block animate-spin rounded-full h-4 w-4 border-b-2 border-white mr-2"></span>

@@ -25,7 +25,7 @@ xmlns="http://www.w3.org/2000/svg" width="48" height="48" fill="currentColor"
           <p class="text-gray-600 dark:text-gray-300 mb-4">{{ $t('TIMETABLE_DESC') }}</p>
           <NuxtLink
 :to="localePath('/')"
-            class="inline-block px-6 py-2 bg-blue-700 text-white rounded hover:bg-blue-800 dark:bg-blue-500 dark:hover:bg-blue-700 transition-colors">
+            class="inline-block px-6 py-2 font-semibold text-white rounded bg-gradient-to-b from-blue-700 to-blue-800 dark:from-blue-500 dark:to-blue-600 hover:from-blue-600 hover:to-blue-700 dark:hover:from-blue-400 dark:hover:to-blue-500 focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 focus-visible:ring-offset-2 dark:focus-visible:ring-blue-400 dark:focus-visible:ring-offset-slate-950 transition-all shadow-sm hover:shadow-md">
             {{ $t('VIEW_TIMETABLE') }}
           </NuxtLink>
         </div>
@@ -47,7 +47,7 @@ fill-rule="evenodd"
           <p class="text-gray-600 dark:text-gray-300 mb-4">{{ $t('TRANSIT_DESC') }}</p>
           <NuxtLink
 :to="localePath('/transit')"
-            class="inline-block px-6 py-2 bg-blue-700 text-white rounded hover:bg-blue-800 dark:bg-blue-500 dark:hover:bg-blue-700 transition-colors">
+            class="inline-block px-6 py-2 font-semibold text-white rounded bg-gradient-to-b from-blue-700 to-blue-800 dark:from-blue-500 dark:to-blue-600 hover:from-blue-600 hover:to-blue-700 dark:hover:from-blue-400 dark:hover:to-blue-500 focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 focus-visible:ring-offset-2 dark:focus-visible:ring-blue-400 dark:focus-visible:ring-offset-slate-950 transition-all shadow-sm hover:shadow-md">
             {{ $t('SEARCH_ROUTES') }}
           </NuxtLink>
         </div>
@@ -69,7 +69,7 @@ xmlns="http://www.w3.org/2000/svg" width="48" height="48" fill="currentColor"
           <p class="text-gray-600 dark:text-gray-300 mb-4">{{ $t('STATUS_DESC') }}</p>
           <NuxtLink
 :to="localePath('/status')"
-            class="inline-block px-6 py-2 bg-blue-700 text-white rounded hover:bg-blue-800 dark:bg-blue-500 dark:hover:bg-blue-700 transition-colors">
+            class="inline-block px-6 py-2 font-semibold text-white rounded bg-gradient-to-b from-blue-700 to-blue-800 dark:from-blue-500 dark:to-blue-600 hover:from-blue-600 hover:to-blue-700 dark:hover:from-blue-400 dark:hover:to-blue-500 focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 focus-visible:ring-offset-2 dark:focus-visible:ring-blue-400 dark:focus-visible:ring-offset-slate-950 transition-all shadow-sm hover:shadow-md">
             {{ $t('CHECK_STATUS') }}
           </NuxtLink>
         </div>
