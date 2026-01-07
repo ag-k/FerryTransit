@@ -84,7 +84,18 @@ export default {
     'dark:hover:bg-gray-600/50'
   ],
   theme: {
-    extend: {}
+    extend: {
+      fontFamily: {
+        sans: [
+          '"BIZ UDPGothic"',
+          '"Noto Sans JP"',
+          'system-ui',
+          '-apple-system',
+          '"Segoe UI"',
+          'sans-serif'
+        ]
+      }
+    }
   },
   plugins: [
     function({ addUtilities }) {

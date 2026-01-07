@@ -83,6 +83,7 @@ export default defineNuxtConfig({
   googleFonts: {
     families: {
       Roboto: [300, 400, 500, 700],
+      "BIZ+UDPGothic": [400, 700],
       "Noto+Sans+JP": [300, 400, 500, 700],
     },
     display: "swap",
