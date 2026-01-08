@@ -87,14 +87,14 @@
       </div>
       <!-- Route Panels -->
       <div v-for="(route, index) in displayedResults" :key="index" class="mb-4">
-        <div class="bg-white dark:bg-gray-800 rounded-lg overflow-hidden shadow-sm ring-1 ring-blue-700 dark:ring-blue-500">
+        <div class="bg-app-surface text-app-fg rounded-xl overflow-hidden shadow-sm border border-app-border/70">
           <div
-            class="bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 px-4 py-2 flex items-center justify-between rounded-t-lg border-b border-gray-200 dark:border-gray-700"
+            class="bg-app-surface text-app-fg px-4 py-2 flex items-center justify-between border-b border-app-border/70"
             data-testid="transit-result-header"
           >
             <h3 class="font-medium flex items-center gap-3 min-w-0">
               <span
-                class="inline-flex items-center justify-center w-7 h-7 bg-blue-700 text-white dark:bg-blue-700 dark:text-white rounded-full font-bold text-sm">
+                class="inline-flex items-center justify-center w-7 h-7 bg-app-primary text-white rounded-full font-bold text-sm">
                 {{ index + 1 }}
               </span>
 
@@ -102,14 +102,14 @@
               <div class="flex flex-col sm:flex-row sm:items-center sm:gap-2 min-w-0 flex-1">
                 <!-- 1行目（モバイル）: 時刻 -->
                 <span
-                  class="text-sm font-semibold tabular-nums text-gray-700 dark:text-gray-200 truncate"
+                  class="text-sm font-semibold tabular-nums text-app-fg truncate"
                   data-testid="transit-header-times"
                 >
                   {{ formatTime(route.departureTime) }}→{{ formatTime(route.arrivalTime) }}
                 </span>
 
                 <!-- 2行目（モバイル）: 所要時間/料金 -->
-                <span class="text-sm text-gray-700 dark:text-gray-200 truncate" data-testid="transit-header-summary">
+                <span class="text-sm text-app-fg truncate" data-testid="transit-header-summary">
                   {{ calculateDuration(route.departureTime, route.arrivalTime) }} /
                   <span v-if="route.totalFare > 0">¥{{ route.totalFare.toLocaleString() }}</span>
                   <span v-else class="text-yellow-700 dark:text-yellow-300">{{ $t('FARE_UNAVAILABLE') }}</span>
@@ -138,7 +138,7 @@
             </h3>
             <div class="flex items-center gap-2">
               <button
-                class="text-gray-600 hover:text-blue-700 dark:text-gray-200 dark:hover:text-yellow-300 focus:outline-none focus:ring-2 focus:ring-blue-500 dark:focus:ring-yellow-300 rounded p-1"
+                class="text-app-muted hover:text-app-primary focus:outline-none focus:ring-2 focus:ring-app-primary-2 rounded p-1"
                 :title="$t('SHOW_ON_MAP')" @click="showRouteMap(route)">
                 <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24"
                   stroke="currentColor">
@@ -147,24 +147,24 @@
                 </svg>
               </button>
               <FavoriteButton :type="'route'" :route="{ departure: departure, arrival: arrival }"
-                class="text-gray-600 hover:text-blue-700 dark:text-gray-200 dark:hover:text-yellow-300" />
+                class="text-app-muted hover:text-app-primary" />
             </div>
           </div>
           <div class="p-4">
-            <table class="w-full text-sm">
+            <table class="w-full text-sm border-separate border-spacing-0">
               <thead>
                 <tr>
-                  <th class="text-left pb-2 font-medium w-1/4 dark:text-gray-100">{{ $t('TIME') }}</th>
-                  <th class="text-left pb-2 font-medium dark:text-gray-100">{{ $t('ROUTE') }}</th>
-                  <th class="text-left pb-2 font-medium w-1/4 dark:text-gray-100">{{ $t('FARE') }}</th>
+                  <th class="text-left pb-2 font-medium w-1/4 text-app-muted">{{ $t('TIME') }}</th>
+                  <th class="text-left pb-2 font-medium text-app-muted">{{ $t('ROUTE') }}</th>
+                  <th class="text-left pb-2 font-medium w-1/4 text-app-muted">{{ $t('FARE') }}</th>
                 </tr>
               </thead>
-              <tbody>
+              <tbody class="divide-y divide-app-border/60">
                 <!-- Departure -->
-                <tr class="bg-blue-50/80 dark:bg-slate-900/60">
-                  <td class="py-2 pl-4 pr-4 text-left dark:text-gray-100">{{ formatTime(route.departureTime) }}</td>
+                <tr class="bg-app-surface-2/60">
+                  <td class="py-2 pl-4 pr-4 text-left text-app-fg">{{ formatTime(route.departureTime) }}</td>
                   <td class="py-2 pl-4">
-                    <a href="#" class="text-blue-700 dark:text-blue-200 hover:underline"
+                    <a href="#" class="text-app-primary hover:underline"
                       @click.prevent="showPortInfo(route.segments[0].departure)">
                       ⚓ {{ getPortDisplayName(route.segments[0].departure) }}
                     </a>
@@ -175,8 +175,8 @@
                 <!-- Segments -->
                 <template v-for="(segment, segIndex) in route.segments" :key="'seg-' + segIndex">
                   <!-- Ship Row -->
-                  <tr class="bg-white dark:bg-gray-800">
-                    <td class="py-2 pl-4 pr-4 text-right dark:text-gray-100">
+                  <tr class="bg-app-surface">
+                    <td class="py-2 pl-4 pr-4 text-right text-app-muted">
                       {{ formatSegmentDuration(segment.departureTime, segment.arrivalTime) }}
                     </td>
                     <td class="py-2 pl-4" :style="getShipBorderStyle(segment.ship)">
@@ -200,29 +200,29 @@
                           aria-label="運航状況を見る"
                           @click.stop="navigateToStatus"
                         >⚠</button>
-                        <a href="#" class="text-blue-700 dark:text-blue-200 hover:underline"
+                        <a href="#" class="text-app-primary hover:underline"
                           @click.prevent="showShipInfo(segment.ship)">
                           🚢 {{ $t(segment.ship) }}
                         </a>
                       </div>
                     </td>
-                    <td class="py-2 dark:text-gray-100">
+                    <td class="py-2 text-app-fg">
                     <span v-if="segment.fare > 0">¥{{ segment.fare.toLocaleString() }}</span>
-                    <span v-else class="text-gray-500">{{ $t('FARE_UNAVAILABLE') }}</span>
+                    <span v-else class="text-app-muted">{{ $t('FARE_UNAVAILABLE') }}</span>
                   </td>
                   </tr>
 
                   <!-- Transfer Port (if not last segment) -->
-                  <tr v-if="segIndex < route.segments.length - 1" class="bg-blue-50/80 dark:bg-slate-900/60">
-                    <td class="py-2 pl-4 pr-4 text-left dark:text-gray-100 whitespace-pre-line">
+                  <tr v-if="segIndex < route.segments.length - 1" class="bg-app-surface-2/60">
+                    <td class="py-2 pl-4 pr-4 text-left text-app-fg whitespace-pre-line">
                       {{ formatTransferPortTimes(segment.arrivalTime, route.segments[segIndex + 1].departureTime) }}
                     </td>
                     <td class="py-2 pl-4">
-                      <a href="#" class="text-blue-700 dark:text-blue-200 hover:underline"
+                      <a href="#" class="text-app-primary hover:underline"
                         @click.prevent="showPortInfo(segment.arrival)">
                         ⚓ {{ getPortDisplayName(segment.arrival) }}
                       </a>
-                      <span class="text-xs text-gray-600 dark:text-gray-400 ml-2">
+                      <span class="text-xs text-app-muted ml-2">
                         ({{ $t('TRANSFER') }}) {{ formatTransferWaitTime(segment.arrivalTime, route.segments[segIndex +
                           1].departureTime) }}
                       </span>
@@ -232,17 +232,17 @@
                 </template>
 
                 <!-- Arrival -->
-                <tr class="bg-blue-50/80 dark:bg-slate-900/60">
-                  <td class="py-2 pl-4 pr-4 text-left dark:text-gray-100">{{ formatTime(route.arrivalTime) }}</td>
+                <tr class="bg-app-surface-2/60">
+                  <td class="py-2 pl-4 pr-4 text-left text-app-fg">{{ formatTime(route.arrivalTime) }}</td>
                   <td class="py-2 pl-4">
-                    <a href="#" class="text-blue-700 dark:text-blue-200 hover:underline"
+                    <a href="#" class="text-app-primary hover:underline"
                       @click.prevent="showPortInfo(route.segments[route.segments.length - 1].arrival)">
                       ⚓ {{ getPortDisplayName(route.segments[route.segments.length - 1].arrival) }}
                     </a>
                   </td>
-                  <td class="py-2 font-medium dark:text-gray-100">
+                  <td class="py-2 font-medium text-app-fg">
                     <span v-if="route.totalFare > 0">{{ $t('TOTAL') }}: ¥{{ route.totalFare.toLocaleString() }}</span>
-                    <span v-else class="text-gray-500">{{ $t('FARE_UNAVAILABLE') }}</span>
+                    <span v-else class="text-app-muted">{{ $t('FARE_UNAVAILABLE') }}</span>
                   </td>
                 </tr>
               </tbody>
