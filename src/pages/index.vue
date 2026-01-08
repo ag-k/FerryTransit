@@ -110,8 +110,8 @@
     </ClientOnly>
 
     <!-- 時刻表 -->
-    <div class="bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700">
-      <div class="bg-blue-700 dark:bg-blue-800 text-white px-4 py-3 rounded-t-lg flex items-center justify-between">
+    <div class="bg-app-surface text-app-fg rounded-xl shadow-sm border border-app-border/70 overflow-hidden">
+      <div class="bg-gradient-to-r from-app-primary to-app-primary-2 text-white px-4 py-3 flex items-center justify-between border-b border-white/10">
         <div class="flex flex-col min-w-0">
           <div class="flex items-baseline justify-between gap-3 min-w-0">
             <h3 data-test="timetable-date-title" class="text-lg font-medium leading-tight truncate tabular-nums">
@@ -157,30 +157,30 @@
           </div>
 
           <div v-else class="overflow-x-auto">
-            <table class="w-full text-base sm:text-sm min-w-[360px]">
-              <thead class="bg-gray-50 dark:bg-gray-800 border-b dark:border-gray-600">
+            <table class="w-full text-base sm:text-sm min-w-[360px] border-separate border-spacing-0">
+              <thead class="bg-app-surface-2/70 border-b border-app-border/70">
                 <tr>
-                  <th class="px-3 sm:px-4 py-3 text-left font-medium text-gray-700 dark:text-gray-100">{{ $t('SHIP') }}
+                  <th class="px-3 sm:px-4 py-3 text-left font-medium text-app-muted">{{ $t('SHIP') }}
                   </th>
-                  <th class="px-3 sm:px-4 py-3 text-right font-medium text-gray-700 dark:text-gray-100">
+                  <th class="px-3 sm:px-4 py-3 text-right font-medium text-app-muted">
                     <a href="#"
-                      class="text-blue-700 dark:text-blue-200 hover:underline font-semibold inline-block py-1 -my-1 px-2 -mx-2 touch-manipulation"
+                      class="text-app-primary hover:underline font-semibold inline-block py-1 -my-1 px-2 -mx-2 touch-manipulation"
                       @click.prevent="showPortInfo(departure)">
                       {{ $t(departure) }}
                     </a>
                   </th>
-                  <th class="px-3 sm:px-4 py-3 text-right font-medium text-gray-700 dark:text-gray-100">
+                  <th class="px-3 sm:px-4 py-3 text-right font-medium text-app-muted">
                     <a href="#"
-                      class="text-blue-700 dark:text-blue-200 hover:underline font-semibold inline-block py-1 -my-1 px-2 -mx-2 touch-manipulation"
+                      class="text-app-primary hover:underline font-semibold inline-block py-1 -my-1 px-2 -mx-2 touch-manipulation"
                       @click.prevent="showPortInfo(arrival)">
                       {{ $t(arrival) }}
                     </a>
                   </th>
                 </tr>
               </thead>
-              <tbody>
+              <tbody class="divide-y divide-app-border/60">
                 <tr v-for="trip in sortedTimetable" :key="trip.tripId"
-                  class="border-b dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-700/50 transition-colors duration-150"
+                  class="hover:bg-app-surface-2/50 transition-colors duration-150"
                   :class="{ 'line-through opacity-60': tripStatus(trip) === 2 }">
                   <td class="px-3 sm:px-4 py-4 sm:py-3">
                     <div class="flex items-center gap-1 min-h-[20px]">
@@ -231,23 +231,23 @@
                         </svg>
                       </button>
                       <a href="#"
-                        class="text-blue-700 dark:text-blue-200 hover:underline font-medium inline-block py-1 -my-1 px-2 -mx-2 touch-manipulation"
+                        class="text-app-primary hover:underline font-medium inline-block py-1 -my-1 px-2 -mx-2 touch-manipulation"
                         @click.prevent="showShipInfo(trip.name)">
                         {{ $t(trip.name) }}
                       </a>
                     </div>
                   </td>
-                  <td class="px-3 sm:px-4 py-4 sm:py-3 font-mono text-right text-gray-900 dark:text-gray-100">
+                  <td class="px-3 sm:px-4 py-4 sm:py-3 font-mono tabular-nums text-right text-app-fg">
                     {{ formatTime(trip.departureTime) }}
                     <span v-if="trip.departureLabel"
-                      class="block text-gray-500 dark:text-gray-400 text-xs sm:text-xs mt-0.5">
+                      class="block text-app-muted text-xs sm:text-xs mt-0.5">
                       {{ $t(trip.departureLabel) }}
                     </span>
                   </td>
-                  <td class="px-3 sm:px-4 py-4 sm:py-3 font-mono text-right text-gray-900 dark:text-gray-100">
+                  <td class="px-3 sm:px-4 py-4 sm:py-3 font-mono tabular-nums text-right text-app-fg">
                     {{ formatTime(trip.arrivalTime) }}
                     <span v-if="trip.arrivalLabel"
-                      class="block text-gray-500 dark:text-gray-400 text-xs sm:text-xs mt-0.5">
+                      class="block text-app-muted text-xs sm:text-xs mt-0.5">
                       {{ $t(trip.arrivalLabel) }}
                     </span>
                   </td>
@@ -267,15 +267,15 @@
 
       <!-- 時刻表最終更新日 -->
       <div v-if="ferryStore.lastFetchTime"
-        class="px-4 py-3 bg-gray-50 dark:bg-gray-700/50 border-t border-gray-200 dark:border-gray-600 rounded-b-lg">
-        <p class="text-xs text-gray-500 dark:text-gray-400 text-center">
+        class="px-4 py-3 bg-app-surface-2/70 border-t border-app-border/70">
+        <p class="text-xs text-app-muted text-center">
           {{ $t('TIMETABLE_LAST_UPDATE') }}: {{ formatDateTime(ferryStore.lastFetchTime) }}
         </p>
       </div>
 
       <!-- 乗換を含むルートを検索ボタン -->
       <div v-if="showTransferSearchButton"
-        class="px-4 py-3 bg-gray-50 dark:bg-gray-700/50 border-t border-gray-200 dark:border-gray-600">
+        class="px-4 py-3 bg-app-surface-2/70 border-t border-app-border/70">
         <button type="button" data-test="transfer-search-button"
           class="w-full py-2.5 px-4 bg-blue-700 hover:bg-blue-800 dark:bg-blue-500 dark:hover:bg-blue-700 text-white font-medium rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 dark:focus:ring-offset-gray-800 transform active:scale-[0.98] transition-all duration-150 shadow-sm hover:shadow-md flex items-center justify-center gap-2"
           @click="navigateToTransit">
