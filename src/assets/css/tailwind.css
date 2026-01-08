@@ -1,0 +1,29 @@
+/* Tailwind entry (Tailwind v4 + @nuxtjs/tailwindcss v7)
+ *
+ * NOTE:
+ * - This file must be plain CSS (not SCSS) to avoid Sass import cycles.
+ * - Nuxt tailwind module detects `@import "tailwindcss"` and wires sources automatically.
+ */
+@import "tailwindcss";
+
+/* Nuxt module also defines `#tailwindcss/sources`, but `#tailwindcss` is aliased to THIS file,
+ * which can cause prefix-based alias resolution to turn `#tailwindcss/sources` into
+ * `.../tailwind.css/sources` (ENOTDIR). To avoid that, we declare sources explicitly.
+ */
+@source "../../";
+
+/* Semantic color tokens exposed as Tailwind utilities:
+ *   bg-app-bg / text-app-fg / border-app-border / from-app-nav-from / ...
+ */
+@theme {
+  --color-app-bg: hsl(var(--app-bg));
+  --color-app-surface: hsl(var(--app-surface));
+  --color-app-surface-2: hsl(var(--app-surface-2));
+  --color-app-border: hsl(var(--app-border));
+  --color-app-fg: hsl(var(--app-fg));
+  --color-app-muted: hsl(var(--app-muted));
+  --color-app-primary: hsl(var(--app-primary));
+  --color-app-primary-2: hsl(var(--app-primary-2));
+  --color-app-nav-from: hsl(var(--app-nav-from));
+  --color-app-nav-to: hsl(var(--app-nav-to));
+}

@@ -3,7 +3,7 @@
     <label
       v-if="label"
       :for="buttonId"
-      class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2"
+      class="block text-sm font-medium text-app-fg mb-2"
     >
       {{ label }}
     </label>
@@ -13,7 +13,7 @@
       :id="buttonId"
       type="button"
       data-testid="port-selector-button"
-      class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md text-left focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:text-white disabled:bg-gray-100 disabled:text-gray-500 disabled:cursor-not-allowed flex items-center justify-between gap-3"
+      class="w-full px-3 py-2 border border-app-border rounded-md text-left bg-app-surface text-app-fg focus:outline-none focus:ring-2 focus:ring-app-primary-2 focus:border-app-primary-2 disabled:bg-app-surface-2 disabled:text-app-muted disabled:cursor-not-allowed flex items-center justify-between gap-3"
       :disabled="disabled"
       :aria-label="label || placeholder || $t('SELECT')"
       :aria-haspopup="'dialog'"
@@ -21,11 +21,11 @@
       @click="open"
     >
       <span class="min-w-0 truncate">
-        <span v-if="modelValue" class="text-gray-900 dark:text-white">{{ $t(modelValue) }}</span>
-        <span v-else class="text-gray-500 dark:text-gray-300">{{ placeholder || '-' }}</span>
+        <span v-if="modelValue" class="text-app-fg">{{ $t(modelValue) }}</span>
+        <span v-else class="text-app-muted">{{ placeholder || '-' }}</span>
       </span>
       <svg
-        class="w-5 h-5 text-gray-500 dark:text-gray-300 flex-none"
+        class="w-5 h-5 text-app-muted flex-none"
         fill="currentColor"
         viewBox="0 0 20 20"
         aria-hidden="true"
@@ -37,7 +37,7 @@
         />
       </svg>
     </button>
-    <small v-if="hint" class="text-gray-500 dark:text-gray-400 text-sm mt-1 block">{{ hint }}</small>
+    <small v-if="hint" class="text-app-muted text-sm mt-1 block">{{ hint }}</small>
 
     <!-- Modal -->
     <Teleport v-if="canUseDom" to="body">
@@ -60,17 +60,17 @@
           @click.self="close"
         >
           <div
-            class="bg-white dark:bg-gray-800 rounded-t-2xl sm:rounded-lg shadow-xl w-full max-w-lg max-h-[90vh] h-full sm:h-auto"
+            class="bg-app-surface text-app-fg rounded-t-2xl sm:rounded-lg shadow-xl border border-app-border/70 w-full max-w-lg max-h-[90vh] h-full sm:h-auto"
             @click.stop
           >
             <!-- Header -->
-            <div class="flex items-center justify-between p-4 border-b border-gray-200 dark:border-gray-700">
-              <h3 class="text-lg font-semibold text-gray-900 dark:text-white">
+            <div class="flex items-center justify-between p-4 border-b border-app-border">
+              <h3 class="text-lg font-semibold text-app-fg">
                 {{ label || placeholder || $t('SELECT') }}
               </h3>
               <button
                 type="button"
-                class="p-3 -m-3 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg transition-colors touch-manipulation"
+                class="p-3 -m-3 hover:bg-app-surface-2 rounded-lg transition-colors touch-manipulation"
                 aria-label="Close"
                 @click="close"
               >
@@ -93,7 +93,7 @@
                   class="space-y-2"
                   :data-testid="`port-section-${section.key}`"
                 >
-                  <h4 class="text-sm font-semibold text-gray-700 dark:text-gray-200">
+                  <h4 class="text-sm font-semibold text-app-fg">
                     {{ $t(section.labelKey) }}
                   </h4>
                   <div class="grid grid-cols-1 gap-2">
@@ -101,11 +101,11 @@
                       v-for="port in section.ports"
                       :key="port"
                       type="button"
-                      class="w-full px-3 py-3 rounded-md border text-left transition-colors focus:outline-none focus:ring-2 focus:ring-blue-500"
+                      class="w-full px-3 py-3 rounded-md border border-app-border text-left transition-colors focus:outline-none focus:ring-2 focus:ring-app-primary-2"
                       :class="[
                         isPortDisabled(port)
-                          ? 'border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-800/40 text-gray-400 dark:text-gray-500 cursor-not-allowed'
-                          : 'border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 text-gray-900 dark:text-white hover:bg-blue-50 dark:hover:bg-gray-700'
+                          ? 'bg-app-surface-2 text-app-muted cursor-not-allowed opacity-70'
+                          : 'bg-app-surface text-app-fg hover:bg-app-surface-2'
                       ]"
                       :disabled="isPortDisabled(port)"
                       @click="selectPort(port)"

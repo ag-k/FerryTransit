@@ -1,7 +1,7 @@
 <template>
   <div v-if="hasAlerts" class="mb-6">
     <div
-      class="bg-yellow-100 dark:bg-yellow-900/20 border border-yellow-200 dark:border-gray-700 text-yellow-800 dark:text-yellow-300 px-4 py-3 rounded-lg">
+      class="bg-yellow-100 dark:bg-yellow-900/20 border border-yellow-200 dark:border-yellow-700/40 text-yellow-800 dark:text-yellow-300 px-4 py-3 rounded-lg">
       <h5 class="flex items-center text-lg font-semibold mb-2">
         <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="currentColor" class="mr-2"
           viewBox="0 0 16 16">
@@ -26,7 +26,7 @@
           {{ $t('RAINBOWJET') }}: {{ shipStatus.ferry.fastFerryState }}
         </span>
       </div>
-      <hr class="my-3 border-yellow-300 dark:border-gray-700">
+      <hr class="my-3 border-yellow-300 dark:border-yellow-700/40">
       <NuxtLink :to="localePath('/status')"
         class="inline-block px-4 py-1 text-sm bg-yellow-600 dark:bg-yellow-700 text-white rounded hover:bg-yellow-700 dark:hover:bg-yellow-800 transition-colors">
         {{ $t('VIEW_DETAILS') }}

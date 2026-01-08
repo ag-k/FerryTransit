@@ -16,15 +16,15 @@
         class="fixed inset-0 z-50 flex items-end sm:items-center justify-center sm:p-4 overflow-y-auto"
         @click.self="handleClose"
       >
-        <div class="bg-white rounded-t-2xl sm:rounded-lg shadow-xl w-full max-h-[90vh] sm:max-h-[90vh] sm:h-auto h-full" 
+        <div class="bg-app-surface text-app-fg border border-app-border/70 rounded-t-2xl sm:rounded-lg shadow-xl w-full max-h-[90vh] sm:max-h-[90vh] sm:h-auto h-full" 
              :class="type === 'port' ? 'max-w-5xl' : 'max-w-4xl'" 
              @click.stop>
           <!-- Header -->
-          <div class="flex items-center justify-between p-4 sm:p-4 border-b">
+          <div class="flex items-center justify-between p-4 sm:p-4 border-b border-app-border">
             <h3 class="text-lg sm:text-xl font-semibold">{{ headerTitle }}</h3>
             <button 
               type="button" 
-              class="p-3 -m-3 sm:p-2 sm:-m-2 hover:bg-gray-100 rounded-lg transition-colors touch-manipulation"
+              class="p-3 -m-3 sm:p-2 sm:-m-2 hover:bg-app-surface-2 rounded-lg transition-colors touch-manipulation"
               aria-label="Close"
               @click="handleClose"
             >
@@ -49,7 +49,7 @@
             <!-- Port map -->
             <div v-else-if="type === 'port'">
               <!-- Tab navigation for HONDO (mainland ports) -->
-              <div v-if="portId === 'HONDO'" class="mb-4 border-b border-gray-200 dark:border-gray-700">
+              <div v-if="portId === 'HONDO'" class="mb-4 border-b border-app-border">
                 <nav class="flex space-x-1" aria-label="Tabs">
                   <button
                     v-for="tab in hondoTabs"
@@ -57,8 +57,8 @@
                     @click="selectedHondoPort = tab.id"
                     class="px-4 py-2 text-sm font-medium rounded-t-lg transition-colors"
                     :class="selectedHondoPort === tab.id
-                      ? 'bg-blue-50 dark:bg-blue-900/30 text-blue-700 dark:text-blue-400 border-b-2 border-blue-700 dark:border-blue-400'
-                      : 'text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-800/50'"
+                      ? 'bg-app-surface-2 text-app-primary border-b-2 border-app-primary-2'
+                      : 'text-app-muted hover:text-app-fg hover:bg-app-surface-2/60'"
                   >
                     {{ tab.name }}
                   </button>
@@ -78,7 +78,7 @@
                     />
                     <!-- Backward compatibility: legacy iframe HTML -->
                     <div v-else-if="content" class="legacy-map-iframe" v-html="content"></div>
-                    <div v-else class="p-4 text-sm text-gray-600 dark:text-gray-300">
+                    <div v-else class="p-4 text-sm text-app-muted">
                       地図情報がありません。
                     </div>
                   </div>
@@ -86,31 +86,31 @@
 
                 <!-- Boarding info (PC: right side) -->
                 <div v-if="portBoarding.length" class="mt-4 sm:mt-0 sm:w-80">
-                  <h4 class="text-base font-semibold text-gray-900 dark:text-gray-100">乗り場</h4>
+                  <h4 class="text-base font-semibold text-app-fg">乗り場</h4>
                   <div class="mt-2 space-y-3 sm:max-h-[420px] overflow-y-auto pr-1">
                     <div
                       v-for="item in portBoarding"
                       :key="item.key"
-                      class="rounded-lg border bg-gray-50 dark:bg-gray-800/40 p-3"
+                      class="rounded-lg border bg-app-surface-2/70 p-3"
                       :class="[
                         item.location ? 'cursor-pointer' : 'opacity-70',
                         selectedBoardingKey === item.key
-                          ? 'border-blue-400 dark:border-blue-500 ring-2 ring-blue-200 dark:ring-blue-900/40'
-                          : 'border-gray-200 dark:border-gray-700'
+                          ? 'border-app-primary-2 ring-2 ring-app-primary-2/30'
+                          : 'border-app-border'
                       ]"
                       @click="item.location ? (selectedBoardingKey = item.key) : undefined"
                     >
                       <div class="flex items-start justify-between gap-3">
                         <div class="min-w-0">
-                          <div class="text-sm font-medium text-gray-900 dark:text-gray-100 inline-flex items-center gap-1.5">
+                          <div class="text-sm font-medium text-app-fg inline-flex items-center gap-1.5">
                             {{ item.label }}
                             <span v-if="item.shipIds.includes('RAINBOWJET')" class="inline-flex items-center gap-1 px-1.5 py-0.5 text-xs font-medium bg-yellow-100 text-yellow-800 dark:bg-yellow-900/30 dark:text-yellow-300 rounded">
                               <Icon name="heroicons:exclamation-circle" class="w-3.5 h-3.5" />
                               要予約
                             </span>
                           </div>
-                          <div class="mt-1 inline-flex items-start gap-1 text-xs text-gray-700 dark:text-gray-300">
-                            <Icon name="heroicons:map-pin" class="w-4 h-4 mt-0.5 text-gray-500 dark:text-gray-400 flex-none" />
+                          <div class="mt-1 inline-flex items-start gap-1 text-xs text-app-muted">
+                            <Icon name="heroicons:map-pin" class="w-4 h-4 mt-0.5 text-app-muted flex-none" />
                             <span class="min-w-0">
                               {{ item.place }}
                             </span>
@@ -118,7 +118,7 @@
                         </div>
                         <a
                           v-if="item.sourceUrl"
-                          class="text-xs text-blue-700 dark:text-blue-300 hover:underline whitespace-nowrap"
+                          class="text-xs text-app-primary-2 hover:underline whitespace-nowrap"
                           :href="item.sourceUrl"
                           target="_blank"
                           rel="noopener noreferrer"
@@ -128,16 +128,16 @@
                         </a>
                       </div>
 
-                      <div v-if="Array.isArray(item.shipIds) && item.shipIds.length" class="mt-2 text-xs text-gray-600 dark:text-gray-400">
+                      <div v-if="Array.isArray(item.shipIds) && item.shipIds.length" class="mt-2 text-xs text-app-muted">
                         対象:
                         <span class="ml-1">
                           {{ item.shipIds.map((id: string) => (nuxtApp as any).$i18n?.t?.(id) ?? id).join(' / ') }}
                         </span>
                       </div>
-                      <div v-if="!item.location" class="mt-1 text-xs text-gray-600 dark:text-gray-400">
+                      <div v-if="!item.location" class="mt-1 text-xs text-app-muted">
                         （ピン位置未登録）
                       </div>
-                      <div v-if="item.note" class="mt-1 text-xs text-gray-600 dark:text-gray-400">
+                      <div v-if="item.note" class="mt-1 text-xs text-app-muted">
                         {{ item.note }}
                       </div>
                     </div>
@@ -151,7 +151,7 @@
           </div>
           
           <!-- Footer -->
-          <div v-if="$slots.footer" class="p-4 border-t">
+          <div v-if="$slots.footer" class="p-4 border-t border-app-border">
             <slot name="footer"></slot>
           </div>
         </div>
@@ -352,7 +352,7 @@ onUnmounted(() => {
   height: 0;
   padding-bottom: 56.25%; /* 16:9 aspect ratio */
   overflow: hidden;
-  background-color: #f3f4f6;
+  background-color: hsl(var(--app-surface-2));
   border-radius: 0.5rem;
 }
 

@@ -1,6 +1,6 @@
 <template>
   <nav
-    class="bg-gradient-to-r from-blue-800 to-blue-600 dark:from-slate-950 dark:to-slate-900 text-white relative border-b border-white/10 dark:border-slate-800/80 safe-area-top"
+    class="bg-gradient-to-r from-app-nav-from to-app-nav-to text-white relative border-b border-white/10 safe-area-top"
     :style="{ paddingTop: `${totalTopPadding}px` }">
     <!-- Mobile menu overlay -->
     <transition
@@ -13,7 +13,7 @@
     >
       <div
         v-if="isMobile && menuOpen"
-        class="fixed inset-0 bg-black/50 dark:bg-black/70 z-40 lg:hidden backdrop-blur-[2px]"
+        class="fixed inset-0 bg-black/50 z-40 lg:hidden backdrop-blur-[2px]"
         @click="closeMenu"
       ></div>
     </transition>
@@ -61,7 +61,7 @@
           <div
             v-show="!isMobile || menuOpen"
             id="navbarNav"
-            class="fixed lg:static inset-x-0 lg:inset-auto bg-white dark:bg-slate-900 text-gray-900 dark:text-gray-100 lg:bg-transparent lg:dark:bg-transparent lg:text-white w-full lg:w-auto lg:flex lg:items-center pl-[max(env(safe-area-inset-left),1rem)] pr-[max(env(safe-area-inset-right),1rem)] lg:px-0 pb-4 lg:pb-0 shadow-xl lg:shadow-none z-40 lg:z-auto border-b border-gray-200/80 dark:border-gray-800/80 lg:border-none overflow-y-auto overscroll-contain"
+            class="fixed lg:static inset-x-0 lg:inset-auto bg-app-surface text-app-fg lg:bg-transparent lg:text-white w-full lg:w-auto lg:flex lg:items-center pl-[max(env(safe-area-inset-left),1rem)] pr-[max(env(safe-area-inset-right),1rem)] lg:px-0 pb-4 lg:pb-0 shadow-xl lg:shadow-none z-40 lg:z-auto border-b border-app-border/70 lg:border-none overflow-y-auto overscroll-contain"
             :style="{
               top: `${mobileMenuTop}px`,
               maxHeight: mobileMenuMaxHeight
@@ -73,8 +73,8 @@
               <NuxtLink
                 class="block px-4 py-3 lg:py-2 rounded-lg transition-colors text-base lg:text-sm font-bold touch-manipulation"
                 :class="isRouteActive(item.matchPath)
-                  ? 'bg-blue-50 text-blue-900 dark:bg-slate-800 dark:text-blue-200 lg:bg-white/10 lg:text-white lg:dark:bg-white/5'
-                  : 'hover:bg-slate-100 dark:hover:bg-slate-800 lg:hover:bg-white/10 lg:dark:hover:bg-white/5'"
+                  ? 'bg-app-surface-2 text-app-primary lg:bg-white/10 lg:text-white'
+                  : 'hover:bg-app-surface-2 lg:hover:bg-white/10'"
                 :to="item.to"
                 :aria-label="item.label === 'SETTINGS' ? $t(item.label) : undefined"
                 :data-testid="`app-nav-item-${item.label}`"
@@ -107,7 +107,7 @@
           <!-- Language switcher (Mobile only) -->
           <div class="lg:hidden mt-3 px-4">
             <div
-              class="w-full inline-flex rounded-lg bg-slate-100/80 dark:bg-slate-800/70 p-1"
+              class="w-full inline-flex rounded-lg bg-app-surface-2/80 p-1"
               role="group"
               aria-label="Language"
               data-testid="app-nav-language-segment"
@@ -118,8 +118,8 @@
                 type="button"
                 class="flex-1 px-3 py-2 rounded-md text-sm font-medium transition-colors touch-manipulation"
                 :class="lng.code === locale
-                  ? 'bg-white text-blue-800 shadow dark:bg-slate-900 dark:text-blue-200'
-                  : 'text-gray-700 hover:bg-white/60 dark:text-gray-200 dark:hover:bg-slate-900/60'"
+                  ? 'bg-app-surface text-app-primary shadow'
+                  : 'text-app-muted hover:bg-app-surface/60'"
                 :aria-pressed="lng.code === locale"
                 :data-testid="`app-nav-lang-${lng.code}`"
                 @click="switchLocale(lng.code)"
@@ -132,7 +132,7 @@
           <!-- Language switcher (Desktop only - at end of menu) -->
           <div class="hidden lg:flex lg:items-center lg:ml-4 relative">
             <button
-              class="flex items-center px-3 py-2 rounded-lg transition-colors text-sm hover:bg-white/10 dark:hover:bg-white/5"
+              class="flex items-center px-3 py-2 rounded-lg transition-colors text-sm hover:bg-white/10"
               type="button"
               :aria-expanded="langMenuOpen"
               aria-haspopup="listbox"
@@ -149,7 +149,7 @@
             </button>
             <ul
               v-if="langMenuOpen"
-              class="fixed right-4 bg-white dark:bg-slate-800 text-gray-800 dark:text-gray-200 rounded-lg shadow-xl min-w-[150px] z-50 border border-gray-200 dark:border-gray-700 overflow-hidden py-1"
+              class="fixed right-4 bg-app-surface text-app-fg rounded-lg shadow-xl min-w-[150px] z-50 border border-app-border overflow-hidden py-1"
               :style="{ top: `${mobileMenuTop + 8}px` }"
               role="listbox"
               :aria-activedescendant="`lang-option-desktop-${locale}`"
@@ -157,16 +157,16 @@
               <li v-for="loc in locales" :key="loc.code">
                 <button
                   :id="`lang-option-desktop-${loc.code}`"
-                  class="flex items-center justify-between w-full text-left px-4 py-2.5 hover:bg-slate-100 dark:hover:bg-slate-700/60 transition-colors text-sm"
+                  class="flex items-center justify-between w-full text-left px-4 py-2.5 hover:bg-app-surface-2 transition-colors text-sm"
                   :class="loc.code === locale
-                    ? 'bg-blue-50/80 dark:bg-slate-700/40 text-blue-900 dark:text-blue-200 font-medium'
-                    : 'text-gray-700 dark:text-gray-200'"
+                    ? 'bg-app-surface-2 text-app-primary font-medium'
+                    : 'text-app-muted'"
                   role="option"
                   :aria-selected="loc.code === locale"
                   @click="switchLocale(loc.code)"
                 >
                   <span>{{ loc.name }}</span>
-                  <svg v-if="loc.code === locale" class="w-4 h-4 text-blue-700 dark:text-blue-400" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
+                  <svg v-if="loc.code === locale" class="w-4 h-4 text-app-primary-2" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path>
                   </svg>
                 </button>

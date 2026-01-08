@@ -62,10 +62,10 @@ describe('ToggleSwitch', () => {
     })
 
     const label = wrapper.find('.toggle-label')
-    expect(label.classes()).toContain('bg-gray-300')
+    expect(label.classes()).toContain('bg-app-border')
 
     await wrapper.setProps({ checked: true })
-    expect(label.classes()).toContain('bg-blue-700')
+    expect(label.classes()).toContain('bg-app-primary')
   })
 
   it('説明がない場合は説明要素が表示されない', () => {
@@ -76,7 +76,7 @@ describe('ToggleSwitch', () => {
       }
     })
 
-    const description = wrapper.find('.text-xs.text-gray-500')
+    const description = wrapper.find('.text-xs.text-app-muted')
     expect(description.exists()).toBe(false)
   })
 })
