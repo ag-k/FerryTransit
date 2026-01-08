@@ -47,9 +47,7 @@
 
       <!-- Search Button -->
       <div>
-        <button type="button"
-          class="w-full px-8 py-3 text-base font-semibold text-white rounded-lg bg-gradient-to-b from-blue-700 to-blue-800 dark:from-blue-500 dark:to-blue-600 hover:from-blue-600 hover:to-blue-700 dark:hover:from-blue-400 dark:hover:to-blue-500 active:from-blue-700 active:to-blue-800 focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 focus-visible:ring-offset-2 dark:focus-visible:ring-blue-400 dark:focus-visible:ring-offset-slate-950 transform active:scale-95 transition-all duration-150 disabled:bg-none disabled:bg-gray-400 dark:disabled:bg-gray-600 disabled:ring-0 disabled:cursor-not-allowed disabled:transform-none flex items-center justify-center shadow-md hover:shadow-lg disabled:shadow-none ring-1 ring-white/15 dark:ring-white/10"
-          :disabled="!canSearch || isSearching" @click="handleSearch">
+        <PrimaryButton type="button" block size="lg" :disabled="!canSearch || isSearching" @click="handleSearch">
           <span v-if="isSearching"
             class="inline-block animate-spin rounded-full h-4 w-4 border-b-2 border-white mr-2"></span>
           <svg v-else xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-2" fill="none" viewBox="0 0 24 24"
@@ -58,7 +56,7 @@
               d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
           </svg>
           {{ $t('SEARCH') }}
-        </button>
+        </PrimaryButton>
       </div>
     </div>
 
@@ -87,7 +85,7 @@
       </div>
       <!-- Route Panels -->
       <div v-for="(route, index) in displayedResults" :key="index" class="mb-4">
-        <div class="bg-app-surface text-app-fg rounded-xl overflow-hidden shadow-sm border border-app-border/70">
+        <Card class="overflow-hidden" padding="none">
           <div
             class="bg-app-surface text-app-fg px-4 py-2 flex items-center justify-between border-b border-app-border/70"
             data-testid="transit-result-header"
@@ -118,22 +116,22 @@
 
               <!-- 右ブロック: バッジ（欠航/変更あり） -->
               <div class="flex items-center gap-2 shrink-0">
-                <span
+                <Badge
                   v-if="hasCancelledSegment(route)"
-                  class="inline-flex items-center rounded-md bg-red-600/95 px-2 py-1 text-xs font-bold text-white ring-1 ring-white/25"
+                  variant="danger"
                   :title="$t('CANCELLED')"
                   data-testid="route-badge-cancelled"
                 >
                   {{ $t('CANCELLED') }}
-                </span>
-                <span
+                </Badge>
+                <Badge
                   v-if="hasChangedSegment(route)"
-                  class="inline-flex items-center rounded-md bg-yellow-300 px-2 py-1 text-xs font-bold text-gray-900 ring-1 ring-black/10 dark:bg-yellow-400"
+                  variant="warning"
                   :title="$t('CHANGED')"
                   data-testid="route-badge-changed"
                 >
                   {{ $t('CHANGED') }}
-                </span>
+                </Badge>
               </div>
             </h3>
             <div class="flex items-center gap-2">
@@ -248,7 +246,7 @@
               </tbody>
             </table>
           </div>
-        </div>
+        </Card>
       </div>
 
       <!-- Show More Button -->
@@ -358,6 +356,9 @@ import CommonShipModal from '@/components/common/ShipModal.vue'
 import StatusAlerts from '@/components/common/StatusAlerts.vue'
 import FavoriteButton from '@/components/favorites/FavoriteButton.vue'
 import RouteMapModal from '@/components/map/RouteMapModal.vue'
+import Card from '@/components/common/Card.vue'
+import PrimaryButton from '@/components/common/PrimaryButton.vue'
+import Badge from '@/components/common/Badge.vue'
 import type { TransitRoute } from '@/types'
 import { createLogger } from '~/utils/logger'
 

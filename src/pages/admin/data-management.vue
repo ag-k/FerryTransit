@@ -9,10 +9,10 @@
 
     <!-- データ種別選択 -->
     <div class="mb-6 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-      <div
+      <Card
         v-for="dataType in dataTypes"
         :key="dataType.id"
-        class="bg-white dark:bg-gray-800 rounded-lg shadow p-6 hover:shadow-lg transition-shadow cursor-pointer"
+        class="hover:shadow-lg transition-shadow cursor-pointer"
         @click="selectedDataType = dataType"
       >
         <div class="flex items-center justify-between mb-4">
@@ -36,13 +36,13 @@
         <div class="mt-4 text-xs text-gray-400">
           最終更新: {{ formatDateTime(dataType.lastUpdate) }}
         </div>
-      </div>
+      </Card>
     </div>
 
     <!-- 選択されたデータ種別の操作 -->
     <div v-if="selectedDataType" class="space-y-6">
       <!-- インポート -->
-      <div class="bg-white dark:bg-gray-800 rounded-lg shadow p-6">
+      <Card>
         <h2 class="text-lg font-medium text-gray-900 dark:text-white mb-4">
           データインポート
         </h2>
@@ -92,35 +92,27 @@
             </div>
           </div>
 
-          <div class="bg-red-50 dark:bg-red-900/20 p-4 rounded-md">
-            <p class="text-sm text-red-800 dark:text-red-200">
-              <ExclamationTriangleIcon class="h-5 w-5 inline mr-1" />
-              インポートすると既存のデータが上書きされます。必ずバックアップを取ってから実行してください。
-            </p>
-          </div>
+          <Alert
+            :visible="true"
+            type="danger"
+            :dismissible="false"
+            message="インポートすると既存のデータが上書きされます。必ずバックアップを取ってから実行してください。"
+          />
 
           <div class="flex justify-end space-x-4">
-            <button
-              :disabled="!selectedFile || isValidating"
-              class="px-6 py-2 bg-gray-600 text-white rounded-md hover:bg-gray-700 disabled:bg-gray-400"
-              @click="validateImport"
-            >
+            <SecondaryButton :disabled="!selectedFile || isValidating" @click="validateImport">
               {{ isValidating ? '検証中...' : 'データ検証' }}
-            </button>
-            <button
-              :disabled="!selectedFile || !isValidated || isImporting"
-              class="px-6 py-2 bg-blue-700 text-white rounded-md hover:bg-blue-800 disabled:bg-gray-400"
-              @click="importData"
-            >
+            </SecondaryButton>
+            <PrimaryButton :disabled="!selectedFile || !isValidated || isImporting" @click="importData">
               <CloudArrowUpIcon class="h-5 w-5 inline mr-1" />
               {{ isImporting ? 'インポート中...' : 'インポート実行' }}
-            </button>
+            </PrimaryButton>
           </div>
         </div>
-      </div>
+      </Card>
 
       <!-- エクスポート -->
-      <div class="bg-white dark:bg-gray-800 rounded-lg shadow p-6">
+      <Card>
         <h2 class="text-lg font-medium text-gray-900 dark:text-white mb-4">
           データエクスポート
         </h2>
@@ -164,7 +156,7 @@
             </button>
           </div>
         </div>
-      </div>
+      </Card>
 
       <!-- バックアップ履歴 -->
       <div class="bg-white dark:bg-gray-800 rounded-lg shadow">
@@ -233,6 +225,10 @@ import {
 import { useFirebaseStorage } from '~/composables/useFirebaseStorage'
 import DataTable from '~/components/admin/DataTable.vue'
 import { createLogger } from '~/utils/logger'
+import Alert from '@/components/common/Alert.vue'
+import Card from '@/components/common/Card.vue'
+import PrimaryButton from '@/components/common/PrimaryButton.vue'
+import SecondaryButton from '@/components/common/SecondaryButton.vue'
 
 definePageMeta({
   layout: 'admin',

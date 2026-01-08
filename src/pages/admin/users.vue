@@ -31,7 +31,7 @@
     <!-- ユーザー一覧タブ -->
     <div v-if="activeTab === 'users'">
       <!-- フィルタ -->
-      <div class="mb-6 p-4 bg-white dark:bg-gray-800 rounded-lg shadow">
+      <Card class="mb-6" padding="sm">
         <div class="flex flex-wrap gap-4">
           <select
             v-model="roleFilter"
@@ -44,17 +44,17 @@
             <option value="user">一般ユーザーのみ</option>
           </select>
         </div>
-      </div>
+      </Card>
 
       <!-- ユーザー一覧 -->
-      <div class="bg-white dark:bg-gray-800 rounded-lg shadow overflow-hidden">
+      <Card padding="none" class="overflow-hidden">
         <div v-if="loading" class="p-8 text-center">
           <div class="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-700 mx-auto"></div>
           <p class="mt-4 text-gray-600 dark:text-gray-400">読み込み中...</p>
         </div>
 
-        <div v-else-if="error" class="p-8 text-center text-red-600">
-          <p>{{ error }}</p>
+        <div v-else-if="error" class="p-8">
+          <Alert :visible="true" type="danger" :dismissible="false" :message="error" />
         </div>
 
         <div v-else>
@@ -107,18 +107,12 @@
                     </div>
                   </td>
                   <td class="px-6 py-4 whitespace-nowrap">
-                    <span 
-                      v-if="user.superAdmin"
-                      class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-purple-100 text-purple-800"
-                    >
+                    <Badge v-if="user.superAdmin" pill class="bg-purple-100 text-purple-800 dark:bg-purple-900/30 dark:text-purple-200">
                       スーパー管理者
-                    </span>
-                    <span 
-                      v-else-if="user.admin"
-                      class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-blue-100 text-blue-900"
-                    >
+                    </Badge>
+                    <Badge v-else-if="user.admin" pill variant="info">
                       管理者
-                    </span>
+                    </Badge>
                     <span 
                       v-else
                       class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-gray-100 text-gray-800"
@@ -164,7 +158,7 @@
             </table>
           </div>
         </div>
-      </div>
+      </Card>
     </div>
 
     <!-- アナリティクスタブ -->
@@ -245,6 +239,9 @@
 
 <script setup lang="ts">
 import { createLogger } from '~/utils/logger'
+import Alert from '@/components/common/Alert.vue'
+import Badge from '@/components/common/Badge.vue'
+import Card from '@/components/common/Card.vue'
 
 interface User {
   uid: string

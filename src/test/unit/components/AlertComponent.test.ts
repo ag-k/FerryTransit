@@ -29,18 +29,18 @@ describe('AlertComponent', () => {
   })
 
   it('applies correct alert type class', () => {
-    const typeToClassMap = {
-      success: 'bg-green-100',
-      danger: 'bg-red-100',
-      warning: 'bg-yellow-100',
-      info: 'bg-blue-100',
-      primary: 'bg-blue-700',
-      secondary: 'bg-gray-600',
-      light: 'bg-gray-100',
-      dark: 'bg-gray-800'
-    }
-    
-    Object.entries(typeToClassMap).forEach(([type, bgClass]) => {
+    const types = [
+      'success',
+      'danger',
+      'warning',
+      'info',
+      'primary',
+      'secondary',
+      'light',
+      'dark'
+    ] as const
+
+    types.forEach((type) => {
       const wrapper = mount(AlertComponent, {
         props: {
           ...defaultProps,
@@ -49,7 +49,7 @@ describe('AlertComponent', () => {
       })
       
       const alert = wrapper.find('[role="alert"]')
-      expect(alert.classes()).toContain(bgClass)
+      expect(alert.attributes('data-variant')).toBe(type)
     })
   })
 

@@ -2,20 +2,18 @@
   <div class="space-y-6">
       <h1 class="text-2xl font-bold text-gray-900 dark:text-white">航路ビューワ（暫定）</h1>
 
-      <div class="bg-white dark:bg-gray-800 shadow rounded-lg p-4 space-y-4">
+      <Card class="space-y-4" padding="md">
         <p class="text-sm text-gray-600 dark:text-gray-300">
           ローカルJSON（例: output/routes/BEPPU_HONDO_SHICHIRUI.json）を読み込み、海上ルートを地図に表示します。
         </p>
-        <p v-if="mapError" class="text-sm text-red-600 dark:text-red-400">
-          {{ mapError }}
-        </p>
+        <Alert v-if="mapError" :visible="true" type="danger" :dismissible="false" :message="mapError" />
 
         <div class="flex flex-col md:flex-row md:items-center gap-3">
           <input type="file" accept="application/json" class="block" @change="onFileChange" />
-          <button class="px-3 py-2 rounded bg-blue-700 text-white text-sm disabled:opacity-50" :disabled="!textInput" @click="loadFromTextarea">
+          <PrimaryButton size="sm" :disabled="!textInput" @click="loadFromTextarea">
             テキストから読み込み
-          </button>
-          <button class="px-3 py-2 rounded bg-gray-200 dark:bg-gray-700 text-sm" @click="clearRoute">クリア</button>
+          </PrimaryButton>
+          <SecondaryButton size="sm" @click="clearRoute">クリア</SecondaryButton>
         </div>
 
         <textarea v-model="textInput" rows="6" placeholder="JSONを貼り付け（RouteData 形式）" class="w-full rounded border dark:bg-gray-900 dark:border-gray-700 p-2 text-sm"></textarea>
@@ -28,11 +26,11 @@
             <div><strong>ソース:</strong> {{ routeData.source }}</div>
           </div>
         </div>
-      </div>
+      </Card>
 
-      <div class="bg-white dark:bg-gray-800 shadow rounded-lg">
+      <Card padding="none">
         <div ref="mapEl" class="w-full h-[60vh] rounded-b" />
-      </div>
+      </Card>
     </div>
   </template>
 
@@ -40,6 +38,10 @@
 import { ref, watch, onMounted } from 'vue'
 import { Loader } from '@googlemaps/js-api-loader'
 import type { RouteData } from '~/types/route'
+import Alert from '@/components/common/Alert.vue'
+import Card from '@/components/common/Card.vue'
+import PrimaryButton from '@/components/common/PrimaryButton.vue'
+import SecondaryButton from '@/components/common/SecondaryButton.vue'
 
 definePageMeta({ layout: 'default' })
 

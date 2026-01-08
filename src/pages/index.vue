@@ -55,16 +55,14 @@
               @update:model-value="handleDateChange" />
           </div>
           <!-- 地図表示ボタン（地図が非表示の時だけ表示、右端に配置） -->
-          <button v-if="!settingsStore.mapEnabled"
-            class="ml-auto flex items-center px-3 py-1.5 text-sm text-gray-600 dark:text-gray-300 bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 rounded-md hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors"
-            @click="toggleMapDisplay">
+          <SecondaryButton v-if="!settingsStore.mapEnabled" size="sm" class="ml-auto" @click="toggleMapDisplay">
             <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="mr-1.5"
               viewBox="0 0 16 16">
               <path
                 d="M2.866 14.85c-.078.444.36.791.746.593l4.39-2.256 4.389 2.256c.386.198.824-.149.746-.592l-.83-4.73 3.522-3.356c.33-.314.16-.888-.282-.95l-4.898-.696L8.465.792a.513.513 0 0 0-.927 0L5.354 5.12l-4.898.696c-.441.062-.612.636-.283.95l3.523 3.356-.83 4.73zm4.905-2.767-3.686 1.894.694-3.957a.565.565 0 0 0-.163-.505L1.71 6.745l4.052-.576a.525.525 0 0 0 .393-.288L8 2.223l1.847 3.658a.525.525 0 0 0 .393.288l4.052.575-2.906 2.77a.565.565 0 0 0-.163.506l.694 3.957-3.686-1.894a.503.503 0 0 0-.461 0z" />
             </svg>
             {{ $t('MAP_SHOW') }}
-          </button>
+          </SecondaryButton>
         </div>
       </div>
       <template #fallback>
@@ -92,8 +90,9 @@
         <div class="relative">
           <!-- 地図を隠すボタン（マップ上の左上に配置） -->
           <div class="absolute left-2 top-2 z-20">
-            <button
-              class="flex items-center px-3 py-1.5 text-sm text-gray-700 dark:text-gray-100 bg-white/90 dark:bg-gray-900/90 border border-gray-300/80 dark:border-gray-700 rounded-md shadow-sm hover:bg-white dark:hover:bg-gray-900 transition-colors backdrop-blur"
+            <SecondaryButton
+              size="sm"
+              class="bg-white/90 dark:bg-gray-900/90 border border-gray-300/80 dark:border-gray-700 shadow-sm backdrop-blur"
               @click="toggleMapDisplay">
               <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="mr-1.5"
                 viewBox="0 0 16 16">
@@ -101,7 +100,7 @@
                   d="M3.612 15.443c-.386.198-.824-.149-.746-.592l.83-4.73L.173 6.765c-.329-.314-.158-.888.283-.95l4.898-.696L7.538.792c.197-.39.73-.39.927 0l2.184 4.327 4.898.696c.441.062.612.636.282.95l-3.522 3.356.83 4.73c.078.443-.36.79-.746.592L8 13.187l-4.389 2.256z" />
               </svg>
               {{ $t('MAP_HIDE') }}
-            </button>
+            </SecondaryButton>
           </div>
           <FerryMap :selected-port="selectedMapPort" :selected-route="selectedMapRoute" :show-port-details="true"
             height="300px" @port-click="handleMapPortClick" @route-select="handleMapRouteSelect" />
@@ -110,7 +109,7 @@
     </ClientOnly>
 
     <!-- 時刻表 -->
-    <div class="bg-app-surface text-app-fg rounded-xl shadow-sm border border-app-border/70 overflow-hidden">
+    <Card class="overflow-hidden" padding="none">
       <div class="bg-gradient-to-r from-app-primary to-app-primary-2 text-white px-4 py-3 flex items-center justify-between border-b border-white/10">
         <div class="flex flex-col min-w-0">
           <div class="flex items-baseline justify-between gap-3 min-w-0">
@@ -135,11 +134,14 @@
             <span class="sr-only">Loading...</span>
           </div>
 
-          <div v-else-if="error"
-            class="mx-4 my-3 px-4 py-3 bg-red-100 dark:bg-red-900/20 border border-red-200 dark:border-gray-700 text-red-800 dark:text-red-400 rounded"
-            role="alert">
-            {{ $t(error) }}
-          </div>
+          <Alert
+            v-else-if="error"
+            :visible="true"
+            type="danger"
+            :dismissible="false"
+            class="mx-4 my-3"
+            :message="$t(error)"
+          />
 
           <div v-else-if="filteredTimetable.length === 0" class="text-center py-6 text-gray-500 dark:text-gray-300">
             <small v-if="!departure && !arrival">
@@ -276,17 +278,15 @@
       <!-- 乗換を含むルートを検索ボタン -->
       <div v-if="showTransferSearchButton"
         class="px-4 py-3 bg-app-surface-2/70 border-t border-app-border/70">
-        <button type="button" data-test="transfer-search-button"
-          class="w-full py-2.5 px-4 bg-blue-700 hover:bg-blue-800 dark:bg-blue-500 dark:hover:bg-blue-700 text-white font-medium rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 dark:focus:ring-offset-gray-800 transform active:scale-[0.98] transition-all duration-150 shadow-sm hover:shadow-md flex items-center justify-center gap-2"
-          @click="navigateToTransit">
+        <PrimaryButton type="button" data-test="transfer-search-button" block size="md" @click="navigateToTransit">
           <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
               d="M8 7h12m0 0l-4-4m4 4l-4 4m0 6H4m0 0l4 4m-4-4l4-4" />
           </svg>
           {{ $t('SEARCH_WITH_TRANSFER') }}
-        </button>
+        </PrimaryButton>
       </div>
-    </div>
+    </Card>
 
     <!-- モーダル -->
     <ClientOnly>
@@ -307,6 +307,10 @@ import FavoriteButton from '@/components/favorites/FavoriteButton.vue'
 import FerryMap from '@/components/map/FerryMap.vue'
 import StatusAlerts from '@/components/common/StatusAlerts.vue'
 import DatePicker from '@/components/common/DatePicker.vue'
+import Card from '@/components/common/Card.vue'
+import Alert from '@/components/common/Alert.vue'
+import PrimaryButton from '@/components/common/PrimaryButton.vue'
+import SecondaryButton from '@/components/common/SecondaryButton.vue'
 import { formatDateYmdJst, getJstDateParts, getTodayJstMidnight } from '@/utils/jstDate'
 
 // Store and composables

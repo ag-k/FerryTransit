@@ -99,29 +99,25 @@
       </div>
 
       <!-- アクションボタン -->
-      <div class="bg-white dark:bg-gray-800 shadow rounded-lg p-6">
+      <Card class="shadow" padding="md">
         <h2 class="text-lg font-medium text-gray-900 dark:text-white mb-4">
           航路データの取得と保存
         </h2>
         
         <div class="space-y-4">
-          <button
-            :disabled="isFetching"
-            class="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md shadow-sm text-white bg-blue-700 hover:bg-blue-800 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 disabled:opacity-50 disabled:cursor-not-allowed"
-            @click="fetchAllRoutes"
-          >
+          <PrimaryButton :disabled="isFetching" @click="fetchAllRoutes">
             <Icon
               :name="isFetching ? 'heroicons:arrow-path' : 'heroicons:cloud-arrow-down'"
               :class="{ 'animate-spin': isFetching }"
               class="mr-2 h-5 w-5"
             />
             {{ isFetching ? '取得中...' : 'Google Maps APIから航路データを取得' }}
-          </button>
+          </PrimaryButton>
 
-          <button
+          <PrimaryButton
             v-if="fetchedRoutes.length > 0"
             :disabled="isSaving"
-            class="ml-4 inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md shadow-sm text-white bg-green-600 hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500 disabled:opacity-50 disabled:cursor-not-allowed"
+            class="ml-4 bg-green-600 hover:bg-green-700 disabled:hover:bg-green-600"
             @click="saveToStorage"
           >
             <Icon
@@ -130,11 +126,11 @@
               class="mr-2 h-5 w-5"
             />
             {{ isSaving ? '保存中...' : 'Firebase Storageに保存' }}
-          </button>
+          </PrimaryButton>
 
-          <button
+          <SecondaryButton
             :disabled="isDownloading"
-            class="ml-4 inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md shadow-sm text-white bg-gray-700 hover:bg-gray-800 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-gray-500 disabled:opacity-50 disabled:cursor-not-allowed"
+            class="ml-4 bg-gray-700 text-white hover:bg-gray-800 disabled:hover:bg-gray-700"
             @click="downloadFromStorage"
           >
             <Icon
@@ -143,7 +139,7 @@
               class="mr-2 h-5 w-5"
             />
             {{ isDownloading ? 'ダウンロード中...' : 'Storageからダウンロード' }}
-          </button>
+          </SecondaryButton>
         </div>
 
         <!-- 進捗表示 -->
@@ -162,10 +158,10 @@
             {{ progress.message }}
           </p>
         </div>
-      </div>
+      </Card>
 
       <!-- 取得結果プレビュー -->
-      <div v-if="fetchedRoutes.length > 0" class="bg-white dark:bg-gray-800 shadow rounded-lg p-6">
+      <Card v-if="fetchedRoutes.length > 0" class="shadow" padding="md">
         <h2 class="text-lg font-medium text-gray-900 dark:text-white mb-4">
           取得した航路データ ({{ fetchedRoutes.length }}件)
         </h2>
@@ -221,7 +217,7 @@
             </tbody>
           </table>
         </div>
-      </div>
+      </Card>
 
       <!-- ログ表示 -->
       <div v-if="logs.length > 0" class="bg-white dark:bg-gray-800 shadow rounded-lg p-6">
@@ -349,6 +345,9 @@ import { uploadJSON, getJSONData, getStorageDownloadURL } from '~/composables/us
 import { useAdminAuth } from '~/composables/useAdminAuth'
 import { createLogger } from '~/utils/logger'
 import DataTable from '~/components/admin/DataTable.vue'
+import Card from '@/components/common/Card.vue'
+import PrimaryButton from '@/components/common/PrimaryButton.vue'
+import SecondaryButton from '@/components/common/SecondaryButton.vue'
 
 definePageMeta({
   layout: 'admin',

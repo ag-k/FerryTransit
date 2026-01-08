@@ -23,17 +23,17 @@
     <!-- グラフセクション -->
     <div class="mt-8 grid grid-cols-1 gap-5 lg:grid-cols-2">
       <!-- アクセス数推移 -->
-      <div class="bg-white dark:bg-gray-800 rounded-lg shadow p-6">
+      <Card>
         <h2 class="text-lg font-medium text-gray-900 dark:text-white mb-4">
           アクセス数推移（過去7日間）
         </h2>
         <div class="h-64 flex items-center justify-center text-gray-500 dark:text-gray-400">
           <p>グラフコンポーネント実装予定</p>
         </div>
-      </div>
+      </Card>
       
       <!-- 人気航路ランキング -->
-      <div class="bg-white dark:bg-gray-800 rounded-lg shadow p-6">
+      <Card>
         <h2 class="text-lg font-medium text-gray-900 dark:text-white mb-4">
           人気航路ランキング
         </h2>
@@ -64,12 +64,12 @@
             </div>
           </div>
         </div>
-      </div>
+      </Card>
     </div>
     
     <!-- 最近のアクティビティ -->
     <div class="mt-8">
-      <div class="bg-white dark:bg-gray-800 rounded-lg shadow">
+      <Card padding="none" class="overflow-hidden">
         <div class="px-6 py-4 border-b border-gray-200 dark:border-gray-700">
           <h2 class="text-lg font-medium text-gray-900 dark:text-white">
             最近のアクティビティ
@@ -101,7 +101,7 @@
             </div>
           </div>
         </div>
-      </div>
+      </Card>
     </div>
   </div>
 </template>
@@ -117,6 +117,7 @@ import {
   DocumentArrowUpIcon
 } from '@heroicons/vue/24/outline'
 import type { PopularRoute } from '~/types/admin'
+import Card from '@/components/common/Card.vue'
 
 definePageMeta({
   layout: 'admin',

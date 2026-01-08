@@ -24,24 +24,23 @@
     <!-- アクションボタン -->
     <div class="mb-4 flex justify-between items-center">
       <div class="flex space-x-2">
-        <button :disabled="isLoading"
-          class="px-4 py-2 bg-gray-600 text-white rounded-md hover:bg-gray-700 disabled:bg-gray-400"
-          @click="refreshData">
+        <SecondaryButton :disabled="isLoading" @click="refreshData">
           <ArrowPathIcon class="h-5 w-5 inline mr-1" />
           {{ isLoading ? '読み込み中...' : '更新' }}
-        </button>
-        <button :disabled="isPublishing"
-          class="px-4 py-2 bg-purple-600 text-white rounded-md hover:bg-purple-700 disabled:bg-gray-400"
+        </SecondaryButton>
+        <PrimaryButton
+          :disabled="isPublishing"
+          class="bg-purple-600 hover:bg-purple-700 disabled:hover:bg-purple-600"
           @click="publishFareData">
           <CloudArrowUpIcon class="h-5 w-5 inline mr-1" />
           {{ isPublishing ? '公開中...' : 'データ公開' }}
-        </button>
-        <button :disabled="isLoadingStorage"
-          class="px-4 py-2 bg-blue-700 text-white rounded-md hover:bg-blue-800 disabled:bg-gray-400"
+        </PrimaryButton>
+        <PrimaryButton
+          :disabled="isLoadingStorage"
           @click="showStorageDataModal = true; loadStorageData()">
           <EyeIcon class="h-5 w-5 inline mr-1" />
           {{ isLoadingStorage ? '読み込み中...' : 'Storage データ確認' }}
-        </button>
+        </PrimaryButton>
       </div>
     </div>
 
@@ -729,6 +728,8 @@ import FormModal from '~/components/admin/FormModal.vue'
 import ToggleSwitch from '~/components/common/ToggleSwitch.vue'
 import { createLogger } from '~/utils/logger'
 import { roundUpToTen } from '~/utils/currency'
+import PrimaryButton from '@/components/common/PrimaryButton.vue'
+import SecondaryButton from '@/components/common/SecondaryButton.vue'
 import {
   HIGHSPEED_ROUTE_TRANSLATION_KEYS,
   ROUTE_METADATA,
