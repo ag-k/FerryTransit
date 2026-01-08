@@ -1,7 +1,7 @@
 import fs from 'node:fs/promises'
 import path from 'node:path'
 import { fileURLToPath } from 'node:url'
-import type { Page } from '@playwright/test'
+import { expect, type Page } from '@playwright/test'
 
 const currentDir = path.dirname(fileURLToPath(import.meta.url))
 const fixturesRoot = path.resolve(currentDir, '..', 'fixtures')
@@ -18,11 +18,67 @@ const loadPublicData = async <T = unknown>(relativePath: string): Promise<T> => 
   return JSON.parse(content) as T
 }
 
+type LocaleJson = Record<string, string>
+let jaLocaleCache: LocaleJson | null = null
+
+const loadJaLocale = async (): Promise<LocaleJson> => {
+  if (jaLocaleCache) return jaLocaleCache
+  const filePath = path.resolve(process.cwd(), 'i18n', 'locales', 'ja.json')
+  const content = await fs.readFile(filePath, 'utf-8')
+  jaLocaleCache = JSON.parse(content) as LocaleJson
+  return jaLocaleCache
+}
+
+const tJa = async (key: string): Promise<string> => {
+  const ja = await loadJaLocale()
+  return ja[key] ?? key
+}
+
 export interface StubOptions {
   shipStatusApi?: string
+  initialDeparture?: string
+  initialArrival?: string
+}
+
+/**
+ * Select port in the PortSelector modal UI (used by RouteEndpointsSelector).
+ * @param label Button aria-label (e.g. "出発地", "目的地")
+ * @param portCode i18n key (e.g. "HONDO_SHICHIRUI", "SAIGO")
+ */
+export const selectPort = async (page: Page, label: string, portCode: string) => {
+  const portName = await tJa(portCode)
+
+  await page.getByRole('button', { name: label }).click()
+  const modal = page.getByTestId('port-selector-modal')
+  await expect(modal).toBeVisible()
+
+  await modal.getByRole('button', { name: portName, exact: true }).click()
+  // 現行UIでは、選択後もモーダルが開いたままの場合があるため、必要なら明示的に閉じる
+  try {
+    await expect(modal).toBeHidden({ timeout: 1000 })
+    return
+  } catch {
+    // fallthrough
+  }
+
+  // クリックで閉じると「クリック透過」で直後に再オープンしてしまうケースがあるため、ESCで閉じる
+  await page.keyboard.press('Escape')
+  await expect(modal).toBeHidden()
 }
 
 export const setupPublicPageStubs = async (page: Page, options: StubOptions = {}) => {
+  // Surface client-side crashes in Playwright output (helps keep E2E stable)
+  page.on('pageerror', (error) => {
+    // eslint-disable-next-line no-console
+    console.error('[pageerror]', error)
+  })
+  page.on('console', (msg) => {
+    if (msg.type() === 'error') {
+      // eslint-disable-next-line no-console
+      console.error('[console.error]', msg.text())
+    }
+  })
+
   const [timetable, fareMaster, shipStatus, shipStatusKankou, holidays] = await Promise.all([
     loadJsonFixture('api/timetable.json'),
     loadJsonFixture('api/fare-master.json'),
@@ -33,7 +89,7 @@ export const setupPublicPageStubs = async (page: Page, options: StubOptions = {}
 
   // 主要データを localStorage に事前投入して Firebase Storage へのアクセスをスキップ
   await page.addInitScript(
-    ({ timetableData, fareData }) => {
+    ({ timetableData, fareData, initialDeparture, initialArrival }) => {
       try {
         Object.defineProperty(navigator, 'language', { value: 'ja-JP', configurable: true })
         Object.defineProperty(navigator, 'languages', { value: ['ja-JP'], configurable: true })
@@ -45,6 +101,17 @@ export const setupPublicPageStubs = async (page: Page, options: StubOptions = {}
       window.localStorage.setItem('i18n_redirected', 'ja')
       window.localStorage.setItem('rawTimetable', JSON.stringify(timetableData))
       window.localStorage.setItem('rawTimetable_time', Date.now().toString())
+      // 画面の初期選択（PortSelectorを操作せずに安定させる）
+      if (typeof initialDeparture === 'string') {
+        window.localStorage.setItem('departure', initialDeparture)
+      } else {
+        window.localStorage.removeItem('departure')
+      }
+      if (typeof initialArrival === 'string') {
+        window.localStorage.setItem('arrival', initialArrival)
+      } else {
+        window.localStorage.removeItem('arrival')
+      }
       // 料金データをlocalStorageに設定（offlineStoreが使用）
       // useOfflineStorageの形式に合わせて保存
       const fareStorageItem = {
@@ -79,7 +146,12 @@ export const setupPublicPageStubs = async (page: Page, options: StubOptions = {}
       window.localStorage.setItem('ferry_news_cache', JSON.stringify([]))
       window.localStorage.setItem('ferry_news_cache_time', Date.now().toString())
     },
-    { timetableData: timetable, fareData: fareMaster }
+    {
+      timetableData: timetable,
+      fareData: fareMaster,
+      initialDeparture: options.initialDeparture,
+      initialArrival: options.initialArrival
+    }
   )
 
   // Google Maps 依存をモック

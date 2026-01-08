@@ -37,7 +37,21 @@ export default defineConfig({
   webServer: process.env.PLAYWRIGHT_SKIP_WEBSERVER
     ? undefined
     : {
-        command: `npm run dev -- --hostname ${HOST} --port ${PORT}`,
+        // E2E should run without touching ignored .env files (sandbox blocks them).
+        // Provide minimal Firebase config via env so the client plugin can initialize.
+        command: [
+          `NUXT_PUBLIC_FIREBASE_API_KEY=test`,
+          `NUXT_PUBLIC_FIREBASE_AUTH_DOMAIN=test`,
+          `NUXT_PUBLIC_FIREBASE_PROJECT_ID=test`,
+          `NUXT_PUBLIC_FIREBASE_STORAGE_BUCKET=test`,
+          `NUXT_PUBLIC_FIREBASE_MESSAGING_SENDER_ID=test`,
+          `NUXT_PUBLIC_FIREBASE_APP_ID=test`,
+          `NUXT_PUBLIC_FIREBASE_MEASUREMENT_ID=`,
+          `NUXT_PUBLIC_FIREBASE_USE_EMULATORS=false`,
+          // Disable Google Maps in E2E (prevents map initialization from crashing tests)
+          `NUXT_PUBLIC_GOOGLE_MAPS_API_KEY=`,
+          `nuxt dev --hostname ${HOST} --port ${PORT}`,
+        ].join(' '),
         url: baseURL,
         reuseExistingServer: !process.env.CI,
         timeout: 120_000,

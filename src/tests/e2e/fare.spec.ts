@@ -17,7 +17,8 @@ test.describe('運賃表', () => {
     
     await expect(page.getByRole('heading', { level: 2, name: /運賃表|Fare Table/ })).toBeVisible()
     await expect(page.getByText(/フェリーおき|Ferry Oki/)).toBeVisible()
-    await expect(page.getByRole('cell', { name: /本土〜隠岐|Mainland\s*-\s*Oki/ }).first()).toBeVisible()
+    // 現行UIの代表的な航路グループが表示されること
+    await expect(page.getByRole('rowheader', { name: /本土〜隠岐|Mainland\s*-\s*Oki/ }).first()).toBeVisible()
     
     // 料金が表示されるまで待つ（データ読み込みのため）
     await page.waitForTimeout(1000)
