@@ -1,7 +1,7 @@
 <template>
   <nav 
     aria-label="Global navigation"
-    class="lg:hidden fixed bottom-0 left-0 right-0 bg-white/80 dark:bg-slate-950/70 border-t border-slate-200/70 dark:border-slate-800/70 z-30 safe-area-bottom transition-all duration-200 backdrop-blur"
+    class="lg:hidden fixed bottom-0 left-0 right-0 bg-app-surface/80 border-t border-app-border/70 z-30 safe-area-bottom transition-all duration-200 backdrop-blur"
     :style="{ paddingBottom: `${totalBottomPadding}px` }"
   >
     <div class="mx-auto max-w-screen-lg px-2">
@@ -13,8 +13,8 @@
           class="group relative flex flex-col items-center justify-center min-w-0 flex-1 touch-manipulation transition-colors duration-200 py-2"
           :class="[
             isActive(item.path) 
-              ? 'text-blue-800 dark:text-blue-200' 
-              : 'text-slate-600 dark:text-slate-300 hover:text-slate-900 dark:hover:text-slate-100'
+              ? 'text-app-primary' 
+              : 'text-app-muted hover:text-app-fg'
           ]"
           :aria-current="isActive(item.path) ? 'page' : undefined"
           :data-testid="`bottom-nav-item-${item.label}`"
@@ -22,8 +22,8 @@
           <span
             class="relative flex items-center justify-center w-10 h-10 rounded-xl transition-colors duration-200"
             :class="isActive(item.path)
-              ? 'bg-blue-50/80 dark:bg-slate-800'
-              : 'bg-transparent group-active:bg-gray-100 dark:group-active:bg-slate-800/60'"
+              ? 'bg-app-surface-2/80'
+              : 'bg-transparent group-active:bg-app-surface-2/80'"
           >
             <svg 
               class="w-6 h-6 flex-shrink-0" 
@@ -46,7 +46,7 @@
 
           <span
             v-if="isActive(item.path)"
-            class="absolute -top-px left-1/2 -translate-x-1/2 h-1 w-8 rounded-b bg-blue-700 dark:bg-blue-300"
+            class="absolute -top-px left-1/2 -translate-x-1/2 h-1 w-8 rounded-b bg-app-primary-2"
             aria-hidden="true"
           ></span>
         </NuxtLink>

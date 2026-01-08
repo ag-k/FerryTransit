@@ -1,6 +1,6 @@
 <template>
   <div :class="containerClass">
-    <label v-if="label" :for="inputId" class="block text-base sm:text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">{{ label }}</label>
+    <label v-if="label" :for="inputId" class="block text-base sm:text-sm font-medium text-app-fg mb-2">{{ label }}</label>
     <div class="flex">
       <input 
         :id="inputId"
@@ -22,7 +22,7 @@
         {{ $t('TODAY') }}
       </button>
     </div>
-    <small v-if="hint" class="text-gray-500 dark:text-gray-400 text-sm mt-1 block">{{ hint }}</small>
+    <small v-if="hint" class="text-app-muted text-sm mt-1 block">{{ hint }}</small>
   </div>
 </template>
 
@@ -62,7 +62,7 @@ const containerClass = computed(() => {
 })
 
 const inputClass = computed(() => {
-  const base = 'flex-1 px-3 border border-gray-300 dark:border-gray-600 rounded-l-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:text-white disabled:bg-gray-100 disabled:text-gray-500 disabled:cursor-not-allowed touch-manipulation'
+  const base = 'flex-1 px-3 border border-app-border rounded-l-md bg-app-surface text-app-fg focus:outline-none focus:ring-2 focus:ring-app-primary-2 focus:border-app-primary-2 disabled:bg-app-surface-2 disabled:text-app-muted disabled:cursor-not-allowed touch-manipulation'
   if (props.size === 'compact') {
     return `${base} py-2 text-base`
   }
@@ -70,7 +70,7 @@ const inputClass = computed(() => {
 })
 
 const todayButtonClass = computed(() => {
-  const base = 'px-4 sm:px-4 border border-l-0 border-gray-300 dark:border-gray-600 rounded-r-md bg-gray-50 dark:bg-gray-600 hover:bg-gray-100 dark:hover:bg-gray-500 dark:text-white focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 disabled:bg-gray-100 disabled:text-gray-400 disabled:cursor-not-allowed transition-colors touch-manipulation'
+  const base = 'px-4 sm:px-4 border border-l-0 border-app-border rounded-r-md bg-app-surface-2 text-app-fg hover:bg-app-surface-2/80 focus:outline-none focus:ring-2 focus:ring-app-primary-2 focus:border-app-primary-2 disabled:bg-app-surface-2 disabled:text-app-muted disabled:cursor-not-allowed transition-colors touch-manipulation'
   if (props.size === 'compact') {
     return `${base} py-2 text-base`
   }

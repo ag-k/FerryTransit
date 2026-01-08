@@ -54,7 +54,7 @@ export default defineNuxtConfig({
   // Remove inline config, use tailwind.config.js instead
   tailwindcss: {},
 
-  css: ["@/assets/css/main.scss"],
+  css: ["@/assets/css/tailwind.css", "@/assets/css/main.scss"],
 
   i18n: {
     locales: [

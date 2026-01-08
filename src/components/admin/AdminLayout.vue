@@ -1,5 +1,5 @@
 <template>
-  <div class="min-h-screen bg-gray-100 dark:bg-gray-900">
+  <div class="min-h-screen bg-app-bg text-app-fg">
     <AdminHeader @toggle-sidebar="sidebarOpen = !sidebarOpen" />
 
     <div class="flex">

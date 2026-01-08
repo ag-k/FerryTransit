@@ -1,6 +1,6 @@
 <template>
   <div class="theme-selector">
-    <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+    <label class="block text-sm font-medium text-app-fg mb-2">
       {{ $t('settings.theme') }}
     </label>
     <div class="space-y-2">
@@ -8,11 +8,11 @@
         v-for="theme in themes"
         :key="theme.value"
         @click="selectTheme(theme.value)"
-        class="w-full text-left px-4 py-3 rounded-lg border transition-colors duration-200"
+        class="w-full text-left px-4 py-3 rounded-lg border transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-app-primary-2 focus:ring-offset-2 focus:ring-offset-app-bg"
         :class="[
           uiStore?.theme === theme.value 
-            ? 'bg-blue-50 dark:bg-blue-900/40 border-blue-500 dark:border-blue-400 text-blue-800 dark:text-blue-200' 
-            : 'bg-white dark:bg-gray-800 border-gray-300 dark:border-gray-600 hover:bg-gray-50 dark:hover:bg-gray-700 dark:text-gray-100'
+            ? 'bg-app-surface-2 border-app-primary-2 text-app-primary' 
+            : 'bg-app-surface border-app-border hover:bg-app-surface-2 text-app-fg'
         ]"
       >
         <div class="flex items-center justify-between">
@@ -63,7 +63,7 @@
           </div>
           <svg
             v-if="uiStore?.theme === theme.value"
-            class="w-5 h-5 text-blue-700 dark:text-blue-400"
+            class="w-5 h-5 text-app-primary-2"
             fill="currentColor"
             viewBox="0 0 20 20"
           >
