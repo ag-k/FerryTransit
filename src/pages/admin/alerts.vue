@@ -50,36 +50,32 @@
     <!-- アクションボタン -->
     <div class="mb-4 flex justify-between items-center">
       <div class="flex space-x-2">
-        <button
-          :disabled="isLoading"
-          class="px-4 py-2 bg-gray-600 text-white rounded-md hover:bg-gray-700 disabled:bg-gray-400"
-          @click="refreshData"
-        >
+        <SecondaryButton :disabled="isLoading" @click="refreshData">
           <ArrowPathIcon class="h-5 w-5 inline mr-1" />
           {{ isLoading ? '読み込み中...' : '更新' }}
-        </button>
-        <button
+        </SecondaryButton>
+        <PrimaryButton
           :disabled="isPublishing"
-          class="px-4 py-2 bg-purple-600 text-white rounded-md hover:bg-purple-700 disabled:bg-gray-400"
+          class="bg-purple-600 hover:bg-purple-700 disabled:hover:bg-purple-600"
           data-test="publish-button"
           @click="publishAlertData"
         >
           <CloudArrowUpIcon class="h-5 w-5 inline mr-1" />
           {{ isPublishing ? '公開中...' : 'データ公開' }}
-        </button>
+        </PrimaryButton>
       </div>
-      <button
-        class="px-4 py-2 bg-red-600 text-white rounded-md hover:bg-red-700"
+      <PrimaryButton
+        class="bg-red-600 hover:bg-red-700 disabled:hover:bg-red-600"
         data-test="new-alert-button"
         @click="showAddModal = true"
       >
         <PlusIcon class="h-5 w-5 inline mr-1" />
         新規アラート
-      </button>
+      </PrimaryButton>
     </div>
 
     <!-- アクティブなアラート一覧 -->
-    <div class="bg-white dark:bg-gray-800 rounded-lg shadow mb-6">
+    <Card padding="none" class="mb-6 overflow-hidden">
       <div class="px-6 py-4 border-b border-gray-200 dark:border-gray-700">
         <h2 class="text-lg font-medium text-gray-900 dark:text-white">
           アクティブなアラート
@@ -98,14 +94,9 @@
             <div class="flex justify-between items-start">
               <div class="flex-1">
                 <div class="flex items-center">
-                  <span
-                    :class="[
-                      'px-2 py-1 text-xs rounded-full mr-3',
-                      getAlertStatusClass(alert.status)
-                    ]"
-                  >
+                  <Badge pill class="mr-3" :class="getAlertStatusClass(alert.status)">
                     {{ getAlertStatusLabel(alert.status) }}
-                  </span>
+                  </Badge>
                   <h3 class="font-medium text-gray-900 dark:text-white">
                     {{ alert.ship }} - {{ alert.route }}
                   </h3>
@@ -142,7 +133,7 @@
           </div>
         </div>
       </div>
-    </div>
+    </Card>
 
     <!-- 過去のアラート履歴 -->
     <DataTable
@@ -316,6 +307,10 @@ import { useDataPublish } from '~/composables/useDataPublish'
 import DataTable from '~/components/admin/DataTable.vue'
 import FormModal from '~/components/admin/FormModal.vue'
 import { createLogger } from '~/utils/logger'
+import Badge from '@/components/common/Badge.vue'
+import Card from '@/components/common/Card.vue'
+import PrimaryButton from '@/components/common/PrimaryButton.vue'
+import SecondaryButton from '@/components/common/SecondaryButton.vue'
 
 interface Alert {
   ship: string

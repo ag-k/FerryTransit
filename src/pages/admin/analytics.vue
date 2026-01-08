@@ -33,14 +33,10 @@
           >
         </div>
       </div>
-      <button
-        :disabled="isLoading"
-        class="px-4 py-2 bg-blue-700 text-white rounded-md hover:bg-blue-800 disabled:bg-gray-400"
-        @click="refreshData"
-      >
+      <PrimaryButton :disabled="isLoading" @click="refreshData">
         <ArrowPathIcon class="h-5 w-5 inline mr-1" :class="{ 'animate-spin': isLoading }" />
         {{ isLoading ? '読み込み中...' : '更新' }}
-      </button>
+      </PrimaryButton>
     </div>
 
     <!-- KPI サマリー -->
@@ -78,7 +74,7 @@
     <!-- 詳細分析 -->
     <div class="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-6">
       <!-- ページ別アクセス -->
-      <div class="bg-white dark:bg-gray-800 rounded-lg shadow p-6">
+      <Card>
         <h3 class="text-lg font-medium text-gray-900 dark:text-white mb-4">
           人気ページランキング
         </h3>
@@ -102,7 +98,7 @@
             </div>
           </div>
         </div>
-      </div>
+      </Card>
 
       <!-- リファラー分析 -->
       <div class="bg-white dark:bg-gray-800 rounded-lg shadow p-6">
@@ -370,6 +366,8 @@ import {
 } from '@heroicons/vue/24/outline'
 import { useAnalytics } from '~/composables/useAnalytics'
 import { createLogger } from '~/utils/logger'
+import Card from '@/components/common/Card.vue'
+import PrimaryButton from '@/components/common/PrimaryButton.vue'
 
 definePageMeta({
   layout: 'admin',

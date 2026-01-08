@@ -68,19 +68,16 @@
       <header class="mb-8">
         <div class="flex items-start justify-between mb-4">
           <div class="flex items-center gap-2">
-            <span
-              class="category-badge px-2 py-1 text-xs rounded-full"
+            <Badge
+              pill
               :class="getCategoryClass(newsItem.category)"
               data-testid="category-badge"
             >
               {{ getCategoryLabel(newsItem.category) }}
-            </span>
-            <span
-              v-if="newsItem.priority === 'urgent'"
-              class="px-2 py-1 text-xs rounded-full bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-200"
-            >
+            </Badge>
+            <Badge v-if="newsItem.priority === 'urgent'" pill variant="danger">
               {{ $t('news.urgent') }}
-            </span>
+            </Badge>
             <span
               v-if="newsItem.isPinned"
               class="text-blue-700 dark:text-blue-400"
@@ -139,6 +136,7 @@ import type { News } from '~/types'
 import { useNews } from '~/composables/useNews'
 import { createLogger } from '~/utils/logger'
 import { sanitizeHtml } from '~/utils/sanitizeHtml'
+import Badge from '@/components/common/Badge.vue'
 
 const route = useRoute()
 const { $i18n } = useNuxtApp()

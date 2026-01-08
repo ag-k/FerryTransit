@@ -8,7 +8,7 @@
     </div>
 
     <!-- フィルター -->
-    <div class="mb-6 bg-white dark:bg-gray-800 rounded-lg shadow p-4">
+    <Card class="mb-6" padding="sm">
       <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
         <div>
           <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
@@ -73,28 +73,28 @@
           </select>
         </div>
       </div>
-    </div>
+    </Card>
 
     <!-- アクションボタン -->
     <div class="mb-4 flex flex-col sm:flex-row gap-3 justify-between">
       <div class="flex flex-col sm:flex-row gap-2">
-        <button
+        <SecondaryButton
           data-test="timetable-refresh"
-          class="w-full sm:w-auto px-4 py-2 bg-gray-600 text-white rounded-md hover:bg-gray-700 transition-colors"
+          class="w-full sm:w-auto"
           @click="refreshData"
         >
           <ArrowPathIcon class="h-5 w-5 inline mr-1" />
           更新
-        </button>
-        <button
+        </SecondaryButton>
+        <PrimaryButton
           :disabled="isPublishing"
           data-test="timetable-publish"
-          class="w-full sm:w-auto px-4 py-2 bg-purple-600 text-white rounded-md hover:bg-purple-700 disabled:bg-gray-400 transition-colors"
+          class="w-full sm:w-auto bg-purple-600 hover:bg-purple-700 disabled:hover:bg-purple-600"
           @click="publishTimetableData"
         >
           <CloudArrowUpIcon class="h-5 w-5 inline mr-1" />
           {{ isPublishing ? '公開中...' : 'データ公開' }}
-        </button>
+        </PrimaryButton>
       </div>
       <div class="flex flex-col sm:flex-row gap-2">
         <button
@@ -113,14 +113,14 @@
           <TrashIcon class="h-5 w-5 inline mr-1" />
           全件削除
         </button>
-        <button
+        <PrimaryButton
           data-test="timetable-add"
-          class="w-full sm:w-auto px-4 py-2 bg-blue-700 text-white rounded-md hover:bg-blue-800 transition-colors"
+          class="w-full sm:w-auto"
           @click="showAddModal = true"
         >
           <PlusIcon class="h-5 w-5 inline mr-1" />
           新規追加
-        </button>
+        </PrimaryButton>
       </div>
     </div>
 
@@ -420,6 +420,9 @@ import {
   ArrowUpTrayIcon,
   CloudArrowUpIcon
 } from '@heroicons/vue/24/outline'
+import Card from '@/components/common/Card.vue'
+import PrimaryButton from '@/components/common/PrimaryButton.vue'
+import SecondaryButton from '@/components/common/SecondaryButton.vue'
 import { orderBy } from 'firebase/firestore'
 import type { Port, Ship } from '~/types'
 import { useAdminFirestore } from '~/composables/useAdminFirestore'

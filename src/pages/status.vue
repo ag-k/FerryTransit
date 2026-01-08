@@ -357,9 +357,7 @@
 
     <!-- Refresh button -->
     <div class="text-center mt-8">
-      <button
-        class="inline-flex items-center px-4 py-2 border border-blue-700 dark:border-blue-400 text-blue-700 dark:text-blue-400 rounded hover:bg-blue-50 dark:hover:bg-blue-900/20 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
-        :disabled="isLoading" @click="refreshStatus">
+      <SecondaryButton :disabled="isLoading" @click="refreshStatus">
         <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="mr-2"
           viewBox="0 0 16 16">
           <path fill-rule="evenodd" d="M8 3a5 5 0 1 0 4.546 2.914.5.5 0 0 1 .908-.417A6 6 0 1 1 8 2v1z" />
@@ -367,7 +365,7 @@
             d="M8 4.466V.534a.25.25 0 0 1 .41-.192l2.36 1.966c.12.1.12.284 0 .384L8.41 4.658A.25.25 0 0 1 8 4.466z" />
         </svg>
         {{ $t('REFRESH') }}
-      </button>
+      </SecondaryButton>
     </div>
 
     <!-- Last update time -->
@@ -382,6 +380,7 @@ import { useFerryStore } from '@/stores/ferry'
 import { useFerryData } from '@/composables/useFerryData'
 import type { ShipStatus, FerryStatus } from '~/types'
 import { splitWaveValue } from '@/utils/wave'
+import SecondaryButton from '@/components/common/SecondaryButton.vue'
 
 const ferryStore = process.client ? useFerryStore() : null
 const { updateShipStatus } = useFerryData()

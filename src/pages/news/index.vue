@@ -43,13 +43,8 @@
     </div>
 
     <!-- エラー -->
-    <div v-else-if="error" class="error text-center py-16">
-      <div class="text-red-600 dark:text-red-400 mb-4">
-        <svg class="w-16 h-16 mx-auto" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
-        </svg>
-      </div>
-      <p class="text-gray-600 dark:text-gray-400">{{ error }}</p>
+    <div v-else-if="error" class="py-8">
+      <Alert :visible="true" type="danger" :dismissible="false" :message="error" />
     </div>
 
     <!-- お知らせなし -->
@@ -71,28 +66,22 @@
         tag="div"
         class="news-grid grid gap-4 grid-cols-1 md:grid-cols-2 lg:grid-cols-3"
       >
-        <article
+        <Card
           v-for="news in paginatedNews"
           :key="news.id"
-          class="bg-white dark:bg-gray-800 rounded-lg shadow-sm hover:shadow-md transition-all p-6 border border-gray-200 dark:border-gray-700"
-          :class="{ 'border-l-4 !border-l-blue-500': news.isPinned }"
+          as="article"
+          class="hover:shadow-md transition-shadow"
+          padding="md"
+          :class="{ 'border-l-4 !border-l-app-primary': news.isPinned }"
         >
           <div class="flex items-start justify-between mb-3">
             <div class="flex items-center gap-2">
-              <span
-                :class="[
-                  'px-2 py-1 text-xs rounded-full',
-                  getCategoryClass(news.category)
-                ]"
-              >
+              <Badge pill :class="getCategoryClass(news.category)">
                 {{ getCategoryLabel(news.category) }}
-              </span>
-              <span
-                v-if="news.priority === 'urgent'"
-                class="px-2 py-1 text-xs rounded-full bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-200"
-              >
+              </Badge>
+              <Badge v-if="news.priority === 'urgent'" pill variant="danger">
                 {{ $t('news.urgent') }}
-              </span>
+              </Badge>
               <span
                 v-if="news.isPinned"
                 class="text-blue-700 dark:text-blue-400"
@@ -128,7 +117,7 @@
               <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7" />
             </svg>
           </NuxtLink>
-        </article>
+        </Card>
       </TransitionGroup>
     </div>
 
@@ -175,6 +164,9 @@
 
 <script setup lang="ts">
 import { useNews } from '~/composables/useNews'
+import Alert from '@/components/common/Alert.vue'
+import Badge from '@/components/common/Badge.vue'
+import Card from '@/components/common/Card.vue'
 
 const { $i18n } = useNuxtApp()
 const { 

@@ -35,34 +35,27 @@
       
       <!-- アクションボタン（モバイル：縦並び＋フル幅、デスクトップ：横並び） -->
       <div class="flex flex-col sm:flex-row gap-2 sm:justify-end">
-        <button
-          :disabled="isLoading"
-          class="w-full sm:w-auto px-4 py-2 bg-gray-600 text-white rounded-md hover:bg-gray-700 disabled:bg-gray-400 transition-colors"
-          @click="refreshData"
-        >
+        <SecondaryButton :disabled="isLoading" class="w-full sm:w-auto" @click="refreshData">
           <ArrowPathIcon class="h-5 w-5 inline mr-1" />
           更新
-        </button>
-        <button
+        </SecondaryButton>
+        <PrimaryButton
           :disabled="isPublishing"
-          class="w-full sm:w-auto px-4 py-2 bg-purple-600 text-white rounded-md hover:bg-purple-700 disabled:bg-gray-400 transition-colors"
+          class="w-full sm:w-auto bg-purple-600 hover:bg-purple-700 disabled:hover:bg-purple-600"
           @click="publishNewsData"
         >
           <CloudArrowUpIcon class="h-5 w-5 inline mr-1" />
           {{ isPublishing ? '公開中...' : 'データ公開' }}
-        </button>
-        <button
-          class="w-full sm:w-auto px-4 py-2 bg-blue-700 text-white rounded-md hover:bg-blue-800 transition-colors"
-          @click="navigateTo('/admin/news/edit')"
-        >
+        </PrimaryButton>
+        <PrimaryButton class="w-full sm:w-auto" @click="navigateTo('/admin/news/edit')">
           <PlusIcon class="h-5 w-5 inline mr-1" />
           新規作成
-        </button>
+        </PrimaryButton>
       </div>
     </div>
 
     <!-- ローディング中 -->
-    <div v-if="isLoading" class="bg-white dark:bg-gray-800 rounded-lg shadow p-8 text-center">
+    <Card v-if="isLoading" class="text-center" padding="md">
       <div class="inline-flex items-center">
         <svg class="animate-spin h-5 w-5 mr-3 text-gray-600 dark:text-gray-400" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
           <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
@@ -70,43 +63,31 @@
         </svg>
         データを読み込んでいます...
       </div>
-    </div>
+    </Card>
 
     <!-- エラー表示 -->
-    <div v-else-if="loadError" class="bg-white dark:bg-gray-800 rounded-lg shadow p-8 text-center">
-      <div class="text-red-600 dark:text-red-400 mb-4">
-        <svg class="h-12 w-12 mx-auto" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
-        </svg>
-      </div>
-      <p class="text-gray-600 dark:text-gray-400 mb-4">{{ loadError }}</p>
-      <button
-        class="px-4 py-2 bg-blue-700 text-white rounded-md hover:bg-blue-800"
-        @click="refreshData"
-      >
+    <Card v-else-if="loadError" class="text-center" padding="md">
+      <Alert :visible="true" type="danger" :dismissible="false" :message="loadError" class="mb-4" />
+      <PrimaryButton @click="refreshData">
         <ArrowPathIcon class="h-5 w-5 inline mr-1" />
         再試行
-      </button>
-    </div>
+      </PrimaryButton>
+    </Card>
 
     <!-- データなし -->
-    <div v-else-if="!isLoading && filteredNews.length === 0" class="bg-white dark:bg-gray-800 rounded-lg shadow p-8 text-center">
+    <Card v-else-if="!isLoading && filteredNews.length === 0" class="text-center" padding="md">
       <MegaphoneIcon class="h-12 w-12 text-gray-400 mx-auto mb-4" />
       <p class="text-gray-500 dark:text-gray-400 mb-4">
         {{ filterCategory || filterStatus ? 'フィルター条件に一致するお知らせがありません' : 'お知らせがまだ登録されていません' }}
       </p>
-      <button
-        v-if="!filterCategory && !filterStatus"
-        class="px-4 py-2 bg-blue-700 text-white rounded-md hover:bg-blue-800"
-        @click="navigateTo('/admin/news/edit')"
-      >
+      <PrimaryButton v-if="!filterCategory && !filterStatus" @click="navigateTo('/admin/news/edit')">
         <PlusIcon class="h-5 w-5 inline mr-1" />
         最初のお知らせを作成
-      </button>
-    </div>
+      </PrimaryButton>
+    </Card>
 
     <!-- お知らせ一覧 -->
-    <div v-else class="bg-white dark:bg-gray-800 rounded-lg shadow">
+    <Card v-else padding="none" class="overflow-hidden">
       <DataTable
         :columns="columns"
         :data="filteredNews"
@@ -114,24 +95,14 @@
         :page-size="10"
       >
         <template #cell-category="{ value }">
-          <span
-            :class="[
-              'px-2 py-1 text-xs rounded-full',
-              getCategoryClass(value)
-            ]"
-          >
+          <Badge pill :class="getCategoryClass(value)">
             {{ getCategoryLabel(value) }}
-          </span>
+          </Badge>
         </template>
         <template #cell-status="{ value }">
-          <span
-            :class="[
-              'px-2 py-1 text-xs rounded-full',
-              getStatusClass(value)
-            ]"
-          >
+          <Badge pill :class="getStatusClass(value)">
             {{ getStatusLabel(value) }}
-          </span>
+          </Badge>
         </template>
         <template #cell-publishDate="{ value }">
           {{ formatDateTime(value) }}
@@ -162,7 +133,7 @@
           </div>
         </template>
       </DataTable>
-    </div>
+    </Card>
 
 
     <!-- プレビューモーダル -->
@@ -175,14 +146,9 @@
     >
       <div v-if="previewData" class="space-y-4">
         <div class="flex items-center justify-between">
-          <span
-            :class="[
-              'px-2 py-1 text-xs rounded-full',
-              getCategoryClass(previewData.category)
-            ]"
-          >
+          <Badge pill :class="getCategoryClass(previewData.category)">
             {{ getCategoryLabel(previewData.category) }}
-          </span>
+          </Badge>
           <span class="text-sm text-gray-500 dark:text-gray-400">
             {{ formatDateTime(previewData.publishDate) }}
           </span>
@@ -217,6 +183,11 @@ import {
   MegaphoneIcon,
   CloudArrowUpIcon
 } from '@heroicons/vue/24/outline'
+import Alert from '@/components/common/Alert.vue'
+import Badge from '@/components/common/Badge.vue'
+import Card from '@/components/common/Card.vue'
+import PrimaryButton from '@/components/common/PrimaryButton.vue'
+import SecondaryButton from '@/components/common/SecondaryButton.vue'
 import { orderBy, Timestamp } from 'firebase/firestore'
 import { useAdminFirestore } from '~/composables/useAdminFirestore'
 import { useDataPublish } from '~/composables/useDataPublish'

@@ -187,33 +187,28 @@
         </div>
 
         <div class="flex justify-between pt-6">
-          <button
-            type="button"
-            class="px-4 py-2 bg-gray-300 text-gray-700 rounded-md hover:bg-gray-400"
-            @click="navigateTo('/admin/news')"
-          >
+          <SecondaryButton type="button" @click="navigateTo('/admin/news')">
             キャンセル
-          </button>
+          </SecondaryButton>
           <div class="space-x-2">
-            <button
+            <SecondaryButton
               v-if="formData.hasDetail"
               type="button"
-              class="px-4 py-2 bg-gray-600 text-white rounded-md hover:bg-gray-700"
+              class="bg-gray-700 text-white hover:bg-gray-800 disabled:hover:bg-gray-700"
               :disabled="!formData.title || !formData.content"
               @click="previewNews"
             >
               <EyeIcon class="h-5 w-5 inline mr-1" />
               プレビュー
-            </button>
-            <button
+            </SecondaryButton>
+            <PrimaryButton
               type="submit"
-              class="px-4 py-2 bg-blue-700 text-white rounded-md hover:bg-blue-800 disabled:bg-gray-400"
               :disabled="isSaving"
             >
               <CheckIcon v-if="!isSaving" class="h-5 w-5 inline mr-1" />
               <ArrowPathIcon v-else class="h-5 w-5 inline mr-1 animate-spin" />
               {{ isSaving ? '保存中...' : '保存' }}
-            </button>
+            </PrimaryButton>
           </div>
         </div>
       </form>
@@ -271,6 +266,8 @@ import { useAdminAuth } from '~/composables/useAdminAuth'
 import type { News } from '~/types'
 import { createLogger } from '~/utils/logger'
 import { sanitizeHtml } from '~/utils/sanitizeHtml'
+import PrimaryButton from '@/components/common/PrimaryButton.vue'
+import SecondaryButton from '@/components/common/SecondaryButton.vue'
 
 definePageMeta({
   layout: 'admin',
