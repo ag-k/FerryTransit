@@ -13,6 +13,14 @@ const projectRoot = process.cwd()
 
 console.log('🔧 Setting up Firebase emulators for local development...\n')
 
+// In sandboxed/test environments (e.g. Playwright), avoid any global installs or network access.
+const skipFirebaseCli =
+  process.env.SKIP_FIREBASE_CLI === '1' ||
+  process.env.SKIP_FIREBASE_CLI === 'true' ||
+  process.env.PLAYWRIGHT === '1' ||
+  process.env.PLAYWRIGHT === 'true' ||
+  process.env.CI === 'true'
+
 // Check if .env.local exists, if not create it from example
 const envLocalPath = join(projectRoot, '.env.local')
 const envExamplePath = join(projectRoot, '.env.example')
@@ -42,22 +50,26 @@ try {
   console.log('⚠️  Failed to update .env.local emulator port automatically')
 }
 
-// Install Firebase CLI if not available
-try {
-  execSync('firebase --version', { stdio: 'pipe' })
-  console.log('✅ Firebase CLI is already installed')
-} catch (error) {
-  console.log('📦 Installing Firebase CLI...')
-  execSync('npm install -g firebase-tools', { stdio: 'inherit' })
-  console.log('✅ Firebase CLI installed')
-}
+if (skipFirebaseCli) {
+  console.log('⏭️  Skipping Firebase CLI setup (SKIP_FIREBASE_CLI/PLAYWRIGHT/CI is set)')
+} else {
+  // Install Firebase CLI if not available
+  try {
+    execSync('firebase --version', { stdio: 'pipe' })
+    console.log('✅ Firebase CLI is already installed')
+  } catch (error) {
+    console.log('📦 Installing Firebase CLI...')
+    execSync('npm install -g firebase-tools', { stdio: 'inherit' })
+    console.log('✅ Firebase CLI installed')
+  }
 
-// Check if emulators are installed
-try {
-  execSync('firebase emulators:start --help', { stdio: 'pipe', cwd: projectRoot })
-  console.log('✅ Firebase emulators are available')
-} catch (error) {
-  console.log('⚠️  Firebase emulators may not be properly installed')
+  // Check if emulators are installed
+  try {
+    execSync('firebase emulators:start --help', { stdio: 'pipe', cwd: projectRoot })
+    console.log('✅ Firebase emulators are available')
+  } catch (error) {
+    console.log('⚠️  Firebase emulators may not be properly installed')
+  }
 }
 
 console.log('\n🎉 Development environment setup complete!')
