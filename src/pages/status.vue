@@ -528,11 +528,11 @@ const statusContainerClassMap: Record<StatusVariant, string> = {
 }
 
 const statusHeaderClassMap: Record<StatusVariant, string> = {
-  default: 'border-gray-200 bg-gray-100 text-gray-900 dark:bg-slate-700 dark:border-gray-600 dark:text-white',
-  info: 'border-blue-800 bg-gradient-to-b from-blue-700 to-blue-800 text-white dark:from-blue-900 dark:to-blue-950 dark:border-blue-700',
-  danger: 'border-red-600 bg-red-600 text-white dark:bg-red-700 dark:border-red-600',
-  warning: 'border-yellow-400 bg-yellow-400 text-gray-900 dark:bg-yellow-500 dark:border-yellow-400 dark:text-gray-900',
-  success: 'border-green-600 bg-green-600 text-white dark:bg-green-700 dark:border-green-600'
+  default: 'border-gray-200 bg-gradient-to-r from-gray-100 to-gray-200 text-gray-900 dark:from-slate-700 dark:to-slate-800 dark:border-gray-600 dark:text-white',
+  info: 'border-blue-800 bg-gradient-to-r from-blue-700 to-blue-800 text-white dark:from-blue-900 dark:to-blue-950 dark:border-blue-700',
+  danger: 'border-red-600 bg-gradient-to-r from-red-600 to-red-700 text-white dark:from-red-700 dark:to-red-800 dark:border-red-600',
+  warning: 'border-yellow-400 bg-gradient-to-r from-yellow-400 to-yellow-500 text-gray-900 dark:from-yellow-500 dark:to-yellow-600 dark:border-yellow-400 dark:text-gray-900',
+  success: 'border-green-600 bg-gradient-to-r from-green-600 to-green-700 text-white dark:from-green-700 dark:to-green-800 dark:border-green-600'
 }
 
 const getStatusVariant = (ship?: ShipStatus | null): StatusVariant => {
