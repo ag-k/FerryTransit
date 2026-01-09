@@ -87,29 +87,14 @@
 
     <!-- 地図表示 -->
     <ClientOnly>
-      <div v-if="settingsStore.mapEnabled" class="mb-6">
-        <!-- 地図コンポーネント -->
-        <div class="relative">
-          <!-- 地図を隠すボタン（マップ上の左上に配置） -->
-          <div class="absolute left-2 top-2 z-20">
-            <SecondaryButton
-              size="sm"
-              class="bg-white/90 dark:bg-gray-900/90 border border-gray-300/80 dark:border-gray-700 shadow-sm backdrop-blur"
-              @click="toggleMapDisplay">
-              <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="mr-1.5"
-                viewBox="0 0 16 16" aria-hidden="true">
-                <path
-                  d="M8 8.75a2.5 2.5 0 1 1 0-5 2.5 2.5 0 0 1 0 5z" />
-                <path
-                  d="M8 0a5.5 5.5 0 0 0-5.5 5.5c0 4.13 5.5 10.5 5.5 10.5s5.5-6.37 5.5-10.5A5.5 5.5 0 0 0 8 0zm0 14.09C6.28 11.74 3.5 7.98 3.5 5.5a4.5 4.5 0 0 1 9 0c0 2.48-2.78 6.24-4.5 8.59z" />
-              </svg>
-              {{ $t('MAP_HIDE') }}
-            </SecondaryButton>
-          </div>
-          <FerryMap :selected-port="selectedMapPort" :selected-route="selectedMapRoute" :show-port-details="true"
-            height="300px" @port-click="handleMapPortClick" @route-select="handleMapRouteSelect" />
-        </div>
-      </div>
+      <TimetableMap
+        :selected-port="selectedMapPort"
+        :selected-route="selectedMapRoute"
+        :show-port-details="true"
+        height="300px"
+        @port-click="handleMapPortClick"
+        @route-select="handleMapRouteSelect"
+      />
     </ClientOnly>
 
     <!-- 時刻表 -->
@@ -332,7 +317,7 @@ import { useHistoryStore } from '@/stores/history'
 import { useSettingsStore } from '@/stores/settings'
 import { useFerryData } from '@/composables/useFerryData'
 import FavoriteButton from '@/components/favorites/FavoriteButton.vue'
-import FerryMap from '@/components/map/FerryMap.vue'
+import TimetableMap from '@/components/map/TimetableMap.vue'
 import StatusAlerts from '@/components/common/StatusAlerts.vue'
 import DatePicker from '@/components/common/DatePicker.vue'
 import Card from '@/components/common/Card.vue'

@@ -45,14 +45,18 @@ import { Loader } from '@googlemaps/js-api-loader'
 import { PORTS_DATA, ROUTES_DATA } from '~/data/ports'
 import CommonShipModal from '~/components/common/ShipModal.vue'
 import type { Port } from '~/types'
-import type { RouteData, RoutesDataFile } from '~/types/route'
+import type { RouteData, RoutePoint, RoutesDataFile } from '~/types/route'
 import { getJSONData } from '~/composables/useDataPublish'
 import { createLogger } from '~/utils/logger'
+import { getGoogleMapsLocaleOptions } from '~/utils/googleMapsLocale'
 
 // Props
+type RouteSegment = { from: string; to: string; ship?: string }
+
 interface Props {
   selectedPort?: string
   selectedRoute?: { from: string; to: string }
+  selectedRouteSegments?: RouteSegment[]
   showPortDetails?: boolean
   height?: string
 }
@@ -128,8 +132,11 @@ const syncActivePolylineCache = () => {
 }
 
 const ensureOnlySelectedRouteVisible = () => {
+  const segments = (props.selectedRouteSegments || []).filter(seg => seg.from && seg.to)
+  const hasSegments = segments.length > 0
   const selected = props.selectedRoute
-  if (!selected) {
+
+  if (!selected && !hasSegments) {
     for (const polyline of Array.from(allPolylines)) {
       detachPolyline(polyline)
     }
@@ -137,11 +144,28 @@ const ensureOnlySelectedRouteVisible = () => {
     return
   }
 
-  const fromCandidates = expandMainland(selected.from)
-  const toCandidates = expandMainland(selected.to)
+  const isNearPort = (point: google.maps.LatLng, portId: string) => {
+    const port = PORTS_DATA[portId]
+    if (!port) return false
+    return (
+      Math.abs(point.lat() - port.location.lat) < 0.001 &&
+      Math.abs(point.lng() - port.location.lng) < 0.001
+    )
+  }
 
   const matchesSelectedRoute = (route: RouteData): boolean => {
+    if (!selected) return false
+    const fromCandidates = expandMainland(selected.from)
+    const toCandidates = expandMainland(selected.to)
     return fromCandidates.includes(route.from) && toCandidates.includes(route.to)
+  }
+
+  const matchesSelectedSegment = (segment: { from: string; to: string }): boolean => {
+    return segments.some(candidate => {
+      const fromCandidates = expandMainland(candidate.from)
+      const toCandidates = expandMainland(candidate.to)
+      return fromCandidates.includes(segment.from) && toCandidates.includes(segment.to)
+    })
   }
 
   const matchesPolylineWithoutMetadata = (polyline: google.maps.Polyline): boolean => {
@@ -152,28 +176,30 @@ const ensureOnlySelectedRouteVisible = () => {
     const end = path.getAt(path.getLength() - 1)
     if (!start || !end) return false
 
-    const isNearPort = (point: google.maps.LatLng, portId: string) => {
-      const port = PORTS_DATA[portId]
-      if (!port) return false
-      return (
-        Math.abs(point.lat() - port.location.lat) < 0.001 &&
-        Math.abs(point.lng() - port.location.lng) < 0.001
-      )
+    if (hasSegments) {
+      return segments.some(candidate => {
+        const fromCandidates = expandMainland(candidate.from)
+        const toCandidates = expandMainland(candidate.to)
+        return fromCandidates.some(fromId => isNearPort(start, fromId)) &&
+          toCandidates.some(toId => isNearPort(end, toId))
+      })
     }
 
-    for (const fromId of fromCandidates) {
-      for (const toId of toCandidates) {
-        if (isNearPort(start, fromId) && isNearPort(end, toId)) {
-          return true
-        }
-      }
-    }
-    return false
+    if (!selected) return false
+    const fromCandidates = expandMainland(selected.from)
+    const toCandidates = expandMainland(selected.to)
+    return fromCandidates.some(fromId => isNearPort(start, fromId)) &&
+      toCandidates.some(toId => isNearPort(end, toId))
   }
 
   for (const polyline of Array.from(allPolylines)) {
     const routeData = (polyline as any).routeData as RouteData | undefined
-    const isMatch = routeData ? matchesSelectedRoute(routeData) : matchesPolylineWithoutMetadata(polyline)
+    const routeSegment = (polyline as any).routeSegment as { from: string; to: string } | undefined
+    const isMatch = routeSegment
+      ? matchesSelectedSegment(routeSegment)
+      : routeData
+        ? (hasSegments ? matchesSelectedSegment({ from: routeData.from, to: routeData.to }) : matchesSelectedRoute(routeData))
+        : matchesPolylineWithoutMetadata(polyline)
     if (!isMatch) {
       detachPolyline(polyline)
     } else if (map.value && polyline.getMap() !== map.value) {
@@ -183,9 +209,12 @@ const ensureOnlySelectedRouteVisible = () => {
   syncActivePolylineCache()
 }
 
-const registerPolyline = (polyline: google.maps.Polyline, route?: RouteData) => {
+const registerPolyline = (polyline: google.maps.Polyline, route?: RouteData, segment?: RouteSegment) => {
   if (route) {
     ;(polyline as any).routeData = route
+  }
+  if (segment) {
+    ;(polyline as any).routeSegment = { from: segment.from, to: segment.to }
   }
   polylines.value.push(polyline)
   allPolylines.add(polyline)
@@ -202,6 +231,7 @@ const resetRouteOverlays = () => {
 // Computed
 const isMapEnabled = computed(() => settingsStore.mapEnabled)
 const currentLocale = computed(() => $i18n.locale.value)
+const googleMapsLocaleOptions = computed(() => getGoogleMapsLocaleOptions(currentLocale.value))
 
 // Google Maps APIキー（環境変数から取得）
 const GOOGLE_MAPS_API_KEY = useRuntimeConfig().public.googleMapsApiKey || ''
@@ -252,7 +282,9 @@ const initializeMap = async () => {
       apiKey: GOOGLE_MAPS_API_KEY,
       version: 'weekly',
       libraries: ['places', 'marker', 'geometry', 'routes'],
-      mapIds: ['ca20a2dbd2ddb20bccb48876']
+      mapIds: ['ca20a2dbd2ddb20bccb48876'],
+      language: googleMapsLocaleOptions.value.language,
+      region: googleMapsLocaleOptions.value.region
     })
 
     const google = await loader.load()
@@ -320,9 +352,16 @@ const renderActiveRoute = () => {
 
   logger.debug('renderActiveRoute', {
     selectedRoute: props.selectedRoute,
+    selectedRouteSegments: props.selectedRouteSegments?.length || 0,
     storageRoutes: routesFromStorage.value.length
   })
-  if (props.selectedRoute) {
+  if (props.selectedRouteSegments && props.selectedRouteSegments.length > 0) {
+    const drawn = drawRouteSegmentsFromStorage(props.selectedRouteSegments)
+    logger.debug('drawRouteSegmentsFromStorage drawn', drawn)
+    if (!drawn) {
+      logger.warn('Storage route not found for selected segments; drawing fallback lines')
+    }
+  } else if (props.selectedRoute) {
     // 出発地と目的地が同じ場合はルートを表示せず、当該港へズーム
     if (props.selectedRoute.from === props.selectedRoute.to) {
       focusPort(props.selectedRoute.from)
@@ -341,6 +380,84 @@ const renderActiveRoute = () => {
   ensureOnlySelectedRouteVisible()
   // ルートに応じたマーカー強調を更新
   updateAllMarkerStyles()
+}
+
+const getRouteLineStyle = (route: RouteData) => {
+  switch (route.source) {
+    case 'google_transit':
+      return { strokeColor: '#2E7D32', strokeOpacity: 0.8, strokeWeight: 3 }
+    case 'google_driving':
+      return { strokeColor: '#FF8C00', strokeOpacity: 0.6, strokeWeight: 2, dashArray: [10, 5] }
+    case 'manual':
+      return { strokeColor: '#4682B4', strokeOpacity: 0.7, strokeWeight: 2 }
+    default:
+      return { strokeColor: '#666666', strokeOpacity: 0.5, strokeWeight: 2, dashArray: [5, 5] }
+  }
+}
+
+const createRoutePolyline = (route: RouteData, pathOverride?: RoutePoint[]) => {
+  const { strokeColor, strokeOpacity, strokeWeight, dashArray } = getRouteLineStyle(route)
+  const path = pathOverride || route.path
+  return new google.maps.Polyline({
+    path,
+    geodesic: route.geodesic !== false,
+    strokeColor,
+    strokeOpacity,
+    strokeWeight,
+    zIndex: 5,
+    strokeDasharray: dashArray,
+    icons: [{
+      icon: {
+        path: google.maps.SymbolPath.FORWARD_OPEN_ARROW,
+        scale: 2,
+        strokeColor,
+        strokeOpacity
+      },
+      offset: '50%'
+    }],
+    map: map.value
+  })
+}
+
+const drawRouteSegmentsFromStorage = (segments: RouteSegment[]): boolean => {
+  if (!map.value) return false
+  const bounds = new google.maps.LatLngBounds()
+  let drew = false
+
+  segments.forEach(segment => {
+    const fromCandidates = expandMainland(segment.from)
+    const toCandidates = expandMainland(segment.to)
+    const directMatch = routesFromStorage.value.find(route =>
+      fromCandidates.includes(route.from) && toCandidates.includes(route.to)
+    )
+    const reverseMatch = !directMatch
+      ? routesFromStorage.value.find(route =>
+        fromCandidates.includes(route.to) && toCandidates.includes(route.from)
+      )
+      : undefined
+
+    if (directMatch || reverseMatch) {
+      const route = directMatch || reverseMatch!
+      const path = reverseMatch ? [...route.path].reverse() : route.path
+      const polyline = createRoutePolyline(route, path)
+      registerPolyline(polyline, route, segment)
+      path.forEach(pt => bounds.extend(pt as any))
+      drew = true
+      return
+    }
+
+    const fromPort = fromCandidates.map(id => PORTS_DATA[id]).find(Boolean)
+    const toPort = toCandidates.map(id => PORTS_DATA[id]).find(Boolean)
+    if (fromPort && toPort) {
+      bounds.extend(fromPort.location as any)
+      bounds.extend(toPort.location as any)
+    }
+  })
+
+  if (drew && map.value) {
+    fitBoundsWithUiPadding(bounds)
+  }
+  return drew
 }
 
 const addPortMarkers = () => {
@@ -384,7 +501,12 @@ const expandMainland = (id: string): string[] => {
 // 選択状態に応じてアクティブな港ID集合を取得
 const getActivePortIds = (): Set<string> => {
   const active = new Set<string>()
-  if (props.selectedRoute) {
+  if (props.selectedRouteSegments && props.selectedRouteSegments.length > 0) {
+    props.selectedRouteSegments.forEach(segment => {
+      expandMainland(segment.from).forEach(id => active.add(id))
+      expandMainland(segment.to).forEach(id => active.add(id))
+    })
+  } else if (props.selectedRoute) {
     expandMainland(props.selectedRoute.from).forEach(id => active.add(id))
     expandMainland(props.selectedRoute.to).forEach(id => active.add(id))
   } else if (props.selectedPort) {
@@ -556,55 +678,8 @@ const drawRoutesFromStorage = (): boolean => {
   const bounds = new google.maps.LatLngBounds()
   let drew = false
   targetRoutes.forEach(route => {
-    // ソースに応じて色とスタイルを設定
-    let strokeColor: string
-    let strokeOpacity: number
-    let strokeWeight: number
-    let dashArray: number[] | undefined
-    
-    switch (route.source) {
-      case 'google_transit':
-        strokeColor = '#2E7D32' // 緑色：Google Transit API
-        strokeOpacity = 0.8
-        strokeWeight = 3
-        break
-      case 'google_driving':
-        strokeColor = '#FF8C00' // オレンジ色：Google Driving API
-        strokeOpacity = 0.6
-        strokeWeight = 2
-        dashArray = [10, 5]
-        break
-      case 'manual':
-        strokeColor = '#4682B4' // 青色：手動定義
-        strokeOpacity = 0.7
-        strokeWeight = 2
-        break
-      default:
-        strokeColor = '#666666' // グレー：その他
-        strokeOpacity = 0.5
-        strokeWeight = 2
-        dashArray = [5, 5]
-    }
-
-    const polyline = new google.maps.Polyline({
-      path: route.path,
-      geodesic: route.geodesic !== false,
-      strokeColor,
-      strokeOpacity,
-      strokeWeight,
-      zIndex: 5,
-      strokeDasharray: dashArray,
-      icons: [{
-        icon: {
-          path: google.maps.SymbolPath.FORWARD_OPEN_ARROW,
-          scale: 2,
-          strokeColor,
-          strokeOpacity
-        },
-        offset: '50%'
-      }],
-      map: map.value
-    })
+    const { strokeColor, strokeOpacity, strokeWeight } = getRouteLineStyle(route)
+    const polyline = createRoutePolyline(route)
 
     // マウスオーバーでハイライト
     polyline.addListener('mouseover', () => {
@@ -974,6 +1049,11 @@ watch(() => props.selectedRoute, () => {
   updateAllMarkerStyles()
 })
 
+watch(() => props.selectedRouteSegments, () => {
+  renderActiveRoute()
+  updateAllMarkerStyles()
+}, { deep: true })
+
 // ルートデータ読み込み後にも再描画（初期ロードや再取得に対応）
 watch(routesFromStorage, () => {
   renderActiveRoute()
@@ -981,9 +1061,13 @@ watch(routesFromStorage, () => {
 
 // 初回同期: 地図が初期化され、選択ルートが与えられたら即描画
 watch(
-  () => ({ hasMap: !!map.value, route: props.selectedRoute ? `${props.selectedRoute.from}->${props.selectedRoute.to}` : '' }),
+  () => ({
+    hasMap: !!map.value,
+    route: props.selectedRoute ? `${props.selectedRoute.from}->${props.selectedRoute.to}` : '',
+    segments: (props.selectedRouteSegments || []).map(seg => `${seg.from}->${seg.to}`).join('|')
+  }),
   (state) => {
-    if (state.hasMap && props.selectedRoute) {
+    if (state.hasMap && (props.selectedRoute || (props.selectedRouteSegments && props.selectedRouteSegments.length > 0))) {
       renderActiveRoute()
     }
   },
