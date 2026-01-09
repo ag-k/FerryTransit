@@ -168,18 +168,42 @@
                 <tr>
                   <th class="px-3 sm:px-4 py-3 text-left font-medium text-app-muted">{{ $t('SHIP') }}
                   </th>
-                  <th class="px-3 sm:px-4 py-3 text-right font-medium text-app-muted">
+                  <th class="px-3 sm:px-4 py-3 text-right font-medium text-app-muted align-middle">
                     <a href="#"
-                      class="text-app-primary hover:underline font-semibold inline-block py-1 -my-1 px-2 -mx-2 touch-manipulation"
+                      class="text-app-primary font-semibold inline-flex flex-col items-center justify-center gap-1 py-1 -my-1 px-2 -mx-2 touch-manipulation text-center min-h-[40px] w-fit ml-auto group"
                       @click.prevent="showPortInfo(departure)">
-                      {{ $t(departure) }}
+                      <span class="leading-tight group-hover:underline">
+                        {{ departureLabelParts.name }}
+                      </span>
+                      <span v-if="departureLabelParts.badges.length" class="flex flex-wrap justify-end gap-1">
+                        <span
+                          v-for="badge in departureLabelParts.badges"
+                          :key="badge"
+                          class="inline-flex items-center rounded-full px-2 py-0.5 text-[11px] font-semibold whitespace-nowrap ring-1 ring-inset no-underline"
+                          :class="getPortBadgeClass(badge)"
+                        >
+                          {{ badge }}
+                        </span>
+                      </span>
                     </a>
                   </th>
-                  <th class="px-3 sm:px-4 py-3 text-right font-medium text-app-muted">
+                  <th class="px-3 sm:px-4 py-3 text-right font-medium text-app-muted align-middle">
                     <a href="#"
-                      class="text-app-primary hover:underline font-semibold inline-block py-1 -my-1 px-2 -mx-2 touch-manipulation"
+                      class="text-app-primary font-semibold inline-flex flex-col items-center justify-center gap-1 py-1 -my-1 px-2 -mx-2 touch-manipulation text-center min-h-[40px] w-fit ml-auto group"
                       @click.prevent="showPortInfo(arrival)">
-                      {{ $t(arrival) }}
+                      <span class="leading-tight group-hover:underline">
+                        {{ arrivalLabelParts.name }}
+                      </span>
+                      <span v-if="arrivalLabelParts.badges.length" class="flex flex-wrap justify-end gap-1">
+                        <span
+                          v-for="badge in arrivalLabelParts.badges"
+                          :key="badge"
+                          class="inline-flex items-center rounded-full px-2 py-0.5 text-[11px] font-semibold whitespace-nowrap ring-1 ring-inset no-underline"
+                          :class="getPortBadgeClass(badge)"
+                        >
+                          {{ badge }}
+                        </span>
+                      </span>
                     </a>
                   </th>
                 </tr>
@@ -365,6 +389,44 @@ const headerDateLabel = computed(() => {
   const weekday = isJa ? weekdayJa : weekdayEn
   return `${selectedDateString.value}(${weekday})`
 })
+
+const getPortLabelParts = (port?: string) => {
+  const label = port ? String(t(port)) : '-'
+  const parenRegex = /[（(]([^）)]+)[）)]/g
+  const badges: string[] = []
+
+  let match = parenRegex.exec(label)
+  while (match) {
+    const value = match[1]?.trim()
+    if (value) badges.push(value)
+    match = parenRegex.exec(label)
+  }
+
+  const name = label.replace(parenRegex, '').replace(/\s+/g, ' ').trim()
+
+  return {
+    name: name || label.trim(),
+    badges
+  }
+}
+
+const getPortBadgeClass = (badge: string) => {
+  switch (badge) {
+    case '西ノ島町':
+      return 'bg-emerald-50 text-emerald-700 ring-emerald-200 dark:bg-emerald-900/30 dark:text-emerald-200 dark:ring-emerald-800'
+    case '海士町':
+      return 'bg-sky-50 text-sky-700 ring-sky-200 dark:bg-sky-900/30 dark:text-sky-200 dark:ring-sky-800'
+    case '知夫村':
+      return 'bg-red-50 text-red-700 ring-red-200 dark:bg-red-900/30 dark:text-red-200 dark:ring-red-800'
+    case '隠岐の島町':
+      return 'bg-amber-50 text-amber-800 ring-amber-200 dark:bg-amber-900/30 dark:text-amber-200 dark:ring-amber-800'
+    default:
+      return 'bg-app-surface-2 text-app-muted ring-app-border/70'
+  }
+}
+
+const departureLabelParts = computed(() => getPortLabelParts(departure.value))
+const arrivalLabelParts = computed(() => getPortLabelParts(arrival.value))
 
 const todayString = computed(() => {
   // JST基準で本日の日付を取得（海外端末でも常にJST）
