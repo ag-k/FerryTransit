@@ -18,15 +18,34 @@
     <!-- Fare tables -->
     <div v-else>
       <!-- Tab navigation -->
-      <div class="mb-6 border-b border-gray-200 dark:border-gray-700">
-        <nav class="-mb-px flex overflow-x-auto scrollbar-hide" aria-label="Tabs"
-          style="scrollbar-width: none; -ms-overflow-style: none;">
-          <button v-for="tab in tabs" :key="tab.id" :class="[
-            activeTab === tab.id
-              ? 'border-blue-500 text-blue-700 dark:text-blue-400'
-              : 'border-transparent text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-300 hover:border-gray-300 dark:hover:border-gray-600',
-            'whitespace-nowrap py-4 px-1 border-b-2 font-medium text-sm transition-colors flex-shrink-0 mx-4 first:ml-0 last:mr-0'
-          ]" style="-webkit-user-select: none;" @click="activeTab = tab.id">
+      <div
+        ref="tabBarRef"
+        class="sticky top-0 z-20 mb-6 border-b border-gray-200 dark:border-gray-700 bg-white/90 dark:bg-gray-900/90 backdrop-blur shadow-sm"
+      >
+        <nav
+          class="-mb-px flex gap-1 overflow-x-auto scrollbar-hide"
+          aria-label="Tabs"
+          role="tablist"
+          style="scrollbar-width: none; -ms-overflow-style: none;"
+        >
+          <button
+            v-for="tab in tabs"
+            :key="tab.id"
+            type="button"
+            role="tab"
+            :id="`fare-tab-${tab.id}`"
+            :aria-controls="`fare-tabpanel-${tab.id}`"
+            :aria-selected="activeTab === tab.id"
+            :tabindex="activeTab === tab.id ? 0 : -1"
+            :class="[
+              'flex-shrink-0 select-none whitespace-nowrap rounded-t-lg border px-4 py-2.5 text-sm font-semibold transition-colors',
+              'focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 focus-visible:ring-offset-2 dark:focus-visible:ring-offset-gray-900',
+              activeTab === tab.id
+                ? 'border-gray-200 border-b-white bg-white text-blue-700 dark:border-gray-700 dark:border-b-gray-900 dark:bg-gray-900 dark:text-blue-300'
+                : 'border-transparent bg-transparent text-gray-600 hover:bg-gray-50 hover:text-gray-900 dark:text-gray-300 dark:hover:bg-gray-800/50 dark:hover:text-white'
+            ]"
+            @click="activeTab = tab.id"
+          >
             {{ $t(tab.nameKey) }}
           </button>
         </nav>
@@ -37,7 +56,14 @@
       </p>
 
       <!-- Oki Kisen Ferry -->
-      <div v-show="activeTab === 'okiKisen'" class="mb-12">
+      <div
+        v-show="activeTab === 'okiKisen'"
+        id="fare-tabpanel-okiKisen"
+        role="tabpanel"
+        tabindex="0"
+        aria-labelledby="fare-tab-okiKisen"
+        class="mb-12"
+      >
         <div class="mb-4">
           <div class="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
             <h3 class="text-xl font-medium dark:text-white">{{ $t('OKI_KISEN_FERRY') }}</h3>
@@ -330,7 +356,14 @@
       </div>
 
       <!-- Naiko Sen (Ferry Dozen / Isokaze) -->
-      <div v-show="activeTab === 'naikoSen'" class="mb-12">
+      <div
+        v-show="activeTab === 'naikoSen'"
+        id="fare-tabpanel-naikoSen"
+        role="tabpanel"
+        tabindex="0"
+        aria-labelledby="fare-tab-naikoSen"
+        class="mb-12"
+      >
         <div class="mb-4">
           <div class="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
             <h3 class="text-xl font-medium dark:text-white">{{ $t('NAIKO_SEN') }}</h3>
@@ -499,7 +532,14 @@
       </div>
 
       <!-- Rainbow Jet -->
-      <div v-show="activeTab === 'rainbowJet'" class="mb-12">
+      <div
+        v-show="activeTab === 'rainbowJet'"
+        id="fare-tabpanel-rainbowJet"
+        role="tabpanel"
+        tabindex="0"
+        aria-labelledby="fare-tab-rainbowJet"
+        class="mb-12"
+      >
         <div class="mb-4">
           <div class="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
             <h3 class="text-xl font-medium dark:text-white">{{ $t('RAINBOWJET') }}</h3>
@@ -660,12 +700,30 @@ const { t, te } = useI18n({ useScope: 'global' })
 
 // State
 const activeTab = ref('okiKisen')
+const tabBarRef = ref<HTMLElement | null>(null)
 const okiKisenFares = ref<any[]>([])
 const naikoSenFares = ref<any[]>([])
 const rainbowJetFares = ref<any[]>([])
 const innerIslandFare = ref<any>(null)
 const innerIslandVehicleFare = ref<any>(null)
 const showVehicleNotes = ref(false)
+
+watch(
+  activeTab,
+  async () => {
+    if (!process.client) return
+    await nextTick()
+    const el = tabBarRef.value
+    if (el && typeof el.scrollIntoView === 'function') {
+      requestAnimationFrame(() => {
+        el.scrollIntoView({ behavior: 'smooth', block: 'start' })
+      })
+      return
+    }
+    window.scrollTo({ top: 0, behavior: 'smooth' })
+  },
+  { flush: 'post' }
+)
 
 // Seat class definitions
 const seatClasses = [
@@ -1116,3 +1174,13 @@ useHead({
   title: `${useNuxtApp().$i18n.t('FARE_TABLE')} - ${useNuxtApp().$i18n.t('TITLE')}`
 })
 </script>
+
+<style scoped>
+:deep(td) {
+  background-color: #fff;
+}
+
+:deep(th) {
+  font-weight: 700;
+}
+</style>
