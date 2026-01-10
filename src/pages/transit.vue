@@ -62,24 +62,38 @@
 
     <!-- Search Results -->
     <div v-if="searchResults.length > 0">
-      <div class="flex flex-col md:flex-row md:items-center md:justify-between gap-3 mb-4">
+      <div class="flex flex-row items-center justify-between gap-3 mb-4 flex-wrap">
         <h3 class="text-lg font-medium text-gray-900 dark:text-gray-100">
           {{ $t('SEARCH_RESULTS') }}
         </h3>
         <div class="flex flex-col md:flex-row md:items-center gap-2 md:gap-3">
-          <span class="text-sm font-medium text-gray-700 dark:text-gray-300">
+          <span class="hidden md:inline text-sm font-medium text-gray-700 dark:text-gray-300">
             {{ $t('SORT_ORDER') }}
           </span>
-          <div class="flex flex-wrap gap-2" role="tablist" :aria-label="$t('SORT_ORDER')">
-            <button v-for="option in sortOptions" :key="option.value" type="button" role="tab"
-              :aria-selected="sortOption === option.value"
-              class="px-3 py-2 text-sm font-medium rounded-md border transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-app-primary/60 flex items-center justify-center"
-              :class="sortOption === option.value
-                ? 'bg-app-primary text-white border-app-primary shadow-sm'
-                : 'border-app-primary text-app-primary bg-white dark:bg-gray-800 hover:bg-app-primary/10 dark:hover:bg-app-primary/20'"
-              @click="sortOption = option.value">
-              {{ $t(option.labelKey) }}
-            </button>
+          <div class="w-full md:w-auto">
+            <div class="md:hidden">
+              <label class="sr-only" :for="sortSelectId">{{ $t('SORT_ORDER') }}</label>
+              <select
+                :id="sortSelectId"
+                v-model="sortOption"
+                class="w-full px-3 py-2 text-sm font-medium rounded-md border border-app-primary text-app-primary bg-white dark:bg-gray-800 transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-app-primary/60"
+              >
+                <option v-for="option in sortOptions" :key="option.value" :value="option.value">
+                  {{ $t(option.labelKey) }}
+                </option>
+              </select>
+            </div>
+            <div class="hidden md:flex flex-wrap gap-2" role="tablist" :aria-label="$t('SORT_ORDER')">
+              <button v-for="option in sortOptions" :key="option.value" type="button" role="tab"
+                :aria-selected="sortOption === option.value"
+                class="px-3 py-2 text-sm font-medium rounded-md border transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-app-primary/60 flex items-center justify-center"
+                :class="sortOption === option.value
+                  ? 'bg-app-primary text-white border-app-primary shadow-sm'
+                  : 'border-app-primary text-app-primary bg-white dark:bg-gray-800 hover:bg-app-primary/10 dark:hover:bg-app-primary/20'"
+                @click="sortOption = option.value">
+                {{ $t(option.labelKey) }}
+              </button>
+            </div>
           </div>
         </div>
       </div>
@@ -389,6 +403,7 @@ const arrival = ref(ferryStore?.arrival || '')
 const date = ref(new Date())
 const time = ref('')
 const timeInputId = 'transit-time-input'
+const sortSelectId = 'transit-sort-select'
 const isArrivalMode = ref(false)
 const historySearchedAt = ref<Date | null>(null)
 
