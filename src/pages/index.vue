@@ -293,7 +293,7 @@
 
 <script setup lang="ts">
 import { nextTick, onMounted, ref, computed, watch, unref } from 'vue'
-import { useHead, useI18n, useRoute, useRouter } from '#imports'
+import { useHead, useI18n, useRoute, useRouter, useLocalePath } from '#imports'
 import { useFerryStore } from '@/stores/ferry'
 import { useHistoryStore } from '@/stores/history'
 import { useSettingsStore } from '@/stores/settings'
@@ -347,6 +347,7 @@ const selectedDateString = computed(() => {
 })
 
 const { locale, t } = useI18n()
+const localePath = useLocalePath()
 const headerDateLabel = computed(() => {
   const { year, month, day } = getJstDateParts(selectedDate.value)
   // JSTの暦日を UTC の Date として組み立てて曜日を安定取得
@@ -650,7 +651,7 @@ const navigateToTransit = () => {
   const dateStr = `${year}-${month}-${day}`
 
   router.push({
-    path: '/transit',
+    path: localePath('/transit'),
     query: {
       departure: departure.value,
       arrival: arrival.value,
