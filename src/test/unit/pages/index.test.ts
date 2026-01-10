@@ -11,6 +11,7 @@ vi.mock("#imports", () => ({
     locale: { value: "ja" },
     t: (key: string) => key,
   }),
+  useLocalePath: () => (path: string) => path,
   useRoute: () => (global as any).useRoute(),
   useRouter: () => (global as any).useRouter(),
 }));
