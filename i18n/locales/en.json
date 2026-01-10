@@ -518,6 +518,15 @@
       "byBus": "By Bus",
       "byCar": "By Car",
       "walking": "Walking"
+    },
+    "modal": {
+      "tabsLabel": "Tabs",
+      "noMap": "No map information available.",
+      "boardingTitle": "Boarding points",
+      "reservationRequired": "Reservation required",
+      "reference": "Reference",
+      "target": "For:",
+      "pinMissing": "(Pin location not available)"
     }
   },
   "admin": {

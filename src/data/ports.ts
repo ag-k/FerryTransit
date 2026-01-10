@@ -31,17 +31,23 @@ export const PORTS_DATA: Record<string, Port> = {
       {
         shipIds: ["FERRY_OKI", "FERRY_SHIRASHIMA", "FERRY_KUNIGA"],
         labelJa: "隠岐汽船フェリー（フェリーおき等）",
+        labelEn: "Oki Kisen Ferry (Ferry Oki, etc.)",
         placeJa: "七類港フェリーターミナル（メテオプラザ）",
+        placeEn: "Shichirui Port Ferry Terminal (Meteo Plaza)",
         location: { lat: 35.5712702, lng: 133.2297413 },
         noteJa: "乗船手続きはターミナル窓口・案内表示をご確認ください。",
+        noteEn: "Please check the terminal counter and information signs for boarding procedures.",
         sourceUrl: "https://www.oki-kisen.co.jp/terminal/"
       },
       {
         shipIds: ["RAINBOWJET"],
         labelJa: "高速船レインボージェット",
+        labelEn: "High-speed ship Rainbow Jet",
         placeJa: "七類港フェリーターミナル（メテオプラザ）",
+        placeEn: "Shichirui Port Ferry Terminal (Meteo Plaza)",
         location: { lat: 35.5712702, lng: 133.2297413 },
         noteJa: "乗船手続きはターミナル窓口・案内表示をご確認ください。",
+        noteEn: "Please check the terminal counter and information signs for boarding procedures.",
         sourceUrl: "https://www.oki-kisen.co.jp/terminal/"
       }
     ]
@@ -76,17 +82,23 @@ export const PORTS_DATA: Record<string, Port> = {
       {
         shipIds: ["FERRY_OKI", "FERRY_SHIRASHIMA", "FERRY_KUNIGA"],
         labelJa: "隠岐汽船フェリー（フェリーおき等）",
+        labelEn: "Oki Kisen Ferry (Ferry Oki, etc.)",
         placeJa: "境港旅客ターミナル2F",
+        placeEn: "Sakaiminato Passenger Terminal 2F",
         location: { lat: 35.5453155, lng: 133.2227637 },
         noteJa: "乗船手続きは窓口・案内表示をご確認ください。",
+        noteEn: "Please check the counter and information signs for boarding procedures.",
         sourceUrl: "https://www.oki-kisen.co.jp/terminal/"
       },
       {
         shipIds: ["RAINBOWJET"],
         labelJa: "高速船レインボージェット",
+        labelEn: "High-speed ship Rainbow Jet",
         placeJa: "境港旅客ターミナル前岸壁",
+        placeEn: "Sakaiminato Passenger Terminal Front Wharf",
         location: { lat: 35.5453155, lng: 133.2227637 },
         noteJa: "乗船手続きは窓口・案内表示をご確認ください。",
+        noteEn: "Please check the counter and information signs for boarding procedures.",
         sourceUrl: "https://www.oki-kisen.co.jp/terminal/"
       }
     ]
@@ -121,17 +133,23 @@ export const PORTS_DATA: Record<string, Port> = {
       {
         shipIds: ["FERRY_OKI", "FERRY_SHIRASHIMA", "FERRY_KUNIGA"],
         labelJa: "隠岐汽船フェリー（フェリーおき等）",
+        labelEn: "Oki Kisen Ferry (Ferry Oki, etc.)",
         placeJa: "西郷港フェリーターミナル",
+        placeEn: "Saigo Port Ferry Terminal",
         location: { lat: 36.203404, lng: 133.335062 },
         noteJa: "フェリー・高速船切符売場にて乗船券をご購入ください",
+        noteEn: "Please purchase your boarding ticket at the ferry/high-speed ship ticket counter.",
         sourceUrl: "https://www.oki-kisen.co.jp/terminal/"
       },
       {
         shipIds: ["RAINBOWJET"],
         labelJa: "高速船レインボージェット",
+        labelEn: "High-speed ship Rainbow Jet",
         placeJa: "西郷港（高速船のりば）",
+        placeEn: "Saigo Port (high-speed ship boarding area)",
         location: { lat: 36.203404, lng: 133.335062 },
         noteJa: "フェリー・高速船切符売場にて予約番号を伝えて乗船券をご購入ください",
+        noteEn: "Please present your reservation number and purchase a boarding ticket at the ferry/high-speed ship ticket counter.",
         sourceUrl: "https://www.oki-kisen.co.jp/terminal/"
       }
     ]
@@ -166,28 +184,36 @@ export const PORTS_DATA: Record<string, Port> = {
       {
         shipIds: ["FERRY_OKI", "FERRY_SHIRASHIMA", "FERRY_KUNIGA"],
         labelJa: "隠岐汽船フェリー（フェリーおき等）",
+        labelEn: "Oki Kisen Ferry (Ferry Oki, etc.)",
         placeJa: "菱浦港（隠岐汽船フェリー乗り場）",
+        placeEn: "Hishiura Port (Oki Kisen ferry boarding area)",
         location: { lat: 36.1048509, lng: 133.0769833 },
         sourceUrl: "https://www.oki-kisen.co.jp/terminal/"
       },
       {
         shipIds: ["RAINBOWJET"],
         labelJa: "高速船レインボージェット",
+        labelEn: "High-speed ship Rainbow Jet",
         placeJa: "菱浦港（レインボージェット乗り場）",
+        placeEn: "Hishiura Port (Rainbow Jet boarding area)",
         location: { lat: 36.1048509, lng: 133.0769833 },
         sourceUrl: "https://www.oki-kisen.co.jp/terminal/"
       },
       {
         shipIds: ["ISOKAZE", "ISOKAZE_EX"],
         labelJa: "内航船いそかぜ",
+        labelEn: "Inter-island ship Isokaze",
         placeJa: "菱浦港内（いそかぜ乗り場）",
+        placeEn: "Hishiura Port (Isokaze boarding area)",
         location: { lat: 36.1056776, lng: 133.0766876 },
         sourceUrl: "https://www.okikankou.com/inter-island-ferry/"
       },
       {
         shipIds: ["FERRY_DOZEN"],
         labelJa: "フェリーどうぜん（内航船）",
+        labelEn: "Ferry Dozen (inter-island)",
         placeJa: "菱浦港内（どうぜん乗り場）",
+        placeEn: "Hishiura Port (Dozen boarding area)",
         location: { lat: 36.1054527, lng: 133.0764842 },
         sourceUrl: "https://www.okikankou.com/inter-island-ferry/"
       }
@@ -223,30 +249,40 @@ export const PORTS_DATA: Record<string, Port> = {
       {
         shipIds: ["FERRY_OKI", "FERRY_SHIRASHIMA", "FERRY_KUNIGA"],
         labelJa: "隠岐汽船フェリー（フェリーおき等）",
+        labelEn: "Oki Kisen Ferry (Ferry Oki, etc.)",
         placeJa: "別府港第一ターミナルビル2F",
+        placeEn: "Beppu Port First Terminal Building 2F",
         noteJa: "チケットは別府港第一ターミナルビル1Fにてご購入ください。",
+        noteEn: "Tickets can be purchased on the 1F of the Beppu Port First Terminal Building.",
         location: { lat: 36.1078165, lng: 133.0417934 },
         sourceUrl: "https://www.oki-kisen.co.jp/terminal/"
       },
       {
         shipIds: ["ISOKAZE", "ISOKAZE_EX"],
         labelJa: "内航船いそかぜ",
+        labelEn: "Inter-island ship Isokaze",
         placeJa: "別府港 ターミナルビルから徒歩約2分（いそかぜ乗り場）",
+        placeEn: "About 2 minutes on foot from Beppu Port Terminal Building (Isokaze boarding area)",
         location: { lat: 36.1073082, lng: 133.0421124 },
         sourceUrl: "https://bewave.jp/oki/access/beppu.html"
       },
       {
         shipIds: ["FERRY_DOZEN"],
         labelJa: "フェリーどうぜん（内航船）",
+        labelEn: "Ferry Dozen (inter-island)",
         placeJa: "別府交通センター",
+        placeEn: "Beppu Transportation Center",
         location: { lat: 36.1088267, lng: 133.0411866 },
         sourceUrl: "https://bewave.jp/oki/access/beppu.html"
       },
       {
         shipIds: ["RAINBOWJET"],
         labelJa: "高速船レインボージェット",
+        labelEn: "High-speed ship Rainbow Jet",
         placeJa: "別府港ターミナルビルから徒歩3分(レインボージェット乗り場)",
+        placeEn: "3 minutes on foot from Beppu Port Terminal Building (Rainbow Jet boarding area)",
         noteJa: "[要予約] チケットは別府港第一ターミナルビル1Fにてご購入ください。",
+        noteEn: "[Reservation required] Tickets can be purchased on the 1F of the Beppu Port First Terminal Building.",
         location: { lat: 36.1072822, lng: 133.0432690 },
         sourceUrl: "https://www.oki-kisen.co.jp/terminal/"
       }
@@ -282,21 +318,27 @@ export const PORTS_DATA: Record<string, Port> = {
       {
         shipIds: ["FERRY_OKI", "FERRY_SHIRASHIMA", "FERRY_KUNIGA"],
         labelJa: "隠岐汽船フェリー（フェリーおき等）",
+        labelEn: "Oki Kisen Ferry (Ferry Oki, etc.)",
         placeJa: "来居港フェリーターミナル",
+        placeEn: "Kuri Port Ferry Terminal",
         location: { lat: 36.0249446, lng: 133.03939755 },
         sourceUrl: "https://www.oki-kisen.co.jp/terminal/"
       },
       {
         shipIds: ["ISOKAZE", "ISOKAZE_EX"],
         labelJa: "内航船いそかぜ",
+        labelEn: "Inter-island ship Isokaze",
         placeJa: "来居港内（いそかぜ乗り場）",
+        placeEn: "Kuri Port (Isokaze boarding area)",
         location: { lat: 36.0243794, lng: 133.0401959 },
         sourceUrl: "https://www.okikankou.com/inter-island-ferry/"
       },
       {
         shipIds: ["FERRY_DOZEN"],
         labelJa: "フェリーどうぜん（内航船）",
+        labelEn: "Ferry Dozen (inter-island)",
         placeJa: "来居港内（どうぜん乗り場）",
+        placeEn: "Kuri Port (Dozen boarding area)",
         location: { lat: 36.0247636, lng: 133.0400763 },
         sourceUrl: "https://www.okikankou.com/inter-island-ferry/"
       }

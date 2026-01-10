@@ -21,11 +21,17 @@
              @click.stop>
           <!-- Header -->
           <div class="flex items-center justify-between p-4 sm:p-4 border-b border-app-border">
-            <h3 class="text-lg sm:text-xl font-semibold">{{ headerTitle }}</h3>
+            <h3 class="text-lg sm:text-xl font-semibold">
+              <span v-if="type === 'port'" class="flex flex-wrap items-center gap-2">
+                <span>{{ headerTitleParts.name }}</span>
+                <PortBadges :badges="headerTitleParts.badges" />
+              </span>
+              <span v-else>{{ headerTitle }}</span>
+            </h3>
             <button 
               type="button" 
               class="p-3 -m-3 sm:p-2 sm:-m-2 hover:bg-app-surface-2 rounded-lg transition-colors touch-manipulation"
-              aria-label="Close"
+              :aria-label="t('CLOSE')"
               @click="handleClose"
             >
               <svg class="w-6 h-6" fill="currentColor" viewBox="0 0 20 20">
@@ -50,7 +56,7 @@
             <div v-else-if="type === 'port'">
               <!-- Tab navigation for HONDO (mainland ports) -->
               <div v-if="portId === 'HONDO'" class="mb-4 border-b border-app-border">
-                <nav class="flex space-x-1" aria-label="Tabs">
+                <nav class="flex space-x-1" :aria-label="t('port.modal.tabsLabel')">
                   <button
                     v-for="tab in hondoTabs"
                     :key="tab.id"
@@ -79,14 +85,14 @@
                     <!-- Backward compatibility: legacy iframe HTML -->
                     <div v-else-if="content" class="legacy-map-iframe" v-html="content"></div>
                     <div v-else class="p-4 text-sm text-app-muted">
-                      地図情報がありません。
+                      {{ t('port.modal.noMap') }}
                     </div>
                   </div>
                 </div>
 
                 <!-- Boarding info (PC: right side) -->
                 <div v-if="portBoarding.length" class="mt-4 sm:mt-0 sm:w-80">
-                  <h4 class="text-base font-semibold text-app-fg">乗り場</h4>
+                  <h4 class="text-base font-semibold text-app-fg">{{ t('port.modal.boardingTitle') }}</h4>
                   <div class="mt-2 space-y-3 sm:max-h-[420px] overflow-y-auto pr-1">
                     <div
                       v-for="item in portBoarding"
@@ -106,7 +112,7 @@
                             {{ item.label }}
                             <span v-if="item.shipIds.includes('RAINBOWJET')" class="inline-flex items-center gap-1 px-1.5 py-0.5 text-xs font-medium bg-yellow-100 text-yellow-800 dark:bg-yellow-900/30 dark:text-yellow-300 rounded">
                               <Icon name="heroicons:exclamation-circle" class="w-3.5 h-3.5" />
-                              要予約
+                              {{ t('port.modal.reservationRequired') }}
                             </span>
                           </div>
                           <div class="mt-1 inline-flex items-start gap-1 text-xs text-app-muted">
@@ -124,18 +130,18 @@
                           rel="noopener noreferrer"
                           @click.stop
                         >
-                          参照
+                          {{ t('port.modal.reference') }}
                         </a>
                       </div>
 
                       <div v-if="Array.isArray(item.shipIds) && item.shipIds.length" class="mt-2 text-xs text-app-muted">
-                        対象:
+                        {{ t('port.modal.target') }}
                         <span class="ml-1">
                           {{ item.shipIds.map((id: string) => (nuxtApp as any).$i18n?.t?.(id) ?? id).join(' / ') }}
                         </span>
                       </div>
                       <div v-if="!item.location" class="mt-1 text-xs text-app-muted">
-                        （ピン位置未登録）
+                        {{ t('port.modal.pinMissing') }}
                       </div>
                       <div v-if="item.note" class="mt-1 text-xs text-app-muted">
                         {{ item.note }}
@@ -162,6 +168,7 @@
 
 <script setup lang="ts">
 import PortAreaLeafletMap from '@/components/map/PortAreaLeafletMap.client.vue'
+import PortBadges from '@/components/common/PortBadges.vue'
 import { PORTS_DATA } from '~/data/ports'
 
 interface Props {
@@ -181,6 +188,7 @@ const props = withDefaults(defineProps<Props>(), {
 })
 
 const nuxtApp = useNuxtApp()
+const { t } = useI18n()
 const currentLocale = computed(() => String((nuxtApp as any)?.$i18n?.locale?.value || 'ja'))
 
 const selectedBoardingKey = ref<string>('')
@@ -195,11 +203,11 @@ const hondoTabs = computed(() => {
   return [
     {
       id: 'HONDO_SHICHIRUI' as const,
-      name: String(isJa ? shichirui?.name : shichirui?.nameEn || shichirui?.name || '七類港')
+      name: String(isJa ? shichirui?.name : shichirui?.nameEn || shichirui?.name || t('HONDO_SHICHIRUI'))
     },
     {
       id: 'HONDO_SAKAIMINATO' as const,
-      name: String(isJa ? sakaiminato?.name : sakaiminato?.nameEn || sakaiminato?.name || '境港')
+      name: String(isJa ? sakaiminato?.name : sakaiminato?.nameEn || sakaiminato?.name || t('HONDO_SAKAIMINATO'))
     }
   ]
 })
@@ -241,6 +249,38 @@ const headerTitle = computed(() => {
   }
   // No parentheses → just ensure "港" suffix if missing
   return raw.endsWith('港') ? raw : `${raw}港`
+})
+
+const getBadgeList = (label: string) => {
+  const parenRegex = /[（(]([^）)]+)[）)]/g
+  const badges: string[] = []
+  let match = parenRegex.exec(label)
+  while (match) {
+    const value = match[1]?.trim()
+    if (value) badges.push(value)
+    match = parenRegex.exec(label)
+  }
+  return badges
+}
+
+const headerTitleParts = computed(() => {
+  if (props.type !== 'port') {
+    return { name: headerTitle.value, badges: [] }
+  }
+  const id = currentPortId.value
+  const isJa = currentLocale.value.startsWith('ja')
+  if (!id) return { name: currentPortTitle.value, badges: [] }
+
+  const label = String(t(id))
+  const parenRegex = /[（(]([^）)]+)[）)]/g
+  const base = label.replace(parenRegex, '').replace(/\s+/g, ' ').trim()
+  const baseName = base || currentPortTitle.value
+  const name = isJa && baseName && !baseName.endsWith('港') ? `${baseName}港` : baseName
+
+  return {
+    name,
+    badges: getBadgeList(label)
+  }
 })
 
 // Current port zoom
