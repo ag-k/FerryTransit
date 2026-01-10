@@ -23,7 +23,7 @@ export const PORTS_DATA: Record<string, Port> = {
       byBus: "JR松江駅から約40分",
       byBusEn: "About 40 minutes from JR Matsue Station",
       byCar: "松江市内から約30分",
-      byCarEn: "About 30 minutes from Matsue City",
+      byCarEn: "About 30 minutes from Matsue",
       walking: "最寄りのバス停から徒歩3分",
       walkingEn: "3 minutes walk from the nearest bus stop",
     },

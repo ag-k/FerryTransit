@@ -1,10 +1,10 @@
 <template>
   <div class="favorites-manager">
-    <div class="flex items-center justify-between mb-6">
-      <h1 class="hidden lg:block text-2xl font-bold dark:text-white">{{ $t('favorites.title') }}</h1>
+    <div class="flex items-center justify-between mb-6 gap-3">
+      <h1 class="text-xl lg:text-2xl font-bold dark:text-white">{{ $t('favorites.title') }}</h1>
       <button
         @click="editMode = !editMode"
-        class="px-4 py-2 bg-gray-100 dark:bg-gray-600 text-gray-700 dark:text-gray-100 rounded-md hover:bg-gray-200 dark:hover:bg-gray-500 transition-colors duration-200 flex items-center space-x-2"
+        class="px-4 py-2 bg-gray-100 dark:bg-gray-600 text-gray-700 dark:text-gray-100 rounded-md hover:bg-gray-200 dark:hover:bg-gray-500 transition-colors duration-200 flex items-center space-x-2 shrink-0"
       >
         <svg
           class="w-5 h-5"

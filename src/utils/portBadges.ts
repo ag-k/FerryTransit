@@ -13,8 +13,8 @@ export const getPortBadgeClass = (badge: string) => {
     case 'Okinoshima':
     case 'Okinoshima Town':
       return 'bg-amber-50 text-amber-800 ring-amber-200 dark:bg-amber-900/30 dark:text-amber-200 dark:ring-amber-800'
-    case 'Matsue City':
-    case 'Sakaiminato City':
+    case 'Matsue':
+    case 'Sakaiminato':
       return 'bg-gray-100 text-gray-700 ring-gray-200 dark:bg-gray-800/60 dark:text-gray-200 dark:ring-gray-700'
     default:
       return 'bg-app-surface-2 text-app-muted ring-app-border/70'
