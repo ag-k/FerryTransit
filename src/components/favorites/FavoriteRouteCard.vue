@@ -132,9 +132,24 @@
       </PrimaryButton>
       <button
         @click="showDeleteConfirm"
-        class="px-3 py-2 bg-gray-100 dark:bg-gray-600 text-gray-700 dark:text-gray-100 rounded-md hover:bg-gray-200 dark:hover:bg-gray-500 transition-colors duration-200 text-sm"
+        class="px-3 py-2 bg-gray-100 dark:bg-gray-600 text-gray-700 dark:text-gray-100 rounded-md hover:bg-gray-200 dark:hover:bg-gray-500 transition-colors duration-200 text-sm flex items-center justify-center"
+        :aria-label="$t('favorites.remove')"
       >
-        {{ $t('favorites.remove') }}
+        <svg
+          class="w-4 h-4"
+          fill="none"
+          stroke="currentColor"
+          viewBox="0 0 24 24"
+          aria-hidden="true"
+        >
+          <path
+            stroke-linecap="round"
+            stroke-linejoin="round"
+            stroke-width="2"
+            d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6M9 7h6m-6 0a1 1 0 011-1h4a1 1 0 011 1m-6 0H6m9 0h3"
+          />
+        </svg>
+        <span class="sr-only">{{ $t('favorites.remove') }}</span>
       </button>
     </div>
     
