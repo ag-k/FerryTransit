@@ -12,7 +12,7 @@
 </template>
 
 <script setup lang="ts">
-import { computed, useAttrs } from 'vue'
+import { computed, resolveComponent, useAttrs } from 'vue'
 import type { RouteLocationRaw } from 'vue-router'
 
 type Size = 'sm' | 'md' | 'lg'
@@ -40,9 +40,10 @@ const emit = defineEmits<{
 }>()
 
 const attrs = useAttrs()
+const nuxtLink = resolveComponent('NuxtLink')
 
 const isNativeButton = computed(() => !props.to && !props.href)
-const componentTag = computed(() => (props.href ? 'a' : props.to ? 'NuxtLink' : 'button'))
+const componentTag = computed(() => (props.href ? 'a' : props.to ? nuxtLink : 'button'))
 
 const componentAttrs = computed(() => {
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
