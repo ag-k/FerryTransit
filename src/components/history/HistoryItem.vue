@@ -4,21 +4,65 @@
   >
     <div class="flex items-start justify-between">
       <div class="flex-1">
-        <div class="flex items-center space-x-2 mb-2">
-          <svg
-            class="w-5 h-5 text-gray-400 dark:text-gray-500"
-            fill="none"
-            stroke="currentColor"
-            viewBox="0 0 24 24"
-          >
-            <path
-              stroke-linecap="round"
-              stroke-linejoin="round"
-              stroke-width="2"
-              d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"
-            />
-          </svg>
-          <span class="text-sm text-gray-600 dark:text-gray-400">{{ formatDateTime(history.searchedAt) }}</span>
+        <div class="flex items-center justify-between mb-2">
+          <div class="flex items-center space-x-2">
+            <svg
+              class="w-5 h-5 text-gray-400 dark:text-gray-500"
+              fill="none"
+              stroke="currentColor"
+              viewBox="0 0 24 24"
+            >
+              <path
+                stroke-linecap="round"
+                stroke-linejoin="round"
+                stroke-width="2"
+                d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"
+              />
+            </svg>
+            <span class="text-sm text-gray-600 dark:text-gray-400">{{ formatDateTime(history.searchedAt) }}</span>
+          </div>
+          <div class="flex items-center gap-2 sm:hidden">
+            <button
+              class="inline-flex items-center justify-center rounded-md p-1.5 text-white bg-app-primary hover:bg-app-primary-2 shadow-sm ring-1 ring-black/5 dark:ring-white/10 focus:outline-none focus-visible:ring-2 focus-visible:ring-app-primary/60 focus-visible:ring-offset-2 focus-visible:ring-offset-app-bg transition active:scale-[0.98]"
+              @click="$emit('search')"
+              :aria-label="$t('history.searchAgain')"
+            >
+              <svg
+                class="w-4 h-4"
+                fill="none"
+                stroke="currentColor"
+                viewBox="0 0 24 24"
+                aria-hidden="true"
+              >
+                <path
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                  stroke-width="2"
+                  d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6"
+                />
+              </svg>
+            </button>
+            <button
+              class="inline-flex items-center justify-center rounded-md p-1.5 text-gray-700 bg-gray-100 hover:bg-gray-200 dark:text-gray-100 dark:bg-gray-600 dark:hover:bg-gray-500 shadow-sm ring-1 ring-black/5 dark:ring-white/10 focus:outline-none focus-visible:ring-2 focus-visible:ring-app-primary/60 focus-visible:ring-offset-2 focus-visible:ring-offset-app-bg transition active:scale-[0.98]"
+              @click="$emit('remove')"
+              :aria-label="$t('history.delete')"
+            >
+              <svg
+                class="w-4 h-4"
+                fill="none"
+                stroke="currentColor"
+                viewBox="0 0 24 24"
+                aria-hidden="true"
+              >
+                <path
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                  stroke-width="2"
+                  d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6M9 7h6m-6 0a1 1 0 011-1h4a1 1 0 011 1m-6 0H6m9 0h3"
+                />
+              </svg>
+            </button>
+          </div>
         </div>
 
         <div class="flex items-center space-x-2 mb-2">
@@ -69,12 +113,27 @@
         </div>
       </div>
 
-      <div class="flex flex-col sm:flex-row items-end sm:items-center space-y-2 sm:space-y-0 sm:space-x-2 ml-4">
+      <div class="hidden sm:flex flex-col sm:flex-row items-end sm:items-center space-y-2 sm:space-y-0 sm:space-x-2 ml-4">
         <button
           class="inline-flex items-center justify-center gap-2 font-medium rounded-lg shadow-sm ring-1 ring-black/5 dark:ring-white/10 focus:outline-none focus-visible:ring-2 focus-visible:ring-app-primary/60 focus-visible:ring-offset-2 focus-visible:ring-offset-app-bg transition active:scale-[0.98] disabled:opacity-50 disabled:cursor-not-allowed disabled:active:scale-100 text-white bg-app-primary hover:bg-app-primary-2 disabled:hover:bg-app-primary px-3 py-1.5 text-sm"
           @click="$emit('search')"
+          :aria-label="$t('history.searchAgain')"
         >
-          {{ $t('history.searchAgain') }}
+          <svg
+            class="w-4 h-4 sm:hidden"
+            fill="none"
+            stroke="currentColor"
+            viewBox="0 0 24 24"
+            aria-hidden="true"
+          >
+            <path
+              stroke-linecap="round"
+              stroke-linejoin="round"
+              stroke-width="2"
+              d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6"
+            />
+          </svg>
+          <span class="hidden sm:inline">{{ $t('history.searchAgain') }}</span>
         </button>
         <button
           class="px-3 py-1 bg-gray-100 dark:bg-gray-600 text-gray-700 dark:text-gray-100 rounded-md hover:bg-gray-200 dark:hover:bg-gray-500 transition-colors duration-200 text-sm flex items-center justify-center"
