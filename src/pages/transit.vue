@@ -167,16 +167,7 @@
                       <span class="group-hover:underline">
                         ⚓ {{ getPortLabelParts(route.segments[0].departure).name }}
                       </span>
-                      <span v-if="getPortLabelParts(route.segments[0].departure).badges.length" class="flex flex-wrap gap-1">
-                        <span
-                          v-for="badge in getPortLabelParts(route.segments[0].departure).badges"
-                          :key="badge"
-                          class="inline-flex items-center rounded-full px-2 py-0.5 text-[11px] font-semibold whitespace-nowrap ring-1 ring-inset"
-                          :class="getPortBadgeClass(badge)"
-                        >
-                          {{ badge }}
-                        </span>
-                      </span>
+                      <PortBadges :badges="getPortLabelParts(route.segments[0].departure).badges" class="flex flex-wrap gap-1" />
                     </a>
                   </td>
                   <td class="py-2"></td>
@@ -233,16 +224,7 @@
                         <span class="group-hover:underline">
                           ⚓ {{ getPortLabelParts(segment.arrival).name }}
                         </span>
-                        <span v-if="getPortLabelParts(segment.arrival).badges.length" class="flex flex-wrap gap-1">
-                          <span
-                            v-for="badge in getPortLabelParts(segment.arrival).badges"
-                            :key="badge"
-                            class="inline-flex items-center rounded-full px-2 py-0.5 text-[11px] font-semibold whitespace-nowrap ring-1 ring-inset"
-                            :class="getPortBadgeClass(badge)"
-                          >
-                            {{ badge }}
-                          </span>
-                        </span>
+                        <PortBadges :badges="getPortLabelParts(segment.arrival).badges" class="flex flex-wrap gap-1" />
                       </a>
                       <span class="text-xs text-app-muted ml-2">
                         ({{ $t('TRANSFER') }}) {{ formatTransferWaitTime(segment.arrivalTime, route.segments[segIndex +
@@ -262,16 +244,7 @@
                       <span class="group-hover:underline">
                         ⚓ {{ getPortLabelParts(route.segments[route.segments.length - 1].arrival).name }}
                       </span>
-                      <span v-if="getPortLabelParts(route.segments[route.segments.length - 1].arrival).badges.length" class="flex flex-wrap gap-1">
-                        <span
-                          v-for="badge in getPortLabelParts(route.segments[route.segments.length - 1].arrival).badges"
-                          :key="badge"
-                          class="inline-flex items-center rounded-full px-2 py-0.5 text-[11px] font-semibold whitespace-nowrap ring-1 ring-inset"
-                          :class="getPortBadgeClass(badge)"
-                        >
-                          {{ badge }}
-                        </span>
-                      </span>
+                      <PortBadges :badges="getPortLabelParts(route.segments[route.segments.length - 1].arrival).badges" class="flex flex-wrap gap-1" />
                     </a>
                   </td>
                   <td class="py-2 font-medium text-app-fg">
@@ -333,16 +306,7 @@
                   <strong>{{ formatTime(segment.departureTime) }}</strong><br>
                   <span class="inline-flex flex-col gap-1">
                     <span>⚓ {{ getPortLabelParts(segment.departure).name }}</span>
-                    <span v-if="getPortLabelParts(segment.departure).badges.length" class="flex flex-wrap gap-1">
-                      <span
-                        v-for="badge in getPortLabelParts(segment.departure).badges"
-                        :key="badge"
-                        class="inline-flex items-center rounded-full px-2 py-0.5 text-[11px] font-semibold whitespace-nowrap ring-1 ring-inset"
-                        :class="getPortBadgeClass(badge)"
-                      >
-                        {{ badge }}
-                      </span>
-                    </span>
+                    <PortBadges :badges="getPortLabelParts(segment.departure).badges" class="flex flex-wrap gap-1" />
                   </span>
                 </div>
                 <div class="md:col-span-1 text-center">
@@ -353,16 +317,7 @@
                   <strong>{{ formatTime(segment.arrivalTime) }}</strong><br>
                   <span class="inline-flex flex-col gap-1 items-end">
                     <span>⚓ {{ getPortLabelParts(segment.arrival).name }}</span>
-                    <span v-if="getPortLabelParts(segment.arrival).badges.length" class="flex flex-wrap gap-1">
-                      <span
-                        v-for="badge in getPortLabelParts(segment.arrival).badges"
-                        :key="badge"
-                        class="inline-flex items-center rounded-full px-2 py-0.5 text-[11px] font-semibold whitespace-nowrap ring-1 ring-inset"
-                        :class="getPortBadgeClass(badge)"
-                      >
-                        {{ badge }}
-                      </span>
-                    </span>
+                    <PortBadges :badges="getPortLabelParts(segment.arrival).badges" class="flex flex-wrap gap-1" />
                   </span>
                 </div>
               </div>
@@ -415,6 +370,7 @@ import DatePicker from '@/components/common/DatePicker.vue'
 import CommonShipModal from '@/components/common/ShipModal.vue'
 import StatusAlerts from '@/components/common/StatusAlerts.vue'
 import FavoriteButton from '@/components/favorites/FavoriteButton.vue'
+import PortBadges from '@/components/common/PortBadges.vue'
 import RouteMapModal from '@/components/map/RouteMapModal.vue'
 import Card from '@/components/common/Card.vue'
 import PrimaryButton from '@/components/common/PrimaryButton.vue'
@@ -505,21 +461,6 @@ const getPortLabelParts = (portId?: string) => {
   return {
     name: name || label.trim(),
     badges
-  }
-}
-
-const getPortBadgeClass = (badge: string) => {
-  switch (badge) {
-    case '西ノ島町':
-      return 'bg-emerald-50 text-emerald-700 ring-emerald-200 dark:bg-emerald-900/30 dark:text-emerald-200 dark:ring-emerald-800'
-    case '海士町':
-      return 'bg-sky-50 text-sky-700 ring-sky-200 dark:bg-sky-900/30 dark:text-sky-200 dark:ring-sky-800'
-    case '知夫村':
-      return 'bg-red-50 text-red-700 ring-red-200 dark:bg-red-900/30 dark:text-red-200 dark:ring-red-800'
-    case '隠岐の島町':
-      return 'bg-amber-50 text-amber-800 ring-amber-200 dark:bg-amber-900/30 dark:text-amber-200 dark:ring-amber-800'
-    default:
-      return 'bg-app-surface-2 text-app-muted ring-app-border/70'
   }
 }
 

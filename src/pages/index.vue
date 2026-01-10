@@ -160,16 +160,7 @@
                       <span class="leading-tight group-hover:underline">
                         {{ departureLabelParts.name }}
                       </span>
-                      <span v-if="departureLabelParts.badges.length" class="flex flex-wrap justify-end gap-1">
-                        <span
-                          v-for="badge in departureLabelParts.badges"
-                          :key="badge"
-                          class="inline-flex items-center rounded-full px-2 py-0.5 text-[11px] font-semibold whitespace-nowrap ring-1 ring-inset no-underline"
-                          :class="getPortBadgeClass(badge)"
-                        >
-                          {{ badge }}
-                        </span>
-                      </span>
+                      <PortBadges :badges="departureLabelParts.badges" class="flex flex-wrap justify-end gap-1" />
                     </a>
                   </th>
                   <th class="px-3 sm:px-4 py-3 text-right font-medium text-app-muted align-middle">
@@ -179,16 +170,7 @@
                       <span class="leading-tight group-hover:underline">
                         {{ arrivalLabelParts.name }}
                       </span>
-                      <span v-if="arrivalLabelParts.badges.length" class="flex flex-wrap justify-end gap-1">
-                        <span
-                          v-for="badge in arrivalLabelParts.badges"
-                          :key="badge"
-                          class="inline-flex items-center rounded-full px-2 py-0.5 text-[11px] font-semibold whitespace-nowrap ring-1 ring-inset no-underline"
-                          :class="getPortBadgeClass(badge)"
-                        >
-                          {{ badge }}
-                        </span>
-                      </span>
+                      <PortBadges :badges="arrivalLabelParts.badges" class="flex flex-wrap justify-end gap-1" />
                     </a>
                   </th>
                 </tr>
@@ -317,6 +299,7 @@ import { useHistoryStore } from '@/stores/history'
 import { useSettingsStore } from '@/stores/settings'
 import { useFerryData } from '@/composables/useFerryData'
 import FavoriteButton from '@/components/favorites/FavoriteButton.vue'
+import PortBadges from '@/components/common/PortBadges.vue'
 import TimetableMap from '@/components/map/TimetableMap.vue'
 import StatusAlerts from '@/components/common/StatusAlerts.vue'
 import DatePicker from '@/components/common/DatePicker.vue'
@@ -392,21 +375,6 @@ const getPortLabelParts = (port?: string) => {
   return {
     name: name || label.trim(),
     badges
-  }
-}
-
-const getPortBadgeClass = (badge: string) => {
-  switch (badge) {
-    case '西ノ島町':
-      return 'bg-emerald-50 text-emerald-700 ring-emerald-200 dark:bg-emerald-900/30 dark:text-emerald-200 dark:ring-emerald-800'
-    case '海士町':
-      return 'bg-sky-50 text-sky-700 ring-sky-200 dark:bg-sky-900/30 dark:text-sky-200 dark:ring-sky-800'
-    case '知夫村':
-      return 'bg-red-50 text-red-700 ring-red-200 dark:bg-red-900/30 dark:text-red-200 dark:ring-red-800'
-    case '隠岐の島町':
-      return 'bg-amber-50 text-amber-800 ring-amber-200 dark:bg-amber-900/30 dark:text-amber-200 dark:ring-amber-800'
-    default:
-      return 'bg-app-surface-2 text-app-muted ring-app-border/70'
   }
 }
 

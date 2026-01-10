@@ -112,16 +112,7 @@
                     >
                       <span class="flex items-center gap-3">
                         <span class="min-w-0 truncate">{{ getPortLabelParts(port).name }}</span>
-                        <span v-if="getPortLabelParts(port).badges.length" class="ml-auto flex items-center gap-1.5">
-                          <span
-                            v-for="badge in getPortLabelParts(port).badges"
-                            :key="badge"
-                            class="inline-flex items-center rounded-full px-2 py-0.5 text-[11px] font-semibold whitespace-nowrap ring-1 ring-inset"
-                            :class="getPortBadgeClass(badge)"
-                          >
-                            {{ badge }}
-                          </span>
-                        </span>
+                        <PortBadges :badges="getPortLabelParts(port).badges" class="ml-auto flex items-center gap-1.5" />
                       </span>
                     </button>
                   </div>
@@ -138,6 +129,7 @@
 <script setup lang="ts">
 import { useFerryStore } from '@/stores/ferry'
 import { useFavoriteStore } from '@/stores/favorite'
+import PortBadges from '@/components/common/PortBadges.vue'
 
 interface Props {
   modelValue: string
@@ -239,21 +231,6 @@ const getPortLabelParts = (port: string) => {
   return {
     name: name || label.trim(),
     badges
-  }
-}
-
-const getPortBadgeClass = (badge: string) => {
-  switch (badge) {
-    case '西ノ島町':
-      return 'bg-emerald-50 text-emerald-700 ring-emerald-200 dark:bg-emerald-900/30 dark:text-emerald-200 dark:ring-emerald-800'
-    case '海士町':
-      return 'bg-sky-50 text-sky-700 ring-sky-200 dark:bg-sky-900/30 dark:text-sky-200 dark:ring-sky-800'
-    case '知夫村':
-      return 'bg-red-50 text-red-700 ring-red-200 dark:bg-red-900/30 dark:text-red-200 dark:ring-red-800'
-    case '隠岐の島町':
-      return 'bg-amber-50 text-amber-800 ring-amber-200 dark:bg-amber-900/30 dark:text-amber-200 dark:ring-amber-800'
-    default:
-      return 'bg-app-surface-2 text-app-muted ring-app-border/70'
   }
 }
 
