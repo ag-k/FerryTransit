@@ -155,6 +155,18 @@ export interface SightseeingStatus {
   courseB: SightseeingTrip[];
 }
 
+/**
+ * Store上で保持する shipStatus（運航状況）全体の形
+ * - APIレスポンスは kunigaKankou が無い場合もあるため `StatusApiResponse` は optional のまま
+ * - UI/Store では常にキーを持つ形（null許容）に揃える
+ */
+export interface ShipStatusStoreState {
+  isokaze: ShipStatus | null;
+  dozen: ShipStatus | null;
+  ferry: FerryStatus | null;
+  kunigaKankou: SightseeingStatus | null;
+}
+
 // Search result interfaces
 export interface RouteSearchParams {
   departure: string;

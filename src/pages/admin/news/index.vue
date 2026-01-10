@@ -41,7 +41,7 @@
         </SecondaryButton>
         <PrimaryButton
           :disabled="isPublishing"
-          class="w-full sm:w-auto bg-purple-600 hover:bg-purple-700 disabled:hover:bg-purple-600"
+          class="w-full sm:w-auto"
           @click="publishNewsData"
         >
           <CloudArrowUpIcon class="h-5 w-5 inline mr-1" />

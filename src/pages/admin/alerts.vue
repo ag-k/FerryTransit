@@ -56,7 +56,6 @@
         </SecondaryButton>
         <PrimaryButton
           :disabled="isPublishing"
-          class="bg-purple-600 hover:bg-purple-700 disabled:hover:bg-purple-600"
           data-test="publish-button"
           @click="publishAlertData"
         >
@@ -65,7 +64,6 @@
         </PrimaryButton>
       </div>
       <PrimaryButton
-        class="bg-red-600 hover:bg-red-700 disabled:hover:bg-red-600"
         data-test="new-alert-button"
         @click="showAddModal = true"
       >

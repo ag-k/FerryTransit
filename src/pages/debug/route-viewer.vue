@@ -42,8 +42,11 @@ import Alert from '@/components/common/Alert.vue'
 import Card from '@/components/common/Card.vue'
 import PrimaryButton from '@/components/common/PrimaryButton.vue'
 import SecondaryButton from '@/components/common/SecondaryButton.vue'
+import { getGoogleMapsLocaleOptions } from '~/utils/googleMapsLocale'
 
 definePageMeta({ layout: 'default' })
+
+const { locale } = useI18n()
 
 const mapEl = ref<HTMLDivElement | null>(null)
 const map = ref<google.maps.Map | null>(null)
@@ -64,7 +67,8 @@ const initMap = async () => {
   }
   if (!mapEl.value) return
   try {
-    const loader = new Loader({ apiKey, version: 'weekly' })
+    const { language, region } = getGoogleMapsLocaleOptions(locale.value)
+    const loader = new Loader({ apiKey, version: 'weekly', language, region })
     await loader.load()
     map.value = new google.maps.Map(mapEl.value, {
       center: { lat: 36.0, lng: 133.2 },

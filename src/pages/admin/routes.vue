@@ -338,6 +338,8 @@ import {
   TransitionRoot,
 } from '@headlessui/vue'
 import { Loader } from '@googlemaps/js-api-loader'
+import { getGoogleMapsLocaleOptions } from '~/utils/googleMapsLocale'
+const { locale } = useI18n()
 import { getAuth } from 'firebase/auth'
 import { PORTS_DATA, ROUTES_DATA } from '~/data/ports'
 import type { RouteData, RoutesDataFile, RoutesMetadata } from '~/types/route'
@@ -648,10 +650,13 @@ const initGoogleMaps = async () => {
   }
 
   try {
+    const { language, region } = getGoogleMapsLocaleOptions(locale.value)
     const loader = new Loader({
       apiKey,
       version: 'weekly',
-      libraries: ['routes']
+      libraries: ['routes'],
+      language,
+      region
     })
 
     await loader.load()
@@ -718,7 +723,7 @@ const fetchRouteViaRoutesAPI = async (from: string, to: string): Promise<RouteDa
         travelMode: 'DRIVE', // DRIVEモードで海上ルートを取得
         polylineQuality: 'HIGH_QUALITY',
         polylineEncoding: 'ENCODED_POLYLINE',
-        languageCode: 'ja',
+        languageCode: getGoogleMapsLocaleOptions(locale.value).routesApiLanguageCode,
         units: 'METRIC'
       }
 

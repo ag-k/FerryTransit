@@ -2,6 +2,7 @@ import { useFerryStore } from '@/stores/ferry'
 import { useUIStore } from '@/stores/ui'
 import { useTimetableLoader } from '@/composables/useTimetableLoader'
 import { createLogger } from '~/utils/logger'
+import type { ShipStatusStoreState } from '@/types'
 
 export const useFerryData = () => {
   // Initialize stores only on client side
@@ -138,7 +139,12 @@ export const useFerryData = () => {
     // Store states
     timetableData: computed(() => ferryStore?.timetableData || []),
     filteredTimetable: computed(() => ferryStore?.filteredTimetable || []),
-    shipStatus: computed(() => ferryStore?.shipStatus || {}),
+    shipStatus: computed<ShipStatusStoreState>(() => ferryStore?.shipStatus ?? ({
+      isokaze: null,
+      dozen: null,
+      ferry: null,
+      kunigaKankou: null
+    } satisfies ShipStatusStoreState)),
     selectedDate: computed(() => ferryStore?.selectedDate || new Date()),
     departure: computed(() => ferryStore?.departure || ''),
     arrival: computed(() => ferryStore?.arrival || ''),
