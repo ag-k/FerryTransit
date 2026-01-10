@@ -370,7 +370,7 @@ describe('News Index Page', () => {
 
       const wrapper = createWrapper()
       
-      expect(wrapper.find('.error').exists()).toBe(true)
+      expect(wrapper.find('[role="alert"][data-variant="danger"]').exists()).toBe(true)
       expect(wrapper.text()).toContain('エラーが発生しました')
     })
   })

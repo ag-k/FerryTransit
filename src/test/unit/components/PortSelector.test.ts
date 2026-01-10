@@ -153,7 +153,7 @@ describe('PortSelector', () => {
       }
     })
 
-    expect(wrapper.find('small.text-gray-500').text()).toBe('Select departure port')
+    expect(wrapper.find('small.text-app-muted').text()).toBe('Select departure port')
   })
 
   it('disables button when disabled prop is true', () => {
