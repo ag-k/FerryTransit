@@ -20,9 +20,12 @@
       :aria-expanded="isOpen ? 'true' : 'false'"
       @click="open"
     >
-      <span class="min-w-0 truncate">
-        <span v-if="modelValue" class="text-app-fg">{{ $t(modelValue) }}</span>
-        <span v-else class="text-app-muted">{{ placeholder || '-' }}</span>
+      <span class="min-w-0">
+        <span v-if="modelValue" class="text-app-fg flex items-center gap-2 min-w-0">
+          <span class="truncate">{{ getPortLabelParts(modelValue).name }}</span>
+          <PortBadges :badges="getPortLabelParts(modelValue).badges" class="flex items-center gap-1" />
+        </span>
+        <span v-else class="text-app-muted truncate">{{ placeholder || '-' }}</span>
       </span>
       <svg
         class="w-5 h-5 text-app-muted flex-none"

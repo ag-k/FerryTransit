@@ -4,7 +4,7 @@
       v-for="badge in badges"
       :key="badge"
       class="inline-flex items-center rounded-full px-2 py-0.5 text-[11px] font-semibold whitespace-nowrap ring-1 ring-inset"
-      :class="getBadgeClass(badge)"
+      :class="getPortBadgeClass(badge)"
     >
       {{ badge }}
     </span>
@@ -20,26 +20,5 @@ withDefaults(defineProps<Props>(), {
   badges: () => []
 })
 
-const getBadgeClass = (badge: string) => {
-  switch (badge) {
-    case '西ノ島町':
-    case 'Nishinoshima':
-      return 'bg-emerald-50 text-emerald-700 ring-emerald-200 dark:bg-emerald-900/30 dark:text-emerald-200 dark:ring-emerald-800'
-    case '海士町':
-    case 'Ama':
-      return 'bg-sky-50 text-sky-700 ring-sky-200 dark:bg-sky-900/30 dark:text-sky-200 dark:ring-sky-800'
-    case '知夫村':
-    case 'Chibu':
-      return 'bg-red-50 text-red-700 ring-red-200 dark:bg-red-900/30 dark:text-red-200 dark:ring-red-800'
-    case '隠岐の島町':
-    case 'Okinoshima':
-    case 'Okinoshima Town':
-      return 'bg-amber-50 text-amber-800 ring-amber-200 dark:bg-amber-900/30 dark:text-amber-200 dark:ring-amber-800'
-    case 'Matsue City':
-    case 'Sakaiminato City':
-      return 'bg-gray-100 text-gray-700 ring-gray-200 dark:bg-gray-800/60 dark:text-gray-200 dark:ring-gray-700'
-    default:
-      return 'bg-app-surface-2 text-app-muted ring-app-border/70'
-  }
-}
+import { getPortBadgeClass } from '@/utils/portBadges'
 </script>
