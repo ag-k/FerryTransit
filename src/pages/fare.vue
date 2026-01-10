@@ -81,7 +81,7 @@
             <nav class="flex flex-wrap gap-2" aria-label="Passenger categories" role="tablist">
               <button v-for="category in passengerCategories" :key="category.id" :class="[
                 okiKisenPassengerActiveCategory === category.id
-                  ? 'bg-blue-700 text-white border border-blue-700'
+                  ? 'bg-app-primary text-white border border-app-primary'
                   : 'bg-white text-gray-700 dark:bg-gray-800 dark:text-gray-200 border border-gray-300 dark:border-gray-600',
                 'px-3 py-1.5 rounded-full text-sm font-medium transition-colors'
               ]" type="button" role="tab" :aria-selected="okiKisenPassengerActiveCategory === category.id"
@@ -92,7 +92,7 @@
             <nav class="flex flex-wrap gap-2 md:hidden" aria-label="Seat classes" role="tablist">
               <button v-for="seatClass in seatClasses" :key="`seat-class-tab-${seatClass.key}`" :class="[
                 okiKisenActiveSeatClass === seatClass.key
-                  ? 'bg-blue-50 text-blue-800 border border-blue-500 dark:bg-blue-900/40 dark:text-blue-200 dark:border-blue-800'
+                  ? 'bg-app-primary text-white border border-app-primary'
                   : 'bg-white text-gray-700 dark:bg-gray-800 dark:text-gray-200 border border-gray-300 dark:border-gray-600',
                 'px-3 py-1.5 rounded-full text-sm font-medium transition-colors'
               ]" type="button" role="tab" :aria-selected="okiKisenActiveSeatClass === seatClass.key"
@@ -214,7 +214,7 @@
           <nav class="flex flex-wrap gap-2 mb-3" aria-label="Vehicle routes" role="tablist">
             <button v-for="group in okiKisenRouteGroups" :key="`vehicle-route-tab-${group.id}`" :class="[
               okiKisenVehicleActiveRoute === group.id
-                ? 'bg-blue-50 text-blue-800 border border-blue-500 dark:bg-blue-900/40 dark:text-blue-200 dark:border-blue-800'
+                ? 'bg-app-primary text-white border border-app-primary'
                 : 'bg-white text-gray-700 dark:bg-gray-800 dark:text-gray-200 border border-gray-300 dark:border-gray-600',
               'px-3 py-1.5 rounded-full text-sm font-medium transition-colors'
             ]" type="button" role="tab" :aria-selected="okiKisenVehicleActiveRoute === group.id"
@@ -345,7 +345,7 @@
         </div>
         <div class="mt-4 text-center">
           <a href="https://www.oki-kisen.co.jp/fare/" target="_blank" rel="noopener noreferrer"
-            class="inline-flex items-center px-4 py-2 bg-blue-700 hover:bg-blue-800 text-white text-sm font-medium rounded-lg transition-colors duration-200">
+            class="inline-flex items-center px-4 py-2 bg-app-primary hover:bg-app-primary-2 text-white text-sm font-medium rounded-lg transition-colors duration-200">
             {{ $t('FARE_DETAILS') }}
             <svg class="ml-2 w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
@@ -381,7 +381,7 @@
           <div class="flex flex-wrap gap-2 mb-3">
             <button v-for="category in passengerCategories" :key="category.id" :class="[
               naikoSenPassengerActiveCategory === category.id
-                ? 'bg-blue-700 text-white border border-blue-700'
+                ? 'bg-app-primary text-white border border-app-primary'
                 : 'bg-white text-gray-700 dark:bg-gray-800 dark:text-gray-200 border border-gray-300 dark:border-gray-600',
               'px-3 py-1.5 rounded-full text-sm font-medium transition-colors'
             ]" @click="naikoSenPassengerActiveCategory = category.id">
@@ -521,7 +521,7 @@
         </div>
         <div class="mt-4 text-center">
           <a href="https://www.okikankou.com/fee_detail/" target="_blank" rel="noopener noreferrer"
-            class="inline-flex items-center px-4 py-2 bg-blue-700 hover:bg-blue-800 text-white text-sm font-medium rounded-lg transition-colors duration-200">
+            class="inline-flex items-center px-4 py-2 bg-app-primary hover:bg-app-primary-2 text-white text-sm font-medium rounded-lg transition-colors duration-200">
             {{ $t('INNER_ISLAND_FARE_DETAILS') }}
             <svg class="ml-2 w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
@@ -557,7 +557,7 @@
           <div class="flex flex-wrap gap-2 mb-3">
             <button v-for="category in passengerCategories" :key="category.id" :class="[
               rainbowJetPassengerActiveCategory === category.id
-                ? 'bg-blue-700 text-white border border-blue-700'
+                ? 'bg-app-primary text-white border border-app-primary'
                 : 'bg-white text-gray-700 dark:bg-gray-800 dark:text-gray-200 border border-gray-300 dark:border-gray-600',
               'px-3 py-1.5 rounded-full text-sm font-medium transition-colors'
             ]" @click="rainbowJetPassengerActiveCategory = category.id">
@@ -674,7 +674,7 @@
         </div>
         <div class="mt-4 text-center">
           <a href="https://www.oki-kisen.co.jp/fare/" target="_blank" rel="noopener noreferrer"
-            class="inline-flex items-center px-4 py-2 bg-blue-700 hover:bg-blue-800 text-white text-sm font-medium rounded-lg transition-colors duration-200">
+            class="inline-flex items-center px-4 py-2 bg-app-primary hover:bg-app-primary-2 text-white text-sm font-medium rounded-lg transition-colors duration-200">
             {{ $t('FARE_DETAILS') }}
             <svg class="ml-2 w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
