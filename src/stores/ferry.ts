@@ -1,6 +1,6 @@
 import { defineStore } from "pinia";
 import { useFirebaseStorage } from "@/composables/useFirebaseStorage";
-import type { Trip, ShipStatus, FerryStatus, SightseeingStatus } from "@/types";
+import type { Trip, ShipStatus, FerryStatus, SightseeingStatus, ShipStatusStoreState } from "@/types";
 import {
   formatDateYmdJst,
   getTodayJstMidnight,
@@ -31,7 +31,7 @@ const formatDateLocal = (date: Date): string => {
 export const useFerryStore = defineStore("ferry", () => {
   // State
   const timetableData = ref<Trip[]>([]);
-  const shipStatus = ref({
+  const shipStatus = ref<ShipStatusStoreState>({
     isokaze: null as ShipStatus | null,
     dozen: null as ShipStatus | null,
     ferry: null as FerryStatus | null,

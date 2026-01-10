@@ -1,12 +1,6 @@
 <template>
   <div v-if="hasAlerts" class="mb-6">
-    <Alert
-      :visible="true"
-      type="warning"
-      :title="$t('OPERATION_ALERTS')"
-      :dismissible="false"
-      message=""
-    >
+    <Alert :visible="true" type="warning" :title="$t('OPERATION_ALERTS')" :dismissible="false" message="">
       <template #default>
         <div class="space-y-2">
           <div v-if="shipStatus.isokaze?.hasAlert">
@@ -41,6 +35,7 @@
 import { computed, onMounted } from 'vue'
 import { useFerryStore } from '@/stores/ferry'
 import { useFerryData } from '@/composables/useFerryData'
+import type { ShipStatusStoreState } from '@/types'
 import Alert from '@/components/common/Alert.vue'
 import SecondaryButton from '@/components/common/SecondaryButton.vue'
 
@@ -51,7 +46,13 @@ const ferryStore = process.client ? useFerryStore() : null
 const { initializeData } = useFerryData()
 
 // Store data
-const shipStatus = computed(() => ferryStore?.shipStatus || {})
+const emptyShipStatus: ShipStatusStoreState = {
+  isokaze: null,
+  dozen: null,
+  ferry: null,
+  kunigaKankou: null
+}
+const shipStatus = computed<ShipStatusStoreState>(() => ferryStore?.shipStatus ?? emptyShipStatus)
 
 // Computed
 const hasAlerts = computed(() => {

@@ -59,12 +59,13 @@
     </div>
 
     <div class="flex space-x-2">
-      <button
+      <PrimaryButton
+        size="sm"
+        class="flex-1"
         @click="viewTimetable"
-        class="flex-1 px-3 py-2 bg-green-600 dark:bg-green-700 text-white rounded-md hover:bg-green-700 dark:hover:bg-green-600 transition-colors duration-200 text-sm font-medium"
       >
         {{ $t('favorites.viewTimetable') }}
-      </button>
+      </PrimaryButton>
       <button
         @click="showDeleteConfirm"
         class="px-3 py-2 bg-gray-100 dark:bg-gray-600 text-gray-700 dark:text-gray-100 rounded-md hover:bg-gray-200 dark:hover:bg-gray-500 transition-colors duration-200 text-sm"
@@ -94,6 +95,7 @@ import { useRouter } from 'vue-router'
 import { useFerryStore } from '~/stores/ferry'
 import { useFavoriteStore } from '~/stores/favorite'
 import { useI18n } from 'vue-i18n'
+import PrimaryButton from '~/components/common/PrimaryButton.vue'
 import FavoriteButton from './FavoriteButton.vue'
 import ConfirmDialog from '~/components/ui/ConfirmDialog.vue'
 import { createLogger } from '~/utils/logger'

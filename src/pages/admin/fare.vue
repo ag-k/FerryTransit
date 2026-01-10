@@ -30,7 +30,6 @@
         </SecondaryButton>
         <PrimaryButton
           :disabled="isPublishing"
-          class="bg-purple-600 hover:bg-purple-700 disabled:hover:bg-purple-600"
           @click="publishFareData">
           <CloudArrowUpIcon class="h-5 w-5 inline mr-1" />
           {{ isPublishing ? '公開中...' : 'データ公開' }}

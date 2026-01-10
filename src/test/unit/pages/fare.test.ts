@@ -17,9 +17,19 @@ describe('FarePage Tab Navigation', () => {
     
     // Verify the old problematic classes are removed
     expect(fileContent).not.toContain('space-x-8')
+
+    // Verify tab semantics & clearer "tab" styling exist
+    expect(fileContent).toContain('role="tablist"')
+    expect(fileContent).toContain('role="tab"')
+    expect(fileContent).toContain('rounded-t-lg')
+    expect(fileContent).toContain('gap-1')
     
-    // Check that tabs have proper spacing with margin instead of fixed space
-    expect(fileContent).toContain('mx-4 first:ml-0 last:mr-0')
+    // Sticky tabs: keep the tab row visible when scrolling
+    expect(fileContent).toContain('sticky')
+    expect(fileContent).toContain('top-0')
+
+    // Switching tabs scrolls back to the top (tab bar)
+    expect(fileContent).toContain('scrollIntoView')
   })
   
   it('should have scrollbar-hide utility in Tailwind config', () => {

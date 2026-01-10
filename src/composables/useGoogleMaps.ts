@@ -1,4 +1,5 @@
 import { createLogger } from '~/utils/logger'
+import { getGoogleMapsLocaleOptions } from '~/utils/googleMapsLocale'
 
 interface GoogleMapsOptions {
   center?: { lat: number; lng: number }
@@ -11,6 +12,7 @@ export const useGoogleMaps = () => {
   const logger = createLogger('useGoogleMaps')
   const isLoaded = ref(false)
   const loadError = ref<Error | null>(null)
+  const { locale } = useI18n()
 
   const loadGoogleMaps = (): Promise<void> => {
     if (isLoaded.value) {
@@ -37,8 +39,9 @@ export const useGoogleMaps = () => {
     }
 
     return new Promise((resolve, reject) => {
+      const { language, region } = getGoogleMapsLocaleOptions(locale.value)
       const script = document.createElement('script')
-      script.src = `https://maps.googleapis.com/maps/api/js?key=${apiKey}&libraries=places`
+      script.src = `https://maps.googleapis.com/maps/api/js?key=${apiKey}&libraries=places&language=${language}&region=${region}`
       script.async = true
       script.defer = true
 
