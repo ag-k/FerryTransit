@@ -115,7 +115,11 @@ describe('FavoriteRouteCard', () => {
       }
     })
 
-    expect(wrapper.text()).toContain('七類(松江市)または境港(境港市)')
-    expect(wrapper.text()).toContain('西郷(隠岐の島町)')
+    expect(wrapper.text()).toContain('七類')
+    expect(wrapper.text()).toContain('松江市')
+    expect(wrapper.text()).toContain('境港')
+    expect(wrapper.text()).toContain('境港市')
+    expect(wrapper.text()).toContain('西郷')
+    expect(wrapper.text()).toContain('隠岐の島町')
   })
 })

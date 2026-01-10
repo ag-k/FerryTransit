@@ -40,7 +40,7 @@
               <option :value="true">{{ $t('ARRIVE_BY') }}</option>
             </select>
             <input :id="timeInputId" v-model="time" type="time"
-              class="flex-1 px-3 py-2 border border-l-0 border-gray-300 dark:border-gray-600 rounded-r-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:text-white">
+              class="flex-1 px-3 py-2 border border-l-0 border-gray-300 dark:border-gray-600 rounded-r-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 bg-white dark:bg-white text-gray-900 dark:text-gray-900">
           </div>
         </div>
       </div>
@@ -73,10 +73,10 @@
           <div class="flex flex-wrap gap-2" role="tablist" :aria-label="$t('SORT_ORDER')">
             <button v-for="option in sortOptions" :key="option.value" type="button" role="tab"
               :aria-selected="sortOption === option.value"
-              class="px-3 py-2 text-sm font-medium rounded-md border transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 flex items-center justify-center"
+              class="px-3 py-2 text-sm font-medium rounded-md border transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-app-primary/60 flex items-center justify-center"
               :class="sortOption === option.value
-                ? 'bg-blue-700 text-white border-blue-700 shadow-sm'
-                : 'border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-300 bg-white dark:bg-gray-800 hover:bg-blue-50 dark:hover:bg-gray-700'"
+                ? 'bg-app-primary text-white border-app-primary shadow-sm'
+                : 'border-app-primary text-app-primary bg-white dark:bg-gray-800 hover:bg-app-primary/10 dark:hover:bg-app-primary/20'"
               @click="sortOption = option.value">
               {{ $t(option.labelKey) }}
             </button>
@@ -162,9 +162,21 @@
                 <tr class="bg-app-surface-2/60">
                   <td class="py-2 pl-4 pr-4 text-left text-app-fg">{{ formatTime(route.departureTime) }}</td>
                   <td class="py-2 pl-4">
-                    <a href="#" class="text-app-primary hover:underline"
+                    <a href="#" class="text-app-primary group inline-flex items-center gap-2 flex-wrap"
                       @click.prevent="showPortInfo(route.segments[0].departure)">
-                      ⚓ {{ getPortDisplayName(route.segments[0].departure) }}
+                      <span class="group-hover:underline">
+                        ⚓ {{ getPortLabelParts(route.segments[0].departure).name }}
+                      </span>
+                      <span v-if="getPortLabelParts(route.segments[0].departure).badges.length" class="flex flex-wrap gap-1">
+                        <span
+                          v-for="badge in getPortLabelParts(route.segments[0].departure).badges"
+                          :key="badge"
+                          class="inline-flex items-center rounded-full px-2 py-0.5 text-[11px] font-semibold whitespace-nowrap ring-1 ring-inset"
+                          :class="getPortBadgeClass(badge)"
+                        >
+                          {{ badge }}
+                        </span>
+                      </span>
                     </a>
                   </td>
                   <td class="py-2"></td>
@@ -216,9 +228,21 @@
                       {{ formatTransferPortTimes(segment.arrivalTime, route.segments[segIndex + 1].departureTime) }}
                     </td>
                     <td class="py-2 pl-4">
-                      <a href="#" class="text-app-primary hover:underline"
+                      <a href="#" class="text-app-primary group inline-flex items-center gap-2 flex-wrap"
                         @click.prevent="showPortInfo(segment.arrival)">
-                        ⚓ {{ getPortDisplayName(segment.arrival) }}
+                        <span class="group-hover:underline">
+                          ⚓ {{ getPortLabelParts(segment.arrival).name }}
+                        </span>
+                        <span v-if="getPortLabelParts(segment.arrival).badges.length" class="flex flex-wrap gap-1">
+                          <span
+                            v-for="badge in getPortLabelParts(segment.arrival).badges"
+                            :key="badge"
+                            class="inline-flex items-center rounded-full px-2 py-0.5 text-[11px] font-semibold whitespace-nowrap ring-1 ring-inset"
+                            :class="getPortBadgeClass(badge)"
+                          >
+                            {{ badge }}
+                          </span>
+                        </span>
                       </a>
                       <span class="text-xs text-app-muted ml-2">
                         ({{ $t('TRANSFER') }}) {{ formatTransferWaitTime(segment.arrivalTime, route.segments[segIndex +
@@ -233,9 +257,21 @@
                 <tr class="bg-app-surface-2/60">
                   <td class="py-2 pl-4 pr-4 text-left text-app-fg">{{ formatTime(route.arrivalTime) }}</td>
                   <td class="py-2 pl-4">
-                    <a href="#" class="text-app-primary hover:underline"
+                    <a href="#" class="text-app-primary group inline-flex items-center gap-2 flex-wrap"
                       @click.prevent="showPortInfo(route.segments[route.segments.length - 1].arrival)">
-                      ⚓ {{ getPortDisplayName(route.segments[route.segments.length - 1].arrival) }}
+                      <span class="group-hover:underline">
+                        ⚓ {{ getPortLabelParts(route.segments[route.segments.length - 1].arrival).name }}
+                      </span>
+                      <span v-if="getPortLabelParts(route.segments[route.segments.length - 1].arrival).badges.length" class="flex flex-wrap gap-1">
+                        <span
+                          v-for="badge in getPortLabelParts(route.segments[route.segments.length - 1].arrival).badges"
+                          :key="badge"
+                          class="inline-flex items-center rounded-full px-2 py-0.5 text-[11px] font-semibold whitespace-nowrap ring-1 ring-inset"
+                          :class="getPortBadgeClass(badge)"
+                        >
+                          {{ badge }}
+                        </span>
+                      </span>
                     </a>
                   </td>
                   <td class="py-2 font-medium text-app-fg">
@@ -295,7 +331,19 @@
               <div class="grid grid-cols-1 md:grid-cols-5 gap-2">
                 <div class="md:col-span-2 dark:text-gray-300">
                   <strong>{{ formatTime(segment.departureTime) }}</strong><br>
-                  ⚓ {{ getPortDisplayName(segment.departure) }}
+                  <span class="inline-flex flex-col gap-1">
+                    <span>⚓ {{ getPortLabelParts(segment.departure).name }}</span>
+                    <span v-if="getPortLabelParts(segment.departure).badges.length" class="flex flex-wrap gap-1">
+                      <span
+                        v-for="badge in getPortLabelParts(segment.departure).badges"
+                        :key="badge"
+                        class="inline-flex items-center rounded-full px-2 py-0.5 text-[11px] font-semibold whitespace-nowrap ring-1 ring-inset"
+                        :class="getPortBadgeClass(badge)"
+                      >
+                        {{ badge }}
+                      </span>
+                    </span>
+                  </span>
                 </div>
                 <div class="md:col-span-1 text-center">
                   <div class="mt-2 dark:text-gray-300">→</div>
@@ -303,7 +351,19 @@
                 </div>
                 <div class="md:col-span-2 text-right dark:text-gray-300">
                   <strong>{{ formatTime(segment.arrivalTime) }}</strong><br>
-                  ⚓ {{ getPortDisplayName(segment.arrival) }}
+                  <span class="inline-flex flex-col gap-1 items-end">
+                    <span>⚓ {{ getPortLabelParts(segment.arrival).name }}</span>
+                    <span v-if="getPortLabelParts(segment.arrival).badges.length" class="flex flex-wrap gap-1">
+                      <span
+                        v-for="badge in getPortLabelParts(segment.arrival).badges"
+                        :key="badge"
+                        class="inline-flex items-center rounded-full px-2 py-0.5 text-[11px] font-semibold whitespace-nowrap ring-1 ring-inset"
+                        :class="getPortBadgeClass(badge)"
+                      >
+                        {{ badge }}
+                      </span>
+                    </span>
+                  </span>
                 </div>
               </div>
               <div class="mt-2">
@@ -424,6 +484,44 @@ const sortOption = ref<SortKey>('recommended')
 // Composables
 const { searchRoutes, formatTime, calculateDuration, getPortDisplayName } = useRouteSearch()
 const { t } = useI18n()
+
+const getPortLabelParts = (portId?: string) => {
+  if (!portId) {
+    return { name: '-', badges: [] as string[] }
+  }
+  const translated = String(t(portId))
+  const label = translated && translated !== portId ? translated : getPortDisplayName(portId) || portId
+  const parenRegex = /[（(]([^）)]+)[）)]/g
+  const badges: string[] = []
+
+  let match = parenRegex.exec(label)
+  while (match) {
+    const value = match[1]?.trim()
+    if (value) badges.push(value)
+    match = parenRegex.exec(label)
+  }
+
+  const name = label.replace(parenRegex, '').replace(/\s+/g, ' ').trim()
+  return {
+    name: name || label.trim(),
+    badges
+  }
+}
+
+const getPortBadgeClass = (badge: string) => {
+  switch (badge) {
+    case '西ノ島町':
+      return 'bg-emerald-50 text-emerald-700 ring-emerald-200 dark:bg-emerald-900/30 dark:text-emerald-200 dark:ring-emerald-800'
+    case '海士町':
+      return 'bg-sky-50 text-sky-700 ring-sky-200 dark:bg-sky-900/30 dark:text-sky-200 dark:ring-sky-800'
+    case '知夫村':
+      return 'bg-red-50 text-red-700 ring-red-200 dark:bg-red-900/30 dark:text-red-200 dark:ring-red-800'
+    case '隠岐の島町':
+      return 'bg-amber-50 text-amber-800 ring-amber-200 dark:bg-amber-900/30 dark:text-amber-200 dark:ring-amber-800'
+    default:
+      return 'bg-app-surface-2 text-app-muted ring-app-border/70'
+  }
+}
 
 const hasCancelledSegment = (route: TransitRoute): boolean => {
   return Array.isArray(route?.segments) && route.segments.some(s => s.status === 2)

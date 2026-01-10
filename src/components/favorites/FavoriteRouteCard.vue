@@ -34,9 +34,24 @@
     <div class="flex items-center justify-between mb-2">
       <div class="flex-1">
         <div class="flex items-center space-x-2">
-          <span class="text-lg font-semibold dark:text-white">{{ getDeparturePortName(departure) }}</span>
+          <div class="space-y-1">
+            <div
+              v-for="(line, index) in getPortLabelLines(departure)"
+              :key="`departure-${index}`"
+              class="flex items-center gap-2"
+            >
+              <span class="text-lg font-semibold dark:text-white">{{ line.name }}</span>
+              <span
+                v-if="line.municipality"
+                class="inline-flex items-center rounded-full px-2 py-0.5 text-[11px] font-semibold whitespace-nowrap ring-1 ring-inset"
+                :class="getPortBadgeClass(line.municipality)"
+              >
+                {{ line.municipality }}
+              </span>
+            </div>
+          </div>
           <svg
-            class="w-4 h-4 text-gray-400 dark:text-gray-500"
+            class="w-4 h-4 text-gray-400 dark:text-gray-500 self-center"
             fill="none"
             stroke="currentColor"
             viewBox="0 0 24 24"
@@ -48,7 +63,22 @@
               d="M9 5l7 7-7 7"
             />
           </svg>
-          <span class="text-lg font-semibold dark:text-white">{{ getArrivalPortName(arrival) }}</span>
+          <div class="space-y-1">
+            <div
+              v-for="(line, index) in getPortLabelLines(arrival)"
+              :key="`arrival-${index}`"
+              class="flex items-center gap-2"
+            >
+              <span class="text-lg font-semibold dark:text-white">{{ line.name }}</span>
+              <span
+                v-if="line.municipality"
+                class="inline-flex items-center rounded-full px-2 py-0.5 text-[11px] font-semibold whitespace-nowrap ring-1 ring-inset"
+                :class="getPortBadgeClass(line.municipality)"
+              >
+                {{ line.municipality }}
+              </span>
+            </div>
+          </div>
         </div>
       </div>
     </div>
@@ -58,7 +88,9 @@
     </div>
 
     <div class="flex space-x-2">
-      <NuxtLink
+      <PrimaryButton
+        size="sm"
+        class="flex-1"
         :to="{
           path: localePath('/'),
           query: {
@@ -66,11 +98,26 @@
             arrival: arrival
           }
         }"
-        class="flex-1 px-3 py-2 bg-gray-600 dark:bg-gray-700 text-white rounded-md hover:bg-gray-700 dark:hover:bg-gray-600 transition-colors duration-200 text-sm font-medium text-center"
       >
-        {{ $t('TIMETABLE') }}
-      </NuxtLink>
-      <NuxtLink
+        <svg
+          class="w-4 h-4"
+          fill="none"
+          stroke="currentColor"
+          viewBox="0 0 24 24"
+          aria-hidden="true"
+        >
+          <path
+            stroke-linecap="round"
+            stroke-linejoin="round"
+            stroke-width="2"
+            d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"
+          />
+        </svg>
+        <span>{{ $t('TIMETABLE') }}</span>
+      </PrimaryButton>
+      <PrimaryButton
+        size="sm"
+        class="flex-1"
         :to="{
           path: localePath('/transit'),
           query: {
@@ -78,10 +125,23 @@
             arrival: arrival
           }
         }"
-        class="flex-1 px-3 py-2 bg-blue-700 dark:bg-blue-800 text-white rounded-md hover:bg-blue-800 dark:hover:bg-blue-700 transition-colors duration-200 text-sm font-medium text-center"
       >
-        {{ $t('TRANSIT') }}
-      </NuxtLink>
+        <svg
+          class="w-4 h-4"
+          fill="none"
+          stroke="currentColor"
+          viewBox="0 0 24 24"
+          aria-hidden="true"
+        >
+          <path
+            stroke-linecap="round"
+            stroke-linejoin="round"
+            stroke-width="2"
+            d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6"
+          />
+        </svg>
+        <span>{{ $t('TRANSIT') }}</span>
+      </PrimaryButton>
       <button
         @click="showDeleteConfirm"
         class="px-3 py-2 bg-gray-100 dark:bg-gray-600 text-gray-700 dark:text-gray-100 rounded-md hover:bg-gray-200 dark:hover:bg-gray-500 transition-colors duration-200 text-sm"
@@ -111,6 +171,7 @@ import { useRouter } from 'vue-router'
 import { useFerryStore } from '~/stores/ferry'
 import { useFavoriteStore } from '~/stores/favorite'
 import { useI18n } from 'vue-i18n'
+import PrimaryButton from '~/components/common/PrimaryButton.vue'
 import FavoriteButton from './FavoriteButton.vue'
 import ConfirmDialog from '~/components/ui/ConfirmDialog.vue'
 import { createLogger } from '~/utils/logger'
@@ -142,29 +203,59 @@ onMounted(() => {
   isMounted.value = true
 })
 
-const getDeparturePortName = (portId: string) => {
+type PortLabelLine = {
+  name: string
+  municipality?: string
+}
+
+const getPortLabel = (portId: string) => {
   if (!portId) return ''
   const translated = String(t(portId))
+  const hasTranslation = translated && translated !== portId
+  if (hasTranslation) return translated
   if (!isMounted.value || !ferryStore || !ferryStore.ports || !Array.isArray(ferryStore.ports)) return translated || portId
   try {
     const port = ferryStore.ports.find(p => p.PORT_ID === portId)
     return port ? (locale.value === 'ja' ? port.PLACE_NAME_JA : port.PLACE_NAME_EN) : (translated || portId)
   } catch (e) {
-    logger.error('Error getting departure port name', e)
+    logger.error('Error getting port label', e)
     return translated || portId
   }
 }
 
-const getArrivalPortName = (portId: string) => {
-  if (!portId) return ''
-  const translated = String(t(portId))
-  if (!isMounted.value || !ferryStore || !ferryStore.ports || !Array.isArray(ferryStore.ports)) return translated || portId
-  try {
-    const port = ferryStore.ports.find(p => p.PORT_ID === portId)
-    return port ? (locale.value === 'ja' ? port.PLACE_NAME_JA : port.PLACE_NAME_EN) : (translated || portId)
-  } catch (e) {
-    logger.error('Error getting arrival port name', e)
-    return translated || portId
+const parsePortLabel = (label: string): PortLabelLine[] => {
+  const parts = label
+    .split(/(?:\s*または\s*|\s+or\s+)/i)
+    .map(part => part.trim())
+    .filter(Boolean)
+  if (parts.length === 0) return []
+  return parts.map((part) => {
+    const match = part.match(/^(.+?)\s*\(([^)]+)\)\s*$/)
+    if (match) {
+      return { name: match[1], municipality: match[2] }
+    }
+    return { name: part }
+  })
+}
+
+const getPortLabelLines = (portId: string) => {
+  const label = getPortLabel(portId)
+  const lines = parsePortLabel(label)
+  return lines.length > 0 ? lines : [{ name: label || portId }]
+}
+
+const getPortBadgeClass = (badge: string) => {
+  switch (badge) {
+    case '西ノ島町':
+      return 'bg-emerald-50 text-emerald-700 ring-emerald-200 dark:bg-emerald-900/30 dark:text-emerald-200 dark:ring-emerald-800'
+    case '海士町':
+      return 'bg-sky-50 text-sky-700 ring-sky-200 dark:bg-sky-900/30 dark:text-sky-200 dark:ring-sky-800'
+    case '知夫村':
+      return 'bg-red-50 text-red-700 ring-red-200 dark:bg-red-900/30 dark:text-red-200 dark:ring-red-800'
+    case '隠岐の島町':
+      return 'bg-amber-50 text-amber-800 ring-amber-200 dark:bg-amber-900/30 dark:text-amber-200 dark:ring-amber-800'
+    default:
+      return 'bg-app-surface-2 text-app-muted ring-app-border/70'
   }
 }
 

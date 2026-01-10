@@ -53,7 +53,7 @@
 
       <div class="flex flex-col sm:flex-row items-end sm:items-center space-y-2 sm:space-y-0 sm:space-x-2 ml-4">
         <button
-          class="px-3 py-1 bg-blue-700 dark:bg-blue-800 text-white rounded-md hover:bg-blue-800 dark:hover:bg-blue-700 transition-colors duration-200 text-sm"
+          class="inline-flex items-center justify-center gap-2 font-medium rounded-lg shadow-sm ring-1 ring-black/5 dark:ring-white/10 focus:outline-none focus-visible:ring-2 focus-visible:ring-app-primary/60 focus-visible:ring-offset-2 focus-visible:ring-offset-app-bg transition active:scale-[0.98] disabled:opacity-50 disabled:cursor-not-allowed disabled:active:scale-100 text-white bg-app-primary hover:bg-app-primary-2 disabled:hover:bg-app-primary px-3 py-1.5 text-sm"
           @click="$emit('search')"
         >
           {{ $t('history.searchAgain') }}
