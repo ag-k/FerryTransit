@@ -43,6 +43,7 @@
 import { ref, onMounted, onUnmounted, watch, computed, nextTick } from 'vue'
 import { Loader } from '@googlemaps/js-api-loader'
 import { PORTS_DATA, ROUTES_DATA } from '~/data/ports'
+import { getPortBadgeClass } from '@/utils/portBadges'
 import CommonShipModal from '~/components/common/ShipModal.vue'
 import type { Port } from '~/types'
 import type { RouteData, RoutePoint, RoutesDataFile } from '~/types/route'
@@ -547,25 +548,21 @@ const ensureLabelOverlayCtor = (): any | null => {
     position: any
     text: string
     div: HTMLDivElement | null
-    constructor(position: any, text: string) {
+    badgeClass: string
+    constructor(position: any, text: string, badgeClass: string) {
       super()
       this.position = position
       this.text = text
+      this.badgeClass = badgeClass
       this.div = null
     }
     onAdd() {
       const div = document.createElement('div')
       div.style.position = 'absolute'
       div.style.whiteSpace = 'nowrap'
-      div.style.padding = '2px 6px'
-      div.style.borderRadius = '6px'
-      div.style.fontSize = '12px'
-      div.style.lineHeight = '18px'
-      div.style.color = '#111827'
-      div.style.background = '#FFFFFF'
-      div.style.border = '1px solid #E5E7EB'
       div.style.boxShadow = '0 1px 2px rgba(0,0,0,0.06)'
       div.style.pointerEvents = 'none'
+      div.className = `inline-flex items-center rounded-full px-2 py-0.5 text-[11px] font-semibold whitespace-nowrap ring-1 ring-inset ${this.badgeClass}`
       div.textContent = this.text
       this.div = div
       const panes = (this as any).getPanes()
@@ -590,6 +587,12 @@ const ensureLabelOverlayCtor = (): any | null => {
       this.text = text
       if (this.div) this.div.textContent = text
     }
+    setBadgeClass(badgeClass: string) {
+      this.badgeClass = badgeClass
+      if (this.div) {
+        this.div.className = `inline-flex items-center rounded-full px-2 py-0.5 text-[11px] font-semibold whitespace-nowrap ring-1 ring-inset ${this.badgeClass}`
+      }
+    }
     setPosition(position: any) {
       this.position = position
       this.draw()
@@ -598,25 +601,35 @@ const ensureLabelOverlayCtor = (): any | null => {
   return LabelOverlayCtor
 }
 
+const getPortBadgeLabel = (portId: string) => {
+  const label = String($i18n.t(portId))
+  const parenRegex = /[（(]([^）)]+)[）)]/
+  const match = label.match(parenRegex)
+  return match?.[1]?.trim() || ''
+}
+
 // ラベルの表示/更新
 const showOrUpdateLabel = (portId: string) => {
   if (!map.value) return
   const port = PORTS_DATA[portId]
   if (!port) return
   const text = currentLocale.value === 'ja' ? port.name : port.nameEn
+  const badgeLabel = getPortBadgeLabel(portId)
+  const badgeClass = getPortBadgeClass(badgeLabel)
   const g: any = (window as any).google
   const pos = new g.maps.LatLng(port.location.lat, port.location.lng)
 
   const existing = labelOverlays.value.get(portId) as any
   if (existing) {
     existing.setText(text)
+    existing.setBadgeClass(badgeClass)
     existing.setPosition(pos)
     existing.draw()
     return
   }
   const Ctor = ensureLabelOverlayCtor()
   if (!Ctor) return
-  const overlay = new Ctor(pos, text)
+  const overlay = new Ctor(pos, text, badgeClass)
   overlay.setMap(map.value)
   labelOverlays.value.set(portId, overlay)
 }
