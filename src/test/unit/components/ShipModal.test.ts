@@ -92,7 +92,7 @@ describe("ShipModal", () => {
       global: { stubs }
     });
 
-    await wrapper.find("button[aria-label='Close']").trigger("click");
+    await wrapper.find("button[aria-label='CLOSE']").trigger("click");
 
     expect(wrapper.emitted("update:visible")).toBeTruthy();
     expect(wrapper.emitted("update:visible")[0][0]).toBe(false);
