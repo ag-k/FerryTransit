@@ -1,5 +1,5 @@
 <template>
-  <div class="container mx-auto px-4 py-8 max-w-6xl">
+  <div class="container mx-auto px-4 py-8 max-w-[1000px]">
     <h2 class="hidden lg:block text-2xl font-semibold mb-6 dark:text-white">{{ $t('FARE_TABLE') }}</h2>
 
     <!-- Loading state -->

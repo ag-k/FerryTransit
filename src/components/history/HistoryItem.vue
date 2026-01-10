@@ -22,9 +22,24 @@
         </div>
 
         <div class="flex items-center space-x-2 mb-2">
-          <span class="text-lg font-semibold dark:text-white">{{ getPortName(history.departure) }}</span>
+          <div class="space-y-1">
+            <div
+              v-for="(line, index) in getPortLabelLines(history.departure)"
+              :key="`departure-${index}`"
+              class="flex items-center gap-2"
+            >
+              <span class="text-lg font-semibold dark:text-white">{{ line.name }}</span>
+              <span
+                v-if="line.municipality"
+                class="inline-flex items-center rounded-full px-2 py-0.5 text-[11px] font-semibold whitespace-nowrap ring-1 ring-inset"
+                :class="getPortBadgeClass(line.municipality)"
+              >
+                {{ line.municipality }}
+              </span>
+            </div>
+          </div>
           <svg
-            class="w-4 h-4 text-gray-400 dark:text-gray-500"
+            class="w-4 h-4 text-gray-400 dark:text-gray-500 self-center"
             fill="none"
             stroke="currentColor"
             viewBox="0 0 24 24"
@@ -36,7 +51,22 @@
               d="M9 5l7 7-7 7"
             />
           </svg>
-          <span class="text-lg font-semibold dark:text-white">{{ getPortName(history.arrival) }}</span>
+          <div class="space-y-1">
+            <div
+              v-for="(line, index) in getPortLabelLines(history.arrival)"
+              :key="`arrival-${index}`"
+              class="flex items-center gap-2"
+            >
+              <span class="text-lg font-semibold dark:text-white">{{ line.name }}</span>
+              <span
+                v-if="line.municipality"
+                class="inline-flex items-center rounded-full px-2 py-0.5 text-[11px] font-semibold whitespace-nowrap ring-1 ring-inset"
+                :class="getPortBadgeClass(line.municipality)"
+              >
+                {{ line.municipality }}
+              </span>
+            </div>
+          </div>
         </div>
 
         <div class="text-sm text-gray-600 dark:text-gray-400">
@@ -89,16 +119,61 @@ const ferryStore = useFerryStore()
 const { locale, t } = useI18n()
 const logger = createLogger('HistoryItem')
 
-const getPortName = (portId?: string) => {
+type PortLabelLine = {
+  name: string
+  municipality?: string
+}
+
+const getPortLabel = (portId?: string) => {
   if (!portId) return '-'
-  
-  // Handle special case for HONDO (legacy port ID)
+
   if (portId === 'HONDO') {
     return t('HONDO')
   }
-  
+
+  const translated = String(t(portId))
+  if (translated && translated !== portId) {
+    return translated
+  }
+
   const port = ferryStore.ports.find(p => p.PORT_ID === portId)
   return port ? (locale.value === 'ja' ? port.PLACE_NAME_JA : port.PLACE_NAME_EN) : portId
+}
+
+const parsePortLabel = (label: string): PortLabelLine[] => {
+  const parts = label
+    .split(/(?:\s*または\s*|\s+or\s+)/i)
+    .map(part => part.trim())
+    .filter(Boolean)
+  if (parts.length === 0) return []
+  return parts.map((part) => {
+    const match = part.match(/^(.+?)\s*\(([^)]+)\)\s*$/)
+    if (match) {
+      return { name: match[1], municipality: match[2] }
+    }
+    return { name: part }
+  })
+}
+
+const getPortLabelLines = (portId?: string) => {
+  const label = getPortLabel(portId)
+  const lines = parsePortLabel(label)
+  return lines.length > 0 ? lines : [{ name: label || '-' }]
+}
+
+const getPortBadgeClass = (badge: string) => {
+  switch (badge) {
+    case '西ノ島町':
+      return 'bg-emerald-50 text-emerald-700 ring-emerald-200 dark:bg-emerald-900/30 dark:text-emerald-200 dark:ring-emerald-800'
+    case '海士町':
+      return 'bg-sky-50 text-sky-700 ring-sky-200 dark:bg-sky-900/30 dark:text-sky-200 dark:ring-sky-800'
+    case '知夫村':
+      return 'bg-red-50 text-red-700 ring-red-200 dark:bg-red-900/30 dark:text-red-200 dark:ring-red-800'
+    case '隠岐の島町':
+      return 'bg-amber-50 text-amber-800 ring-amber-200 dark:bg-amber-900/30 dark:text-amber-200 dark:ring-amber-800'
+    default:
+      return 'bg-app-surface-2 text-app-muted ring-app-border/70'
+  }
 }
 
 const formatDateTime = (date: Date | string) => {

@@ -1,5 +1,5 @@
 <template>
-  <div class="container max-w-[1000px] mx-auto px-4 py-4">
+  <div class="container max-w-[1000px] mx-auto px-4 py-6 sm:py-8">
     <h2 class="hidden lg:block text-2xl font-semibold mb-6 dark:text-white">{{ $t('TRANSIT') }}</h2>
 
     <!-- Current status alerts -->
