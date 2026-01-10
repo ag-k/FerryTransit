@@ -41,13 +41,7 @@
               class="flex items-center gap-2"
             >
               <span class="text-lg font-semibold dark:text-white">{{ line.name }}</span>
-              <span
-                v-if="line.municipality"
-                class="inline-flex items-center rounded-full px-2 py-0.5 text-[11px] font-semibold whitespace-nowrap ring-1 ring-inset"
-                :class="getPortBadgeClass(line.municipality)"
-              >
-                {{ line.municipality }}
-              </span>
+              <PortBadges :badges="line.municipality ? [line.municipality] : []" />
             </div>
           </div>
           <svg
@@ -70,13 +64,7 @@
               class="flex items-center gap-2"
             >
               <span class="text-lg font-semibold dark:text-white">{{ line.name }}</span>
-              <span
-                v-if="line.municipality"
-                class="inline-flex items-center rounded-full px-2 py-0.5 text-[11px] font-semibold whitespace-nowrap ring-1 ring-inset"
-                :class="getPortBadgeClass(line.municipality)"
-              >
-                {{ line.municipality }}
-              </span>
+              <PortBadges :badges="line.municipality ? [line.municipality] : []" />
             </div>
           </div>
         </div>
@@ -175,6 +163,7 @@ import PrimaryButton from '~/components/common/PrimaryButton.vue'
 import FavoriteButton from './FavoriteButton.vue'
 import ConfirmDialog from '~/components/ui/ConfirmDialog.vue'
 import { createLogger } from '~/utils/logger'
+import PortBadges from '@/components/common/PortBadges.vue'
 
 interface Props {
   departure: string
@@ -242,21 +231,6 @@ const getPortLabelLines = (portId: string) => {
   const label = getPortLabel(portId)
   const lines = parsePortLabel(label)
   return lines.length > 0 ? lines : [{ name: label || portId }]
-}
-
-const getPortBadgeClass = (badge: string) => {
-  switch (badge) {
-    case '西ノ島町':
-      return 'bg-emerald-50 text-emerald-700 ring-emerald-200 dark:bg-emerald-900/30 dark:text-emerald-200 dark:ring-emerald-800'
-    case '海士町':
-      return 'bg-sky-50 text-sky-700 ring-sky-200 dark:bg-sky-900/30 dark:text-sky-200 dark:ring-sky-800'
-    case '知夫村':
-      return 'bg-red-50 text-red-700 ring-red-200 dark:bg-red-900/30 dark:text-red-200 dark:ring-red-800'
-    case '隠岐の島町':
-      return 'bg-amber-50 text-amber-800 ring-amber-200 dark:bg-amber-900/30 dark:text-amber-200 dark:ring-amber-800'
-    default:
-      return 'bg-app-surface-2 text-app-muted ring-app-border/70'
-  }
 }
 
 const formatDate = (dateString: string) => {
