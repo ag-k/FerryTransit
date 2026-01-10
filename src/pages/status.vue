@@ -423,18 +423,7 @@ const localShipsUpdatedAt = computed(() => {
   ])
 })
 
-const updatedAtForDisplay = computed(() => {
-  // Prefer API-provided timestamps; fall back to store fetch time
-  return (
-    shipStatus.value?.ferry?.updated_at ||
-    shipStatus.value?.isokaze?.updated_at ||
-    shipStatus.value?.isokaze?.updated ||
-    shipStatus.value?.dozen?.updated_at ||
-    shipStatus.value?.dozen?.updated ||
-    lastFetchTime.value ||
-    null
-  )
-})
+const updatedAtForDisplay = computed(() => lastFetchTime.value || null)
 
 // Methods
 const getStatusClass = (status?: number | null) => {

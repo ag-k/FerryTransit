@@ -35,6 +35,7 @@ import { computed } from 'vue'
 import type { Port } from '~/types'
 import FerryMap from '~/components/map/FerryMap.vue'
 import SecondaryButton from '~/components/common/SecondaryButton.vue'
+import { useSettingsStore } from '@/stores/settings'
 
 type RouteSegment = { from: string; to: string; ship?: string }
 

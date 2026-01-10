@@ -49,6 +49,7 @@ import type { RouteData, RoutePoint, RoutesDataFile } from '~/types/route'
 import { getJSONData } from '~/composables/useDataPublish'
 import { createLogger } from '~/utils/logger'
 import { getGoogleMapsLocaleOptions } from '~/utils/googleMapsLocale'
+import { useSettingsStore } from '@/stores/settings'
 
 // Props
 type RouteSegment = { from: string; to: string; ship?: string }

@@ -76,7 +76,7 @@ describe("DatePicker", () => {
   it("shows hint when provided", () => {
     const wrapper = mountComponent({ hint: "Choose a date" });
 
-    expect(wrapper.find("small.text-gray-500").text()).toBe("Choose a date");
+    expect(wrapper.find("small.text-app-muted").text()).toBe("Choose a date");
   });
 
   it("disables input when disabled prop is true", () => {
