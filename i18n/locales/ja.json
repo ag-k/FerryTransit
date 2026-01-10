@@ -517,6 +517,15 @@
       "byBus": "バスでのアクセス",
       "byCar": "車でのアクセス",
       "walking": "徒歩でのアクセス"
+    },
+    "modal": {
+      "tabsLabel": "タブ",
+      "noMap": "地図情報がありません。",
+      "boardingTitle": "乗り場",
+      "reservationRequired": "要予約",
+      "reference": "参照",
+      "target": "対象:",
+      "pinMissing": "（ピン位置未登録）"
     }
   },
   "admin": {
