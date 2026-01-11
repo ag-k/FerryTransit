@@ -38,7 +38,7 @@
       </div>
 
     <div class="mb-3">
-      <h3 class="text-lg font-semibold dark:text-white">{{ getPortName(portId) }}</h3>
+      <h3 class="text-sm sm:text-lg font-semibold dark:text-white">{{ getPortName(portId) }}</h3>
       <p v-if="portInfo" class="text-sm text-gray-600 dark:text-gray-400 mt-1">
         {{ locale === 'ja' ? portInfo.island_ja : portInfo.island_en }}
       </p>
