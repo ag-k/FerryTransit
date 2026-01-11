@@ -280,16 +280,17 @@ const initializeMap = async () => {
   isLoading.value = true
 
   try {
-    const loader = new Loader({
-      apiKey: GOOGLE_MAPS_API_KEY,
-      version: 'weekly',
-      libraries: ['places', 'marker', 'geometry', 'routes'],
-      mapIds: ['ca20a2dbd2ddb20bccb48876'],
-      language: googleMapsLocaleOptions.value.language,
-      region: googleMapsLocaleOptions.value.region
-    })
-
-    const google = await loader.load()
+    const existingGoogle = typeof window !== 'undefined' ? (window as any).google : null
+    const google = existingGoogle?.maps
+      ? existingGoogle
+      : await new Loader({
+        apiKey: GOOGLE_MAPS_API_KEY,
+        version: 'weekly',
+        libraries: ['places', 'marker', 'geometry', 'routes'],
+        mapIds: ['ca20a2dbd2ddb20bccb48876'],
+        language: googleMapsLocaleOptions.value.language,
+        region: googleMapsLocaleOptions.value.region
+      }).load()
 
     // 地図の初期化
     map.value = new google.maps.Map(mapContainer.value, {
