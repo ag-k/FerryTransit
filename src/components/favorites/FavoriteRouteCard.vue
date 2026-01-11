@@ -28,7 +28,6 @@
           </svg>
           <span class="text-sm text-gray-600 dark:text-gray-400">{{ $t('favorites.route') }}</span>
         </div>
-        <FavoriteButton :type="'route'" :route="{ departure, arrival }" />
       </div>
 
     <div class="flex items-center justify-between mb-2">
@@ -175,7 +174,6 @@ import { useFerryStore } from '~/stores/ferry'
 import { useFavoriteStore } from '~/stores/favorite'
 import { useI18n } from 'vue-i18n'
 import PrimaryButton from '~/components/common/PrimaryButton.vue'
-import FavoriteButton from './FavoriteButton.vue'
 import ConfirmDialog from '~/components/ui/ConfirmDialog.vue'
 import { createLogger } from '~/utils/logger'
 import PortBadges from '@/components/common/PortBadges.vue'
