@@ -5,7 +5,7 @@
       <h2 class="text-xl font-semibold mb-4 dark:text-white">{{ $t('favorites.favoriteRoutes') }}</h2>
       <div 
         v-if="editMode"
-        class="grid gap-4 sm:grid-cols-1 md:grid-cols-2 lg:grid-cols-3"
+        class="grid gap-4 sm:grid-cols-1 md:grid-cols-2 lg:grid-cols-2"
       >
         <Draggable
           v-model="favoriteRoutes"
@@ -32,7 +32,7 @@
       </div>
       <div 
         v-else
-        class="grid gap-4 sm:grid-cols-1 md:grid-cols-2 lg:grid-cols-3"
+        class="grid gap-4 sm:grid-cols-1 md:grid-cols-2 lg:grid-cols-2"
       >
         <FavoriteRouteCard
           v-for="route in favoriteRoutes"
@@ -49,7 +49,7 @@
       <h2 class="text-xl font-semibold mb-4 dark:text-white">{{ $t('favorites.favoritePorts') }}</h2>
       <div 
         v-if="editMode"
-        class="grid gap-4 sm:grid-cols-1 md:grid-cols-2 lg:grid-cols-3"
+        class="grid gap-4 sm:grid-cols-1 md:grid-cols-2 lg:grid-cols-2"
       >
         <Draggable
           v-model="favoritePorts"
@@ -75,7 +75,7 @@
       </div>
       <div 
         v-else
-        class="grid gap-4 sm:grid-cols-1 md:grid-cols-2 lg:grid-cols-3"
+        class="grid gap-4 sm:grid-cols-1 md:grid-cols-2 lg:grid-cols-2"
       >
         <FavoritePortCard
           v-for="port in favoritePorts"
