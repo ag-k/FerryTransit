@@ -194,6 +194,11 @@ export const setupPublicPageStubs = async (page: Page, options: StubOptions = {}
         close() { /* noop */ }
         setPosition() { /* noop */ }
       }
+      class MockLatLng {
+        constructor(public latValue: number, public lngValue: number) {}
+        lat() { return this.latValue }
+        lng() { return this.lngValue }
+      }
       class MockLatLngBounds {
         extend() { return this }
         union() { return this }
@@ -205,6 +210,7 @@ export const setupPublicPageStubs = async (page: Page, options: StubOptions = {}
         maps: {
           version: 'test',
           Map: MockMap,
+          LatLng: MockLatLng,
           LatLngBounds: MockLatLngBounds,
           Marker: MockMarker,
           Polyline: MockPolyline,
