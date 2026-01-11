@@ -26,4 +26,5 @@
   --color-app-primary-2: hsl(var(--app-primary-2));
   --color-app-nav-from: hsl(var(--app-nav-from));
   --color-app-nav-to: hsl(var(--app-nav-to));
+  --font-sans: "Inter", "BIZ UDPGothic", system-ui, -apple-system, "Segoe UI", sans-serif;
 }

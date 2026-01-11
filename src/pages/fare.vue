@@ -18,34 +18,19 @@
     <!-- Fare tables -->
     <div v-else>
       <!-- Tab navigation -->
-      <div
-        ref="tabBarRef"
-        class="sticky top-0 z-20 mb-6 border-b border-gray-200 dark:border-gray-700 bg-white/90 dark:bg-gray-900/90 backdrop-blur shadow-sm"
-      >
-        <nav
-          class="-mb-px flex gap-1 overflow-x-auto scrollbar-hide"
-          aria-label="Tabs"
-          role="tablist"
-          style="scrollbar-width: none; -ms-overflow-style: none;"
-        >
-          <button
-            v-for="tab in tabs"
-            :key="tab.id"
-            type="button"
-            role="tab"
-            :id="`fare-tab-${tab.id}`"
-            :aria-controls="`fare-tabpanel-${tab.id}`"
-            :aria-selected="activeTab === tab.id"
-            :tabindex="activeTab === tab.id ? 0 : -1"
-            :class="[
-              'flex-shrink-0 select-none whitespace-nowrap rounded-t-lg border px-4 py-2.5 text-sm font-semibold transition-colors',
+      <div ref="tabBarRef"
+        class="sticky top-0 z-20 mb-6 border-b border-gray-200 dark:border-gray-700 dark:bg-gray-900/90 backdrop-blur">
+        <nav class="-mb-px flex space-x-1 overflow-x-auto scrollbar-hide" aria-label="Tabs" role="tablist"
+          style="scrollbar-width: none; -ms-overflow-style: none;">
+          <button v-for="tab in tabs" :key="tab.id" type="button" role="tab" :id="`fare-tab-${tab.id}`"
+            :aria-controls="`fare-tabpanel-${tab.id}`" :aria-selected="activeTab === tab.id"
+            :tabindex="activeTab === tab.id ? 0 : -1" :class="[
+              'flex-shrink-0 select-none whitespace-nowrap rounded-t-lg px-4 py-2 text-sm font-medium transition-colors',
               'focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 focus-visible:ring-offset-2 dark:focus-visible:ring-offset-gray-900',
               activeTab === tab.id
-                ? 'border-gray-200 border-b-white bg-white text-blue-700 dark:border-gray-700 dark:border-b-gray-900 dark:bg-gray-900 dark:text-blue-300'
-                : 'border-transparent bg-transparent text-gray-600 hover:bg-gray-50 hover:text-gray-900 dark:text-gray-300 dark:hover:bg-gray-800/50 dark:hover:text-white'
-            ]"
-            @click="activeTab = tab.id"
-          >
+                ? 'bg-app-surface-2 text-app-primary border-b-2 border-app-primary-2'
+                : 'text-app-muted hover:text-app-fg hover:bg-app-surface-2/60'
+            ]" @click="activeTab = tab.id">
             {{ $t(tab.nameKey) }}
           </button>
         </nav>
@@ -56,14 +41,8 @@
       </p>
 
       <!-- Oki Kisen Ferry -->
-      <div
-        v-show="activeTab === 'okiKisen'"
-        id="fare-tabpanel-okiKisen"
-        role="tabpanel"
-        tabindex="0"
-        aria-labelledby="fare-tab-okiKisen"
-        class="mb-12"
-      >
+      <div v-show="activeTab === 'okiKisen'" id="fare-tabpanel-okiKisen" role="tabpanel" tabindex="0"
+        aria-labelledby="fare-tab-okiKisen" class="mb-12">
         <div class="mb-4">
           <div class="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
             <h3 class="text-xl font-medium dark:text-white">{{ $t('OKI_KISEN_FERRY') }}</h3>
@@ -356,14 +335,8 @@
       </div>
 
       <!-- Naiko Sen (Ferry Dozen / Isokaze) -->
-      <div
-        v-show="activeTab === 'naikoSen'"
-        id="fare-tabpanel-naikoSen"
-        role="tabpanel"
-        tabindex="0"
-        aria-labelledby="fare-tab-naikoSen"
-        class="mb-12"
-      >
+      <div v-show="activeTab === 'naikoSen'" id="fare-tabpanel-naikoSen" role="tabpanel" tabindex="0"
+        aria-labelledby="fare-tab-naikoSen" class="mb-12">
         <div class="mb-4">
           <div class="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
             <h3 class="text-xl font-medium dark:text-white">{{ $t('NAIKO_SEN') }}</h3>
@@ -532,14 +505,8 @@
       </div>
 
       <!-- Rainbow Jet -->
-      <div
-        v-show="activeTab === 'rainbowJet'"
-        id="fare-tabpanel-rainbowJet"
-        role="tabpanel"
-        tabindex="0"
-        aria-labelledby="fare-tab-rainbowJet"
-        class="mb-12"
-      >
+      <div v-show="activeTab === 'rainbowJet'" id="fare-tabpanel-rainbowJet" role="tabpanel" tabindex="0"
+        aria-labelledby="fare-tab-rainbowJet" class="mb-12">
         <div class="mb-4">
           <div class="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
             <h3 class="text-xl font-medium dark:text-white">{{ $t('RAINBOWJET') }}</h3>
