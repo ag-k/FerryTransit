@@ -33,8 +33,8 @@ export default {
       },
       fontFamily: {
         sans: [
+          '"Inter"',
           '"BIZ UDPGothic"',
-          '"Noto Sans JP"',
           'system-ui',
           '-apple-system',
           '"Segoe UI"',
