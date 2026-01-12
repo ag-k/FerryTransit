@@ -108,6 +108,7 @@
   "CANCELLED": "欠航",
   "FULLY_CANCELLED": "全便欠航",
   "PARTIALLY_CANCELLED": "下記の便より欠航",
+  "CANCELLED_FROM_SERVICE": "以下の便より欠航",
   "CHANGED": "変更あり",
   "KURI_CANCELLED": "来居(知夫村)行きの下記の便を欠航",
   "SERVICE_RESUMED": "下記の便より運航再開",

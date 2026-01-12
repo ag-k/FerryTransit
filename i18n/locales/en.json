@@ -111,6 +111,7 @@
   "NORMAL_SERVICE": "Normal service.",
   "FULLY_CANCELLED": "Fully cancelled.",
   "PARTIALLY_CANCELLED": "Canceled from the following trip.",
+  "CANCELLED_FROM_SERVICE": "Canceled from the following trip.",
   "CHANGED": "Changed.",
   "KURI_CANCELLED": "The following trip is cancelled.",
   "SERVICE_RESUMED": "Normal service will be resumed from the following trip.",
