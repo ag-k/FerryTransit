@@ -152,7 +152,7 @@
                       data-test="isokaze-detail">
                       <div v-if="hasOperationInfo(shipStatus.isokaze)" class="space-y-2">
                         <h4 class="text-sm font-semibold text-gray-700 dark:text-gray-200">
-                          {{ $t('DEPARTURE') }}/{{ $t('ARRIVAL') }}
+                          {{ $t('CANCELLED_FROM_SERVICE') }}
                         </h4>
                         <div class="overflow-x-auto rounded-md border border-gray-200 dark:border-gray-700">
                           <table class="min-w-full text-sm" data-test="isokaze-operation-table">
@@ -272,7 +272,7 @@
                       data-test="dozen-detail">
                       <div v-if="hasOperationInfo(shipStatus.dozen)" class="space-y-2">
                         <h4 class="text-sm font-semibold text-gray-700 dark:text-gray-200">
-                          {{ $t('DEPARTURE') }}/{{ $t('ARRIVAL') }}
+                          {{ $t('CANCELLED_FROM_SERVICE') }}
                         </h4>
                         <div class="overflow-x-auto rounded-md border border-gray-200 dark:border-gray-700">
                           <table class="min-w-full text-sm" data-test="dozen-operation-table">
