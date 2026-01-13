@@ -4,6 +4,11 @@ export type SplitWaveValueResult = {
   note: string
 }
 
+export type ParsedWaveHeights = {
+  m1: number | null
+  m2: number | null
+}
+
 /**
  * 波高の文字列をUI表示用に分解する。
  *
@@ -56,4 +61,25 @@ export function splitWaveValue(wave?: string | null): SplitWaveValueResult {
   const tail = (match[3] ?? '').trim()
   const note = [tail, noteFromParens].filter(Boolean).join(' ')
   return { value, unit, note }
+}
+
+export function parseWaveHeights(wave?: string | null): ParsedWaveHeights {
+  const raw = (wave ?? '').trim()
+  if (!raw || raw === '-') {
+    return { m1: null, m2: null }
+  }
+
+  const normalized = raw.replace(/ｍ/g, 'm')
+  const matches = normalized.match(/[0-9]+(?:\.[0-9]+)?/g)
+  if (!matches || matches.length === 0) {
+    return { m1: null, m2: null }
+  }
+
+  const first = Number(matches[0])
+  const second = Number(matches[1] ?? matches[0])
+
+  return {
+    m1: Number.isFinite(first) ? first : null,
+    m2: Number.isFinite(second) ? second : null
+  }
 }

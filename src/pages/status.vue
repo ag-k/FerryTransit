@@ -43,6 +43,9 @@
                       {{ shipStatus.ferry.ferryComment }}
                     </p>
                   </div>
+                  <div class="mt-3">
+                    <CancelRiskCard mode="ferry" :probability="ferryCancelProbability" />
+                  </div>
                 </div>
               </div>
               <div>
@@ -63,9 +66,13 @@
                       {{ shipStatus.ferry.fastFerryComment }}
                     </p>
                   </div>
+                  <div class="mt-3">
+                    <CancelRiskCard mode="rainbowjet" :probability="rainbowjetCancelProbability"
+                      :suspended="!hasRainbowJetTomorrow" />
+                  </div>
                 </div>
               </div>
-              <div class="md:col-span-2 mt-3">
+              <div class="md:col-span-2">
                 <div
                   class="rounded-lg border border-sky-200/70 bg-gradient-to-br from-sky-50 via-white to-blue-50 p-3 shadow-sm dark:border-slate-600 dark:from-slate-800 dark:via-slate-800/90 dark:to-slate-700">
                   <div class="mx-auto w-full max-w-[460px]">
@@ -100,6 +107,13 @@
             </div>
           </div>
         </div>
+      </div>
+
+      <div class="md:col-span-2">
+        <p class="flex items-start gap-2 text-left text-xs leading-relaxed text-slate-500 dark:text-slate-300">
+          <Icon name="heroicons:information-circle" class="mt-0.5 !h-4 !w-4 flex-shrink-0" />
+          <span>{{ $t('cancelRisk.disclaimer') }}</span>
+        </p>
       </div>
 
       <!-- 島前内航船（いそかぜ + フェリーどうぜん） -->
@@ -385,8 +399,11 @@
 import { useFerryStore } from '@/stores/ferry'
 import { useFerryData } from '@/composables/useFerryData'
 import type { ShipStatus, FerryStatus } from '~/types'
-import { splitWaveValue } from '@/utils/wave'
+import { splitWaveValue, parseWaveHeights } from '@/utils/wave'
+import { predictCancelProbability } from '@/utils/cancelRisk'
+import { addDaysJst, formatDateYmdJst, parseYmdAsJstMidnight, getTodayJstMidnight } from '@/utils/jstDate'
 import SecondaryButton from '@/components/common/SecondaryButton.vue'
+import CancelRiskCard from '@/components/CancelRiskCard.vue'
 
 const ferryStore = process.client ? useFerryStore() : null
 const { updateShipStatus } = useFerryData()
@@ -424,6 +441,7 @@ const localShipsUpdatedAt = computed(() => {
 })
 
 const updatedAtForDisplay = computed(() => lastFetchTime.value || null)
+const timetableData = computed(() => ferryStore?.timetableData || [])
 
 // Methods
 const getStatusClass = (status?: number | null) => {
@@ -716,6 +734,35 @@ const getTripDepartureTime = (trip: any) => formatShipTime(trip?.departure_time 
 
 const todayWaveParts = computed(() => splitWaveValue(shipStatus.value?.ferry?.todayWave ?? null))
 const tomorrowWaveParts = computed(() => splitWaveValue(shipStatus.value?.ferry?.tomorrowWave ?? null))
+const tomorrowWaveHeights = computed(() => parseWaveHeights(shipStatus.value?.ferry?.tomorrowWave ?? null))
+const ferryCancelProbability = computed(() => {
+  const { m1, m2 } = tomorrowWaveHeights.value
+  if (m1 === null || m2 === null) return null
+  return predictCancelProbability(m1, m2, 'ferry')
+})
+const rainbowjetCancelProbability = computed(() => {
+  const { m1, m2 } = tomorrowWaveHeights.value
+  if (m1 === null || m2 === null) return null
+  return predictCancelProbability(m1, m2, 'rainbowjet')
+})
+const hasRainbowJetTomorrow = computed(() => {
+  if (!timetableData.value.length) return true
+
+  const tomorrow = addDaysJst(getTodayJstMidnight(), 1)
+  const targetYmd = formatDateYmdJst(tomorrow)
+  const targetDate = parseYmdAsJstMidnight(targetYmd)
+
+  const normalizeYmd = (value: string): string => value.replace(/\//g, '-').slice(0, 10)
+  const isActiveOn = (trip: { startDate: string; endDate: string }) => {
+    const startYmd = normalizeYmd(trip.startDate)
+    const endYmd = normalizeYmd(trip.endDate)
+    const startDate = parseYmdAsJstMidnight(startYmd)
+    const endExclusive = addDaysJst(parseYmdAsJstMidnight(endYmd), 1)
+    return targetDate >= startDate && targetDate < endExclusive
+  }
+
+  return timetableData.value.some((trip) => trip.name === 'RAINBOWJET' && isActiveOn(trip))
+})
 
 const refreshStatus = async () => {
   isLoading.value = true

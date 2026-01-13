@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest'
-import { splitWaveValue } from '@/utils/wave'
+import { splitWaveValue, parseWaveHeights } from '@/utils/wave'
 
 describe('splitWaveValue', () => {
   it('空やハイフンはプレースホルダを返す', () => {
@@ -39,5 +39,20 @@ describe('splitWaveValue', () => {
       unit: 'm',
       note: '（うねり）'
     })
+  })
+})
+
+describe('parseWaveHeights', () => {
+  it('空やハイフンはnullを返す', () => {
+    expect(parseWaveHeights(null)).toEqual({ m1: null, m2: null })
+    expect(parseWaveHeights('-')).toEqual({ m1: null, m2: null })
+  })
+
+  it('単一値はm1/m2に同値を入れる', () => {
+    expect(parseWaveHeights('2.0m')).toEqual({ m1: 2, m2: 2 })
+  })
+
+  it('午前/午後の2値を抽出する', () => {
+    expect(parseWaveHeights('2.5m-2.0m')).toEqual({ m1: 2.5, m2: 2 })
   })
 })

@@ -498,6 +498,27 @@
       "enableMapDesc": "Display map in timetable and transit search"
     }
   },
+  "cancelRisk": {
+    "title": "Tomorrow's cancellation forecast",
+    "disclaimer": "Cancellation forecasts are this app's own estimates based on the past five years of service data and wave height forecasts. They are not official estimates from the operator, so please refrain from contacting the operator about these forecasts.",
+    "unavailable": "Unavailable",
+    "suspendedLabel": "No service",
+    "suspendedMessage": "There is no Rainbow Jet service scheduled tomorrow.",
+    "level": {
+      "low": "Low",
+      "lowish": "Slightly low",
+      "caution": "Caution",
+      "high": "High",
+      "very_high": "Very high"
+    },
+    "message": {
+      "low": "The cancellation risk is expected to be low.",
+      "lowish": "The cancellation risk is expected to be slightly low.",
+      "caution": "There is a possibility of cancellation. Please check the latest service status.",
+      "high": "The cancellation risk is expected to be high. Please consider alternatives.",
+      "very_high": "The cancellation risk is expected to be very high. Please secure alternatives."
+    }
+  },
   "port": {
     "type": {
       "mainland": "Mainland",
