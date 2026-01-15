@@ -1,4 +1,4 @@
-import { format } from 'date-fns'
+import { format, startOfDay, endOfDay, subDays, startOfMonth, endOfMonth, differenceInCalendarDays } from 'date-fns'
 import { toZonedTime } from 'date-fns-tz'
 import { doc, getDoc, getDocs, collection, where, orderBy, query, setDoc, increment } from 'firebase/firestore'
 
@@ -10,8 +10,16 @@ import { doc, getDoc, getDocs, collection, where, orderBy, query, setDoc, increm
  * アクセス統計の追跡・取得を行うcomposable
  */
 export const useAnalytics = () => {
-  const { $firebase, $isOffline } = useNuxtApp()
-  const db = $firebase.db
+  const nuxtApp = typeof useNuxtApp === 'function' ? useNuxtApp() : null
+  const $firebase = nuxtApp?.$firebase
+  const $isOffline = nuxtApp?.$isOffline ?? false
+
+  const getDb = () => {
+    if (!$firebase?.db) {
+      throw new Error('Firebase plugin not initialized')
+    }
+    return $firebase.db
+  }
   
   // ========================================
   // タイムゾーン関連ユーティリティ
@@ -64,7 +72,7 @@ export const useAnalytics = () => {
    */
   const trackPageView = async ({ pagePath }: { pagePath: string }) => {
     // オフライン時はスキップ
-    if ($isOffline) {
+    if ($isOffline || !$firebase?.db) {
       return
     }
     
@@ -106,7 +114,7 @@ export const useAnalytics = () => {
    */
   const trackSearch = async ({ depId, arrId, datetime }: { depId: string; arrId: string; datetime?: string }) => {
     // オフライン時はスキップ
-    if ($isOffline) {
+    if ($isOffline || !$firebase?.db) {
       return
     }
     
@@ -162,7 +170,7 @@ export const useAnalytics = () => {
    */
   const updateAnalyticsDoc = async (docPath: string, data: any) => {
     const [collectionName, docId] = docPath.split('/')
-    const docRef = doc(db, collectionName, docId)
+    const docRef = doc(getDb(), collectionName, docId)
     await setDoc(docRef, data, { merge: true })
   }
   
@@ -174,7 +182,7 @@ export const useAnalytics = () => {
    * 日次統計の取得
    */
   const getDailyAnalytics = async (dateKey: string) => {
-    const docRef = doc(db, 'analytics_daily', dateKey)
+    const docRef = doc(getDb(), 'analytics_daily', dateKey)
     const docSnap = await getDoc(docRef)
     
     if (docSnap.exists()) {
@@ -187,7 +195,7 @@ export const useAnalytics = () => {
    * 月次統計の取得
    */
   const getMonthlyAnalytics = async (monthKey: string) => {
-    const docRef = doc(db, 'analytics_monthly', monthKey)
+    const docRef = doc(getDb(), 'analytics_monthly', monthKey)
     const docSnap = await getDoc(docRef)
     
     if (docSnap.exists()) {
@@ -200,7 +208,7 @@ export const useAnalytics = () => {
    * 時間別統計の取得
    */
   const getHourlyAnalytics = async (hourKey: string) => {
-    const docRef = doc(db, 'analytics_hourly', hourKey)
+    const docRef = doc(getDb(), 'analytics_hourly', hourKey)
     const docSnap = await getDoc(docRef)
     
     if (docSnap.exists()) {
@@ -244,7 +252,7 @@ export const useAnalytics = () => {
       const endKey = granularity === 'daily' ? getDateKey(endDate) : getMonthKey(endDate)
       
       // クエリ条件を構築
-      const collectionRef = collection(db, collectionName)
+      const collectionRef = collection(getDb(), collectionName)
       const constraints = [
         where('__name__', '>=', startKey),
         where('__name__', '<=', endKey),
@@ -397,6 +405,374 @@ export const useAnalytics = () => {
       search: doc.searchTotal || 0
     }))
   }
+
+  // ========================================
+  // レガシー実装（管理画面向け）
+  // ========================================
+
+  const getAdminCollection = async <T = any>(collectionName: string) => {
+    if (typeof useAdminFirestore !== 'function') {
+      return [] as T[]
+    }
+    let admin: { getCollection?: <D>(name: string) => Promise<D[]> } | null = null
+    try {
+      admin = useAdminFirestore()
+    } catch {
+      return [] as T[]
+    }
+    if (!admin || typeof admin.getCollection !== 'function') {
+      return [] as T[]
+    }
+    const result = await admin.getCollection<T>(collectionName)
+    return Array.isArray(result) ? result : ([] as T[])
+  }
+
+  const normalizeDate = (value: any) => {
+    const date = value instanceof Date ? value : new Date(value)
+    return Number.isNaN(date.getTime()) ? null : date
+  }
+
+  const isWithinRange = (value: any, start: Date, end: Date) => {
+    const date = normalizeDate(value)
+    if (!date) {
+      return false
+    }
+    return date >= start && date <= end
+  }
+
+  const getDateRange = (period: 'day' | 'week' | 'month', baseDate: Date) => {
+    const base = normalizeDate(baseDate) ?? new Date()
+    if (period === 'week') {
+      return {
+        start: startOfDay(subDays(base, 6)),
+        end: endOfDay(base)
+      }
+    }
+    if (period === 'month') {
+      return {
+        start: startOfMonth(base),
+        end: endOfMonth(base)
+      }
+    }
+    return {
+      start: startOfDay(base),
+      end: endOfDay(base)
+    }
+  }
+
+  const getPageViewStats = async (period: 'day' | 'week' | 'month', date: Date) => {
+    const { start, end } = getDateRange(period, date)
+    const pageViews = await getAdminCollection<any>('pageViews')
+    const filtered = pageViews.filter((view) => isWithinRange(view.timestamp, start, end))
+
+    const pageStats: Record<string, number> = {}
+    const hourlyStats = Array(24).fill(0)
+
+    filtered.forEach((view) => {
+      const pagePath = view.page || view.path || 'unknown'
+      pageStats[pagePath] = (pageStats[pagePath] || 0) + 1
+
+      const timestamp = normalizeDate(view.timestamp)
+      if (timestamp) {
+        hourlyStats[timestamp.getHours()] += 1
+      }
+    })
+
+    return {
+      total: filtered.length,
+      pageStats,
+      hourlyStats
+    }
+  }
+
+  const getUniqueUsersCount = async (startDate: Date, endDate: Date) => {
+    const pageViews = await getAdminCollection<any>('pageViews')
+    const start = startOfDay(startDate)
+    const end = endOfDay(endDate)
+    const uniqueIds = new Set<string>()
+
+    pageViews.forEach((view) => {
+      if (!isWithinRange(view.timestamp, start, end)) {
+        return
+      }
+      const id = view.userId || view.sessionId
+      if (id) {
+        uniqueIds.add(id)
+      }
+    })
+
+    return uniqueIds.size
+  }
+
+  const calculateGrowth = (current: number, previous: number) => {
+    if (!previous) {
+      return 0
+    }
+    return Math.round(((current - previous) / previous) * 10000) / 100
+  }
+
+  const calculateBounceRate = (sessions: any[]) => {
+    if (sessions.length === 0) {
+      return 0
+    }
+    const bounceCount = sessions.filter((session) => (session.pageCount ?? 0) <= 1).length
+    return Math.round(((bounceCount / sessions.length) * 100) * 100) / 100
+  }
+
+  const getAccessTrends = async (startDate: Date, endDate: Date) => {
+    const start = startOfDay(startDate)
+    const end = endOfDay(endDate)
+    const pageViews = await getAdminCollection<any>('pageViews')
+    const filteredPageViews = pageViews.filter((view) => isWithinRange(view.timestamp, start, end))
+    const uniqueUsers = await getUniqueUsersCount(startDate, endDate)
+
+    const periodDays = Math.max(differenceInCalendarDays(end, start) + 1, 1)
+    const previousStart = startOfDay(subDays(start, periodDays))
+    const previousEnd = endOfDay(subDays(start, 1))
+
+    const previousPageViews = await getAdminCollection<any>('pageViews')
+    const filteredPreviousPageViews = previousPageViews.filter((view) =>
+      isWithinRange(view.timestamp, previousStart, previousEnd)
+    )
+    const previousUniqueUsers = await getUniqueUsersCount(previousStart, previousEnd)
+
+    const sessions = await getAdminCollection<any>('sessions')
+    const filteredSessions = sessions.filter((session) => isWithinRange(session.startTime, start, end))
+
+    const previousSessions = await getAdminCollection<any>('sessions')
+    const filteredPreviousSessions = previousSessions.filter((session) =>
+      isWithinRange(session.startTime, previousStart, previousEnd)
+    )
+
+    const total = filteredPageViews.length
+    const avgSessionDuration = filteredSessions.length > 0
+      ? Math.round(filteredSessions.reduce((sum, session) => sum + (session.duration || 0), 0) / filteredSessions.length)
+      : 0
+    const bounceRate = calculateBounceRate(filteredSessions)
+
+    const hourlyData = Array(24).fill(0)
+    filteredPageViews.forEach((view) => {
+      const timestamp = normalizeDate(view.timestamp)
+      if (timestamp) {
+        hourlyData[timestamp.getHours()] += 1
+      }
+    })
+
+    return {
+      total,
+      uniqueUsers,
+      avgSessionDuration,
+      bounceRate,
+      hourlyData,
+      growth: calculateGrowth(total, filteredPreviousPageViews.length),
+      userGrowth: calculateGrowth(uniqueUsers, previousUniqueUsers),
+      sessionGrowth: calculateGrowth(filteredSessions.length, filteredPreviousSessions.length),
+      bounceGrowth: calculateGrowth(bounceRate, calculateBounceRate(filteredPreviousSessions))
+    }
+  }
+
+  const getAccessTrend = async (days: number = 30) => {
+    if (days <= 0) {
+      return []
+    }
+
+    const pageViews = await getAdminCollection<any>('pageViews')
+    const endDate = startOfDay(new Date())
+    const dateCounts: Record<string, number> = {}
+
+    pageViews.forEach((view) => {
+      const timestamp = normalizeDate(view.timestamp)
+      if (!timestamp) {
+        return
+      }
+      const dateKey = format(timestamp, 'yyyy-MM-dd')
+      dateCounts[dateKey] = (dateCounts[dateKey] || 0) + 1
+    })
+
+    return Array.from({ length: days }, (_, index) => {
+      const date = subDays(endDate, index)
+      const dateKey = format(date, 'yyyy-MM-dd')
+      return {
+        date: dateKey,
+        count: dateCounts[dateKey] || 0
+      }
+    })
+  }
+
+  const PAGE_TITLES: Record<string, string> = {
+    '/': 'ホーム',
+    '/transit': '航路検索',
+    '/timetable': '時刻表',
+    '/fare': '運賃',
+    '/status': '運航状況',
+    '/news': 'お知らせ'
+  }
+
+  const getPopularPages = async (startDate: Date, endDate: Date, limit: number = 10) => {
+    const start = startOfDay(startDate)
+    const end = endOfDay(endDate)
+    const pageViews = await getAdminCollection<any>('pageViews')
+    const filtered = pageViews.filter((view) => isWithinRange(view.timestamp, start, end))
+
+    const counts: Record<string, number> = {}
+    filtered.forEach((view) => {
+      const pagePath = view.page || view.path
+      if (!pagePath) {
+        return
+      }
+      counts[pagePath] = (counts[pagePath] || 0) + 1
+    })
+
+    return Object.entries(counts)
+      .map(([path, views]) => ({
+        path,
+        views,
+        title: PAGE_TITLES[path] || path
+      }))
+      .sort((a, b) => b.views - a.views)
+      .slice(0, limit)
+  }
+
+  const getReferrerStats = async (startDate: Date, endDate: Date) => {
+    const start = startOfDay(startDate)
+    const end = endOfDay(endDate)
+    const pageViews = await getAdminCollection<any>('pageViews')
+    const filtered = pageViews.filter((view) => isWithinRange(view.timestamp, start, end))
+
+    const stats: Record<string, number> = {}
+    filtered.forEach((view) => {
+      const referrer = view.referrer
+      if (!referrer) {
+        stats.direct = (stats.direct || 0) + 1
+        return
+      }
+
+      try {
+        const hostname = new URL(referrer).hostname
+        let key = hostname
+        if (hostname.includes('google.')) {
+          key = 'google'
+        } else if (hostname.includes('yahoo.')) {
+          key = 'yahoo'
+        }
+        stats[key] = (stats[key] || 0) + 1
+      } catch {
+        stats.direct = (stats.direct || 0) + 1
+      }
+    })
+
+    return stats
+  }
+
+  const getErrorStats = async (startDate: Date, endDate: Date) => {
+    const start = startOfDay(startDate)
+    const end = endOfDay(endDate)
+    const errorLogs = await getAdminCollection<any>('errorLogs')
+    const filtered = errorLogs.filter((log) => isWithinRange(log.timestamp, start, end))
+
+    const stats: Record<string, number> = {}
+    filtered.forEach((log) => {
+      const rawType = log.type ?? (log.status != null ? String(log.status) : null)
+      const normalized = rawType === '404' || rawType === '500' || rawType === 'network' ? rawType : 'other'
+      stats[normalized] = (stats[normalized] || 0) + 1
+    })
+
+    return stats
+  }
+
+  const getDeviceStats = async () => {
+    const pageViews = await getAdminCollection<any>('pageViews')
+    const deviceTypes: Record<string, number> = { desktop: 0, mobile: 0, tablet: 0 }
+    const browsers: Record<string, number> = {}
+    const os: Record<string, number> = {}
+
+    pageViews.forEach((view) => {
+      if (view.deviceType) {
+        deviceTypes[view.deviceType] = (deviceTypes[view.deviceType] || 0) + 1
+      }
+      if (view.browser) {
+        browsers[view.browser] = (browsers[view.browser] || 0) + 1
+      }
+      if (view.os) {
+        os[view.os] = (os[view.os] || 0) + 1
+      }
+    })
+
+    return {
+      deviceTypes,
+      browsers,
+      os
+    }
+  }
+
+  const getConversionStats = async (startDate: Date, endDate: Date) => {
+    const start = startOfDay(startDate)
+    const end = endOfDay(endDate)
+    const searchLogs = await getAdminCollection<any>('searchLogs')
+    const filtered = searchLogs.filter((log) => isWithinRange(log.timestamp, start, end))
+
+    const totalSearches = filtered.length
+    const successfulSearches = filtered.filter((log) => log.found).length
+    const conversionRate = totalSearches > 0
+      ? Math.round((successfulSearches / totalSearches) * 100)
+      : 0
+
+    const routeStats: Record<string, { total: number; success: number }> = {}
+    filtered.forEach((log) => {
+      const from = log.departure || log.fromPort
+      const to = log.arrival || log.toPort
+      if (!from || !to) {
+        return
+      }
+      const routeKey = `${from} → ${to}`
+      if (!routeStats[routeKey]) {
+        routeStats[routeKey] = { total: 0, success: 0 }
+      }
+      routeStats[routeKey].total += 1
+      if (log.found) {
+        routeStats[routeKey].success += 1
+      }
+    })
+
+    const routeConversions = Object.entries(routeStats)
+      .map(([route, stats]) => ({
+        route,
+        total: stats.total,
+        success: stats.success,
+        rate: stats.total > 0 ? Math.round(((stats.success / stats.total) * 100) * 100) / 100 : 0
+      }))
+      .sort((a, b) => b.total - a.total)
+
+    return {
+      totalSearches,
+      successfulSearches,
+      conversionRate,
+      routeConversions
+    }
+  }
+
+  const getPageFlowStats = async (startDate: Date, endDate: Date) => {
+    const start = startOfDay(startDate)
+    const end = endOfDay(endDate)
+    const sessions = await getAdminCollection<any>('sessions')
+    const filtered = sessions.filter((session) => isWithinRange(session.startTime, start, end))
+
+    const transitions: Record<string, number> = {}
+    filtered.forEach((session) => {
+      const pageViews: string[] = session.pageViews || []
+      if (pageViews.length < 2) {
+        return
+      }
+      for (let i = 0; i < pageViews.length - 1; i += 1) {
+        const transition = `${pageViews[i]} → ${pageViews[i + 1]}`
+        transitions[transition] = (transitions[transition] || 0) + 1
+      }
+    })
+
+    return Object.entries(transitions)
+      .map(([transition, count]) => ({ transition, count }))
+      .sort((a, b) => b.count - a.count)
+  }
   
   return {
     // 新規実装
@@ -411,35 +787,18 @@ export const useAnalytics = () => {
     getPvTrend,
     
     // レガシー実装（既存のコード互換性維持）
-    getAccessTrends: async (startDate: Date, endDate: Date) => ({
-      total: 0,
-      uniqueUsers: 0,
-      avgSessionDuration: 0,
-      bounceRate: 0,
-      hourlyData: Array(24).fill(0),
-      growth: 0,
-      userGrowth: 0,
-      sessionGrowth: 0,
-      bounceGrowth: 0
-    }),
-    getPopularPages: async (startDate: Date, endDate: Date, limit: number = 10) => [],
-    getReferrerStats: async (startDate: Date, endDate: Date) => ({}),
+    getPageViewStats,
+    getUniqueUsersCount,
+    getAccessTrends,
+    getPopularPages,
+    getReferrerStats,
     getRouteSearchStats: async (limit: number = 10) => [],
-    getErrorStats: async (startDate: Date, endDate: Date) => ({}),
-    getDeviceStats: async () => ({
-      deviceTypes: { desktop: 0, mobile: 0, tablet: 0 },
-      browsers: {},
-      os: { ios: 0, android: 0, other: 0 }
-    }),
+    getErrorStats,
+    getDeviceStats,
     getLocationStats: async (startDate: Date, endDate: Date, limit: number = 10) => [],
-    getConversionStats: async (startDate: Date, endDate: Date) => ({
-      totalSearches: 0,
-      successfulSearches: 0,
-      conversionRate: 0,
-      routeConversions: []
-    }),
-    getPageFlowStats: async (startDate: Date, endDate: Date) => [],
-    getAccessTrend: async (days: number = 30) => [],
+    getConversionStats,
+    getPageFlowStats,
+    getAccessTrend,
     calculateKPIs: async (period: 'day' | 'week' | 'month' = 'month') => ({
       current: { pageViews: 0, uniqueUsers: 0, avgSessionDuration: 0, bounceRate: 0 },
       previous: { pageViews: 0, uniqueUsers: 0, avgSessionDuration: 0, bounceRate: 0 },
