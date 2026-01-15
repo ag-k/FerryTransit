@@ -40,6 +40,21 @@
 | id         | integer | 主キー |
 | name       | string  | 船舶名 |
 
+#### 船舶名のマスタデータ
+
+```json
+[
+  {
+    "id": 1,
+    "name": "いそかぜ"
+  },
+  {
+    "id": 2,
+    "name": "フェリーどうぜん"
+  }
+]
+```
+
 ### ports テーブル
 
 | フィールド | 型      | 説明         |
@@ -47,6 +62,28 @@
 | id         | integer | 主キー       |
 | name       | string  | 港名         |
 | signature  | string  | 港シグネチャ |
+
+#### 港名のマスタデータ
+
+```json
+[
+  {
+    "id": 1,
+    "name": "別府港",
+    "signature": "BEPPU"
+  }
+  {
+    "id": 2,
+    "name": "菱浦港",
+    "signature": "HISHIURA"
+  },
+  {
+    "id": 3,
+    "name": "来居港",
+    "signature": "KURI"
+  }
+]
+```
 
 ### reasons テーブル
 
@@ -174,8 +211,8 @@ GET https://ship.nkk-oki.com/api/status
     "ferry_comment": "気象条件により一部で遅延の可能性があります。",
     "fast_ferry_state": "1便目欠航",
     "fast_ferry_comment": "波浪の影響により午前便を欠航します。",
-    "today_wave": "1.5m（波浪・うねりあり）",
-    "tomorrow_wave": "1.0m（うねり弱）",
+    "today_wave": "1.5m",
+    "tomorrow_wave": "1.0m-2.0m",
     "created_at": "2024-06-15T08:35:02.000000Z",
     "updated_at": "2024-06-15T08:35:02.000000Z"
   }
