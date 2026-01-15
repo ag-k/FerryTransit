@@ -7,7 +7,9 @@ import { getFunctions, connectFunctionsEmulator } from 'firebase/functions'
 
 let db: ReturnType<typeof getFirestore>
 
-export default defineNuxtPlugin(() => {
+export default defineNuxtPlugin({
+  name: 'firebase',
+  setup: () => {
   const config = useRuntimeConfig()
   
   const firebaseConfig = {
@@ -73,18 +75,19 @@ export default defineNuxtPlugin(() => {
     }
   }
 
-  return {
-    provide: {
-      firebase: {
-        app,
-        db,
-        auth,
-        storage,
-        functions,
-        analytics
-      },
-      auth, // 認証用のショートカット
-      adminAuth // 管理者認証用のヘルパー
+    return {
+      provide: {
+        firebase: {
+          app,
+          db,
+          auth,
+          storage,
+          functions,
+          analytics
+        },
+        auth, // 認証用のショートカット
+        adminAuth // 管理者認証用のヘルパー
+      }
     }
   }
 })
