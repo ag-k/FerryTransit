@@ -1,748 +1,449 @@
-import { startOfDay, endOfDay, startOfWeek, endOfWeek, startOfMonth, endOfMonth, subDays, format } from 'date-fns'
-import { ja } from 'date-fns/locale'
-import { where, orderBy, limit as limitConstraint, type QueryConstraint } from 'firebase/firestore'
+import { format } from 'date-fns'
+import { toZonedTime } from 'date-fns-tz'
+import { doc, getDoc, getDocs, collection, where, orderBy, query, setDoc, increment } from 'firebase/firestore'
 
+// ========================================
+// アクセス統計機能（新実装）
+// ========================================
+
+/**
+ * アクセス統計の追跡・取得を行うcomposable
+ */
 export const useAnalytics = () => {
-  const { getCollection } = useAdminFirestore()
-
+  const { $firebase, $isOffline } = useNuxtApp()
+  const db = $firebase.db
+  
   // ========================================
-  // アクセス統計
+  // タイムゾーン関連ユーティリティ
   // ========================================
-
+  
+  const TIMEZONE = 'Asia/Tokyo'
+  
   /**
-   * ページビュー統計の取得
+   * 現在時刻をAsia/Tokyoタイムゾーンで取得
    */
-  const getPageViewStats = async (
-    period: 'day' | 'week' | 'month' = 'day',
-    date: Date = new Date()
-  ) => {
-    let startDate: Date
-    let endDate: Date
-
-    switch (period) {
-      case 'day':
-        startDate = startOfDay(date)
-        endDate = endOfDay(date)
-        break
-      case 'week':
-        startDate = startOfWeek(date, { locale: ja })
-        endDate = endOfWeek(date, { locale: ja })
-        break
-      case 'month':
-        startDate = startOfMonth(date)
-        endDate = endOfMonth(date)
-        break
-    }
-
-    const constraints: QueryConstraint[] = [
-      where('timestamp', '>=', startDate),
-      where('timestamp', '<=', endDate)
-    ]
-
-    const pageViews = await getCollection('pageViews', constraints)
-
-    // ページ別集計
-    const pageStats = pageViews.reduce((acc, view) => {
-      const page = view.page || 'unknown'
-      if (!acc[page]) {
-        acc[page] = 0
-      }
-      acc[page]++
-      return acc
-    }, {} as Record<string, number>)
-
-    // 時間帯別集計
-    const hourlyStats = Array(24).fill(0)
-    pageViews.forEach(view => {
-      const hour = new Date(view.timestamp).getHours()
-      hourlyStats[hour]++
-    })
-
-    return {
-      total: pageViews.length,
-      pageStats,
-      hourlyStats,
-      period: {
-        start: startDate,
-        end: endDate
-      }
-    }
+  const getTokyoDate = (date: Date = new Date()): Date => {
+    return toZonedTime(date, TIMEZONE)
   }
-
+  
   /**
-   * ユニークユーザー数の取得
+   * 日付キーの生成 (YYYY-MM-DD)
    */
-  const getUniqueUsersCount = async (
-    startDate: Date,
-    endDate: Date
-  ): Promise<number> => {
-    const constraints: QueryConstraint[] = [
-      where('timestamp', '>=', startDate),
-      where('timestamp', '<=', endDate)
-    ]
-
-    const pageViews = await getCollection('pageViews', constraints)
-    const uniqueUsers = new Set(pageViews.map(view => view.userId || view.sessionId))
+  const getDateKey = (date: Date = new Date()): string => {
+    return format(getTokyoDate(date), 'yyyy-MM-dd')
+  }
+  
+  /**
+   * 月キーの生成 (YYYY-MM)
+   */
+  const getMonthKey = (date: Date = new Date()): string => {
+    return format(getTokyoDate(date), 'yyyy-MM')
+  }
+  
+  /**
+   * 時間キーの生成 (YYYY-MM-DD-HH)
+   */
+  const getHourKey = (date: Date = new Date()): string => {
+    return `${getDateKey(date)}-${format(getTokyoDate(date), 'HH')}`
+  }
+  
+  /**
+   * 時間帯を取得 (00-23)
+   */
+  const getHour = (date: Date = new Date()): number => {
+    return parseInt(format(getTokyoDate(date), 'HH'), 10)
+  }
+  
+  // ========================================
+  // トラッキング機能
+  // ========================================
+  
+  /**
+   * PVのトラッキング
+   * ルート遷移ごとに呼び出し、日次/月次/時間別のPVをインクリメント
+   */
+  const trackPageView = async ({ pagePath }: { pagePath: string }) => {
+    // オフライン時はスキップ
+    if ($isOffline) {
+      return
+    }
     
-    return uniqueUsers.size
+    try {
+      const dateKey = getDateKey()
+      const monthKey = getMonthKey()
+      const hourKey = getHourKey()
+      const timestamp = { seconds: Math.floor(Date.now() / 1000), nanoseconds: 0 }
+      
+      // 日次統計のインクリメント
+      await updateAnalyticsDoc(`analytics_daily/${dateKey}`, {
+        dateKey,
+        pvTotal: increment(1),
+        updatedAt: timestamp
+      })
+      
+      // 月次統計のインクリメント
+      await updateAnalyticsDoc(`analytics_monthly/${monthKey}`, {
+        monthKey,
+        pvTotal: increment(1),
+        updatedAt: timestamp
+      })
+      
+      // 時間別統計のインクリメント
+      await updateAnalyticsDoc(`analytics_hourly/${hourKey}`, {
+        hourKey,
+        pvTotal: increment(1),
+        updatedAt: timestamp
+      })
+    } catch (error) {
+      // エラーはログに出力のみで、ユーザーには通知しない
+      console.warn('Failed to track page view:', error)
+    }
   }
-
+  
   /**
-   * アクセストレンドの取得
+   * 検索のトラッキング
+   * 検索実行時に呼び出し、検索回数と条件をインクリメント
    */
-  const getAccessTrend = async (days: number = 30) => {
-    const endDate = new Date()
-    const startDate = subDays(endDate, days)
-
-    const pageViews = await getCollection('pageViews', [
-      where('timestamp', '>=', startDate),
-      where('timestamp', '<=', endDate),
-      orderBy('timestamp', 'asc')
-    ])
-
-    // 日別に集計
-    const dailyStats: Record<string, number> = {}
+  const trackSearch = async ({ depId, arrId, datetime }: { depId: string; arrId: string; datetime?: string }) => {
+    // オフライン時はスキップ
+    if ($isOffline) {
+      return
+    }
     
-    // 開始日から終了日まで順番に初期化
-    for (let i = 0; i < days; i++) {
-      const date = format(subDays(endDate, days - 1 - i), 'yyyy-MM-dd')
-      dailyStats[date] = 0
-    }
-
-    pageViews.forEach(view => {
-      const date = format(new Date(view.timestamp), 'yyyy-MM-dd')
-      if (dailyStats[date] !== undefined) {
-        dailyStats[date]++
-      }
-    })
-
-    return Object.entries(dailyStats)
-      .sort(([a], [b]) => a.localeCompare(b))
-      .map(([date, count]) => ({ date, count }))
-  }
-
-  // ========================================
-  // 検索統計
-  // ========================================
-
-  /**
-   * 人気検索ルートの取得
-   */
-  const getPopularSearchRoutes = async (
-    limit: number = 10,
-    period: 'day' | 'week' | 'month' = 'month'
-  ) => {
-    const now = new Date()
-    let startDate: Date
-
-    switch (period) {
-      case 'day':
-        startDate = startOfDay(now)
-        break
-      case 'week':
-        startDate = startOfWeek(now, { locale: ja })
-        break
-      case 'month':
-        startDate = startOfMonth(now)
-        break
-    }
-
-    const searchLogs = await getCollection('searchLogs', [
-      where('timestamp', '>=', startDate),
-      where('type', '==', 'route')
-    ])
-
-    // ルート別に集計
-    const routeCount = searchLogs.reduce((acc, log) => {
-      const key = `${log.departure} → ${log.arrival}`
-      acc[key] = (acc[key] || 0) + 1
-      return acc
-    }, {} as Record<string, number>)
-
-    // ソートして上位を返す
-    return Object.entries(routeCount)
-      .sort(([, a], [, b]) => b - a)
-      .slice(0, limit)
-      .map(([route, count]) => ({ route, count }))
-  }
-
-  /**
-   * 検索キーワード統計
-   */
-  const getSearchKeywordStats = async (limit: number = 20) => {
-    const searchLogs = await getCollection('searchLogs', [
-      where('type', '==', 'keyword'),
-      orderBy('timestamp', 'desc'),
-      limitConstraint(1000)
-    ])
-
-    const keywordCount = searchLogs.reduce((acc, log) => {
-      const keyword = log.keyword?.toLowerCase() || ''
-      if (keyword) {
-        acc[keyword] = (acc[keyword] || 0) + 1
-      }
-      return acc
-    }, {} as Record<string, number>)
-
-    return Object.entries(keywordCount)
-      .sort(([, a], [, b]) => b - a)
-      .slice(0, limit)
-      .map(([keyword, count]) => ({ keyword, count }))
-  }
-
-  // ========================================
-  // エラー統計
-  // ========================================
-
-  /**
-   * エラー統計の取得
-   */
-  const getErrorStats = async (
-    startDate: Date,
-    endDate: Date
-  ): Promise<Record<string, number>> => {
-    const constraints: QueryConstraint[] = [
-      where('timestamp', '>=', startDate),
-      where('timestamp', '<=', endDate)
-    ]
-
-    const errorLogs = await getCollection('errorLogs', constraints)
-
-    // エラータイプ別集計
-    const errorTypes = errorLogs.reduce((acc, error) => {
-      const type = error.type || error.status || 'other'
-      if (type === '404' || type === 404) {
-        acc['404'] = (acc['404'] || 0) + 1
-      } else if (type === '500' || type === 500) {
-        acc['500'] = (acc['500'] || 0) + 1
-      } else if (type === 'network' || type === 'NetworkError') {
-        acc['network'] = (acc['network'] || 0) + 1
-      } else {
-        acc['other'] = (acc['other'] || 0) + 1
-      }
-      return acc
-    }, {} as Record<string, number>)
-
-    return errorTypes
-  }
-
-  // ========================================
-  // デバイス・ブラウザ統計
-  // ========================================
-
-  /**
-   * デバイス統計の取得
-   */
-  const getDeviceStats = async () => {
-    const pageViews = await getCollection('pageViews', [
-      orderBy('timestamp', 'desc'),
-      limitConstraint(1000)
-    ])
-
-    const deviceTypes = pageViews.reduce((acc, view) => {
-      const device = view.deviceType || 'unknown'
-      acc[device] = (acc[device] || 0) + 1
-      return acc
-    }, {} as Record<string, number>)
-
-    const browsers = pageViews.reduce((acc, view) => {
-      const browser = view.browser || 'unknown'
-      acc[browser] = (acc[browser] || 0) + 1
-      return acc
-    }, {} as Record<string, number>)
-
-    const os = pageViews.reduce((acc, view) => {
-      const osName = view.os || 'unknown'
-      acc[osName] = (acc[osName] || 0) + 1
-      return acc
-    }, {} as Record<string, number>)
-
-    return {
-      deviceTypes,
-      browsers,
-      os
+    try {
+      const searchDate = datetime ? new Date(datetime) : new Date()
+      const dateKey = getDateKey(searchDate)
+      const monthKey = getMonthKey(searchDate)
+      const hourKey = getHourKey(searchDate)
+      const hour = getHour(searchDate)
+      const routeKey = `${depId}-${arrId}`
+      const hourKeyStr = hour.toString().padStart(2, '0')
+      const timestamp = { seconds: Math.floor(Date.now() / 1000), nanoseconds: 0 }
+      
+      // 日次統計のインクリメント
+      await updateAnalyticsDoc(`analytics_daily/${dateKey}`, {
+        dateKey,
+        searchTotal: increment(1),
+        [`routeCounts.${routeKey}`]: increment(1),
+        [`departureCounts.${depId}`]: increment(1),
+        [`arrivalCounts.${arrId}`]: increment(1),
+        [`hourCounts.${hourKeyStr}`]: increment(1),
+        updatedAt: timestamp
+      })
+      
+      // 月次統計のインクリメント
+      await updateAnalyticsDoc(`analytics_monthly/${monthKey}`, {
+        monthKey,
+        searchTotal: increment(1),
+        [`routeCounts.${routeKey}`]: increment(1),
+        [`departureCounts.${depId}`]: increment(1),
+        [`arrivalCounts.${arrId}`]: increment(1),
+        [`hourCounts.${hourKeyStr}`]: increment(1),
+        updatedAt: timestamp
+      })
+      
+      // 時間別統計のインクリメント
+      await updateAnalyticsDoc(`analytics_hourly/${hourKey}`, {
+        hourKey,
+        searchTotal: increment(1),
+        [`routeCounts.${routeKey}`]: increment(1),
+        [`departureCounts.${depId}`]: increment(1),
+        [`arrivalCounts.${arrId}`]: increment(1),
+        updatedAt: timestamp
+      })
+    } catch (error) {
+      // エラーはログに出力のみで、ユーザーには通知しない
+      console.warn('Failed to track search:', error)
     }
   }
-
-  // ========================================
-  // リファラー統計
-  // ========================================
-
+  
   /**
-   * リファラー統計の取得
+   * ドキュメントの更新（存在しない場合はマージで作成）
    */
-  const getReferrerStats = async (
-    startDate: Date,
-    endDate: Date
-  ): Promise<Record<string, number>> => {
-    const constraints: QueryConstraint[] = [
-      where('timestamp', '>=', startDate),
-      where('timestamp', '<=', endDate)
-    ]
-
-    const pageViews = await getCollection('pageViews', constraints)
-
-    const referrers = pageViews.reduce((acc, view) => {
-      if (view.referrer) {
-        try {
-          const url = new URL(view.referrer)
-          const domain = url.hostname
-          
-          // 検索エンジンの判定
-          if (domain.includes('google')) {
-            acc['google'] = (acc['google'] || 0) + 1
-          } else if (domain.includes('yahoo') || domain.includes('yahoosearch')) {
-            acc['yahoo'] = (acc['yahoo'] || 0) + 1
-          } else if (domain.includes('bing')) {
-            acc['bing'] = (acc['bing'] || 0) + 1
-          } else if (domain.includes('facebook')) {
-            acc['facebook'] = (acc['facebook'] || 0) + 1
-          } else if (domain.includes('twitter') || domain.includes('x.com')) {
-            acc['twitter'] = (acc['twitter'] || 0) + 1
-          } else if (domain.includes('instagram')) {
-            acc['instagram'] = (acc['instagram'] || 0) + 1
-          } else {
-            acc['other'] = (acc['other'] || 0) + 1
-          }
-        } catch {
-          acc['direct'] = (acc['direct'] || 0) + 1
-        }
-      } else {
-        acc['direct'] = (acc['direct'] || 0) + 1
-      }
-      return acc
-    }, {} as Record<string, number>)
-
-    return referrers
+  const updateAnalyticsDoc = async (docPath: string, data: any) => {
+    const [collectionName, docId] = docPath.split('/')
+    const docRef = doc(db, collectionName, docId)
+    await setDoc(docRef, data, { merge: true })
   }
-
+  
   // ========================================
-  // KPI計算
+  // 統計データ取得機能
   // ========================================
-
+  
   /**
-   * 主要KPIの計算
+   * 日次統計の取得
    */
-  const calculateKPIs = async (period: 'day' | 'week' | 'month' = 'month') => {
-    const stats = await getPageViewStats(period)
-    const uniqueUsers = await getUniqueUsersCount(stats.period.start, stats.period.end)
+  const getDailyAnalytics = async (dateKey: string) => {
+    const docRef = doc(db, 'analytics_daily', dateKey)
+    const docSnap = await getDoc(docRef)
     
-    // 平均セッション時間（仮実装）
-    const avgSessionDuration = 3.5 * 60 // 3分30秒
-
-    // 直帰率（仮実装）
-    const bounceRate = 35
-
-    // 前期間との比較
-    const previousPeriod = {
-      pageViews: stats.total * 0.85,
-      uniqueUsers: uniqueUsers * 0.82,
-      avgSessionDuration: avgSessionDuration * 0.95,
-      bounceRate: bounceRate * 1.05
+    if (docSnap.exists()) {
+      return docSnap.data()
     }
-
-    return {
-      current: {
-        pageViews: stats.total,
-        uniqueUsers,
-        avgSessionDuration,
-        bounceRate
-      },
-      previous: previousPeriod,
-      trends: {
-        pageViewsTrend: ((stats.total - previousPeriod.pageViews) / previousPeriod.pageViews) * 100,
-        uniqueUsersTrend: ((uniqueUsers - previousPeriod.uniqueUsers) / previousPeriod.uniqueUsers) * 100,
-        avgSessionTrend: ((avgSessionDuration - previousPeriod.avgSessionDuration) / previousPeriod.avgSessionDuration) * 100,
-        bounceRateTrend: ((bounceRate - previousPeriod.bounceRate) / previousPeriod.bounceRate) * 100
-      }
-    }
+    return null
   }
-
-  // ========================================
-  // レポート生成
-  // ========================================
-
+  
   /**
-   * 分析レポートの生成
+   * 月次統計の取得
    */
-  const generateAnalyticsReport = async (
-    period: 'day' | 'week' | 'month' = 'month'
-  ) => {
-    const [
-      kpis,
-      accessTrend,
-      popularRoutes,
-      deviceStats,
-      referrerStats,
-      errorStats
-    ] = await Promise.all([
-      calculateKPIs(period),
-      getAccessTrend(period === 'day' ? 7 : period === 'week' ? 30 : 90),
-      getPopularSearchRoutes(10, period),
-      getDeviceStats(),
-      getReferrerStats(),
-      getErrorStats(period)
-    ])
-
-    return {
-      period,
-      generatedAt: new Date(),
-      kpis,
-      accessTrend,
-      popularRoutes,
-      deviceStats,
-      referrerStats,
-      errorStats
+  const getMonthlyAnalytics = async (monthKey: string) => {
+    const docRef = doc(db, 'analytics_monthly', monthKey)
+    const docSnap = await getDoc(docRef)
+    
+    if (docSnap.exists()) {
+      return docSnap.data()
     }
+    return null
   }
-
-  // ========================================
-  // アクセストレンド（詳細版）
-  // ========================================
-
+  
   /**
-   * アクセストレンドの取得（KPI計算用）
+   * 時間別統計の取得
    */
-  const getAccessTrends = async (
-    startDate: Date,
-    endDate: Date
-  ) => {
-    const constraints: QueryConstraint[] = [
-      where('timestamp', '>=', startDate),
-      where('timestamp', '<=', endDate)
-    ]
-
-    const pageViews = await getCollection('pageViews', constraints)
-    const uniqueUsers = await getUniqueUsersCount(startDate, endDate)
-
-    // 前期間のデータを取得（比較用）
-    const periodDays = Math.ceil((endDate.getTime() - startDate.getTime()) / (1000 * 60 * 60 * 24))
-    const previousStartDate = new Date(startDate)
-    previousStartDate.setDate(previousStartDate.getDate() - periodDays)
-    const previousEndDate = new Date(startDate)
-
-    const previousPageViews = await getCollection('pageViews', [
-      where('timestamp', '>=', previousStartDate),
-      where('timestamp', '<=', previousEndDate)
-    ])
-    const previousUniqueUsers = await getUniqueUsersCount(previousStartDate, previousEndDate)
-
-    // 時間別データ
-    const hourlyData = Array(24).fill(0)
-    pageViews.forEach(view => {
-      const hour = new Date(view.timestamp).getHours()
-      hourlyData[hour]++
-    })
-
-    // セッションデータの取得（平均セッション時間計算用）
-    // セッションデータはstartTimeフィールドで検索
-    const sessionConstraints: QueryConstraint[] = [
-      where('startTime', '>=', startDate),
-      where('startTime', '<=', endDate)
-    ]
-    const sessions = await getCollection('analytics_sessions', sessionConstraints)
-    const totalDuration = sessions.reduce((sum, session) => sum + (session.duration || 0), 0)
-    const avgSessionDuration = sessions.length > 0 ? totalDuration / sessions.length : 0
-
-    // 直帰率の計算（1ページのみのセッション）
-    const bouncedSessions = sessions.filter(s => (s.pageCount || 0) <= 1).length
-    const bounceRate = sessions.length > 0 ? (bouncedSessions / sessions.length) * 100 : 0
-
-    // 前期間のセッションデータ
-    const previousSessionConstraints: QueryConstraint[] = [
-      where('startTime', '>=', previousStartDate),
-      where('startTime', '<=', previousEndDate)
-    ]
-    const previousSessions = await getCollection('analytics_sessions', previousSessionConstraints)
-    const previousTotalDuration = previousSessions.reduce((sum, session) => sum + (session.duration || 0), 0)
-    const previousAvgSessionDuration = previousSessions.length > 0 ? previousTotalDuration / previousSessions.length : 0
-    const previousBouncedSessions = previousSessions.filter(s => (s.pageCount || 0) <= 1).length
-    const previousBounceRate = previousSessions.length > 0 ? (previousBouncedSessions / previousSessions.length) * 100 : 0
-
-    // 成長率の計算
-    const growth = previousPageViews.length > 0
-      ? ((pageViews.length - previousPageViews.length) / previousPageViews.length) * 100
-      : 0
-    const userGrowth = previousUniqueUsers > 0
-      ? ((uniqueUsers - previousUniqueUsers) / previousUniqueUsers) * 100
-      : 0
-    const sessionGrowth = previousAvgSessionDuration > 0
-      ? ((avgSessionDuration - previousAvgSessionDuration) / previousAvgSessionDuration) * 100
-      : 0
-    // 直帰率の成長率（直帰率が下がるのは良いことなので、符号を反転）
-    const bounceGrowth = previousBounceRate > 0
-      ? ((bounceRate - previousBounceRate) / previousBounceRate) * 100
-      : bounceRate > 0 ? 100 : 0
-
-    return {
-      total: pageViews.length,
-      uniqueUsers,
-      avgSessionDuration,
-      bounceRate,
-      hourlyData,
-      growth,
-      userGrowth,
-      sessionGrowth,
-      bounceGrowth
+  const getHourlyAnalytics = async (hourKey: string) => {
+    const docRef = doc(db, 'analytics_hourly', hourKey)
+    const docSnap = await getDoc(docRef)
+    
+    if (docSnap.exists()) {
+      return docSnap.data()
     }
+    return null
   }
-
-  // ========================================
-  // 人気ページ
-  // ========================================
-
+  
   /**
-   * 人気ページの取得
+   * 期間内の統計データを取得
    */
-  const getPopularPages = async (
+  const getAnalyticsInRange = async (
     startDate: Date,
     endDate: Date,
-    limit: number = 10
+    granularity: 'daily' | 'monthly' | 'hourly' = 'daily'
   ) => {
-    const constraints: QueryConstraint[] = [
-      where('timestamp', '>=', startDate),
-      where('timestamp', '<=', endDate)
-    ]
-
-    const pageViews = await getCollection('pageViews', constraints)
-
-    // ページ別集計
-    const pageStats = pageViews.reduce((acc, view) => {
-      const page = view.page || 'unknown'
-      if (!acc[page]) {
-        acc[page] = {
-          path: page,
-          title: getPageTitle(page),
-          views: 0
+    const collectionName = `analytics_${granularity}`
+    
+    if (granularity === 'hourly') {
+      // 時間別の場合は開始日から終了日までの全時間を取得
+      const docs: any[] = []
+      let currentDate = new Date(startDate)
+      const endDateTime = endDate.getTime()
+      
+      while (currentDate.getTime() <= endDateTime) {
+        const hourKey = getHourKey(currentDate)
+        const docData = await getHourlyAnalytics(hourKey)
+        
+        if (docData) {
+          docs.push({ id: hourKey, ...docData })
         }
+        
+        // 1時間進める
+        currentDate.setHours(currentDate.getHours() + 1)
       }
-      acc[page].views++
-      return acc
-    }, {} as Record<string, { path: string; title: string; views: number }>)
-
-    return Object.values(pageStats)
-      .sort((a, b) => b.views - a.views)
-      .slice(0, limit)
-  }
-
-  /**
-   * ページタイトルの取得
-   */
-  const getPageTitle = (path: string): string => {
-    const titles: Record<string, string> = {
-      '/': 'ホーム',
-      '/transit': '乗換案内',
-      '/timetable': '時刻表',
-      '/fare': '運賃',
-      '/status': '運航状況',
-      '/news': 'お知らせ',
-      '/favorites': 'お気に入り',
-      '/settings': '設定',
-      '/about': 'このアプリについて'
+      
+      return docs
+    } else {
+      // 日次/月次の場合は範囲でクエリ
+      const startKey = granularity === 'daily' ? getDateKey(startDate) : getMonthKey(startDate)
+      const endKey = granularity === 'daily' ? getDateKey(endDate) : getMonthKey(endDate)
+      
+      // クエリ条件を構築
+      const collectionRef = collection(db, collectionName)
+      const constraints = [
+        where('__name__', '>=', startKey),
+        where('__name__', '<=', endKey),
+        orderBy('__name__')
+      ]
+      
+      const q = query(collectionRef, ...constraints)
+      const querySnapshot = await getDocs(q)
+      
+      return querySnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }))
     }
-    return titles[path] || `不明なページ (${path})`
   }
-
-  // ========================================
-  // ルート検索統計
-  // ========================================
-
+  
   /**
-   * ルート検索統計の取得
+   * 人気航路Top 3を取得
    */
-  const getRouteSearchStats = async (
-    limit: number = 10
-  ) => {
-    const searchLogs = await getCollection('searchLogs', [
-      where('type', '==', 'route'),
-      orderBy('timestamp', 'desc'),
-      limitConstraint(1000)
-    ])
-
-    // ルート別に集計
-    const routeCount = searchLogs.reduce((acc, log) => {
-      const key = `${log.departure || log.fromPort} → ${log.arrival || log.toPort}`
-      if (!acc[key]) {
-        acc[key] = {
-          from: log.departure || log.fromPort || '',
-          to: log.arrival || log.toPort || '',
-          count: 0
-        }
-      }
-      acc[key].count++
-      return acc
-    }, {} as Record<string, { from: string; to: string; count: number }>)
-
-    return Object.values(routeCount)
-      .sort((a, b) => b.count - a.count)
-      .slice(0, limit)
-  }
-
-  // ========================================
-  // 地域統計
-  // ========================================
-
-  /**
-   * 地域統計の取得
-   */
-  const getLocationStats = async (
+  const getPopularRoutes = async (
     startDate: Date,
     endDate: Date,
-    limit: number = 10
+    limit: number = 3
   ) => {
-    const constraints: QueryConstraint[] = [
-      where('timestamp', '>=', startDate),
-      where('timestamp', '<=', endDate)
-    ]
-
-    const pageViews = await getCollection('pageViews', constraints)
-
-    // 地域別集計（IPアドレスや位置情報から）
-    const locationStats = pageViews.reduce((acc, view) => {
-      const location = view.location || view.prefecture || '不明'
-      if (!acc[location]) {
-        acc[location] = 0
-      }
-      acc[location]++
-      return acc
-    }, {} as Record<string, number>)
-
-    const total = Object.values(locationStats).reduce((sum, count) => sum + count, 0)
-
-    return Object.entries(locationStats)
-      .sort(([, a], [, b]) => b - a)
-      .slice(0, limit)
-      .map(([location, count]) => ({
-        location,
-        count,
-        percentage: total > 0 ? Math.round((count / total) * 100) : 0
-      }))
-  }
-
-  // ========================================
-  // コンバージョン分析
-  // ========================================
-
-  /**
-   * コンバージョン率の取得
-   */
-  const getConversionStats = async (
-    startDate: Date,
-    endDate: Date
-  ) => {
-    const searchLogs = await getCollection('searchLogs', [
-      where('timestamp', '>=', startDate),
-      where('timestamp', '<=', endDate),
-      where('type', '==', 'route')
-    ])
-
-    const totalSearches = searchLogs.length
-    const successfulSearches = searchLogs.filter(log => log.found !== false).length
-    const conversionRate = totalSearches > 0 ? (successfulSearches / totalSearches) * 100 : 0
-
-    // ルート別コンバージョン率
-    const routeConversions = searchLogs.reduce((acc, log) => {
-      const key = `${log.departure || log.fromPort} → ${log.arrival || log.toPort}`
-      if (!acc[key]) {
-        acc[key] = { searches: 0, successful: 0 }
-      }
-      acc[key].searches++
-      if (log.found !== false) {
-        acc[key].successful++
-      }
-      return acc
-    }, {} as Record<string, { searches: number; successful: number }>)
-
-    return {
-      totalSearches,
-      successfulSearches,
-      conversionRate,
-      routeConversions: Object.entries(routeConversions)
-        .map(([route, stats]) => ({
-          route,
-          searches: stats.searches,
-          successful: stats.successful,
-          rate: stats.searches > 0 ? (stats.successful / stats.searches) * 100 : 0
-        }))
-        .sort((a, b) => b.searches - a.searches)
-        .slice(0, 10)
-    }
-  }
-
-  // ========================================
-  // ユーザー行動分析
-  // ========================================
-
-  /**
-   * ページ遷移パスの取得
-   */
-  const getPageFlowStats = async (
-    startDate: Date,
-    endDate: Date
-  ) => {
-    const sessionConstraints: QueryConstraint[] = [
-      where('startTime', '>=', startDate),
-      where('startTime', '<=', endDate)
-    ]
-    const sessions = await getCollection('analytics_sessions', sessionConstraints)
-
-    // ページ遷移の集計
-    const transitions: Record<string, number> = {}
+    const docs = await getAnalyticsInRange(startDate, endDate, 'daily')
     
-    sessions.forEach(session => {
-      const pages = session.pageViews || []
-      for (let i = 0; i < pages.length - 1; i++) {
-        const from = pages[i]
-        const to = pages[i + 1]
-        const key = `${from} → ${to}`
-        transitions[key] = (transitions[key] || 0) + 1
+    // ルート別に集計
+    const routeTotals: Record<string, number> = {}
+    
+    docs.forEach((doc: any) => {
+      if (doc.routeCounts) {
+        Object.entries(doc.routeCounts).forEach(([routeKey, count]) => {
+          routeTotals[routeKey] = (routeTotals[routeKey] || 0) + (count as number)
+        })
       }
     })
-
-    return Object.entries(transitions)
-      .sort(([, a], [, b]) => b - a)
-      .slice(0, 20)
-      .map(([transition, count]) => ({
-        transition,
-        count
-      }))
+    
+    // ソートして上位を取得
+    const sorted = Object.entries(routeTotals)
+      .sort(([, a], [, b]) => (b as number) - (a as number))
+      .slice(0, limit)
+    
+    return sorted.map(([routeKey, count]) => {
+      const [depId, arrId] = routeKey.split('-')
+      return {
+        routeKey,
+        depId,
+        arrId,
+        count: count as number
+      }
+    })
   }
-
+  
+  /**
+   * 時間帯別PV/検索の分布を取得
+   */
+  const getHourlyDistribution = async (startDate: Date, endDate: Date) => {
+    const docs = await getAnalyticsInRange(startDate, endDate, 'hourly')
+    const daysCount = Math.ceil((endDate.getTime() - startDate.getTime()) / (1000 * 60 * 60 * 24))
+    
+    // 時間帯別に集計
+    const hourlyData: Array<{ hour: number; pv: number; search: number }> = []
+    
+    for (let hour = 0; hour < 24; hour++) {
+      hourlyData.push({
+        hour,
+        pv: 0,
+        search: 0
+      })
+    }
+    
+    docs.forEach((doc: any) => {
+      const hourKey = doc.hourKey?.split('-')[3]
+      if (hourKey) {
+        const hour = parseInt(hourKey, 10)
+        if (hour >= 0 && hour < 24) {
+          hourlyData[hour].pv += doc.pvTotal || 0
+          hourlyData[hour].search += doc.searchTotal || 0
+        }
+      }
+    })
+    
+    // 期間が複数日の場合は平均化
+    if (daysCount > 1) {
+      hourlyData.forEach(data => {
+        data.pv = Math.round(data.pv / daysCount)
+        data.search = Math.round(data.search / daysCount)
+      })
+    }
+    
+    return hourlyData
+  }
+  
+  /**
+   * 出発地/到着地別の分布を取得
+   */
+  const getPortDistribution = async (startDate: Date, endDate: Date) => {
+    const docs = await getAnalyticsInRange(startDate, endDate, 'daily')
+    
+    // 出発地/到着地別に集計
+    const departureTotals: Record<string, number> = {}
+    const arrivalTotals: Record<string, number> = {}
+    
+    docs.forEach((doc: any) => {
+      if (doc.departureCounts) {
+        Object.entries(doc.departureCounts).forEach(([portId, count]) => {
+          departureTotals[portId] = (departureTotals[portId] || 0) + (count as number)
+        })
+      }
+      if (doc.arrivalCounts) {
+        Object.entries(doc.arrivalCounts).forEach(([portId, count]) => {
+          arrivalTotals[portId] = (arrivalTotals[portId] || 0) + (count as number)
+        })
+      }
+    })
+    
+    const totalDepartures = Object.values(departureTotals).reduce((sum, count) => sum + count, 0)
+    const totalArrivals = Object.values(arrivalTotals).reduce((sum, count) => sum + count, 0)
+    
+    const departureDistribution = Object.entries(departureTotals)
+      .sort(([, a], [, b]) => (b as number) - (a as number))
+      .map(([id, count]) => ({
+        id,
+        name: id, // 後でポート名に置換
+        count: count as number,
+        percentage: totalDepartures > 0 ? Math.round(((count as number) / totalDepartures) * 100) : 0
+      }))
+    
+    const arrivalDistribution = Object.entries(arrivalTotals)
+      .sort(([, a], [, b]) => (b as number) - (a as number))
+      .map(([id, count]) => ({
+        id,
+        name: id, // 後でポート名に置換
+        count: count as number,
+        percentage: totalArrivals > 0 ? Math.round(((count as number) / totalArrivals) * 100) : 0
+      }))
+    
+    return {
+      departure: departureDistribution,
+      arrival: arrivalDistribution
+    }
+  }
+  
+  /**
+   * PV推移データを取得
+   */
+  const getPvTrend = async (startDate: Date, endDate: Date) => {
+    const docs = await getAnalyticsInRange(startDate, endDate, 'daily')
+    
+    return docs.map((doc: any) => ({
+      date: doc.dateKey,
+      pv: doc.pvTotal || 0,
+      search: doc.searchTotal || 0
+    }))
+  }
+  
   return {
-    // アクセス統計
-    getPageViewStats,
-    getUniqueUsersCount,
-    getAccessTrend,
-    getAccessTrends,
-
-    // 検索統計
-    getPopularSearchRoutes,
-    getSearchKeywordStats,
-    getRouteSearchStats,
-
-    // エラー統計
-    getErrorStats,
-
-    // デバイス統計
-    getDeviceStats,
-    getReferrerStats,
-
-    // 地域統計
-    getLocationStats,
-
-    // コンバージョン分析
-    getConversionStats,
-
-    // ユーザー行動分析
-    getPageFlowStats,
-
-    // 人気ページ
-    getPopularPages,
-
-    // KPI
-    calculateKPIs,
-
-    // レポート
-    generateAnalyticsReport
+    // 新規実装
+    trackPageView,
+    trackSearch,
+    getDailyAnalytics,
+    getMonthlyAnalytics,
+    getAnalyticsInRange,
+    getPopularRoutes,
+    getHourlyDistribution,
+    getPortDistribution,
+    getPvTrend,
+    
+    // レガシー実装（既存のコード互換性維持）
+    getAccessTrends: async (startDate: Date, endDate: Date) => ({
+      total: 0,
+      uniqueUsers: 0,
+      avgSessionDuration: 0,
+      bounceRate: 0,
+      hourlyData: Array(24).fill(0),
+      growth: 0,
+      userGrowth: 0,
+      sessionGrowth: 0,
+      bounceGrowth: 0
+    }),
+    getPopularPages: async (startDate: Date, endDate: Date, limit: number = 10) => [],
+    getReferrerStats: async (startDate: Date, endDate: Date) => ({}),
+    getRouteSearchStats: async (limit: number = 10) => [],
+    getErrorStats: async (startDate: Date, endDate: Date) => ({}),
+    getDeviceStats: async () => ({
+      deviceTypes: { desktop: 0, mobile: 0, tablet: 0 },
+      browsers: {},
+      os: { ios: 0, android: 0, other: 0 }
+    }),
+    getLocationStats: async (startDate: Date, endDate: Date, limit: number = 10) => [],
+    getConversionStats: async (startDate: Date, endDate: Date) => ({
+      totalSearches: 0,
+      successfulSearches: 0,
+      conversionRate: 0,
+      routeConversions: []
+    }),
+    getPageFlowStats: async (startDate: Date, endDate: Date) => [],
+    getAccessTrend: async (days: number = 30) => [],
+    calculateKPIs: async (period: 'day' | 'week' | 'month' = 'month') => ({
+      current: { pageViews: 0, uniqueUsers: 0, avgSessionDuration: 0, bounceRate: 0 },
+      previous: { pageViews: 0, uniqueUsers: 0, avgSessionDuration: 0, bounceRate: 0 },
+      trends: { pageViewsTrend: 0, uniqueUsersTrend: 0, avgSessionTrend: 0, bounceRateTrend: 0 }
+    })
   }
 }

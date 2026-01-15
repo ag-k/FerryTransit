@@ -377,6 +377,7 @@
 <script setup lang="ts">
 import { nextTick, getCurrentInstance, markRaw } from 'vue'
 import { useRouteSearch } from '@/composables/useRouteSearch'
+import { useAnalytics } from '@/composables/useAnalytics'
 import { useHistoryStore } from '@/stores/history'
 import { useFerryStore } from '@/stores/ferry'
 import RouteEndpointsSelector from '@/components/common/RouteEndpointsSelector.vue'
@@ -454,6 +455,7 @@ const sortOption = ref<SortKey>('recommended')
 
 // Composables
 const { searchRoutes, formatTime, calculateDuration, getPortDisplayName } = useRouteSearch()
+const { trackSearch } = useAnalytics()
 const { t } = useI18n()
 
 const getPortLabelParts = (portId?: string) => {
@@ -865,6 +867,18 @@ async function handleSearch() {
     logger.debug('Search results', results)
     setSelectedRoute(null)
     setSearchResults(results)
+
+    // アナリティクスに検索を記録
+    const searchDateTime = new Date(date.value)
+    if (time.value) {
+      const [hours, minutes] = time.value.split(':')
+      searchDateTime.setHours(parseInt(hours), parseInt(minutes), 0, 0)
+    }
+    trackSearch({
+      depId: departure.value,
+      arrId: arrival.value,
+      datetime: searchDateTime.toISOString()
+    })
 
     // Add to search history
     if (historyStore) {
