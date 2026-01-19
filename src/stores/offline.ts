@@ -1,11 +1,21 @@
 import { defineStore } from 'pinia'
 import { ref, readonly, onMounted } from 'vue'
 import { useOfflineStorage } from '@/composables/useOfflineStorage'
-import { getStorageDownloadURL } from '@/composables/useDataPublish'
 import type { TimetableData } from '@/types/timetable'
 import type { FareMaster } from '@/types/fare'
 import type { HolidayMaster } from '@/types/holiday'
 import { createLogger } from '@/utils/logger'
+
+/**
+ * Firebase Storage公開URLを構築（SDKに依存しない）
+ * Capacitor環境でも動作する
+ */
+const getStoragePublicURL = (path: string): string => {
+  const config = useRuntimeConfig()
+  const bucket = config.public.firebase.storageBucket
+  const encodedPath = encodeURIComponent(`data/${path}`)
+  return `https://firebasestorage.googleapis.com/v0/b/${bucket}/o/${encodedPath}?alt=media`
+}
 
 export const useOfflineStore = defineStore('offline', () => {
   const logger = createLogger('offlineStore')
@@ -76,50 +86,47 @@ export const useOfflineStore = defineStore('offline', () => {
   const fetchFareData = async (): Promise<FareMaster | null> => {
     const localData = getFareData()
 
-    // オンライン時はCloud Storageから取得を試みる（開発環境でも優先）
-    // ただし、ローカルデータが存在する場合は、Cloud Storage からの取得を並行して試みる
+    // オンライン時はCloud Storageから取得を試みる
     if (!isOffline.value) {
       try {
-        // Cloud Storageからのみ取得（ローカルファイルフォールバックなし）
-        // タイムアウトを設定して、エミュレータが起動していない場合でも迅速にフォールバック
-        const remoteUrl = await Promise.race([
-          getStorageDownloadURL('fare-master.json'),
-          new Promise<string | null>((resolve) => {
-            setTimeout(() => resolve(null), 2000) // 2秒でタイムアウト
+        // 公開URLを直接構築（Firebase SDKに依存しない）
+        // Capacitor環境でも動作する
+        const remoteUrl = getStoragePublicURL('fare-master.json')
+        logger.debug('Fetching fare data from:', remoteUrl)
+
+        const response = await Promise.race([
+          fetch(remoteUrl, { cache: 'no-store' }),
+          new Promise<Response>((_, reject) => {
+            setTimeout(() => reject(new Error('Timeout')), 5000) // 5秒でタイムアウト
           })
-        ]).catch(() => null) as Promise<string | null>
+        ]).catch((e) => {
+          logger.warn('Fetch failed or timeout', e)
+          return null
+        })
 
-        if (remoteUrl) {
-          const response = await Promise.race([
-            fetch(remoteUrl, { cache: 'no-store' }),
-            new Promise<Response>((_, reject) => {
-              setTimeout(() => reject(new Error('Timeout')), 3000) // 3秒でタイムアウト
-            })
-          ]).catch(() => null)
-
-          if (response?.ok) {
-            const data = await response.json() as FareMaster
-            if (data) {
-              saveFareData(data)
-              lastSync.value.fare = Date.now()
-              return data
-            }
-          } else {
-            logger.warn('Failed to fetch latest fare data from Cloud Storage', { status: response?.status })
+        if (response?.ok) {
+          const data = await response.json() as FareMaster
+          if (data) {
+            saveFareData(data)
+            lastSync.value.fare = Date.now()
+            logger.info('Fare data loaded from Cloud Storage')
+            return data
           }
-        } else {
-          logger.warn('Fare data not found in Cloud Storage. Please publish data from admin panel.')
+        } else if (response) {
+          logger.warn('Failed to fetch fare data from Cloud Storage', { status: response.status })
         }
       } catch (e) {
         logger.warn('Failed to fetch fare data from Cloud Storage', e)
       }
     }
 
-    // オフライン時または全ての取得失敗時はキャッシュを返す
+    // オフライン時または取得失敗時はキャッシュを返す
     if (localData) {
+      logger.info('Using cached fare data')
       return localData
     }
-    
+
+    logger.warn('No fare data available')
     return null
   }
   
