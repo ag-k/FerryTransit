@@ -13,7 +13,7 @@
     </div>
     
     <!-- 複系列折れ線グラフ（SVGベース） -->
-    <svg viewBox="0 0 800 200" class="w-full h-64" preserveAspectRatio="none">
+    <svg viewBox="0 0 800 200" class="w-full h-64 text-gray-500 dark:text-gray-400" preserveAspectRatio="none">
       <!-- Y軸グリッド線 -->
       <line
         v-for="i in 5"
@@ -26,6 +26,20 @@
         stroke-width="1"
         stroke-dasharray="4"
       />
+
+      <!-- Y軸ラベル -->
+      <text
+        v-for="(tick, index) in yAxisTicks"
+        :key="'y-label-' + index"
+        x="34"
+        :y="index * 40 + 20"
+        text-anchor="end"
+        dominant-baseline="middle"
+        font-size="10"
+        fill="currentColor"
+      >
+        {{ tick.toLocaleString() }}
+      </text>
       
       <!-- PV折れ線 -->
       <path
@@ -135,6 +149,16 @@ const maxValue = computed(() => {
   const maxSearch = Math.max(...props.data.map(d => d.search), 0)
   
   return Math.max(maxPv, maxSearch, 1)
+})
+
+const yAxisTicks = computed(() => {
+  const ticks = 5
+  const max = maxValue.value
+
+  return Array.from({ length: ticks }, (_, index) => {
+    const ratio = 1 - index / (ticks - 1)
+    return Math.round(max * ratio)
+  })
 })
 
 // PVデータを正規化
