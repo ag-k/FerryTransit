@@ -40,6 +40,10 @@ firebase/
 bower_components
 typings
 
+# Capacitor (generated platforms)
+ios/
+android/
+
 # Build directories
 /src/android/app/build
 /src/android/capacitor-cordova-android-plugins/build
