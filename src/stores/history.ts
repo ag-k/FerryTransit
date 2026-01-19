@@ -1,5 +1,5 @@
 import { defineStore } from 'pinia'
-import { ref, computed, readonly, nextTick, onMounted } from 'vue'
+import { ref, computed, readonly, nextTick, onMounted, getCurrentInstance } from 'vue'
 import { useOfflineStorage } from '@/composables/useOfflineStorage'
 import type { SearchHistoryItem } from '@/types/history'
 import { HISTORY_STORAGE_KEY, HISTORY_SETTINGS } from '@/types/history'
@@ -246,10 +246,14 @@ export const useHistoryStore = defineStore('history', () => {
     setupStorageSync()
   }
   
-  // マウント時に自動的に初期化
-  onMounted(() => {
+  // マウント時に自動的に初期化（非コンポーネント利用時は直接実行）
+  if (getCurrentInstance()) {
+    onMounted(() => {
+      initializeStore()
+    })
+  } else if (process.client) {
     initializeStore()
-  })
+  }
   
   return {
     // State

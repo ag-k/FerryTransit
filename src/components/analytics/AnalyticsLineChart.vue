@@ -1,7 +1,7 @@
 <template>
   <div class="relative">
     <!-- 折れ線グラフ（SVGベース） -->
-    <svg viewBox="0 0 800 200" class="w-full h-64" preserveAspectRatio="none">
+    <svg viewBox="0 0 800 200" class="w-full h-64 text-gray-500 dark:text-gray-400" preserveAspectRatio="none">
       <!-- Y軸グリッド線 -->
       <line
         v-for="i in 5"
@@ -14,6 +14,20 @@
         stroke-width="1"
         stroke-dasharray="4"
       />
+
+      <!-- Y軸ラベル -->
+      <text
+        v-for="(tick, index) in yAxisTicks"
+        :key="'y-label-' + index"
+        x="34"
+        :y="index * 40 + 20"
+        text-anchor="end"
+        dominant-baseline="middle"
+        font-size="10"
+        fill="currentColor"
+      >
+        {{ tick.toLocaleString() }}
+      </text>
       
       <!-- 折れ線 -->
       <path
@@ -82,20 +96,37 @@ const tooltipData = ref({
   value: 0
 })
 
+const maxValue = computed(() => {
+  if (!props.data || props.data.length === 0) {
+    return 1
+  }
+
+  return Math.max(...props.data.map(d => d.value), 1)
+})
+
+const yAxisTicks = computed(() => {
+  const ticks = 5
+  const max = maxValue.value
+
+  return Array.from({ length: ticks }, (_, index) => {
+    const ratio = 1 - index / (ticks - 1)
+    return Math.round(max * ratio)
+  })
+})
+
 // データを正規化
 const normalizedData = computed(() => {
   if (!props.data || props.data.length === 0) {
     return []
   }
   
-  const maxValue = Math.max(...props.data.map(d => d.value), 1)
   const width = 740 // 800 - 40 - 20 (余白)
   const height = 160 // 200 - 40 (余白)
   const step = width / (props.data.length - 1 || 1)
   
   return props.data.map((point, index) => ({
     x: 40 + index * step,
-    y: 20 + height - (point.value / maxValue) * height,
+    y: 20 + height - (point.value / maxValue.value) * height,
     width: step
   }))
 })

@@ -117,6 +117,7 @@ import {
   DocumentArrowUpIcon
 } from '@heroicons/vue/24/outline'
 import type { PopularRoute } from '~/types/admin'
+import DashboardCard from '@/components/admin/DashboardCard.vue'
 import Card from '@/components/common/Card.vue'
 
 definePageMeta({

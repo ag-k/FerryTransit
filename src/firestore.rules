@@ -262,6 +262,28 @@ service cloud.firestore {
       allow update: if isOwner(resource.data.userId);
       allow delete: if isOwner(resource.data.userId) || isAdmin();
     }
+
+    // ========================================
+    // 集計アナリティクス
+    // ========================================
+
+    match /analytics_daily/{document=**} {
+      allow read: if isAdmin();
+      allow create, update: if true;
+      allow delete: if false;
+    }
+
+    match /analytics_monthly/{document=**} {
+      allow read: if isAdmin();
+      allow create, update: if true;
+      allow delete: if false;
+    }
+
+    match /analytics_hourly/{document=**} {
+      allow read: if isAdmin();
+      allow create, update: if true;
+      allow delete: if false;
+    }
     
     // ========================================
     // デフォルトルール（全て拒否）
