@@ -405,6 +405,12 @@ export const useFerryStore = defineStore("ferry", () => {
         data = await $fetch<any[]>(functionsUrl);
       }
 
+      if (!Array.isArray(data) || data.length === 0) {
+        timetableData.value = [];
+        error.value = "LOAD_TIMETABLE_ERROR";
+        return;
+      }
+
       // Map API response fields to expected format
       timetableData.value = data.map((trip) => ({
         tripId: parseInt(trip.trip_id), // Convert string IDs to numbers
