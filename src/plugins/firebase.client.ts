@@ -2,14 +2,14 @@ import { initializeApp } from 'firebase/app'
 import { getFirestore, connectFirestoreEmulator } from 'firebase/firestore'
 import { getAuth, signInWithEmailAndPassword, signOut, connectAuthEmulator } from 'firebase/auth'
 import { getStorage, connectStorageEmulator } from 'firebase/storage'
-import { getAnalytics } from 'firebase/analytics'
+import { getAnalytics, isSupported } from 'firebase/analytics'
 import { getFunctions, connectFunctionsEmulator } from 'firebase/functions'
 
 let db: ReturnType<typeof getFirestore>
 
 export default defineNuxtPlugin({
   name: 'firebase',
-  setup: () => {
+  setup: async () => {
   const config = useRuntimeConfig()
   
   const firebaseConfig = {
@@ -60,7 +60,14 @@ export default defineNuxtPlugin({
   // Initialize Analytics only in browser
   let analytics = null
   if (process.client && config.public.firebase.measurementId) {
-    analytics = getAnalytics(app)
+    try {
+      const supported = await isSupported()
+      if (supported) {
+        analytics = getAnalytics(app)
+      }
+    } catch (error) {
+      console.warn('⚠️ Firebase analytics unsupported:', error)
+    }
   }
 
   // Admin auth helper

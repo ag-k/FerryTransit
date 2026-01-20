@@ -1,6 +1,6 @@
 <template>
   <nav
-    class="bg-gradient-to-r from-app-nav-from to-app-nav-to text-white relative border-b border-white/10 safe-area-top"
+    class="bg-gradient-to-r from-app-nav-from to-app-nav-to text-white relative border-b border-white/10 safe-area-top sticky top-0 z-50"
     :style="{ paddingTop: `${totalTopPadding}px` }">
     <!-- Mobile menu overlay -->
     <transition

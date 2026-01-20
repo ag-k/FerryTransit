@@ -53,6 +53,12 @@ export const useFirebaseStorage = () => {
   const getJsonFile = async <T = any>(path: string): Promise<T> => {
     try {
       const fileRef = storageRef(storage, path)
+      try {
+        const url = await getDownloadURL(fileRef)
+        logger.debug(`Storage download URL for ${path}:`, url)
+      } catch (error) {
+        logger.warn(`Failed to get download URL for ${path}`, error)
+      }
       const bytes = await getBytes(fileRef)
       
       // ArrayBuffer を文字列に変換
@@ -90,13 +96,14 @@ export const useFirebaseStorage = () => {
             logger.debug(`Using cached data for ${path}`)
             return JSON.parse(cached) as T
           }
-      }
+        }
       } catch (e) {
         logger.warn('Failed to read from cache', e)
       }
     }
     
     // Firebase Storage から取得
+    logger.debug(`Fetching JSON from storage for ${path}`)
     const data = await getJsonFile<T>(path)
     
     // キャッシュに保存

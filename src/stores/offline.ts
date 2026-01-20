@@ -10,11 +10,23 @@ import { createLogger } from '@/utils/logger'
  * Firebase Storage公開URLを構築（SDKに依存しない）
  * Capacitor環境でも動作する
  */
-const getStoragePublicURL = (path: string): string => {
+const getStoragePublicURLCandidates = (path: string): string[] => {
   const config = useRuntimeConfig()
   const bucket = config.public.firebase.storageBucket
   const encodedPath = encodeURIComponent(`data/${path}`)
-  return `https://firebasestorage.googleapis.com/v0/b/${bucket}/o/${encodedPath}?alt=media`
+  const urls = new Set<string>()
+  const buildUrl = (bucketName: string) =>
+    `https://firebasestorage.googleapis.com/v0/b/${bucketName}/o/${encodedPath}?alt=media`
+
+  urls.add(buildUrl(bucket))
+
+  if (bucket.endsWith('.firebasestorage.app')) {
+    urls.add(buildUrl(bucket.replace(/\.firebasestorage\.app$/, '.appspot.com')))
+  } else if (bucket.endsWith('.appspot.com')) {
+    urls.add(buildUrl(bucket.replace(/\.appspot\.com$/, '.firebasestorage.app')))
+  }
+
+  return Array.from(urls)
 }
 
 export const useOfflineStore = defineStore('offline', () => {
@@ -91,29 +103,35 @@ export const useOfflineStore = defineStore('offline', () => {
       try {
         // 公開URLを直接構築（Firebase SDKに依存しない）
         // Capacitor環境でも動作する
-        const remoteUrl = getStoragePublicURL('fare-master.json')
-        logger.debug('Fetching fare data from:', remoteUrl)
+        const remoteUrls = getStoragePublicURLCandidates('fare-master.json')
 
-        const response = await Promise.race([
-          fetch(remoteUrl, { cache: 'no-store' }),
-          new Promise<Response>((_, reject) => {
-            setTimeout(() => reject(new Error('Timeout')), 5000) // 5秒でタイムアウト
+        for (const remoteUrl of remoteUrls) {
+          logger.debug('Fetching fare data from:', remoteUrl)
+
+          const response = await Promise.race([
+            fetch(remoteUrl, { cache: 'no-store' }),
+            new Promise<Response>((_, reject) => {
+              setTimeout(() => reject(new Error('Timeout')), 5000) // 5秒でタイムアウト
+            })
+          ]).catch((e) => {
+            logger.warn('Fetch failed or timeout', e)
+            return null
           })
-        ]).catch((e) => {
-          logger.warn('Fetch failed or timeout', e)
-          return null
-        })
 
-        if (response?.ok) {
-          const data = await response.json() as FareMaster
-          if (data) {
-            saveFareData(data)
-            lastSync.value.fare = Date.now()
-            logger.info('Fare data loaded from Cloud Storage')
-            return data
+          if (response?.ok) {
+            const data = await response.json() as FareMaster
+            if (data) {
+              saveFareData(data)
+              lastSync.value.fare = Date.now()
+              logger.info('Fare data loaded from Cloud Storage')
+              return data
+            }
+          } else if (response) {
+            logger.warn('Failed to fetch fare data from Cloud Storage', {
+              status: response.status,
+              url: remoteUrl
+            })
           }
-        } else if (response) {
-          logger.warn('Failed to fetch fare data from Cloud Storage', { status: response.status })
         }
       } catch (e) {
         logger.warn('Failed to fetch fare data from Cloud Storage', e)
