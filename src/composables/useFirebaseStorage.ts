@@ -15,21 +15,6 @@ export const useFirebaseStorage = () => {
   const { storage } = useFirebase()
   const logger = createLogger('useFirebaseStorage')
 
-  const fetchJsonWithTimeout = async <T>(url: string, timeoutMs = 8000): Promise<T> => {
-    const response = await Promise.race([
-      fetch(url, { cache: 'no-store' }),
-      new Promise<Response>((_, reject) => {
-        setTimeout(() => reject(new Error('Timeout')), timeoutMs)
-      })
-    ])
-
-    if (!response.ok) {
-      throw new Error(`Storage fetch failed: ${response.status} ${response.statusText}`)
-    }
-
-    return (await response.json()) as T
-  }
-  
   /**
    * Firebase Storage からファイルのダウンロード URL を取得
    */
@@ -68,37 +53,15 @@ export const useFirebaseStorage = () => {
   const getJsonFile = async <T = any>(path: string): Promise<T> => {
     try {
       const fileRef = storageRef(storage, path)
-      const bucket = storage.app?.options?.storageBucket || 'unknown'
-      const encodedPath = encodeURIComponent(path)
-      logger.info(`Storage bucket option:`, bucket)
-      const restUrl = `https://firebasestorage.googleapis.com/v0/b/${bucket}/o/${encodedPath}?alt=media`
-      logger.info(`Storage REST URL for ${path}:`, restUrl)
+      const bytes = await getBytes(fileRef)
 
-      let downloadUrl: string | null = null
-      try {
-        downloadUrl = await Promise.race([
-          getDownloadURL(fileRef),
-          new Promise<string>((_, reject) => {
-            setTimeout(() => reject(new Error('Timeout')), 8000)
-          })
-        ])
-        logger.info(`Storage download URL for ${path}:`, downloadUrl)
-      } catch (error) {
-        logger.warn(`Failed to get download URL for ${path}`, error)
-      }
+      // ArrayBuffer を文字列に変換
+      const decoder = new TextDecoder('utf-8')
+      const jsonString = decoder.decode(bytes)
 
-      const primaryUrl = downloadUrl || restUrl
-      logger.info(`Fetching JSON via URL for ${path}:`, primaryUrl)
-      try {
-        return await fetchJsonWithTimeout<T>(primaryUrl)
-      } catch (error) {
-        if (primaryUrl !== restUrl) {
-          logger.warn(`Download URL fetch failed; retrying REST URL for ${path}`, error)
-          logger.info(`Fetching JSON via REST URL for ${path}:`, restUrl)
-          return await fetchJsonWithTimeout<T>(restUrl)
-        }
-        throw error
-      }
+      // JSON をパース
+      const data = JSON.parse(jsonString) as T
+      return data
     } catch (error) {
       logger.error(`Failed to get JSON file from ${path}`, error)
       throw error
@@ -124,7 +87,7 @@ export const useFirebaseStorage = () => {
           const maxAge = cacheMinutes * 60 * 1000
           
           if (cacheAge < maxAge) {
-            logger.info(`Using cached data for ${path}`)
+            logger.debug(`Using cached data for ${path}`)
             return JSON.parse(cached) as T
           }
         }
@@ -134,7 +97,7 @@ export const useFirebaseStorage = () => {
     }
     
     // Firebase Storage から取得
-    logger.info(`Fetching JSON from storage for ${path}`)
+    logger.debug(`Fetching JSON from storage for ${path}`)
     const data = await getJsonFile<T>(path)
     
     // キャッシュに保存
