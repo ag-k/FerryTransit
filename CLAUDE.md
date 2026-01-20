@@ -71,6 +71,26 @@ npm run test:unit
 npm run lint
 ```
 
+### iOS/Android ビルド（Capacitor）
+
+```bash
+# iOS ビルド
+npm run cap:ios           # Xcode を開いてビルド
+npm run cap:ios:build     # ビルドのみ（IDE を開かない）
+
+# Android ビルド
+npm run cap:android       # Android Studio を開いてビルド
+npm run cap:android:build # ビルドのみ（IDE を開かない）
+
+# 開発環境でビルド
+node scripts/cap-build.mjs ios --dev --open
+node scripts/cap-build.mjs android --dev --open
+```
+
+**注意**: `cap-build.mjs` スクリプトが以下を自動設定します：
+- プラットフォーム別の Bundle ID（iOS: `com.naturebot-lab.FerryTransit`, Android: `com.naturebotlab.ferrytransit`）
+- 環境ファイル（`.env.development` または `.env.production`）の自動切り替え
+
 ## 主要機能
 
 ### 実装済み機能

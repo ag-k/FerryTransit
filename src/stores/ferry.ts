@@ -1,5 +1,6 @@
 import { defineStore } from "pinia";
 import { useFirebaseStorage } from "@/composables/useFirebaseStorage";
+import { createLogger } from "@/utils/logger";
 import type { Trip, ShipStatus, FerryStatus, SightseeingStatus, ShipStatusStoreState } from "@/types";
 import {
   formatDateYmdJst,
@@ -29,6 +30,7 @@ const formatDateLocal = (date: Date): string => {
 };
 
 export const useFerryStore = defineStore("ferry", () => {
+  const logger = createLogger("ferryStore");
   // State
   const timetableData = ref<Trip[]>([]);
   const shipStatus = ref<ShipStatusStoreState>({
@@ -393,6 +395,12 @@ export const useFerryStore = defineStore("ferry", () => {
       if (useFirebaseFunctions && process.client) {
         // Firebase Storage から直接取得
         const { getCachedJsonFile } = useFirebaseStorage();
+        const config = useRuntimeConfig();
+        const bucket = config.public.firebase.storageBucket;
+        const encodedPath = encodeURIComponent("data/timetable.json");
+        const restUrl = `https://firebasestorage.googleapis.com/v0/b/${bucket}/o/${encodedPath}?alt=media`;
+        logger.info("Timetable storage bucket:", bucket);
+        logger.info("Timetable REST URL:", restUrl);
         data = await getCachedJsonFile<any[]>(
           "data/timetable.json",
           "rawTimetable",
@@ -406,10 +414,15 @@ export const useFerryStore = defineStore("ferry", () => {
       }
 
       if (!Array.isArray(data) || data.length === 0) {
+        logger.warn("Timetable data is empty or invalid", {
+          type: Array.isArray(data) ? "array" : typeof data,
+          length: Array.isArray(data) ? data.length : null
+        });
         timetableData.value = [];
         error.value = "LOAD_TIMETABLE_ERROR";
         return;
       }
+      logger.info("Timetable data loaded", { length: data.length });
 
       // Map API response fields to expected format
       timetableData.value = data.map((trip) => ({
