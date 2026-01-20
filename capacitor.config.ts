@@ -10,7 +10,8 @@ const config: CapacitorConfig = {
     // cleartext: true
   },
   ios: {
-    contentInset: 'automatic'
+    contentInset: 'automatic',
+    backgroundColor: '#0f172a' // slate-900 (dark mode app-surface)
   },
   android: {
     buildOptions: {
