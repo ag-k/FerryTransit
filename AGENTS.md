@@ -6,16 +6,20 @@
 - Functions(Backend): `src/functions/`（独立の `package.json` と `tsconfig.json`）。
 - テスト: `src/test/unit/**` と `**/__tests__/**`、モックは `src/test/mocks/`。
 - スクリプト: `scripts/` および `src/scripts/`（Firebase/デプロイ補助）。
-- ドキュメント: `docs/`、成果物: `output/`、モバイル: `src/ios/`, `src/android/`。
+- ドキュメント: `docs/`、成果物: `output/`、モバイル: `ios/`, `android/`（Capacitor プラットフォーム）。
 
 ## ビルド・実行・テスト
 - 開発サーバ: `npm run dev`（Nuxt 開発環境）。
 - 本番ビルド: `npm run build` → `npm run preview` で検証。
-- 静的出力/Capacitor 同期: `npm run generate` → `npm run cap:ios|cap:android`。
 - Lint/型: `npm run lint`、`npm run typecheck`。
 - 単体テスト: `npm run test`、カバレッジ: `npm run test:coverage`、UI: `npm run test:ui`。
 - Firebase: `npm run firebase:emulators`、`npm run firebase:deploy`（`--only hosting|functions` 可）。
 - Cloud Functions ローカル（`src/functions`）: `npm run build`、`npm run serve`、`npm run deploy`。
+
+### iOS/Android ビルド（Capacitor）
+- iOS: `npm run cap:ios`（Xcode を開いてビルド）、`npm run cap:ios:build`（ビルドのみ）
+- Android: `npm run cap:android`（Android Studio を開いてビルド）、`npm run cap:android:build`（ビルドのみ）
+- 環境設定: `cap-build.mjs` が Bundle ID と環境ファイル（`.env.development`/`.env.production`）を自動切り替え
 
 ## コーディング規約 / 命名
 - 言語: TypeScript、インデント2スペース。ESLint（`@nuxtjs/eslint-config-typescript`）準拠。自動修正: `eslint . --fix`。
