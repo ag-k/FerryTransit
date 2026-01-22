@@ -183,29 +183,35 @@
                     <div class="flex items-center gap-1 min-h-[20px]">
                       <button v-if="tripStatus(trip) === 2" type="button" data-test="cancel-status-icon"
                         class="inline-flex items-center text-red-600 dark:text-red-300" :title="$t('OPERATION_STATUS')"
-                        aria-label="運航状況を見る" @click.stop="navigateToStatus">
+                        aria-label="運航状況を見る" @click.stop="showOperationStatus(trip.name)">
                         <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" fill="currentColor"
                           viewBox="0 0 16 16">
                           <path
                             d="M16 8A8 8 0 1 1 0 8a8 8 0 0 1 16 0zM5.354 4.646a.5.5 0 1 0-.708.708L7.293 8l-2.647 2.646a.5.5 0 0 0 .708.708L8 8.707l2.646 2.647a.5.5 0 0 0 .708-.708L8.707 8l2.647-2.646a.5.5 0 0 0-.708-.708L8 7.293 5.354 4.646z" />
                         </svg>
                       </button>
-                      <span v-else-if="tripStatus(trip) === 3"
-                        class="inline-flex items-center text-yellow-600 dark:text-yellow-300">
+                      <button v-else-if="tripStatus(trip) === 3" type="button" data-test="warning-status-icon"
+                        class="inline-flex items-center text-yellow-600 dark:text-yellow-300"
+                        :title="$t('OPERATION_STATUS')"
+                        aria-label="運航状況を見る"
+                        @click.stop="showOperationStatus(trip.name)">
                         <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" fill="currentColor"
                           viewBox="0 0 16 16">
                           <path
                             d="M8.982 1.566a1.13 1.13 0 0 0-1.96 0L.165 13.233c-.457.778.091 1.767.98 1.767h13.713c.889 0 1.438-.99.98-1.767L8.982 1.566zM8 5c.535 0 .954.462.9.995l-.35 3.507a.552.552 0 0 1-1.1 0L7.1 5.995A.905.905 0 0 1 8 5zm.002 6a1 1 0 1 1 0 2 1 1 0 0 1 0-2z" />
                         </svg>
-                      </span>
-                      <span v-else-if="tripStatus(trip) === 4"
-                        class="inline-flex items-center text-green-600 dark:text-green-300">
+                      </button>
+                      <button v-else-if="tripStatus(trip) === 4" type="button" data-test="resumed-status-icon"
+                        class="inline-flex items-center text-green-600 dark:text-green-300"
+                        :title="$t('OPERATION_STATUS')"
+                        aria-label="運航状況を見る"
+                        @click.stop="showOperationStatus(trip.name)">
                         <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" fill="currentColor"
                           viewBox="0 0 16 16">
                           <path
                             d="M16 8A8 8 0 1 1 0 8a8 8 0 0 1 16 0zM8.5 4.5a.5.5 0 0 0-1 0v3h-3a.5.5 0 0 0 0 1h3v3a.5.5 0 0 0 1 0v-3h3a.5.5 0 0 0 0-1h-3v-3z" />
                         </svg>
-                      </span>
+                      </button>
                       <!-- 船種全体の運航状況に変更がある場合の注意マーク（便ごとのステータスが通常の場合のみ表示） -->
                       <button
                         v-else-if="getShipStatusAlert(trip.name)"
@@ -219,7 +225,7 @@
                         }"
                         :title="$t('OPERATION_STATUS')"
                         aria-label="運航状況を見る"
-                        @click.stop="navigateToStatus"
+                        @click.stop="showOperationStatus(trip.name)"
                       >
                         <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" fill="currentColor"
                           viewBox="0 0 16 16">
@@ -287,6 +293,10 @@
     <ClientOnly>
       <CommonShipModal v-model:visible="modalVisible" :title="modalTitle" :type="modalType" :ship-id="modalShipId"
         :port-id="modalPortId" :port-zoom="modalPortZoom" :content="modalContent" />
+      <OperationStatusModal
+        v-model:visible="operationStatusModalVisible"
+        :ship-name="operationStatusShipName"
+      />
     </ClientOnly>
   </div>
 </template>
@@ -302,6 +312,7 @@ import FavoriteButton from '@/components/favorites/FavoriteButton.vue'
 import PortBadges from '@/components/common/PortBadges.vue'
 import TimetableMap from '@/components/map/TimetableMap.vue'
 import StatusAlerts from '@/components/common/StatusAlerts.vue'
+import OperationStatusModal from '@/components/common/OperationStatusModal.vue'
 import DatePicker from '@/components/common/DatePicker.vue'
 import Card from '@/components/common/Card.vue'
 import Alert from '@/components/common/Alert.vue'
@@ -337,6 +348,8 @@ const modalPortZoom = ref(15)
 const modalContent = ref('')
 const selectedMapPort = ref<string>('')
 const selectedMapRoute = ref<{ from: string; to: string } | undefined>()
+const operationStatusModalVisible = ref(false)
+const operationStatusShipName = ref('')
 
 const today = getTodayJstMidnight()
 
@@ -665,6 +678,12 @@ const navigateToTransit = () => {
 const navigateToStatus = () => {
   const router = useRouter()
   router.push({ path: '/status' })
+}
+
+// 運航状況モーダルを表示
+const showOperationStatus = (shipName: string) => {
+  operationStatusShipName.value = shipName
+  operationStatusModalVisible.value = true
 }
 
 // Watchers

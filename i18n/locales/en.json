@@ -3,6 +3,8 @@
   "HOME": "Home",
   "ABOUT_APP": "About This App",
   "STATUS": "Service Status",
+  "OPERATION_STATUS": "Service Status",
+  "VIEW_ALL_STATUS": "View All Status",
   "CURRENCY_UNIT": "yen",
   "HOURS": " h ",
   "MINUTES": " min",
