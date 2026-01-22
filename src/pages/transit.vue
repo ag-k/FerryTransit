@@ -304,11 +304,9 @@
 
       <!-- Show More Button -->
       <div v-if="searchResults.length > displayLimit" class="mt-4">
-        <button
-          class="w-full py-3 bg-blue-700 hover:bg-blue-800 dark:bg-blue-500 dark:hover:bg-blue-700 text-white font-medium rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 dark:focus:ring-offset-gray-900 transform active:scale-[0.98] transition-all duration-150 shadow-sm hover:shadow-md"
-          @click="showMore">
+        <PrimaryButton block size="lg" @click="showMore">
           {{ $t('MORE_BUTTON') }}
-        </button>
+        </PrimaryButton>
       </div>
     </div>
 
