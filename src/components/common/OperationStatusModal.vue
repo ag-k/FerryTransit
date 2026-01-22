@@ -17,7 +17,7 @@
         @click.self="handleClose"
       >
         <div
-          class="bg-app-surface text-app-fg border border-app-border/70 rounded-t-2xl sm:rounded-lg shadow-xl w-full max-w-lg max-h-[90vh] sm:max-h-[90vh] sm:h-auto"
+          class="bg-app-surface text-app-fg border border-app-border/70 rounded-t-2xl sm:rounded-lg shadow-xl w-full max-w-lg max-h-[90vh] sm:max-h-[90vh] sm:h-auto overflow-hidden"
           @click.stop
         >
           <!-- Header -->
