@@ -42,7 +42,7 @@
 
       <!-- Oki Kisen Ferry -->
       <div v-show="activeTab === 'okiKisen'" id="fare-tabpanel-okiKisen" role="tabpanel" tabindex="0"
-        aria-labelledby="fare-tab-okiKisen" class="mb-12">
+        aria-labelledby="fare-tab-okiKisen" class="mb-4">
         <div class="mb-4">
           <div class="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
             <h3 class="text-xl font-medium dark:text-white">{{ $t('OKI_KISEN_FERRY') }}</h3>
@@ -336,7 +336,7 @@
 
       <!-- Naiko Sen (Ferry Dozen / Isokaze) -->
       <div v-show="activeTab === 'naikoSen'" id="fare-tabpanel-naikoSen" role="tabpanel" tabindex="0"
-        aria-labelledby="fare-tab-naikoSen" class="mb-12">
+        aria-labelledby="fare-tab-naikoSen" class="mb-4">
         <div class="mb-4">
           <div class="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
             <h3 class="text-xl font-medium dark:text-white">{{ $t('NAIKO_SEN') }}</h3>
@@ -506,7 +506,7 @@
 
       <!-- Rainbow Jet -->
       <div v-show="activeTab === 'rainbowJet'" id="fare-tabpanel-rainbowJet" role="tabpanel" tabindex="0"
-        aria-labelledby="fare-tab-rainbowJet" class="mb-12">
+        aria-labelledby="fare-tab-rainbowJet" class="mb-4">
         <div class="mb-4">
           <div class="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
             <h3 class="text-xl font-medium dark:text-white">{{ $t('RAINBOWJET') }}</h3>
