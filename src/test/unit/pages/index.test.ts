@@ -464,7 +464,7 @@ describe("IndexPage (時刻表ページ)", () => {
   });
 
   describe("欠航アイコン", () => {
-    it("欠航アイコンをクリックすると運航状況ページへ遷移する", async () => {
+    it("欠航アイコンをクリックすると運航状況モーダルが表示される", async () => {
       mockUseFerryData.departure.value = "KURI";
       mockUseFerryData.arrival.value = "SAIGO";
       mockUseFerryData.filteredTimetable.value = [
@@ -487,8 +487,10 @@ describe("IndexPage (時刻表ページ)", () => {
       const icon = wrapper.find('[data-test="cancel-status-icon"]');
       expect(icon.exists()).toBe(true);
 
+      // アイコンをクリックして運航状況モーダルが表示されることを確認
       await icon.trigger("click");
-      expect(mockRouter.push).toHaveBeenCalledWith({ path: "/status" });
+      // router.push は呼ばれない（モーダルで表示するため）
+      expect(mockRouter.push).not.toHaveBeenCalled();
     });
   });
 });
