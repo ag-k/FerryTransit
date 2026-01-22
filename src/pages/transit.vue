@@ -196,10 +196,36 @@
                     </td>
                     <td class="py-2 pl-4" :style="getShipBorderStyle(segment.ship)">
                       <div class="flex items-center">
-                        <span v-if="segment.status === 2" class="mr-2 text-red-600 dark:text-red-300">×</span>
-                        <span v-else-if="segment.status === 3"
-                          class="mr-2 text-yellow-600 dark:text-yellow-300">⚠</span>
-                        <span v-else-if="segment.status === 4" class="mr-2 text-green-600 dark:text-green-300">+</span>
+                        <!-- 欠航アイコン -->
+                        <button v-if="segment.status === 2" type="button" data-test="cancel-status-icon"
+                          class="mr-2 inline-flex items-center text-red-600 dark:text-red-300"
+                          :title="$t('OPERATION_STATUS')"
+                          aria-label="運航状況を見る"
+                          @click.stop="showOperationStatus(segment.ship)">
+                          <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" fill="currentColor" viewBox="0 0 16 16">
+                            <path d="M16 8A8 8 0 1 1 0 8a8 8 0 0 1 16 0zM5.354 4.646a.5.5 0 1 0-.708.708L7.293 8l-2.647 2.646a.5.5 0 0 0 .708.708L8 8.707l2.646 2.647a.5.5 0 0 0 .708-.708L8.707 8l2.647-2.646a.5.5 0 0 0-.708-.708L8 7.293 5.354 4.646z" />
+                          </svg>
+                        </button>
+                        <!-- 警告/変更アイコン -->
+                        <button v-else-if="segment.status === 3" type="button" data-test="warning-status-icon"
+                          class="mr-2 inline-flex items-center text-yellow-600 dark:text-yellow-300"
+                          :title="$t('OPERATION_STATUS')"
+                          aria-label="運航状況を見る"
+                          @click.stop="showOperationStatus(segment.ship)">
+                          <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" fill="currentColor" viewBox="0 0 16 16">
+                            <path d="M8.982 1.566a1.13 1.13 0 0 0-1.96 0L.165 13.233c-.457.778.091 1.767.98 1.767h13.713c.889 0 1.438-.99.98-1.767L8.982 1.566zM8 5c.535 0 .954.462.9.995l-.35 3.507a.552.552 0 0 1-1.1 0L7.1 5.995A.905.905 0 0 1 8 5zm.002 6a1 1 0 1 1 0 2 1 1 0 0 1 0-2z" />
+                          </svg>
+                        </button>
+                        <!-- 運航再開アイコン -->
+                        <button v-else-if="segment.status === 4" type="button" data-test="resumed-status-icon"
+                          class="mr-2 inline-flex items-center text-green-600 dark:text-green-300"
+                          :title="$t('OPERATION_STATUS')"
+                          aria-label="運航状況を見る"
+                          @click.stop="showOperationStatus(segment.ship)">
+                          <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" fill="currentColor" viewBox="0 0 16 16">
+                            <path d="M16 8A8 8 0 1 1 0 8a8 8 0 0 1 16 0zM8.5 4.5a.5.5 0 0 0-1 0v3h-3a.5.5 0 0 0 0 1h3v3a.5.5 0 0 0 1 0v-3h3a.5.5 0 0 0 0-1h-3v-3z" />
+                          </svg>
+                        </button>
                         <!-- 船種全体の運航状況に変更がある場合の注意マーク（便ごとのステータスが通常の場合のみ表示） -->
                         <button
                           v-else-if="getShipStatusAlert(segment.ship)"
@@ -213,8 +239,12 @@
                           }"
                           :title="$t('OPERATION_STATUS')"
                           aria-label="運航状況を見る"
-                          @click.stop="navigateToStatus"
-                        >⚠</button>
+                          @click.stop="showOperationStatus(segment.ship)"
+                        >
+                          <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" fill="currentColor" viewBox="0 0 16 16">
+                            <path d="M8.982 1.566a1.13 1.13 0 0 0-1.96 0L.165 13.233c-.457.778.091 1.767.98 1.767h13.713c.889 0 1.438-.99.98-1.767L8.982 1.566zM8 5c.535 0 .954.462.9.995l-.35 3.507a.552.552 0 0 1-1.1 0L7.1 5.995A.905.905 0 0 1 8 5zm.002 6a1 1 0 1 1 0 2 1 1 0 0 1 0-2z" />
+                          </svg>
+                        </button>
                         <a href="#" class="text-app-primary hover:underline"
                           @click.prevent="showShipInfo(segment.ship)">
                           🚢 {{ $t(segment.ship) }}
@@ -371,6 +401,12 @@
 
     <!-- Route Map Modal -->
     <RouteMapModal v-model:visible="showMapModal" :route="selectedMapRoute" />
+
+    <!-- Operation Status Modal -->
+    <OperationStatusModal
+      v-model:visible="operationStatusModalVisible"
+      :ship-name="operationStatusShipName"
+    />
   </div>
 </template>
 
@@ -383,6 +419,7 @@ import { useFerryStore } from '@/stores/ferry'
 import RouteEndpointsSelector from '@/components/common/RouteEndpointsSelector.vue'
 import DatePicker from '@/components/common/DatePicker.vue'
 import CommonShipModal from '@/components/common/ShipModal.vue'
+import OperationStatusModal from '@/components/common/OperationStatusModal.vue'
 import StatusAlerts from '@/components/common/StatusAlerts.vue'
 import FavoriteButton from '@/components/favorites/FavoriteButton.vue'
 import PortBadges from '@/components/common/PortBadges.vue'
@@ -752,6 +789,8 @@ const modalShipId = ref('')
 const modalPortId = ref('')
 const showMapModal = ref(false)
 const selectedMapRoute = ref<TransitRoute | null>(null)
+const operationStatusModalVisible = ref(false)
+const operationStatusShipName = ref('')
 
 const modalPortZoom = computed<number>(() => {
   const id = modalPortId.value
@@ -822,10 +861,10 @@ const getShipStatusAlert = (shipName: string): { hasAlert: boolean; severity: 'w
   return null
 }
 
-// 運航状況ページに遷移
-function navigateToStatus() {
-  const router = useRouter()
-  router.push({ path: '/status' })
+// 運航状況モーダルを表示
+function showOperationStatus(shipName: string) {
+  operationStatusShipName.value = shipName
+  operationStatusModalVisible.value = true
 }
 
 function showShipInfo(shipName: string) {
