@@ -293,13 +293,15 @@ const initializeMap = async () => {
       }).load()
 
     // 地図の初期化
+    // モバイルでは2本指スクロールを要求し、ページスクロールの邪魔にならないようにする
+    const isMobileDevice = typeof window !== 'undefined' && window.innerWidth < 768
     map.value = new google.maps.Map(mapContainer.value, {
       center: { lat: 36.2, lng: 133.05 }, // 隠岐諸島の中心付近
       zoom: 10,
       mapId: 'ca20a2dbd2ddb20bccb48876', // カスタムマップID
       // mapIdを使用する場合、stylesはGoogle Cloud Consoleで管理される
-      // モバイル向けのオプション
-      gestureHandling: 'greedy',
+      // モバイル向けのオプション: cooperativeで2本指スクロールを要求
+      gestureHandling: isMobileDevice ? 'cooperative' : 'greedy',
       fullscreenControl: true,
       zoomControl: true,
       // 「地図 / 航空写真」切り替え（MapTypeControl）を非表示
