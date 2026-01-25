@@ -22,13 +22,14 @@
     >
       <span class="min-w-0">
         <span v-if="modelValue" class="text-app-fg flex items-center gap-2 min-w-0">
+          <LocationTypeIcon v-if="showLocationTypeBadge" :type="defaultLocationType" />
           <span class="truncate">{{ getPortLabelParts(modelValue).name }}</span>
           <PortBadges :badges="getPortLabelParts(modelValue).badges" class="flex items-center gap-1" />
         </span>
         <span v-else class="text-app-muted truncate">{{ placeholder || '-' }}</span>
       </span>
       <svg
-        class="w-5 h-5 text-app-muted flex-none"
+        class="port-selector__caret w-5 h-5 text-app-muted flex-none"
         fill="currentColor"
         viewBox="0 0 20 20"
         aria-hidden="true"
@@ -114,6 +115,7 @@
                       @click="selectPort(port)"
                     >
                       <span class="flex items-center gap-3">
+                        <LocationTypeIcon v-if="showLocationTypeBadge" :type="defaultLocationType" />
                         <span class="min-w-0 truncate">{{ getPortLabelParts(port).name }}</span>
                         <PortBadges :badges="getPortLabelParts(port).badges" class="ml-auto flex items-center gap-1.5" />
                       </span>
@@ -133,6 +135,8 @@
 import { useFerryStore } from '@/stores/ferry'
 import { useFavoriteStore } from '@/stores/favorite'
 import PortBadges from '@/components/common/PortBadges.vue'
+import LocationTypeIcon from '@/components/common/LocationTypeIcon.vue'
+import type { LocationType } from '@/types'
 
 interface Props {
   modelValue: string
@@ -162,6 +166,7 @@ const emit = defineEmits<{
 const ferryStore = process.client ? useFerryStore() : null
 const favoriteStore = process.client ? useFavoriteStore() : null
 const { t } = useI18n()
+const defaultLocationType: LocationType = 'PORT'
 
 const containerClass = computed(() => {
   if (props.margin === 'none') return ''
@@ -232,10 +237,6 @@ const getPortLabelParts = (port: string) => {
   }
 
   const name = label.replace(parenRegex, '').replace(/\s+/g, ' ').trim()
-  const locationTypeLabel = props.showLocationTypeBadge ? String(t('LOCATION_TYPES.PORT')) : ''
-  if (locationTypeLabel && locationTypeLabel !== 'LOCATION_TYPES.PORT' && !badges.includes(locationTypeLabel)) {
-    badges.push(locationTypeLabel)
-  }
 
   return {
     name: name || label.trim(),

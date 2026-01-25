@@ -184,10 +184,11 @@
                   <td class="py-2 pl-4">
                     <a href="#" class="text-app-primary group inline-flex items-center gap-2 flex-wrap"
                       @click.prevent="showPortInfo(route.segments[0].departure)">
-                      <span class="group-hover:underline">
-                        ⚓ {{ getPortLabelParts(route.segments[0].departure, route.segments[0].departureType).name }}
+                      <span class="group-hover:underline inline-flex items-center gap-2">
+                        <LocationTypeIcon :type="resolveLocationType(route.segments[0].departureType)" />
+                        <span>{{ getPortLabelParts(route.segments[0].departure).name }}</span>
                       </span>
-                      <PortBadges :badges="getPortLabelParts(route.segments[0].departure, route.segments[0].departureType).badges" class="flex flex-wrap gap-1" />
+                      <PortBadges :badges="getPortLabelParts(route.segments[0].departure).badges" class="flex flex-wrap gap-1" />
                     </a>
                   </td>
                   <td class="py-2"></td>
@@ -276,10 +277,11 @@
                     <td class="py-2 pl-4">
                       <a href="#" class="text-app-primary group inline-flex items-center gap-2 flex-wrap"
                         @click.prevent="showPortInfo(segment.arrival)">
-                        <span class="group-hover:underline">
-                          ⚓ {{ getPortLabelParts(segment.arrival, segment.arrivalType).name }}
+                        <span class="group-hover:underline inline-flex items-center gap-2">
+                          <LocationTypeIcon :type="resolveLocationType(segment.arrivalType)" />
+                          <span>{{ getPortLabelParts(segment.arrival).name }}</span>
                         </span>
-                        <PortBadges :badges="getPortLabelParts(segment.arrival, segment.arrivalType).badges" class="flex flex-wrap gap-1" />
+                        <PortBadges :badges="getPortLabelParts(segment.arrival).badges" class="flex flex-wrap gap-1" />
                       </a>
                       <span class="text-xs text-app-muted ml-2">
                         ({{ $t('TRANSFER') }}) {{ formatTransferWaitTime(segment.arrivalTime, route.segments[segIndex +
@@ -296,10 +298,11 @@
                   <td class="py-2 pl-4">
                     <a href="#" class="text-app-primary group inline-flex items-center gap-2 flex-wrap"
                       @click.prevent="showPortInfo(route.segments[route.segments.length - 1].arrival)">
-                      <span class="group-hover:underline">
-                        ⚓ {{ getPortLabelParts(route.segments[route.segments.length - 1].arrival, route.segments[route.segments.length - 1].arrivalType).name }}
+                      <span class="group-hover:underline inline-flex items-center gap-2">
+                        <LocationTypeIcon :type="resolveLocationType(route.segments[route.segments.length - 1].arrivalType)" />
+                        <span>{{ getPortLabelParts(route.segments[route.segments.length - 1].arrival).name }}</span>
                       </span>
-                      <PortBadges :badges="getPortLabelParts(route.segments[route.segments.length - 1].arrival, route.segments[route.segments.length - 1].arrivalType).badges" class="flex flex-wrap gap-1" />
+                      <PortBadges :badges="getPortLabelParts(route.segments[route.segments.length - 1].arrival).badges" class="flex flex-wrap gap-1" />
                     </a>
                   </td>
                   <td class="py-2 font-medium text-app-fg">
@@ -358,8 +361,11 @@
                 <div class="md:col-span-2 dark:text-gray-300">
                   <strong>{{ formatTime(segment.departureTime) }}</strong><br>
                   <span class="inline-flex flex-col gap-1">
-                    <span>⚓ {{ getPortLabelParts(segment.departure, segment.departureType).name }}</span>
-                    <PortBadges :badges="getPortLabelParts(segment.departure, segment.departureType).badges" class="flex flex-wrap gap-1" />
+                    <span class="inline-flex items-center gap-2">
+                      <LocationTypeIcon :type="resolveLocationType(segment.departureType)" />
+                      <span>{{ getPortLabelParts(segment.departure).name }}</span>
+                    </span>
+                    <PortBadges :badges="getPortLabelParts(segment.departure).badges" class="flex flex-wrap gap-1" />
                   </span>
                 </div>
                 <div class="md:col-span-1 text-center">
@@ -372,8 +378,11 @@
                 <div class="md:col-span-2 text-right dark:text-gray-300">
                   <strong>{{ formatTime(segment.arrivalTime) }}</strong><br>
                   <span class="inline-flex flex-col gap-1 items-end">
-                    <span>⚓ {{ getPortLabelParts(segment.arrival, segment.arrivalType).name }}</span>
-                    <PortBadges :badges="getPortLabelParts(segment.arrival, segment.arrivalType).badges" class="flex flex-wrap gap-1" />
+                    <span class="inline-flex items-center gap-2">
+                      <LocationTypeIcon :type="resolveLocationType(segment.arrivalType)" />
+                      <span>{{ getPortLabelParts(segment.arrival).name }}</span>
+                    </span>
+                    <PortBadges :badges="getPortLabelParts(segment.arrival).badges" class="flex flex-wrap gap-1" />
                   </span>
                 </div>
               </div>
@@ -440,6 +449,7 @@ import Card from '@/components/common/Card.vue'
 import PrimaryButton from '@/components/common/PrimaryButton.vue'
 import Badge from '@/components/common/Badge.vue'
 import TransportModeFilter from '@/components/common/TransportModeFilter.vue'
+import LocationTypeIcon from '@/components/common/LocationTypeIcon.vue'
 import type { LocationType, TransportMode, TransitRoute, TransitSegment } from '@/types'
 import { createLogger } from '~/utils/logger'
 
@@ -511,7 +521,7 @@ const { searchRoutes, formatTime, calculateDuration, getPortDisplayName } = useR
 const { trackSearch } = useAnalytics()
 const { t } = useI18n()
 
-const getPortLabelParts = (portId?: string, locationType?: LocationType) => {
+const getPortLabelParts = (portId?: string) => {
   if (!portId) {
     return { name: '-', badges: [] as string[] }
   }
@@ -528,17 +538,13 @@ const getPortLabelParts = (portId?: string, locationType?: LocationType) => {
   }
 
   const name = label.replace(parenRegex, '').replace(/\s+/g, ' ').trim()
-  if (locationType) {
-    const typeLabel = String(t(`LOCATION_TYPES.${locationType}`))
-    if (typeLabel && typeLabel !== `LOCATION_TYPES.${locationType}`) {
-      badges.push(typeLabel)
-    }
-  }
   return {
     name: name || label.trim(),
     badges
   }
 }
+
+const resolveLocationType = (value?: LocationType) => value ?? 'PORT'
 
 const formatSegmentMeta = (segment: TransitSegment) => {
   const parts = [

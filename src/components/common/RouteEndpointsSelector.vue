@@ -222,7 +222,7 @@ watch(
   min-height: 44px;
 }
 
-.route-endpoints__selector :deep([data-testid="port-selector-button"] svg) {
+.route-endpoints__selector :deep([data-testid="port-selector-button"] .port-selector__caret) {
   display: none !important;
 }
 </style>
