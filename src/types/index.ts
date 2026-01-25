@@ -77,16 +77,28 @@ export enum TripStatus {
   Extra = 4,
 }
 
+export type TransportMode = 'FERRY' | 'BUS' | 'AIR'
+export type LocationType = 'PORT' | 'STOP' | 'AIRPORT'
+
 // Trip interface
 export interface Trip {
   tripId: number;
   startDate: string;
   endDate: string;
   name: string;
+  mode?: TransportMode;
+  operatorId?: string;
+  serviceId?: string;
+  vehicleId?: string;
   departure: string;
+  departureType?: LocationType;
   departureTime: Date | string;
   arrival: string;
+  arrivalType?: LocationType;
   arrivalTime: Date | string;
+  platform?: string;
+  terminal?: string;
+  gate?: string;
   nextId?: number;
   status: TripStatus;
   price?: number;
@@ -231,8 +243,11 @@ export type Locale = "ja" | "en";
 export interface Timetable {
   tripId: string;
   name: string;
+  mode?: TransportMode;
   departure: string;
+  departureType?: LocationType;
   arrival: string;
+  arrivalType?: LocationType;
   departureTime: Date | string;
   arrivalTime: Date | string;
   status?: number;
@@ -243,10 +258,20 @@ export interface Timetable {
 export interface TransitSegment {
   tripId: string;
   ship: string;
+  mode?: TransportMode;
+  operatorId?: string;
+  serviceId?: string;
+  vehicleId?: string;
+  flightNumber?: string;
   departure: string;
+  departureType?: LocationType;
   arrival: string;
+  arrivalType?: LocationType;
   departureTime: Date;
   arrivalTime: Date;
+  platform?: string;
+  terminal?: string;
+  gate?: string;
   status: number;
   fare: number;
 }

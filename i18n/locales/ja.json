@@ -55,6 +55,31 @@
   "TO_": "へ",
   "VIA": "経由",
   "SHIP": "船名",
+  "TRANSPORT_MODES": {
+    "FERRY": "フェリー",
+    "BUS": "バス",
+    "AIR": "飛行機",
+    "ALL": "すべて"
+  },
+  "LOCATION_TYPES": {
+    "PORT": "港",
+    "STOP": "停留所",
+    "AIRPORT": "空港"
+  },
+  "STOPS": {},
+  "AIRPORTS": {},
+  "OPERATORS": {},
+  "SERVICES": {},
+  "UI": {
+    "TRANSPORT_FILTER": "交通手段",
+    "SEARCH_LOCATION_PLACEHOLDER": "港・停留所・空港を検索",
+    "PREPARING": "準備中"
+  },
+  "SEGMENT": {
+    "PLATFORM": "のりば",
+    "TERMINAL": "ターミナル",
+    "GATE": "ゲート"
+  },
   "DO_NOT_USE_FAST_FERRY": "高速船を利用しない",
   "VIA_CAR": "車で乗船する",
   "ADD_CONDITIONS": "条件を追加",

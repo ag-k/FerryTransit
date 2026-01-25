@@ -10,6 +10,12 @@
       <h3 class="sr-only">{{ $t('SEARCH_CONDITIONS') }}</h3>
       <!-- Port Selection -->
       <div class="mb-3">
+          <TransportModeFilter
+            v-if="transportModeOptions.length > 1"
+            v-model="selectedTransportMode"
+            :options="transportModeOptions"
+            class="mb-3"
+          />
           <!-- Mobile/PC: 添付デザインに合わせた独自UIに統一 -->
           <RouteEndpointsSelector
             :departure="departure"
@@ -61,7 +67,7 @@
     </div>
 
     <!-- Search Results -->
-    <div v-if="searchResults.length > 0">
+    <div v-if="filteredResults.length > 0">
       <div class="flex flex-row items-center justify-between gap-3 mb-4 flex-wrap">
         <h3 class="text-lg font-medium text-gray-900 dark:text-gray-100">
           {{ $t('SEARCH_RESULTS') }}
@@ -179,9 +185,9 @@
                     <a href="#" class="text-app-primary group inline-flex items-center gap-2 flex-wrap"
                       @click.prevent="showPortInfo(route.segments[0].departure)">
                       <span class="group-hover:underline">
-                        ⚓ {{ getPortLabelParts(route.segments[0].departure).name }}
+                        ⚓ {{ getPortLabelParts(route.segments[0].departure, route.segments[0].departureType).name }}
                       </span>
-                      <PortBadges :badges="getPortLabelParts(route.segments[0].departure).badges" class="flex flex-wrap gap-1" />
+                      <PortBadges :badges="getPortLabelParts(route.segments[0].departure, route.segments[0].departureType).badges" class="flex flex-wrap gap-1" />
                     </a>
                   </td>
                   <td class="py-2"></td>
@@ -245,10 +251,15 @@
                             <path d="M8.982 1.566a1.13 1.13 0 0 0-1.96 0L.165 13.233c-.457.778.091 1.767.98 1.767h13.713c.889 0 1.438-.99.98-1.767L8.982 1.566zM8 5c.535 0 .954.462.9.995l-.35 3.507a.552.552 0 0 1-1.1 0L7.1 5.995A.905.905 0 0 1 8 5zm.002 6a1 1 0 1 1 0 2 1 1 0 0 1 0-2z" />
                           </svg>
                         </button>
-                        <a href="#" class="text-app-primary hover:underline"
-                          @click.prevent="showShipInfo(segment.ship)">
-                          🚢 {{ $t(segment.ship) }}
-                        </a>
+                        <div class="flex flex-col">
+                          <a href="#" class="text-app-primary hover:underline"
+                            @click.prevent="showShipInfo(segment.ship)">
+                            🚢 {{ $t(segment.ship) }}
+                          </a>
+                          <span v-if="formatSegmentMeta(segment)" class="text-xs text-app-muted mt-0.5">
+                            {{ formatSegmentMeta(segment) }}
+                          </span>
+                        </div>
                       </div>
                     </td>
                     <td class="py-2 text-app-fg">
@@ -266,9 +277,9 @@
                       <a href="#" class="text-app-primary group inline-flex items-center gap-2 flex-wrap"
                         @click.prevent="showPortInfo(segment.arrival)">
                         <span class="group-hover:underline">
-                          ⚓ {{ getPortLabelParts(segment.arrival).name }}
+                          ⚓ {{ getPortLabelParts(segment.arrival, segment.arrivalType).name }}
                         </span>
-                        <PortBadges :badges="getPortLabelParts(segment.arrival).badges" class="flex flex-wrap gap-1" />
+                        <PortBadges :badges="getPortLabelParts(segment.arrival, segment.arrivalType).badges" class="flex flex-wrap gap-1" />
                       </a>
                       <span class="text-xs text-app-muted ml-2">
                         ({{ $t('TRANSFER') }}) {{ formatTransferWaitTime(segment.arrivalTime, route.segments[segIndex +
@@ -286,9 +297,9 @@
                     <a href="#" class="text-app-primary group inline-flex items-center gap-2 flex-wrap"
                       @click.prevent="showPortInfo(route.segments[route.segments.length - 1].arrival)">
                       <span class="group-hover:underline">
-                        ⚓ {{ getPortLabelParts(route.segments[route.segments.length - 1].arrival).name }}
+                        ⚓ {{ getPortLabelParts(route.segments[route.segments.length - 1].arrival, route.segments[route.segments.length - 1].arrivalType).name }}
                       </span>
-                      <PortBadges :badges="getPortLabelParts(route.segments[route.segments.length - 1].arrival).badges" class="flex flex-wrap gap-1" />
+                      <PortBadges :badges="getPortLabelParts(route.segments[route.segments.length - 1].arrival, route.segments[route.segments.length - 1].arrivalType).badges" class="flex flex-wrap gap-1" />
                     </a>
                   </td>
                   <td class="py-2 font-medium text-app-fg">
@@ -303,7 +314,7 @@
       </div>
 
       <!-- Show More Button -->
-      <div v-if="searchResults.length > displayLimit" class="mt-4">
+      <div v-if="filteredResults.length > displayLimit" class="mt-4">
         <PrimaryButton block size="lg" @click="showMore">
           {{ $t('MORE_BUTTON') }}
         </PrimaryButton>
@@ -332,10 +343,10 @@
 
     <!-- Route Details Modal -->
     <CommonShipModal v-model:visible="showDetailsModal" :title="$t('ROUTE_DETAILS')" type="custom">
-      <div v-if="selectedRoute">
-        <div v-for="(segment, index) in selectedRoute.segments" :key="index" class="mb-3">
-          <div class="bg-white dark:bg-gray-800 border dark:border-gray-700 rounded-lg">
-            <div class="p-4">
+    <div v-if="selectedRoute">
+      <div v-for="(segment, index) in selectedRoute.segments" :key="index" class="mb-3">
+        <div class="bg-white dark:bg-gray-800 border dark:border-gray-700 rounded-lg">
+          <div class="p-4">
               <h6 class="text-sm text-gray-600 dark:text-gray-300 mb-2 flex items-center gap-2">
                 <span
                   class="inline-flex items-center justify-center w-5 h-5 bg-blue-700 text-white dark:bg-blue-800 rounded-full font-bold text-xs">
@@ -347,19 +358,22 @@
                 <div class="md:col-span-2 dark:text-gray-300">
                   <strong>{{ formatTime(segment.departureTime) }}</strong><br>
                   <span class="inline-flex flex-col gap-1">
-                    <span>⚓ {{ getPortLabelParts(segment.departure).name }}</span>
-                    <PortBadges :badges="getPortLabelParts(segment.departure).badges" class="flex flex-wrap gap-1" />
+                    <span>⚓ {{ getPortLabelParts(segment.departure, segment.departureType).name }}</span>
+                    <PortBadges :badges="getPortLabelParts(segment.departure, segment.departureType).badges" class="flex flex-wrap gap-1" />
                   </span>
                 </div>
                 <div class="md:col-span-1 text-center">
                   <div class="mt-2 dark:text-gray-300">→</div>
                   <small class="text-gray-500 dark:text-gray-300">🚢 {{ $t(segment.ship) }}</small>
+                  <small v-if="formatSegmentMeta(segment)" class="text-gray-500 dark:text-gray-300 block mt-1">
+                    {{ formatSegmentMeta(segment) }}
+                  </small>
                 </div>
                 <div class="md:col-span-2 text-right dark:text-gray-300">
                   <strong>{{ formatTime(segment.arrivalTime) }}</strong><br>
                   <span class="inline-flex flex-col gap-1 items-end">
-                    <span>⚓ {{ getPortLabelParts(segment.arrival).name }}</span>
-                    <PortBadges :badges="getPortLabelParts(segment.arrival).badges" class="flex flex-wrap gap-1" />
+                    <span>⚓ {{ getPortLabelParts(segment.arrival, segment.arrivalType).name }}</span>
+                    <PortBadges :badges="getPortLabelParts(segment.arrival, segment.arrivalType).badges" class="flex flex-wrap gap-1" />
                   </span>
                 </div>
               </div>
@@ -425,7 +439,8 @@ import RouteMapModal from '@/components/map/RouteMapModal.vue'
 import Card from '@/components/common/Card.vue'
 import PrimaryButton from '@/components/common/PrimaryButton.vue'
 import Badge from '@/components/common/Badge.vue'
-import type { TransitRoute } from '@/types'
+import TransportModeFilter from '@/components/common/TransportModeFilter.vue'
+import type { LocationType, TransportMode, TransitRoute, TransitSegment } from '@/types'
 import { createLogger } from '~/utils/logger'
 
 // Stores
@@ -487,13 +502,16 @@ const sortOptions: Array<{ value: SortKey; labelKey: string }> = [
 ]
 
 const sortOption = ref<SortKey>('recommended')
+const transportModeOrder: TransportMode[] = ['FERRY', 'BUS', 'AIR']
+type TransportModeFilterValue = TransportMode | 'ALL'
+const selectedTransportMode = ref<TransportModeFilterValue>('ALL')
 
 // Composables
 const { searchRoutes, formatTime, calculateDuration, getPortDisplayName } = useRouteSearch()
 const { trackSearch } = useAnalytics()
 const { t } = useI18n()
 
-const getPortLabelParts = (portId?: string) => {
+const getPortLabelParts = (portId?: string, locationType?: LocationType) => {
   if (!portId) {
     return { name: '-', badges: [] as string[] }
   }
@@ -510,10 +528,25 @@ const getPortLabelParts = (portId?: string) => {
   }
 
   const name = label.replace(parenRegex, '').replace(/\s+/g, ' ').trim()
+  if (locationType) {
+    const typeLabel = String(t(`LOCATION_TYPES.${locationType}`))
+    if (typeLabel && typeLabel !== `LOCATION_TYPES.${locationType}`) {
+      badges.push(typeLabel)
+    }
+  }
   return {
     name: name || label.trim(),
     badges
   }
+}
+
+const formatSegmentMeta = (segment: TransitSegment) => {
+  const parts = [
+    segment.platform ? `${t('SEGMENT.PLATFORM')}: ${segment.platform}` : '',
+    segment.terminal ? `${t('SEGMENT.TERMINAL')}: ${segment.terminal}` : '',
+    segment.gate ? `${t('SEGMENT.GATE')}: ${segment.gate}` : ''
+  ].filter(Boolean)
+  return parts.join(' / ')
 }
 
 const hasCancelledSegment = (route: TransitRoute): boolean => {
@@ -588,8 +621,51 @@ const canSearch = computed(() => {
     departure.value !== arrival.value
 })
 
+const normalizeTransportMode = (mode?: TransportMode | string): TransportMode => {
+  if (mode === 'BUS' || mode === 'AIR' || mode === 'FERRY') return mode
+  return 'FERRY'
+}
+
+const availableTransportModes = computed(() => {
+  const modes = new Set<TransportMode>()
+  for (const route of searchResults.value) {
+    for (const segment of route.segments) {
+      modes.add(normalizeTransportMode(segment.mode))
+    }
+  }
+  return transportModeOrder.filter(mode => modes.has(mode))
+})
+
+const transportModeOptions = computed(() => {
+  if (availableTransportModes.value.length <= 1) return []
+  return ['ALL', ...availableTransportModes.value]
+})
+
+watch(transportModeOptions, (options) => {
+  if (!options.length) {
+    selectedTransportMode.value = 'ALL'
+    return
+  }
+  if (!options.includes(selectedTransportMode.value)) {
+    selectedTransportMode.value = 'ALL'
+  }
+})
+
+const filteredResults = computed(() => {
+  if (selectedTransportMode.value === 'ALL' || transportModeOptions.value.length === 0) {
+    return searchResults.value
+  }
+  return searchResults.value.filter(route =>
+    route.segments.some(segment => normalizeTransportMode(segment.mode) === selectedTransportMode.value)
+  )
+})
+
+watch(selectedTransportMode, () => {
+  displayLimit.value = 5
+})
+
 const sortedResults = computed(() => {
-  const routes = [...searchResults.value]
+  const routes = [...filteredResults.value]
   if (routes.length <= 1) {
     return routes
   }

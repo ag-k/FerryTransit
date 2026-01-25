@@ -26,7 +26,7 @@ export const useRouteSearch = () => {
 
   const buildRouteSignature = (route: TransitRoute): string => {
     return route.segments
-      .map((s) => `${s.departure}->${s.arrival}@${s.ship}`)
+      .map((s) => `${s.departure}->${s.arrival}@${s.mode ?? 'FERRY'}:${s.ship}`)
       .join("|");
   };
 
@@ -286,10 +286,19 @@ export const useRouteSearch = () => {
         const segment: TransitSegment = {
           tripId: String(trip.tripId),
           ship: trip.name,
+          mode: trip.mode ?? "FERRY",
+          operatorId: trip.operatorId,
+          serviceId: trip.serviceId,
+          vehicleId: trip.vehicleId,
           departure: trip.departure,
+          departureType: trip.departureType,
           arrival: trip.arrival,
+          arrivalType: trip.arrivalType,
           departureTime,
           arrivalTime,
+          platform: trip.platform,
+          terminal: trip.terminal,
+          gate: trip.gate,
           status,
           fare,
         };
@@ -565,10 +574,19 @@ export const useRouteSearch = () => {
             resumeSegments.push({
               tripId: String(t.tripId),
               ship: t.name,
+              mode: t.mode ?? "FERRY",
+              operatorId: t.operatorId,
+              serviceId: t.serviceId,
+              vehicleId: t.vehicleId,
               departure: t.departure,
+              departureType: t.departureType,
               arrival: t.arrival,
+              arrivalType: t.arrivalType,
               departureTime: depTime,
               arrivalTime: arrTime,
+              platform: t.platform,
+              terminal: t.terminal,
+              gate: t.gate,
               status,
               fare,
             });
@@ -622,10 +640,19 @@ export const useRouteSearch = () => {
           const segment: TransitSegment = {
             tripId: String(firstTrip.tripId),
             ship: firstTrip.name,
+            mode: firstTrip.mode ?? "FERRY",
+            operatorId: firstTrip.operatorId,
+            serviceId: firstTrip.serviceId,
+            vehicleId: firstTrip.vehicleId,
             departure: firstTrip.departure,
+            departureType: firstTrip.departureType,
             arrival: finalTrip.arrival,
+            arrivalType: finalTrip.arrivalType,
             departureTime: firstDepartureTime,
             arrivalTime: secondArrivalTime,
+            platform: firstTrip.platform,
+            terminal: firstTrip.terminal,
+            gate: firstTrip.gate,
             status: Math.max(firstStatus, chainStatus),
             fare,
           };
@@ -655,10 +682,19 @@ export const useRouteSearch = () => {
           const segment1: TransitSegment = {
             tripId: String(firstTrip.tripId),
             ship: firstTrip.name,
+            mode: firstTrip.mode ?? "FERRY",
+            operatorId: firstTrip.operatorId,
+            serviceId: firstTrip.serviceId,
+            vehicleId: firstTrip.vehicleId,
             departure: firstTrip.departure,
+            departureType: firstTrip.departureType,
             arrival: firstTrip.arrival,
+            arrivalType: firstTrip.arrivalType,
             departureTime: firstDepartureTime,
             arrivalTime: firstArrivalTime,
+            platform: firstTrip.platform,
+            terminal: firstTrip.terminal,
+            gate: firstTrip.gate,
             status: firstStatus,
             fare: fare1,
           };
@@ -669,10 +705,19 @@ export const useRouteSearch = () => {
                 ? String(secondTrip.tripId)
                 : `${chain[0].tripId}-${finalTrip.tripId}`,
             ship: secondTrip.name,
+            mode: secondTrip.mode ?? "FERRY",
+            operatorId: secondTrip.operatorId,
+            serviceId: secondTrip.serviceId,
+            vehicleId: secondTrip.vehicleId,
             departure: secondTrip.departure,
+            departureType: secondTrip.departureType,
             arrival: finalTrip.arrival,
+            arrivalType: finalTrip.arrivalType,
             departureTime: secondDepartureTime,
             arrivalTime: secondArrivalTime,
+            platform: secondTrip.platform,
+            terminal: secondTrip.terminal,
+            gate: secondTrip.gate,
             status: chainStatus,
             fare: fare2,
           };

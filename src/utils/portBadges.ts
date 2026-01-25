@@ -16,6 +16,15 @@ export const getPortBadgeClass = (badge: string) => {
     case 'Matsue':
     case 'Sakaiminato':
       return 'bg-gray-100 text-gray-700 ring-gray-200 dark:bg-gray-800/60 dark:text-gray-200 dark:ring-gray-700'
+    case '港':
+    case 'Port':
+      return 'bg-blue-50 text-blue-700 ring-blue-200 dark:bg-blue-900/30 dark:text-blue-200 dark:ring-blue-800'
+    case '停留所':
+    case 'Stop':
+      return 'bg-indigo-50 text-indigo-700 ring-indigo-200 dark:bg-indigo-900/30 dark:text-indigo-200 dark:ring-indigo-800'
+    case '空港':
+    case 'Airport':
+      return 'bg-purple-50 text-purple-700 ring-purple-200 dark:bg-purple-900/30 dark:text-purple-200 dark:ring-purple-800'
     default:
       return 'bg-app-surface-2 text-app-muted ring-app-border/70'
   }

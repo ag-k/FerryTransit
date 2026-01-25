@@ -15,7 +15,7 @@
         <PortSelector
           v-model="departureProxy"
           class="route-endpoints__selector"
-          :placeholder="$t('DEPARTURE')"
+          :placeholder="$t('UI.SEARCH_LOCATION_PLACEHOLDER')"
           :disabled="disabled"
           :disabled-ports="disabledDeparturePorts"
           :hondo-ports="hondoPorts"
@@ -88,7 +88,7 @@
         <PortSelector
           v-model="arrivalProxy"
           class="route-endpoints__selector"
-          :placeholder="$t('ARRIVAL')"
+          :placeholder="$t('UI.SEARCH_LOCATION_PLACEHOLDER')"
           :disabled="disabled"
           :disabled-ports="disabledArrivalPorts"
           :hondo-ports="hondoPorts"
