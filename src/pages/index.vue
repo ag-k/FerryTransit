@@ -7,6 +7,12 @@
 
     <!-- 出発地・到着地選択 -->
     <ClientOnly>
+      <TransportModeFilter
+        v-if="transportModeOptions.length > 1"
+        v-model="selectedTransportMode"
+        :options="transportModeOptions"
+        class="mb-3"
+      />
       <TimetableForm :departure="departure" :arrival="arrival" :hondo-ports="hondoPorts" :dozen-ports="dozenPorts"
         :dogo-ports="dogoPorts" @update:departure="handleDepartureChange" @update:arrival="handleArrivalChange"
         @reverse="reverseRoute" />
@@ -132,7 +138,7 @@
             :message="$t(error)"
           />
 
-          <div v-else-if="filteredTimetable.length === 0" class="text-center py-6 text-gray-500 dark:text-gray-300">
+          <div v-else-if="filteredTimetableByMode.length === 0" class="text-center py-6 text-gray-500 dark:text-gray-300">
             <small v-if="!departure && !arrival">
               {{ $t('SELECT_BOTH_PORTS') }}
             </small>
@@ -239,6 +245,9 @@
                         {{ $t(trip.name) }}
                       </a>
                     </div>
+                    <p v-if="formatTripMeta(trip)" class="text-xs text-app-muted mt-1">
+                      {{ formatTripMeta(trip) }}
+                    </p>
                   </td>
                   <td class="px-3 sm:px-4 py-4 sm:py-3 font-mono tabular-nums text-right text-app-fg">
                     {{ formatTime(trip.departureTime) }}
@@ -318,7 +327,9 @@ import Card from '@/components/common/Card.vue'
 import Alert from '@/components/common/Alert.vue'
 import PrimaryButton from '@/components/common/PrimaryButton.vue'
 import SecondaryButton from '@/components/common/SecondaryButton.vue'
+import TransportModeFilter from '@/components/common/TransportModeFilter.vue'
 import { formatDateYmdJst, getJstDateParts, getTodayJstMidnight } from '@/utils/jstDate'
+import type { LocationType, TransportMode, Trip } from '@/types'
 
 // Store and composables
 const ferryStore = useFerryStore()
@@ -326,6 +337,7 @@ const historyStore = useHistoryStore()
 const settingsStore = useSettingsStore()
 const {
   filteredTimetable,
+  timetableData,
   getTripStatus,
   selectedDate,
   departure,
@@ -372,7 +384,7 @@ const headerDateLabel = computed(() => {
   return `${selectedDateString.value}(${weekday})`
 })
 
-const getPortLabelParts = (port?: string) => {
+const getPortLabelParts = (port?: string, locationType?: LocationType) => {
   const label = port ? String(t(port)) : '-'
   const parenRegex = /[（(]([^）)]+)[）)]/g
   const badges: string[] = []
@@ -385,6 +397,12 @@ const getPortLabelParts = (port?: string) => {
   }
 
   const name = label.replace(parenRegex, '').replace(/\s+/g, ' ').trim()
+  if (locationType) {
+    const typeLabel = String(t(`LOCATION_TYPES.${locationType}`))
+    if (typeLabel && typeLabel !== `LOCATION_TYPES.${locationType}`) {
+      badges.push(typeLabel)
+    }
+  }
 
   return {
     name: name || label.trim(),
@@ -400,8 +418,48 @@ const todayString = computed(() => {
   return formatDateYmdJst(new Date())
 })
 
+const transportModeOrder: TransportMode[] = ['FERRY', 'BUS', 'AIR']
+type TransportModeFilterValue = TransportMode | 'ALL'
+
+const normalizeTransportMode = (mode?: TransportMode | string): TransportMode => {
+  if (mode === 'BUS' || mode === 'AIR' || mode === 'FERRY') return mode
+  return 'FERRY'
+}
+
+const availableTransportModes = computed(() => {
+  const modes = new Set<TransportMode>()
+  for (const trip of timetableData.value) {
+    modes.add(normalizeTransportMode(trip.mode))
+  }
+  return transportModeOrder.filter(mode => modes.has(mode))
+})
+
+const transportModeOptions = computed(() => {
+  if (availableTransportModes.value.length <= 1) return []
+  return ['ALL', ...availableTransportModes.value]
+})
+
+const selectedTransportMode = ref<TransportModeFilterValue>('ALL')
+
+watch(transportModeOptions, (options) => {
+  if (!options.length) {
+    selectedTransportMode.value = 'ALL'
+    return
+  }
+  if (!options.includes(selectedTransportMode.value)) {
+    selectedTransportMode.value = 'ALL'
+  }
+})
+
+const filteredTimetableByMode = computed(() => {
+  if (selectedTransportMode.value === 'ALL' || transportModeOptions.value.length === 0) {
+    return filteredTimetable.value
+  }
+  return filteredTimetable.value.filter((trip) => normalizeTransportMode(trip.mode) === selectedTransportMode.value)
+})
+
 const sortedTimetable = computed(() => {
-  return [...filteredTimetable.value].sort((a, b) => {
+  return [...filteredTimetableByMode.value].sort((a, b) => {
     // 時刻を "H:mm" から "HH:mm" 形式に正規化
     const normalizeTime = (time: string | Date): string => {
       if (time instanceof Date) {
@@ -419,6 +477,15 @@ const sortedTimetable = computed(() => {
     return timeA - timeB
   })
 })
+
+const formatTripMeta = (trip: Trip) => {
+  const parts = [
+    trip.platform ? `${t('SEGMENT.PLATFORM')}: ${trip.platform}` : '',
+    trip.terminal ? `${t('SEGMENT.TERMINAL')}: ${trip.terminal}` : '',
+    trip.gate ? `${t('SEGMENT.GATE')}: ${trip.gate}` : ''
+  ].filter(Boolean)
+  return parts.join(' / ')
+}
 
 // 島前3島間のルートかどうかを判定
 const isDozenRoute = computed(() => {

@@ -3,12 +3,15 @@
 ## 概要
 
 隠岐航路案内の運航状況・アラート機能は、リアルタイムの運航情報を取得し、欠航・遅延・時間変更などのアラートを表示する機能です。各船舶の運航状況を統合して表示します。
+将来的にバス・飛行機の運行情報も同一の枠組みで扱うことを想定します。
 
 ## データ構造
 
 ### ShipStatus インターフェース
 
 ```typescript
+type TransportMode = 'FERRY' | 'BUS' | 'AIR'
+
 interface ShipStatus {
   id?: number
   ship_id?: number
@@ -27,6 +30,27 @@ interface ShipStatus {
   extraShips?: any[]             // 臨時便のリスト
   ship_name?: string             // 船舶名
   prev_status?: number           // 前回のステータス
+}
+```
+
+### OperationStatus インターフェース（将来拡張用）
+
+```typescript
+interface OperationStatus {
+  mode: TransportMode            // 交通手段
+  operatorId: string             // 事業者ID
+  serviceId?: string             // 路線/便ID
+  status: number                 // 運航状況（0:通常、1:遅延、2:欠航、3:時間変更、4:臨時便）
+  date: string | null            // 対象日
+  updated: string | null         // 更新日時
+  summary: string | null         // 概要
+  comment: string | null         // 詳細コメント
+  reason?: string                // 理由
+  departure?: string             // 出発地点
+  arrival?: string               // 到着地点
+  startTime?: string             // 開始時刻
+  affectedTrips?: any[]          // 影響を受ける便のリスト
+  extraTrips?: any[]             // 臨時便のリスト
 }
 ```
 
@@ -56,6 +80,7 @@ interface StatusApiResponse {
   dozen: ShipStatus | null        // フェリーどうぜん
   ferry: FerryStatus | null       // フェリーおき・レインボージェット
   kunigaKankou?: SightseeingStatus | null  // くにが観光
+  transportStatuses?: OperationStatus[] | null // 将来のバス・飛行機など
 }
 ```
 
@@ -66,6 +91,7 @@ interface StatusApiResponse {
 **データソース：**
 - 外部API: `${config.public.shipStatusApi}/status`
 - 観光船API: `${config.public.shipStatusApi}/status-kankou`
+（将来）バス/飛行機の運航状況APIを `transportStatuses` として統合
 
 **読み込みタイミング：**
 - アプリ起動時
@@ -106,6 +132,8 @@ const hasAlert = (status: ShipStatus | FerryStatus | null): boolean => {
 }
 ```
 
+将来的に `OperationStatus` は `status !== 0` をアラートとして扱う。
+
 #### アラートの種類
 
 - **通常運航（0）**: アラートなし
@@ -142,6 +170,8 @@ const alerts = computed(() => {
 })
 ```
 
+将来的に `OperationStatus.mode`・`serviceId`・`operatorId` をキーとして時刻表の `Trip` に紐付ける。
+
 ### 4. 運航状況の表示
 
 #### ホーム画面での表示
@@ -173,6 +203,10 @@ const alerts = computed(() => {
 - **くにが観光**
   - 観光コースA・Bの運航状況
 
+- **将来のバス・飛行機**
+  - 事業者/路線/便単位の運航状況
+  - 影響便・臨時便の表示（該当する場合）
+
 ## ユーザーインターフェース
 
 ### 運航状況ページ（`/status`）
@@ -182,6 +216,13 @@ const alerts = computed(() => {
 - アラート情報の詳細表示
 - 更新時刻の表示
 - 自動更新の切り替え
+
+**将来拡張 UI/UX:**
+- 交通手段フィルタ（フェリー/バス/飛行機/すべて）
+- ページ上部のサマリー直下に配置
+- 交通手段ごとにセクションを分割し、見出しとアイコンで区別
+- 交通手段が1種類のみの間はフィルタ非表示
+- 未提供の交通手段は「準備中」状態で非表示またはグレーアウト
 
 **表示項目：**
 - 運航状況バッジ（色分け）
@@ -198,6 +239,9 @@ const alerts = computed(() => {
 - 赤色: 全便欠航
 - オレンジ色: 時間変更
 - 青色: 臨時便
+
+**将来拡張:**
+- 交通手段アイコンとラベルを併記して識別性を確保
 
 ## 実装詳細
 
@@ -237,8 +281,10 @@ export const useFerryStore = defineStore('ferry', () => {
 管理者が運航アラートを作成・編集・削除：
 
 **入力項目：**
+- 交通手段（フェリー/バス/飛行機）
 - 船舶（ISOKAZE、FERRY_DOZEN、フェリーおき、レインボージェット）
 - 航路
+- （将来）事業者/路線/便（バス・飛行機）
 - ステータス（遅延、欠航、時間変更、臨時便）
 - 概要（日本語・英語）
 - コメント（日本語・英語）
@@ -281,8 +327,3 @@ export const useFerryStore = defineStore('ferry', () => {
 - **時刻表表示**: アラート情報を統合して表示
 - **ルート検索**: 欠航便を検索結果から除外
 - **管理画面**: アラート情報の管理
-
-
-
-
-

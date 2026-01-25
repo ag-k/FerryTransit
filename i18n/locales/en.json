@@ -60,6 +60,31 @@
   "TO_": "",
   "VIA": "via",
   "SHIP": "Ship",
+  "TRANSPORT_MODES": {
+    "FERRY": "Ferry",
+    "BUS": "Bus",
+    "AIR": "Air",
+    "ALL": "All"
+  },
+  "LOCATION_TYPES": {
+    "PORT": "Port",
+    "STOP": "Stop",
+    "AIRPORT": "Airport"
+  },
+  "STOPS": {},
+  "AIRPORTS": {},
+  "OPERATORS": {},
+  "SERVICES": {},
+  "UI": {
+    "TRANSPORT_FILTER": "Transport",
+    "SEARCH_LOCATION_PLACEHOLDER": "Search ports, stops, airports",
+    "PREPARING": "Preparing"
+  },
+  "SEGMENT": {
+    "PLATFORM": "Platform",
+    "TERMINAL": "Terminal",
+    "GATE": "Gate"
+  },
   "DO_NOT_USE_FAST_FERRY": "Except Fast Ferry",
   "VIA_CAR": "Via car",
   "ADD_CONDITIONS": "Add conditions",

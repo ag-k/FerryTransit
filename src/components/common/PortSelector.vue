@@ -144,11 +144,13 @@ interface Props {
   hondoPorts?: string[]
   dozenPorts?: string[]
   dogoPorts?: string[]
+  showLocationTypeBadge?: boolean
   margin?: 'normal' | 'tight' | 'none'
 }
 
 const props = withDefaults(defineProps<Props>(), {
   disabled: false,
+  showLocationTypeBadge: true,
   margin: 'normal'
 })
 
@@ -230,6 +232,10 @@ const getPortLabelParts = (port: string) => {
   }
 
   const name = label.replace(parenRegex, '').replace(/\s+/g, ' ').trim()
+  const locationTypeLabel = props.showLocationTypeBadge ? String(t('LOCATION_TYPES.PORT')) : ''
+  if (locationTypeLabel && locationTypeLabel !== 'LOCATION_TYPES.PORT' && !badges.includes(locationTypeLabel)) {
+    badges.push(locationTypeLabel)
+  }
 
   return {
     name: name || label.trim(),
