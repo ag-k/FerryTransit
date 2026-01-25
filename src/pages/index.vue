@@ -163,8 +163,9 @@
                     <a href="#"
                       class="text-app-primary font-semibold inline-flex flex-col items-center justify-center gap-1 py-1 -my-1 px-2 -mx-2 touch-manipulation text-center min-h-[40px] w-fit ml-auto group"
                       @click.prevent="showPortInfo(departure)">
-                      <span class="leading-tight group-hover:underline">
-                        {{ departureLabelParts.name }}
+                      <span class="leading-tight group-hover:underline inline-flex items-center gap-2">
+                        <LocationTypeIcon v-if="departure" :type="resolveLocationType()" />
+                        <span>{{ departureLabelParts.name }}</span>
                       </span>
                       <PortBadges :badges="departureLabelParts.badges" class="flex flex-wrap justify-end gap-1" />
                     </a>
@@ -173,8 +174,9 @@
                     <a href="#"
                       class="text-app-primary font-semibold inline-flex flex-col items-center justify-center gap-1 py-1 -my-1 px-2 -mx-2 touch-manipulation text-center min-h-[40px] w-fit ml-auto group"
                       @click.prevent="showPortInfo(arrival)">
-                      <span class="leading-tight group-hover:underline">
-                        {{ arrivalLabelParts.name }}
+                      <span class="leading-tight group-hover:underline inline-flex items-center gap-2">
+                        <LocationTypeIcon v-if="arrival" :type="resolveLocationType()" />
+                        <span>{{ arrivalLabelParts.name }}</span>
                       </span>
                       <PortBadges :badges="arrivalLabelParts.badges" class="flex flex-wrap justify-end gap-1" />
                     </a>
@@ -328,6 +330,7 @@ import Alert from '@/components/common/Alert.vue'
 import PrimaryButton from '@/components/common/PrimaryButton.vue'
 import SecondaryButton from '@/components/common/SecondaryButton.vue'
 import TransportModeFilter from '@/components/common/TransportModeFilter.vue'
+import LocationTypeIcon from '@/components/common/LocationTypeIcon.vue'
 import { formatDateYmdJst, getJstDateParts, getTodayJstMidnight } from '@/utils/jstDate'
 import type { LocationType, TransportMode, Trip } from '@/types'
 
@@ -384,7 +387,7 @@ const headerDateLabel = computed(() => {
   return `${selectedDateString.value}(${weekday})`
 })
 
-const getPortLabelParts = (port?: string, locationType?: LocationType) => {
+const getPortLabelParts = (port?: string) => {
   const label = port ? String(t(port)) : '-'
   const parenRegex = /[（(]([^）)]+)[）)]/g
   const badges: string[] = []
@@ -397,18 +400,14 @@ const getPortLabelParts = (port?: string, locationType?: LocationType) => {
   }
 
   const name = label.replace(parenRegex, '').replace(/\s+/g, ' ').trim()
-  if (locationType) {
-    const typeLabel = String(t(`LOCATION_TYPES.${locationType}`))
-    if (typeLabel && typeLabel !== `LOCATION_TYPES.${locationType}`) {
-      badges.push(typeLabel)
-    }
-  }
 
   return {
     name: name || label.trim(),
     badges
   }
 }
+
+const resolveLocationType = (value?: LocationType) => value ?? 'PORT'
 
 const departureLabelParts = computed(() => getPortLabelParts(departure.value))
 const arrivalLabelParts = computed(() => getPortLabelParts(arrival.value))
