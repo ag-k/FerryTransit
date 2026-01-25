@@ -1,3 +1,7 @@
+import { createLogger } from '~/utils/logger'
+
+const logger = createLogger('TimetableSearchPostApi')
+
 export default defineEventHandler(async (event) => {
   try {
     const body = await readBody(event)
@@ -146,7 +150,7 @@ export default defineEventHandler(async (event) => {
     }
 
   } catch (error) {
-    console.error('Timetable API error:', error)
+    logger.error('Timetable API error:', error)
     
     throw createError({
       statusCode: 500,

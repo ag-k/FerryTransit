@@ -338,18 +338,19 @@ import {
   TransitionRoot,
 } from '@headlessui/vue'
 import { Loader } from '@googlemaps/js-api-loader'
-import { getGoogleMapsLocaleOptions } from '~/utils/googleMapsLocale'
-const { locale } = useI18n()
 import { getAuth } from 'firebase/auth'
 import { PORTS_DATA, ROUTES_DATA } from '~/data/ports'
 import type { RouteData, RoutesDataFile, RoutesMetadata } from '~/types/route'
 import { uploadJSON, getJSONData, getStorageDownloadURL } from '~/composables/useDataPublish'
 import { useAdminAuth } from '~/composables/useAdminAuth'
+import { getGoogleMapsLocaleOptions } from '~/utils/googleMapsLocale'
 import { createLogger } from '~/utils/logger'
 import DataTable from '~/components/admin/DataTable.vue'
 import Card from '@/components/common/Card.vue'
 import PrimaryButton from '@/components/common/PrimaryButton.vue'
 import SecondaryButton from '@/components/common/SecondaryButton.vue'
+
+const { locale } = useI18n()
 
 definePageMeta({
   layout: 'admin',

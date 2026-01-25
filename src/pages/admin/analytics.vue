@@ -13,13 +13,13 @@
         <button
           v-for="preset in presets"
           :key="preset.value"
-          @click="selectPreset(preset.value)"
           :class="[
             'px-3 py-2 text-sm rounded-md transition-colors',
             selectedPreset === preset.value
               ? 'bg-blue-600 text-white'
               : 'bg-white dark:bg-gray-700 text-gray-700 dark:text-gray-300 border border-gray-300 dark:border-gray-600 hover:bg-gray-50 dark:hover:bg-gray-600'
           ]"
+          @click="selectPreset(preset.value)"
         >
           {{ preset.label }}
         </button>
@@ -37,8 +37,8 @@
           class="rounded-md border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white px-3 py-2"
         >
         <button
-          @click="applyCustomPeriod"
           class="px-3 py-2 bg-blue-600 text-white text-sm rounded-md hover:bg-blue-700 transition-colors"
+          @click="applyCustomPeriod"
         >
           適用
         </button>
@@ -168,8 +168,8 @@
 
 <script setup lang="ts">
 import { startOfDay, endOfDay, subDays, startOfMonth, endOfMonth, format } from 'date-fns'
-import type { PeriodPreset, CustomPeriod, ChartData, MultiSeriesChartData } from '~/types/analytics'
-import type { PopularRoute } from '~/types/analytics'
+import type { PeriodPreset, ChartData, MultiSeriesChartData, PopularRoute } from '~/types/analytics'
+import { createLogger } from '~/utils/logger'
 
 definePageMeta({
   layout: 'admin',
@@ -178,12 +178,12 @@ definePageMeta({
 
 const { $toast } = useNuxtApp()
 const { 
-  getAnalyticsInRange, 
   getPopularRoutes, 
   getHourlyDistribution, 
   getPortDistribution,
   getPvTrend 
 } = useAnalytics()
+const logger = createLogger('AdminAnalyticsPage')
 
 // プリセット定義
 const presets = [
@@ -222,18 +222,20 @@ const getCurrentPeriod = (): { startDate: Date; endDate: Date } => {
   switch (selectedPreset.value) {
     case 'today':
       return { startDate: startOfDay(now), endDate: endOfDay(now) }
-    case 'yesterday':
+    case 'yesterday': {
       const yesterday = subDays(now, 1)
       return { startDate: startOfDay(yesterday), endDate: endOfDay(yesterday) }
+    }
     case 'last7days':
       return { startDate: startOfDay(subDays(now, 6)), endDate: endOfDay(now) }
     case 'last30days':
       return { startDate: startOfDay(subDays(now, 29)), endDate: endOfDay(now) }
     case 'thisMonth':
       return { startDate: startOfMonth(now), endDate: endOfDay(now) }
-    case 'lastMonth':
+    case 'lastMonth': {
       const lastMonth = subDays(startOfMonth(now), 1)
       return { startDate: startOfMonth(lastMonth), endDate: endOfMonth(lastMonth) }
+    }
     case 'last3Months':
       return { startDate: startOfDay(subDays(now, 89)), endDate: endOfDay(now) }
     case 'lastYear':
@@ -345,7 +347,7 @@ const loadAnalyticsData = async (customStart?: Date, customEnd?: Date) => {
     hasData.value = totalPv > 0 || totalSearch > 0
     
   } catch (error) {
-    console.error('Failed to load analytics data:', error)
+    logger.error('Failed to load analytics data:', error)
     $toast.error('統計情報の取得に失敗しました')
   } finally {
     isLoading.value = false

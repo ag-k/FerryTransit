@@ -10,7 +10,8 @@
     <!-- タブ -->
     <div class="mb-6">
       <nav class="flex space-x-4" aria-label="Tabs">
-        <button v-for="tab in tabs" :key="tab.id" :class="[
+        <button
+v-for="tab in tabs" :key="tab.id" :class="[
           activeTab === tab.id
             ? 'bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-200'
             : 'text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200',
@@ -60,7 +61,8 @@
               <label class="text-sm text-gray-500 dark:text-gray-400">
                 版
               </label>
-              <select v-model="activeVersionId"
+              <select
+v-model="activeVersionId"
                 class="rounded-md border border-gray-300 dark:border-gray-600 dark:bg-gray-700 focus:border-blue-500 dark:focus:border-blue-400 focus:ring-2 focus:ring-blue-500 focus:ring-opacity-30 transition-colors text-sm">
                 <option v-if="activeVersionOptions.length === 0" disabled value="">
                   版が未作成
@@ -69,18 +71,21 @@
                   {{ version.name || version.effectiveFrom }}
                 </option>
               </select>
-              <button class="px-3 py-2 bg-green-600 text-white rounded-md hover:bg-green-700 text-sm"
+              <button
+class="px-3 py-2 bg-green-600 text-white rounded-md hover:bg-green-700 text-sm"
                 @click="openCreateVersionModal(activeTab === 'ferry' ? 'ferry' : 'highspeed')">
                 <PlusIcon class="h-4 w-4 inline mr-1" />
                 新しい版
               </button>
-              <button v-if="activeVersionId" :disabled="isDeletingVersion || isEditingVersion"
+              <button
+v-if="activeVersionId" :disabled="isDeletingVersion || isEditingVersion"
                 class="px-3 py-2 bg-blue-700 text-white rounded-md hover:bg-blue-800 disabled:bg-blue-400 text-sm"
                 @click="openEditVersionModal">
                 <PencilIcon class="h-4 w-4 inline mr-1" />
                 版を編集
               </button>
-              <button v-if="activeVersionId" :disabled="isDeletingVersion"
+              <button
+v-if="activeVersionId" :disabled="isDeletingVersion"
                 class="px-3 py-2 bg-red-600 text-white rounded-md hover:bg-red-700 disabled:bg-red-400 text-sm"
                 @click="openDeleteVersionModal">
                 <TrashIcon class="h-4 w-4 inline mr-1" />
@@ -103,11 +108,13 @@
                   class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider dark:text-gray-400">
                   区間
                 </th>
-                <th v-for="field in SEAT_CLASS_FIELDS" :key="field.key"
+                <th
+v-for="field in SEAT_CLASS_FIELDS" :key="field.key"
                   class="px-4 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider dark:text-gray-400">
                   {{ field.label }}
                 </th>
-                <th v-for="field in VEHICLE_SIZE_FIELDS" :key="field.key"
+                <th
+v-for="field in VEHICLE_SIZE_FIELDS" :key="field.key"
                   class="px-4 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider dark:text-gray-400">
                   車両（{{ field.label }}）
                 </th>
@@ -118,11 +125,13 @@
                 <td class="px-4 py-3 text-sm font-medium text-gray-900 dark:text-gray-100">
                   {{ category.label }}
                 </td>
-                <td v-for="field in SEAT_CLASS_FIELDS" :key="field.key"
+                <td
+v-for="field in SEAT_CLASS_FIELDS" :key="field.key"
                   class="px-4 py-3 text-sm text-center text-gray-900 dark:text-gray-100">
                   {{ formatCurrency(category.seatClass[field.key]) }}
                 </td>
-                <td v-for="field in VEHICLE_SIZE_FIELDS" :key="field.key"
+                <td
+v-for="field in VEHICLE_SIZE_FIELDS" :key="field.key"
                   class="px-4 py-3 text-sm text-center text-gray-900 dark:text-gray-100">
                   {{ formatCurrency(category.vehicle[field.key]) }}
                 </td>
@@ -238,7 +247,8 @@
                   {{ formatDiscountPercent(discount) }}% 割引
                 </p>
               </div>
-              <span :class="[
+              <span
+:class="[
                 'px-2 py-1 text-xs rounded-full',
                 discount.active
                   ? 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200'
@@ -253,12 +263,14 @@
     </div>
 
     <!-- 編集モーダル -->
-    <FormModal :open="showEditModal" :title="`${activeTabData.title}の編集`" :loading="isSaving" size="xl"
+    <FormModal
+:open="showEditModal" :title="`${activeTabData.title}の編集`" :loading="isSaving" size="xl"
       @close="showEditModal = false" @submit="saveFareData">
       <div class="space-y-4">
         <!-- フェリー料金編集 -->
         <div v-if="activeTab === 'ferry'">
-          <div v-for="category in editingFerryCategories" :key="category.id"
+          <div
+v-for="category in editingFerryCategories" :key="category.id"
             class="border-b pb-4 mb-4 last:border-b-0 last:pb-0 last:mb-0">
             <div class="flex flex-col gap-2 md:flex-row md:items-center md:justify-between">
               <h4 class="font-medium text-gray-900 dark:text-gray-100">
@@ -277,7 +289,8 @@
                 <div class="grid grid-cols-1 sm:grid-cols-3 lg:grid-cols-5 gap-3">
                   <div v-for="field in SEAT_CLASS_FIELDS" :key="field.key">
                     <label class="text-xs text-gray-500">{{ field.label }}</label>
-                    <input v-model.number="category.seatClass[field.key]" type="number" min="0"
+                    <input
+v-model.number="category.seatClass[field.key]" type="number" min="0"
                       class="w-full rounded-md border border-gray-300 dark:border-gray-600 dark:bg-gray-700 focus:border-blue-500 dark:focus:border-blue-400 focus:ring-2 focus:ring-blue-500 focus:ring-opacity-30 transition-colors">
                   </div>
                 </div>
@@ -291,7 +304,8 @@
                 <div class="grid grid-cols-1 sm:grid-cols-3 lg:grid-cols-4 gap-3">
                   <div v-for="field in VEHICLE_SIZE_FIELDS" :key="field.key">
                     <label class="text-xs text-gray-500">{{ field.label }}</label>
-                    <input v-model.number="category.vehicle[field.key]" type="number" min="0"
+                    <input
+v-model.number="category.vehicle[field.key]" type="number" min="0"
                       class="w-full rounded-md border border-gray-300 dark:border-gray-600 dark:bg-gray-700 focus:border-blue-500 dark:focus:border-blue-400 focus:ring-2 focus:ring-blue-500 focus:ring-opacity-30 transition-colors">
                   </div>
                 </div>
@@ -307,7 +321,8 @@
             <div class="grid grid-cols-1 gap-3">
               <div>
                 <label class="text-xs text-gray-500">大人</label>
-                <input v-model.number="fare.adult" type="number" min="0"
+                <input
+v-model.number="fare.adult" type="number" min="0"
                   class="w-full rounded-md border border-gray-300 dark:border-gray-600 dark:bg-gray-700 focus:border-blue-500 dark:focus:border-blue-400 focus:ring-2 focus:ring-blue-500 focus:ring-opacity-30 transition-colors">
               </div>
             </div>
@@ -323,14 +338,16 @@
                 <label class="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-1">
                   大人料金（円）
                 </label>
-                <input v-model.number="editingInnerIslandFare.adult" type="number" min="0"
+                <input
+v-model.number="editingInnerIslandFare.adult" type="number" min="0"
                   class="w-full rounded-md border border-gray-300 dark:border-gray-600 dark:bg-gray-700 focus:border-blue-500 dark:focus:border-blue-400 focus:ring-2 focus:ring-blue-500 focus:ring-opacity-30 transition-colors">
               </div>
               <div>
                 <label class="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-1">
                   小人料金（円）
                 </label>
-                <input v-model.number="editingInnerIslandFare.child" type="number" min="0"
+                <input
+v-model.number="editingInnerIslandFare.child" type="number" min="0"
                   class="w-full rounded-md border border-gray-300 dark:border-gray-600 dark:bg-gray-700 focus:border-blue-500 dark:focus:border-blue-400 focus:ring-2 focus:ring-blue-500 focus:ring-opacity-30 transition-colors">
               </div>
             </div>
@@ -342,7 +359,8 @@
                 <label class="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-1">
                   {{ formatVehicleSizeLabel(key) }}（円）
                 </label>
-                <input v-model.number="editingInnerIslandVehicleFare[key]" type="number" min="0"
+                <input
+v-model.number="editingInnerIslandVehicleFare[key]" type="number" min="0"
                   class="w-full rounded-md border border-gray-300 dark:border-gray-600 dark:bg-gray-700 focus:border-blue-500 dark:focus:border-blue-400 focus:ring-2 focus:ring-blue-500 focus:ring-opacity-30 transition-colors">
               </div>
             </div>
@@ -351,18 +369,21 @@
 
         <!-- 割引設定編集 -->
         <div v-else-if="activeTab === 'discount'" class="space-y-6">
-          <div v-if="!editingDiscounts.length"
+          <div
+v-if="!editingDiscounts.length"
             class="rounded-md border border-dashed border-gray-300 dark:border-gray-600 bg-gray-50 dark:bg-gray-700/40 p-6 text-center text-sm text-gray-500 dark:text-gray-400">
             割引設定がありません。「割引を追加」から新しい割引を作成できます。
           </div>
-          <div v-for="(discount, index) in editingDiscounts" :key="discount.formKey"
+          <div
+v-for="(discount, index) in editingDiscounts" :key="discount.formKey"
             class="rounded-lg border border-gray-200 dark:border-gray-600 bg-gray-50 dark:bg-gray-700/50 p-4 space-y-5">
             <div class="flex flex-col gap-4 lg:flex-row lg:items-start lg:justify-between">
               <div class="flex-1 space-y-2">
                 <label class="block text-xs font-medium text-gray-500 dark:text-gray-400">
                   割引ID
                 </label>
-                <input v-model="discount.id" type="text" :disabled="discount.originalId !== null"
+                <input
+v-model="discount.id" type="text" :disabled="discount.originalId !== null"
                   class="w-full rounded-md border border-gray-300 dark:border-gray-600 dark:bg-gray-800 focus:border-blue-500 dark:focus:border-blue-400 focus:ring-2 focus:ring-blue-500 focus:ring-opacity-30 transition-colors text-sm disabled:opacity-70 disabled:cursor-not-allowed"
                   placeholder="例: student">
                 <p class="text-xs text-gray-500 dark:text-gray-400">
@@ -370,7 +391,8 @@
                 </p>
               </div>
               <div class="flex items-start justify-end">
-                <button type="button"
+                <button
+type="button"
                   class="inline-flex items-center rounded-md border border-red-200 dark:border-red-600 px-3 py-2 text-sm font-medium text-red-600 dark:text-red-300 hover:bg-red-50 dark:hover:bg-red-900/30 disabled:opacity-50 disabled:cursor-not-allowed"
                   :disabled="editingDiscounts.length <= 1" @click="removeDiscount(index)">
                   <TrashIcon class="mr-1 h-4 w-4" />
@@ -384,7 +406,8 @@
                 <label class="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-1">
                   表示名（日本語）
                 </label>
-                <input v-model="discount.name" type="text"
+                <input
+v-model="discount.name" type="text"
                   class="w-full rounded-md border border-gray-300 dark:border-gray-600 dark:bg-gray-800 focus:border-blue-500 dark:focus:border-blue-400 focus:ring-2 focus:ring-blue-500 focus:ring-opacity-30 transition-colors text-sm"
                   placeholder="例: 学生割引">
               </div>
@@ -393,7 +416,8 @@
                   表示名（英語）
                   <span class="ml-1 text-xs text-gray-400 dark:text-gray-500">(任意)</span>
                 </label>
-                <input v-model="discount.nameEn" type="text"
+                <input
+v-model="discount.nameEn" type="text"
                   class="w-full rounded-md border border-gray-300 dark:border-gray-600 dark:bg-gray-800 focus:border-blue-500 dark:focus:border-blue-400 focus:ring-2 focus:ring-blue-500 focus:ring-opacity-30 transition-colors text-sm"
                   placeholder="例: Student Discount">
               </div>
@@ -402,7 +426,8 @@
                   表示名 i18nキー
                   <span class="ml-1 text-xs text-gray-400 dark:text-gray-500">(任意)</span>
                 </label>
-                <input v-model="discount.nameKey" type="text"
+                <input
+v-model="discount.nameKey" type="text"
                   class="w-full rounded-md border border-gray-300 dark:border-gray-600 dark:bg-gray-800 focus:border-blue-500 dark:focus:border-blue-400 focus:ring-2 focus:ring-blue-500 focus:ring-opacity-30 transition-colors text-sm"
                   placeholder="例: DISCOUNT_STUDENT">
               </div>
@@ -413,7 +438,8 @@
                 <label class="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-1">
                   説明（日本語）
                 </label>
-                <textarea v-model="discount.description" rows="2"
+                <textarea
+v-model="discount.description" rows="2"
                   class="w-full rounded-md border border-gray-300 dark:border-gray-600 dark:bg-gray-800 focus:border-blue-500 dark:focus:border-blue-400 focus:ring-2 focus:ring-blue-500 focus:ring-opacity-30 transition-colors text-sm"
                   placeholder="例: 学生証の提示が必要です"></textarea>
               </div>
@@ -422,7 +448,8 @@
                   説明（英語）
                   <span class="ml-1 text-xs text-gray-400 dark:text-gray-500">(任意)</span>
                 </label>
-                <textarea v-model="discount.descriptionEn" rows="2"
+                <textarea
+v-model="discount.descriptionEn" rows="2"
                   class="w-full rounded-md border border-gray-300 dark:border-gray-600 dark:bg-gray-800 focus:border-blue-500 dark:focus:border-blue-400 focus:ring-2 focus:ring-blue-500 focus:ring-opacity-30 transition-colors text-sm"
                   placeholder="例: Student ID required"></textarea>
               </div>
@@ -431,7 +458,8 @@
                   説明 i18nキー
                   <span class="ml-1 text-xs text-gray-400 dark:text-gray-500">(任意)</span>
                 </label>
-                <input v-model="discount.descriptionKey" type="text"
+                <input
+v-model="discount.descriptionKey" type="text"
                   class="w-full rounded-md border border-gray-300 dark:border-gray-600 dark:bg-gray-800 focus:border-blue-500 dark:focus:border-blue-400 focus:ring-2 focus:ring-blue-500 focus:ring-opacity-30 transition-colors text-sm"
                   placeholder="例: DISCOUNT_STUDENT_DESC">
               </div>
@@ -442,7 +470,8 @@
                 <label class="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-1">
                   割引率（%）
                 </label>
-                <input v-model.number="discount.ratePercent" type="number" min="0" max="100" step="0.1"
+                <input
+v-model.number="discount.ratePercent" type="number" min="0" max="100" step="0.1"
                   class="w-full rounded-md border border-gray-300 dark:border-gray-600 dark:bg-gray-800 focus:border-blue-500 dark:focus:border-blue-400 focus:ring-2 focus:ring-blue-500 focus:ring-opacity-30 transition-colors text-sm"
                   placeholder="例: 15">
               </div>
@@ -450,7 +479,8 @@
                 <label class="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-1">
                   適用後係数（自動計算）
                 </label>
-                <input :value="formatRateMultiplierValue(discount.ratePercent)" type="text" readonly
+                <input
+:value="formatRateMultiplierValue(discount.ratePercent)" type="text" readonly
                   class="w-full rounded-md border border-gray-300 dark:border-gray-600 dark:bg-gray-900 text-gray-500 dark:text-gray-400 focus:outline-none text-sm">
                 <p class="mt-1 text-xs text-gray-500 dark:text-gray-400">
                   保存時にこの係数が rate / rateMultiplier として保存されます。
@@ -461,7 +491,8 @@
                   最低人数
                   <span class="ml-1 text-xs text-gray-400 dark:text-gray-500">(任意)</span>
                 </label>
-                <input v-model.number="discount.minPeople" type="number" min="0" step="1"
+                <input
+v-model.number="discount.minPeople" type="number" min="0" step="1"
                   class="w-full rounded-md border border-gray-300 dark:border-gray-600 dark:bg-gray-800 focus:border-blue-500 dark:focus:border-blue-400 focus:ring-2 focus:ring-blue-500 focus:ring-opacity-30 transition-colors text-sm"
                   placeholder="例: 15">
               </div>
@@ -472,7 +503,8 @@
                 適用条件タグ
                 <span class="ml-1 text-xs text-gray-400 dark:text-gray-500">(カンマまたは改行区切り)</span>
               </label>
-              <textarea v-model="discount.conditionsText" rows="2"
+              <textarea
+v-model="discount.conditionsText" rows="2"
                 class="w-full rounded-md border border-gray-300 dark:border-gray-600 dark:bg-gray-800 focus:border-blue-500 dark:focus:border-blue-400 focus:ring-2 focus:ring-blue-500 focus:ring-opacity-30 transition-colors text-sm"
                 placeholder="例: group,student"></textarea>
             </div>
@@ -481,7 +513,8 @@
           </div>
 
           <div class="pt-2">
-            <button type="button"
+            <button
+type="button"
               class="inline-flex items-center rounded-md border border-dashed border-blue-300 dark:border-blue-500 px-3 py-2 text-sm font-medium text-blue-700 dark:text-blue-300 hover:bg-blue-50 dark:hover:bg-blue-900/20 transition"
               @click="addDiscount()">
               <PlusIcon class="mr-1 h-4 w-4" />
@@ -493,7 +526,8 @@
       </div>
     </FormModal>
 
-    <FormModal :open="showVersionModal" title="新しい版を作成" :loading="isSavingVersion" @close="closeVersionModal"
+    <FormModal
+:open="showVersionModal" title="新しい版を作成" :loading="isSavingVersion" @close="closeVersionModal"
       @submit="createVersion">
       <div class="space-y-4">
         <div>
@@ -508,7 +542,8 @@
           <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
             版名称（任意）
           </label>
-          <input v-model="versionForm.name" type="text"
+          <input
+v-model="versionForm.name" type="text"
             class="w-full rounded-md border border-gray-300 dark:border-gray-600 dark:bg-gray-700 focus:border-blue-500 dark:focus:border-blue-400 focus:ring-2 focus:ring-blue-500 focus:ring-opacity-30 transition-colors"
             placeholder="例: 2024年4月改定">
         </div>
@@ -516,7 +551,8 @@
           <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
             適用開始日
           </label>
-          <input v-model="versionForm.effectiveFrom" type="date"
+          <input
+v-model="versionForm.effectiveFrom" type="date"
             class="w-full rounded-md border border-gray-300 dark:border-gray-600 dark:bg-gray-700 focus:border-blue-500 dark:focus:border-blue-400 focus:ring-2 focus:ring-blue-500 focus:ring-opacity-30 transition-colors"
             required>
         </div>
@@ -524,7 +560,8 @@
           <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
             既存版からコピー（任意）
           </label>
-          <select v-model="versionForm.copyFromVersionId"
+          <select
+v-model="versionForm.copyFromVersionId"
             class="w-full rounded-md border border-gray-300 dark:border-gray-600 dark:bg-gray-700 focus:border-blue-500 dark:focus:border-blue-400 focus:ring-2 focus:ring-blue-500 focus:ring-opacity-30 transition-colors">
             <option :value="null">
               コピーしない
@@ -537,7 +574,8 @@
       </div>
     </FormModal>
 
-    <FormModal :open="showEditVersionModal" title="版を編集" :loading="isEditingVersion" @close="closeEditVersionModal"
+    <FormModal
+:open="showEditVersionModal" title="版を編集" :loading="isEditingVersion" @close="closeEditVersionModal"
       @submit="updateVersion">
       <div class="space-y-4">
         <div>
@@ -552,7 +590,8 @@
           <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
             版名称（任意）
           </label>
-          <input v-model="editVersionForm.name" type="text"
+          <input
+v-model="editVersionForm.name" type="text"
             class="w-full rounded-md border border-gray-300 dark:border-gray-600 dark:bg-gray-700 focus:border-blue-500 dark:focus:border-blue-400 focus:ring-2 focus:ring-blue-500 focus:ring-opacity-30 transition-colors"
             placeholder="例: 2024年4月改定">
         </div>
@@ -560,7 +599,8 @@
           <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
             説明（任意）
           </label>
-          <textarea v-model="editVersionForm.description" rows="3"
+          <textarea
+v-model="editVersionForm.description" rows="3"
             class="w-full rounded-md border border-gray-300 dark:border-gray-600 dark:bg-gray-700 focus:border-blue-500 dark:focus:border-blue-400 focus:ring-2 focus:ring-blue-500 focus:ring-opacity-30 transition-colors"
             placeholder="版の説明を入力してください"></textarea>
         </div>
@@ -568,14 +608,16 @@
           <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
             適用開始日
           </label>
-          <input v-model="editVersionForm.effectiveFrom" type="date"
+          <input
+v-model="editVersionForm.effectiveFrom" type="date"
             class="w-full rounded-md border border-gray-300 dark:border-gray-600 dark:bg-gray-700 focus:border-blue-500 dark:focus:border-blue-400 focus:ring-2 focus:ring-blue-500 focus:ring-opacity-30 transition-colors"
             required>
         </div>
       </div>
     </FormModal>
 
-    <FormModal :open="showDeleteVersionModal" title="版を削除" confirm-text="削除する" cancel-text="キャンセル"
+    <FormModal
+:open="showDeleteVersionModal" title="版を削除" confirm-text="削除する" cancel-text="キャンセル"
       :loading="isDeletingVersion || deleteVersionInfo.isLoading"
       :loading-text="isDeletingVersion ? '削除中...' : '読み込み中...'" variant="danger" @close="closeDeleteVersionModal"
       @submit="confirmDeleteVersion">
@@ -598,7 +640,8 @@
     </FormModal>
 
     <!-- Storage データ確認モーダル -->
-    <FormModal :open="showStorageDataModal" title="Storage 公開データ確認" size="xl"
+    <FormModal
+:open="showStorageDataModal" title="Storage 公開データ確認" size="xl"
       :loading="isLoadingStorage" @close="showStorageDataModal = false">
       <div v-if="isLoadingStorage" class="text-center py-8">
         <p class="text-gray-600 dark:text-gray-400">Storage からデータを読み込んでいます...</p>
@@ -632,7 +675,8 @@
             <div>
               <dt class="text-gray-500 dark:text-gray-400">ダウンロードURL</dt>
               <dd class="text-gray-900 dark:text-white font-medium break-all">
-                <a v-if="storageDownloadUrl" :href="storageDownloadUrl" target="_blank" rel="noopener noreferrer"
+                <a
+v-if="storageDownloadUrl" :href="storageDownloadUrl" target="_blank" rel="noopener noreferrer"
                   class="text-blue-700 dark:text-blue-400 hover:underline">
                   {{ storageDownloadUrl }}
                 </a>
@@ -677,7 +721,8 @@
         <div v-if="storageFareData.versions && storageFareData.versions.length > 0" class="bg-gray-50 dark:bg-gray-800 rounded-lg p-4">
           <h3 class="text-lg font-medium text-gray-900 dark:text-white mb-3">版情報</h3>
           <div class="space-y-2">
-            <div v-for="version in storageFareData.versions" :key="version.id"
+            <div
+v-for="version in storageFareData.versions" :key="version.id"
               class="border-b dark:border-gray-700 pb-2 last:border-b-0">
               <div class="flex justify-between items-start">
                 <div>
@@ -691,7 +736,8 @@
                     料金数: {{ version.fares?.length || 0 }} 件
                   </p>
                 </div>
-                <span v-if="storageFareData.activeVersionIds?.[version.vesselType] === version.id"
+                <span
+v-if="storageFareData.activeVersionIds?.[version.vesselType] === version.id"
                   class="px-2 py-1 text-xs bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200 rounded">
                   有効
                 </span>
@@ -704,8 +750,9 @@
         <div class="bg-gray-50 dark:bg-gray-800 rounded-lg p-4">
           <div class="flex justify-between items-center mb-3">
             <h3 class="text-lg font-medium text-gray-900 dark:text-white">JSON データ</h3>
-            <button @click="copyStorageDataToClipboard"
-              class="px-3 py-1 text-sm bg-blue-700 text-white rounded hover:bg-blue-800">
+            <button
+class="px-3 py-1 text-sm bg-blue-700 text-white rounded hover:bg-blue-800"
+              @click="copyStorageDataToClipboard">
               コピー
             </button>
           </div>
@@ -743,7 +790,7 @@ definePageMeta({
   middleware: 'admin'
 })
 
-const { getCollection, batchWrite, createDocument, deleteDocument, updateDocument, getDocument } = useAdminFirestore()
+const { getCollection, batchWrite, createDocument, deleteDocument, updateDocument } = useAdminFirestore()
 const { publishData } = useDataPublish()
 const { getJsonFile, getFileMetadata } = useFirebaseStorage()
 const { $toast } = useNuxtApp()
@@ -1250,8 +1297,6 @@ const buildFerryCategories = (fareDocs: Array<FareDoc & { id?: string }>): Ferry
     }
 
     if (baseDoc) {
-      const passenger = extractPassenger(baseDoc)
-      const disabled = extractDisabledFare(baseDoc)
       const seatClass = extractSeatClass(baseDoc)
       const vehicle = extractVehicle(baseDoc)
       record.seatClass = seatClass
@@ -1549,7 +1594,6 @@ const loadFaresForType = async (vesselType: VesselType) => {
     const enriched = withoutKuri.map(fare => {
       const { routeId, label } = resolveHighspeedRouteInfo(fare)
       const adult = pickNumber(fare.adult)
-      const child = pickNumber(fare.child) ?? calculateChildFare(adult)
       const disabled = extractDisabledFare(fare)
       return {
         ...fare,
@@ -2143,7 +2187,6 @@ const setDefaultData = () => {
     'beppu-hishiura'
   ]
   const defaultHighspeedAdults = [6430, 4890, 4890]
-  const defaultHighspeedChildren = [3220, 2450, 2450]
 
   highspeedFares.value = defaultHighspeedRouteIds.map((routeId, index) => {
     const label = getHighspeedRouteLabel(routeId) ?? routeId

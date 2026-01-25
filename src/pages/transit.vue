@@ -37,7 +37,8 @@
         <div>
           <span class="sr-only">{{ $t('TIME') }}</span>
           <div class="flex">
-            <select v-model="isArrivalMode"
+            <select
+v-model="isArrivalMode"
               class="px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-l-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:text-white"
               style="min-width: 140px"
               :aria-label="$t('TIME')"
@@ -45,7 +46,8 @@
               <option :value="false">{{ $t('DEPARTURE_AFTER') }}</option>
               <option :value="true">{{ $t('ARRIVE_BY') }}</option>
             </select>
-            <input :id="timeInputId" v-model="time" type="time"
+            <input
+:id="timeInputId" v-model="time" type="time"
               class="flex-1 px-3 py-2 border border-l-0 border-gray-300 dark:border-gray-600 rounded-r-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 bg-white dark:bg-white text-gray-900 dark:text-gray-900">
           </div>
         </div>
@@ -54,11 +56,14 @@
       <!-- Search Button -->
       <div>
         <PrimaryButton type="button" block size="lg" :disabled="!canSearch || isSearching" @click="handleSearch">
-          <span v-if="isSearching"
+          <span
+v-if="isSearching"
             class="inline-block animate-spin rounded-full h-4 w-4 border-b-2 border-white mr-2"></span>
-          <svg v-else xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-2" fill="none" viewBox="0 0 24 24"
+          <svg
+v-else xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-2" fill="none" viewBox="0 0 24 24"
             stroke="currentColor">
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+            <path
+stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
               d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
           </svg>
           {{ $t('SEARCH') }}
@@ -90,7 +95,8 @@
               </select>
             </div>
             <div class="hidden md:flex flex-wrap gap-2" role="tablist" :aria-label="$t('SORT_ORDER')">
-              <button v-for="option in sortOptions" :key="option.value" type="button" role="tab"
+              <button
+v-for="option in sortOptions" :key="option.value" type="button" role="tab"
                 :aria-selected="sortOption === option.value"
                 class="px-3 py-2 text-sm font-medium rounded-md border transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-app-primary/60 flex items-center justify-center"
                 :class="sortOption === option.value
@@ -158,13 +164,16 @@
               <button
                 class="text-app-muted hover:text-app-primary focus:outline-none focus:ring-2 focus:ring-app-primary-2 rounded p-1"
                 :title="$t('SHOW_ON_MAP')" @click="showRouteMap(route)">
-                <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24"
+                <svg
+xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24"
                   stroke="currentColor">
-                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                  <path
+stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                     d="M9 20l-5.447-2.724A1 1 0 013 16.382V5.618a1 1 0 011.447-.894L9 7m0 13l6-3m-6 3V7m6 10l4.553 2.276A1 1 0 0021 18.382V7.618a1 1 0 00-.553-.894L15 4m0 13V4m0 0L9 7" />
                 </svg>
               </button>
-              <FavoriteButton :type="'route'" :route="{ departure: departure, arrival: arrival }"
+              <FavoriteButton
+:type="'route'" :route="{ departure: departure, arrival: arrival }"
                 class="text-app-muted hover:text-app-primary" />
             </div>
           </div>
@@ -182,7 +191,8 @@
                 <tr class="bg-app-surface-2/60">
                   <td class="py-2 pl-4 pr-4 text-left text-app-fg">{{ formatTime(route.departureTime) }}</td>
                   <td class="py-2 pl-4">
-                    <a href="#" class="text-app-primary group inline-flex items-center gap-2 flex-wrap"
+                    <a
+href="#" class="text-app-primary group inline-flex items-center gap-2 flex-wrap"
                       @click.prevent="showPortInfo(route.segments[0].departure)">
                       <span class="group-hover:underline inline-flex items-center gap-2">
                         <LocationTypeIcon :type="resolveLocationType(route.segments[0].departureType)" />
@@ -204,7 +214,8 @@
                     <td class="py-2 pl-4" :style="getShipBorderStyle(segment.ship)">
                       <div class="flex items-center">
                         <!-- 欠航アイコン -->
-                        <button v-if="segment.status === 2" type="button" data-test="cancel-status-icon"
+                        <button
+v-if="segment.status === 2" type="button" data-test="cancel-status-icon"
                           class="mr-2 inline-flex items-center text-red-600 dark:text-red-300"
                           :title="$t('OPERATION_STATUS')"
                           aria-label="運航状況を見る"
@@ -214,7 +225,8 @@
                           </svg>
                         </button>
                         <!-- 警告/変更アイコン -->
-                        <button v-else-if="segment.status === 3" type="button" data-test="warning-status-icon"
+                        <button
+v-else-if="segment.status === 3" type="button" data-test="warning-status-icon"
                           class="mr-2 inline-flex items-center text-yellow-600 dark:text-yellow-300"
                           :title="$t('OPERATION_STATUS')"
                           aria-label="運航状況を見る"
@@ -224,7 +236,8 @@
                           </svg>
                         </button>
                         <!-- 運航再開アイコン -->
-                        <button v-else-if="segment.status === 4" type="button" data-test="resumed-status-icon"
+                        <button
+v-else-if="segment.status === 4" type="button" data-test="resumed-status-icon"
                           class="mr-2 inline-flex items-center text-green-600 dark:text-green-300"
                           :title="$t('OPERATION_STATUS')"
                           aria-label="運航状況を見る"
@@ -253,7 +266,8 @@
                           </svg>
                         </button>
                         <div class="flex flex-col">
-                          <a href="#" class="text-app-primary hover:underline"
+                          <a
+href="#" class="text-app-primary hover:underline"
                             @click.prevent="showShipInfo(segment.ship)">
                             🚢 {{ $t(segment.ship) }}
                           </a>
@@ -275,7 +289,8 @@
                       {{ formatTransferPortTimes(segment.arrivalTime, route.segments[segIndex + 1].departureTime) }}
                     </td>
                     <td class="py-2 pl-4">
-                      <a href="#" class="text-app-primary group inline-flex items-center gap-2 flex-wrap"
+                      <a
+href="#" class="text-app-primary group inline-flex items-center gap-2 flex-wrap"
                         @click.prevent="showPortInfo(segment.arrival)">
                         <span class="group-hover:underline inline-flex items-center gap-2">
                           <LocationTypeIcon :type="resolveLocationType(segment.arrivalType)" />
@@ -296,7 +311,8 @@
                 <tr class="bg-app-surface-2/60">
                   <td class="py-2 pl-4 pr-4 text-left text-app-fg">{{ formatTime(route.arrivalTime) }}</td>
                   <td class="py-2 pl-4">
-                    <a href="#" class="text-app-primary group inline-flex items-center gap-2 flex-wrap"
+                    <a
+href="#" class="text-app-primary group inline-flex items-center gap-2 flex-wrap"
                       @click.prevent="showPortInfo(route.segments[route.segments.length - 1].arrival)">
                       <span class="group-hover:underline inline-flex items-center gap-2">
                         <LocationTypeIcon :type="resolveLocationType(route.segments[route.segments.length - 1].arrivalType)" />
@@ -325,7 +341,8 @@
     </div>
 
     <!-- No Results -->
-    <div v-else-if="hasSearched && !isSearching"
+    <div
+v-else-if="hasSearched && !isSearching"
       class="bg-blue-100 dark:bg-blue-900/30 border border-blue-200 dark:border-gray-700 text-blue-900 dark:text-blue-300 px-4 py-3 rounded">
       <div class="flex flex-col gap-3">
         <p class="font-medium">
@@ -417,7 +434,8 @@
     <CommonShipModal v-model:visible="showShipModal" :title="$t(modalShipId)" type="ship" :ship-id="modalShipId" />
 
     <!-- Port Info Modal -->
-    <CommonShipModal v-model:visible="showPortModal" :title="getPortDisplayName(modalPortId)" type="port"
+    <CommonShipModal
+v-model:visible="showPortModal" :title="getPortDisplayName(modalPortId)" type="port"
       :port-id="modalPortId" :port-zoom="modalPortZoom" />
 
     <!-- Route Map Modal -->

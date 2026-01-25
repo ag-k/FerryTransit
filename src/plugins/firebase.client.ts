@@ -4,6 +4,7 @@ import { getAuth, signInWithEmailAndPassword, signOut, connectAuthEmulator } fro
 import { getStorage, connectStorageEmulator } from 'firebase/storage'
 import { getAnalytics, isSupported } from 'firebase/analytics'
 import { getFunctions, connectFunctionsEmulator } from 'firebase/functions'
+import { createLogger } from '~/utils/logger'
 
 let db: ReturnType<typeof getFirestore>
 
@@ -11,6 +12,7 @@ export default defineNuxtPlugin({
   name: 'firebase',
   setup: async () => {
   const config = useRuntimeConfig()
+  const logger = createLogger('FirebasePlugin')
   
   const firebaseConfig = {
     apiKey: config.public.firebase.apiKey,
@@ -39,21 +41,17 @@ export default defineNuxtPlugin({
       
       // Connect to Firestore emulator
       connectFirestoreEmulator(db, host, ports.firestore)
-      console.log(`🔥 Connected to Firestore emulator on ${host}:${ports.firestore}`)
       
       // Connect to Auth emulator
       connectAuthEmulator(auth, `http://${host}:${ports.auth}`)
-      console.log(`🔥 Connected to Auth emulator on ${host}:${ports.auth}`)
       
       // Connect to Storage emulator
       connectStorageEmulator(storage, host, ports.storage)
-      console.log(`🔥 Connected to Storage emulator on ${host}:${ports.storage}`)
       
       // Connect to Functions emulator
       connectFunctionsEmulator(functions, host, ports.functions)
-      console.log(`🔥 Connected to Functions emulator on ${host}:${ports.functions}`)
     } catch (error) {
-      console.warn('⚠️ Firebase emulator connection failed:', error)
+      logger.warn('⚠️ Firebase emulator connection failed:', error)
     }
   }
   
@@ -66,7 +64,7 @@ export default defineNuxtPlugin({
         analytics = getAnalytics(app)
       }
     } catch (error) {
-      console.warn('⚠️ Firebase analytics unsupported:', error)
+      logger.warn('⚠️ Firebase analytics unsupported:', error)
     }
   }
 

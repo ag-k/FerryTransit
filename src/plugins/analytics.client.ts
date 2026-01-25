@@ -6,7 +6,7 @@
 export default defineNuxtPlugin({
   name: 'analytics',
   dependsOn: ['firebase'],
-  setup: (nuxtApp) => {
+  setup: () => {
     const { trackPageView } = useAnalytics()
   
     // ルート遷移の監視

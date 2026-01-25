@@ -1,3 +1,7 @@
+import { createLogger } from '~/utils/logger'
+
+const logger = createLogger('TimetableSearchGetApi')
+
 export default defineEventHandler(async (event) => {
   try {
     const query = getQuery(event)
@@ -112,7 +116,7 @@ export default defineEventHandler(async (event) => {
     }
 
   } catch (error) {
-    console.error('Timetable API error:', error)
+    logger.error('Timetable API error:', error)
     
     throw createError({
       statusCode: 500,

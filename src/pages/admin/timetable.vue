@@ -420,10 +420,10 @@ import {
   ArrowUpTrayIcon,
   CloudArrowUpIcon
 } from '@heroicons/vue/24/outline'
+import { orderBy } from 'firebase/firestore'
 import Card from '@/components/common/Card.vue'
 import PrimaryButton from '@/components/common/PrimaryButton.vue'
 import SecondaryButton from '@/components/common/SecondaryButton.vue'
-import { orderBy } from 'firebase/firestore'
 import type { Port, Ship } from '~/types'
 import { useAdminFirestore } from '~/composables/useAdminFirestore'
 import { useDataPublish } from '~/composables/useDataPublish'
@@ -926,7 +926,7 @@ const importJSONFile = async (file: File) => {
     const jsonData = JSON.parse(text) as any[]
 
     if (!Array.isArray(jsonData)) {
-      throw new Error('JSONファイルは配列形式である必要があります')
+      throw new TypeError('JSONファイルは配列形式である必要があります')
     }
 
     const operations = []
