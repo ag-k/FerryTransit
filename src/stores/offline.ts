@@ -110,7 +110,7 @@ export const useOfflineStore = defineStore('offline', () => {
 
           const response = await Promise.race([
             fetch(remoteUrl, { cache: 'no-store' }),
-            new Promise<Response>((_, reject) => {
+            new Promise<Response>((_resolve, reject) => {
               setTimeout(() => reject(new Error('Timeout')), 5000) // 5秒でタイムアウト
             })
           ]).catch((e) => {

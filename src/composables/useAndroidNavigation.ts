@@ -49,8 +49,6 @@ export const useAndroidNavigation = () => {
         
         // 最低でも20px、最大でも100pxに制限
         navigationBarHeight.value = Math.max(20, Math.min(detectedHeight, 100))
-        
-        console.log('Android navigation bar height detected:', navigationBarHeight.value)
       }
 
       // 初回計算

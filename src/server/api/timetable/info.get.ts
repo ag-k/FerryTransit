@@ -1,4 +1,8 @@
-export default defineEventHandler(async (event) => {
+import { createLogger } from '~/utils/logger'
+
+const logger = createLogger('TimetableInfoApi')
+
+export default defineEventHandler(async () => {
   try {
     // 時刻表データを取得
     const timetableResponse = await $fetch('/api/timetable')
@@ -64,7 +68,7 @@ export default defineEventHandler(async (event) => {
     }
 
   } catch (error) {
-    console.error('Timetable info API error:', error)
+    logger.error('Timetable info API error:', error)
     
     throw createError({
       statusCode: 500,

@@ -1,4 +1,5 @@
 import * as admin from "firebase-admin";
+import { logger } from "firebase-functions";
 import { getTimetable, getTimetableFromStorage } from "./timetable";
 
 // Initialize Firebase Admin
@@ -11,11 +12,11 @@ if (process.env.FUNCTIONS_EMULATOR === "true") {
       host: "localhost:8095",
       ssl: false,
     });
-    console.log(
+    logger.info(
       "🔥 Functions: Connected to Firestore emulator on localhost:8095"
     );
   } catch (error) {
-    console.warn("⚠️ Functions: Firestore emulator connection failed:", error);
+    logger.warn("⚠️ Functions: Firestore emulator connection failed:", error);
   }
 }
 

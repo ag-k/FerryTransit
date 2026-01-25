@@ -13,10 +13,12 @@
       <!-- Ferry Status -->
       <div class="md:col-span-2">
         <div class="rounded-lg overflow-hidden shadow-sm" :class="getFerryCardContainerClass(shipStatus.ferry)">
-          <div class="px-4 py-2.5 border-b flex items-center justify-between gap-3"
+          <div
+class="px-4 py-2.5 border-b flex items-center justify-between gap-3"
             :class="getFerryCardHeaderClass(shipStatus.ferry)">
             <h3 class="text-lg font-bold">{{ $t('OKI_KISEN_FERRY') }}</h3>
-            <p v-if="ferryUpdatedAt" class="text-xs font-semibold text-white/90 whitespace-nowrap tabular-nums"
+            <p
+v-if="ferryUpdatedAt" class="text-xs font-semibold text-white/90 whitespace-nowrap tabular-nums"
               :title="`${$t('LAST_UPDATE')}: ${formatDateTime(ferryUpdatedAt)}`">
               <span class="mr-1">{{ $t('UPDATED_SHORT') }}</span>
               {{ formatHeaderTimestamp(ferryUpdatedAt) }}
@@ -37,7 +39,8 @@
                     </span>
                   </div>
 
-                  <div v-if="shipStatus.ferry.ferryComment"
+                  <div
+v-if="shipStatus.ferry.ferryComment"
                     class="mt-2 rounded-md border border-slate-200/70 bg-slate-50/70 p-2.5 dark:border-slate-700 dark:bg-slate-950/30">
                     <p class="text-sm leading-relaxed text-slate-700 dark:text-slate-200">
                       {{ shipStatus.ferry.ferryComment }}
@@ -60,14 +63,16 @@
                     </span>
                   </div>
 
-                  <div v-if="shipStatus.ferry.fastFerryComment"
+                  <div
+v-if="shipStatus.ferry.fastFerryComment"
                     class="mt-2 rounded-md border border-slate-200/70 bg-slate-50/70 p-2.5 dark:border-slate-700 dark:bg-slate-950/30">
                     <p class="text-sm leading-relaxed text-slate-700 dark:text-slate-200">
                       {{ shipStatus.ferry.fastFerryComment }}
                     </p>
                   </div>
                   <div class="mt-3">
-                    <CancelRiskCard mode="rainbowjet" :probability="rainbowjetCancelProbability"
+                    <CancelRiskCard
+mode="rainbowjet" :probability="rainbowjetCancelProbability"
                       :suspended="!hasRainbowJetTomorrow" />
                   </div>
                 </div>
@@ -83,17 +88,20 @@
                       <div class="flex flex-wrap justify-end gap-x-3 gap-y-1 tabular-nums md:flex-nowrap md:gap-x-5">
                         <p class="whitespace-nowrap text-sm font-semibold text-slate-800 dark:text-slate-100">
                           <span class="mr-1 text-slate-500 dark:text-slate-300">{{ $t('TODAY') }}</span>
-                          {{ todayWaveParts.value }}<span v-if="todayWaveParts.unit"
+                          {{ todayWaveParts.value }}<span
+v-if="todayWaveParts.unit"
                             class="ml-0.5 text-slate-600 dark:text-slate-200">{{ todayWaveParts.unit }}</span>
                         </p>
                         <p class="whitespace-nowrap text-sm font-semibold text-slate-800 dark:text-slate-100">
                           <span class="mr-1 text-slate-500 dark:text-slate-300">{{ $t('TOMORROW') }}</span>
-                          {{ tomorrowWaveParts.value }}<span v-if="tomorrowWaveParts.unit"
+                          {{ tomorrowWaveParts.value }}<span
+v-if="tomorrowWaveParts.unit"
                             class="ml-0.5 text-slate-600 dark:text-slate-200">{{ tomorrowWaveParts.unit }}</span>
                         </p>
                       </div>
                     </div>
-                    <div v-if="todayWaveParts.note || tomorrowWaveParts.note"
+                    <div
+v-if="todayWaveParts.note || tomorrowWaveParts.note"
                       class="mt-1 text-[11px] leading-snug text-slate-500 dark:text-slate-300">
                       <p v-if="todayWaveParts.note">{{ todayWaveParts.note }}</p>
                       <p v-if="tomorrowWaveParts.note">{{ tomorrowWaveParts.note }}</p>
@@ -121,7 +129,8 @@
         <div class="rounded-lg overflow-hidden shadow-sm" :class="localShipsCardContainerClass">
           <div class="px-4 py-3 border-b flex items-center justify-between gap-3" :class="localShipsCardHeaderClass">
             <h3 class="text-lg font-bold">{{ $t('DOZEN_LOCAL_SHIPS') }}</h3>
-            <p v-if="localShipsUpdatedAt" class="text-xs font-semibold whitespace-nowrap tabular-nums"
+            <p
+v-if="localShipsUpdatedAt" class="text-xs font-semibold whitespace-nowrap tabular-nums"
               :class="localShipsHeaderMetaTextClass"
               :title="`${$t('LAST_UPDATE')}: ${formatDateTime(localShipsUpdatedAt)}`">
               <span class="mr-1">{{ $t('UPDATED_SHORT') }}</span>
@@ -144,7 +153,8 @@
                       </span>
                     </div>
 
-                    <div v-if="shipStatus.isokaze.summary"
+                    <div
+v-if="shipStatus.isokaze.summary"
                       class="mt-3 rounded-md border border-slate-200/70 bg-slate-50/70 p-3 dark:border-slate-700 dark:bg-slate-950/30">
                       <p class="text-xs font-semibold text-slate-600 dark:text-slate-200">
                         {{ $t('SUMMARY') }}
@@ -154,14 +164,16 @@
                       </p>
                     </div>
 
-                    <div v-if="shipStatus.isokaze.comment"
+                    <div
+v-if="shipStatus.isokaze.comment"
                       class="mt-3 rounded-md border border-slate-200/70 bg-slate-50/70 p-3 dark:border-slate-700 dark:bg-slate-950/30">
                       <p class="mt-1 text-sm leading-relaxed text-slate-700 dark:text-slate-200">
                         {{ shipStatus.isokaze.comment }}
                       </p>
                     </div>
 
-                    <div v-if="shouldShowDetailBlock(shipStatus.isokaze, 'isokaze')"
+                    <div
+v-if="shouldShowDetailBlock(shipStatus.isokaze, 'isokaze')"
                       class="mt-4 space-y-4 border-t border-slate-200 pt-4 dark:border-slate-700"
                       data-test="isokaze-detail">
                       <div v-if="hasOperationInfo(shipStatus.isokaze)" class="space-y-2">
@@ -196,7 +208,8 @@
                         <strong class="text-gray-700 dark:text-gray-200">{{ $t('REASON') }}:</strong>
                         <span class="ml-1">{{ formatReason(shipStatus.isokaze.reason) }}</span>
                       </div>
-                      <div v-if="getShipTrips(shipStatus.isokaze?.extraShips).length" class="space-y-2"
+                      <div
+v-if="getShipTrips(shipStatus.isokaze?.extraShips).length" class="space-y-2"
                         data-test="isokaze-extra-section">
                         <h4 class="text-sm font-semibold text-gray-700 dark:text-gray-200">{{ $t('EXTRA_SHIPS') }}</h4>
                         <div class="overflow-x-auto rounded-md border border-gray-200 dark:border-gray-700">
@@ -209,7 +222,8 @@
                               </tr>
                             </thead>
                             <tbody>
-                              <tr v-for="(trip, index) in getShipTrips(shipStatus.isokaze?.extraShips)"
+                              <tr
+v-for="(trip, index) in getShipTrips(shipStatus.isokaze?.extraShips)"
                                 :key="`isokaze-extra-${index}`" class="border-t border-gray-200 dark:border-gray-700">
                                 <td class="px-3 py-2 dark:text-gray-200">{{ formatPortLabel(trip?.departure) }}</td>
                                 <td class="px-3 py-2 dark:text-gray-200">{{ getTripDepartureTime(trip) }}</td>
@@ -219,7 +233,8 @@
                           </table>
                         </div>
                       </div>
-                      <div v-else-if="getShipTrips(shipStatus.isokaze?.lastShips).length" class="space-y-2"
+                      <div
+v-else-if="getShipTrips(shipStatus.isokaze?.lastShips).length" class="space-y-2"
                         data-test="isokaze-last-section">
                         <h4 class="text-sm font-semibold text-gray-700 dark:text-gray-200">{{ $t('LAST_SHIPS') }}</h4>
                         <div class="overflow-x-auto rounded-md border border-gray-200 dark:border-gray-700">
@@ -232,7 +247,8 @@
                               </tr>
                             </thead>
                             <tbody>
-                              <tr v-for="(trip, index) in getShipTrips(shipStatus.isokaze?.lastShips)"
+                              <tr
+v-for="(trip, index) in getShipTrips(shipStatus.isokaze?.lastShips)"
                                 :key="`isokaze-last-${index}`" class="border-t border-gray-200 dark:border-gray-700">
                                 <td class="px-3 py-2 dark:text-gray-200">{{ formatPortLabel(trip?.departure) }}</td>
                                 <td class="px-3 py-2 dark:text-gray-200">{{ getTripDepartureTime(trip) }}</td>
@@ -264,7 +280,8 @@
                       </span>
                     </div>
 
-                    <div v-if="shipStatus.dozen.summary"
+                    <div
+v-if="shipStatus.dozen.summary"
                       class="mt-3 rounded-md border border-slate-200/70 bg-slate-50/70 p-3 dark:border-slate-700 dark:bg-slate-950/30">
                       <p class="text-xs font-semibold text-slate-600 dark:text-slate-200">
                         {{ $t('SUMMARY') }}
@@ -274,14 +291,16 @@
                       </p>
                     </div>
 
-                    <div v-if="shipStatus.dozen.comment"
+                    <div
+v-if="shipStatus.dozen.comment"
                       class="mt-3 rounded-md border border-slate-200/70 bg-slate-50/70 p-3 dark:border-slate-700 dark:bg-slate-950/30">
                       <p class="mt-1 text-sm leading-relaxed text-slate-700 dark:text-slate-200">
                         {{ shipStatus.dozen.comment }}
                       </p>
                     </div>
 
-                    <div v-if="shouldShowDetailBlock(shipStatus.dozen, 'dozen')"
+                    <div
+v-if="shouldShowDetailBlock(shipStatus.dozen, 'dozen')"
                       class="mt-4 space-y-4 border-t border-slate-200 pt-4 dark:border-slate-700"
                       data-test="dozen-detail">
                       <div v-if="hasOperationInfo(shipStatus.dozen)" class="space-y-2">
@@ -316,7 +335,8 @@
                         <strong class="text-gray-700 dark:text-gray-200">{{ $t('REASON') }}:</strong>
                         <span class="ml-1">{{ formatReason(shipStatus.dozen.reason) }}</span>
                       </div>
-                      <div v-if="getShipTrips(shipStatus.dozen?.extraShips).length" class="space-y-2"
+                      <div
+v-if="getShipTrips(shipStatus.dozen?.extraShips).length" class="space-y-2"
                         data-test="dozen-extra-section">
                         <h4 class="text-sm font-semibold text-gray-700 dark:text-gray-200">{{ $t('EXTRA_SHIPS') }}</h4>
                         <div class="overflow-x-auto rounded-md border border-gray-200 dark:border-gray-700">
@@ -329,7 +349,8 @@
                               </tr>
                             </thead>
                             <tbody>
-                              <tr v-for="(trip, index) in getShipTrips(shipStatus.dozen?.extraShips)"
+                              <tr
+v-for="(trip, index) in getShipTrips(shipStatus.dozen?.extraShips)"
                                 :key="`dozen-extra-${index}`" class="border-t border-gray-200 dark:border-gray-700">
                                 <td class="px-3 py-2 dark:text-gray-200">{{ formatPortLabel(trip?.departure) }}</td>
                                 <td class="px-3 py-2 dark:text-gray-200">{{ getTripDepartureTime(trip) }}</td>
@@ -339,7 +360,8 @@
                           </table>
                         </div>
                       </div>
-                      <div v-else-if="getShipTrips(shipStatus.dozen?.lastShips).length" class="space-y-2"
+                      <div
+v-else-if="getShipTrips(shipStatus.dozen?.lastShips).length" class="space-y-2"
                         data-test="dozen-last-section">
                         <h4 class="text-sm font-semibold text-gray-700 dark:text-gray-200">{{ $t('LAST_SHIPS') }}</h4>
                         <div class="overflow-x-auto rounded-md border border-gray-200 dark:border-gray-700">
@@ -352,7 +374,8 @@
                               </tr>
                             </thead>
                             <tbody>
-                              <tr v-for="(trip, index) in getShipTrips(shipStatus.dozen?.lastShips)"
+                              <tr
+v-for="(trip, index) in getShipTrips(shipStatus.dozen?.lastShips)"
                                 :key="`dozen-last-${index}`" class="border-t border-gray-200 dark:border-gray-700">
                                 <td class="px-3 py-2 dark:text-gray-200">{{ formatPortLabel(trip?.departure) }}</td>
                                 <td class="px-3 py-2 dark:text-gray-200">{{ getTripDepartureTime(trip) }}</td>
@@ -378,7 +401,8 @@
     <!-- Refresh button -->
     <div class="text-center mt-8">
       <SecondaryButton :disabled="isLoading" @click="refreshStatus">
-        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="mr-2"
+        <svg
+xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="mr-2"
           viewBox="0 0 16 16">
           <path fill-rule="evenodd" d="M8 3a5 5 0 1 0 4.546 2.914.5.5 0 0 1 .908-.417A6 6 0 1 1 8 2v1z" />
           <path
@@ -444,21 +468,6 @@ const updatedAtForDisplay = computed(() => lastFetchTime.value || null)
 const timetableData = computed(() => ferryStore?.timetableData || [])
 
 // Methods
-const getStatusClass = (status?: number | null) => {
-  if (status === null || status === undefined) {
-    return ''
-  }
-  switch (status) {
-    case 0: return 'text-blue-700 dark:text-blue-300'
-    case 1: return 'text-red-600 dark:text-red-300'
-    case 2: return 'text-yellow-600 dark:text-yellow-300'
-    case 3: return 'text-yellow-600 dark:text-yellow-300'
-    case 4: return 'text-green-600 dark:text-green-300'
-    case 5: return 'text-yellow-600 dark:text-yellow-300'
-    default: return ''
-  }
-}
-
 type ShipType = 'isokaze' | 'dozen'
 
 const statusLabelKeyMap: Record<ShipType, Record<number, string>> = {
@@ -562,10 +571,6 @@ const getStatusVariant = (ship?: ShipStatus | null): StatusVariant => {
   }
 }
 
-const getStatusCardContainerClass = (ship?: ShipStatus | null) => statusContainerClassMap[getStatusVariant(ship)]
-
-const getStatusCardHeaderClass = (ship?: ShipStatus | null) => statusHeaderClassMap[getStatusVariant(ship)]
-
 const getFerrySeverity = (state?: string | null): number => {
   if (!state) return 0
   const normalized = state.trim().toLowerCase()
@@ -592,20 +597,6 @@ const getFerryVariant = (ferry?: FerryStatus | null): StatusVariant => {
 const getFerryCardContainerClass = (ferry?: FerryStatus | null) => statusContainerClassMap[getFerryVariant(ferry)]
 
 const getFerryCardHeaderClass = (ferry?: FerryStatus | null) => statusHeaderClassMap[getFerryVariant(ferry)]
-
-const getOperationClass = (state: string) => {
-  // Check Japanese states
-  if (state === '通常運航' || state === '平常運航') return 'text-green-600 dark:text-green-300'
-  if (state === '欠航') return 'text-red-600 dark:text-red-300'
-  if (state === '条件付き運航') return 'text-yellow-600 dark:text-yellow-300'
-
-  // Check English states
-  if (state === 'Normal Operation' || state === 'Normal Service') return 'text-green-600 dark:text-green-300'
-  if (state === 'Cancelled' || state === 'Canceled') return 'text-red-600 dark:text-red-300'
-  if (state === 'Conditional Operation') return 'text-yellow-600 dark:text-yellow-300'
-
-  return ''
-}
 
 const getOperationBadgeClass = (state: string) => {
   // Japanese

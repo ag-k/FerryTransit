@@ -164,7 +164,7 @@ export const useHistoryStore = defineStore('history', () => {
             const today = new Date()
             const timeMatch = item.time.match(/(\d{1,2}):(\d{2})/)
             if (timeMatch) {
-              const [_, hours, minutes] = timeMatch
+              const [, hours, minutes] = timeMatch
               convertedTime = new Date(today.getFullYear(), today.getMonth(), today.getDate(), 
                                        parseInt(hours), parseInt(minutes), 0, 0)
             } else {

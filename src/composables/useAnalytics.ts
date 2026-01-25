@@ -1,6 +1,7 @@
 import { format, startOfDay, endOfDay, subDays, startOfMonth, endOfMonth, differenceInCalendarDays } from 'date-fns'
 import { toZonedTime } from 'date-fns-tz'
 import { doc, getDoc, getDocs, collection, where, orderBy, query, setDoc, increment } from 'firebase/firestore'
+import { createLogger } from '~/utils/logger'
 
 // ========================================
 // アクセス統計機能（新実装）
@@ -13,6 +14,7 @@ export const useAnalytics = () => {
   const nuxtApp = typeof useNuxtApp === 'function' ? useNuxtApp() : null
   const $firebase = nuxtApp?.$firebase
   const $isOffline = nuxtApp?.$isOffline ?? false
+  const logger = createLogger('Analytics')
 
   const getDb = () => {
     if (!$firebase?.db) {
@@ -70,7 +72,7 @@ export const useAnalytics = () => {
    * PVのトラッキング
    * ルート遷移ごとに呼び出し、日次/月次/時間別のPVをインクリメント
    */
-  const trackPageView = async ({ pagePath }: { pagePath: string }) => {
+  const trackPageView = async ({ pagePath: _pagePath }: { pagePath: string }) => {
     // オフライン時はスキップ
     if ($isOffline || !$firebase?.db) {
       return
@@ -104,7 +106,7 @@ export const useAnalytics = () => {
       })
     } catch (error) {
       // エラーはログに出力のみで、ユーザーには通知しない
-      console.warn('Failed to track page view:', error)
+      logger.warn('Failed to track page view:', error)
     }
   }
   
@@ -161,7 +163,7 @@ export const useAnalytics = () => {
       })
     } catch (error) {
       // エラーはログに出力のみで、ユーザーには通知しない
-      console.warn('Failed to track search:', error)
+      logger.warn('Failed to track search:', error)
     }
   }
   
@@ -230,7 +232,7 @@ export const useAnalytics = () => {
     if (granularity === 'hourly') {
       // 時間別の場合は開始日から終了日までの全時間を取得
       const docs: any[] = []
-      let currentDate = new Date(startDate)
+      const currentDate = new Date(startDate)
       const endDateTime = endDate.getTime()
       
       while (currentDate.getTime() <= endDateTime) {
@@ -792,14 +794,14 @@ export const useAnalytics = () => {
     getAccessTrends,
     getPopularPages,
     getReferrerStats,
-    getRouteSearchStats: async (limit: number = 10) => [],
+    getRouteSearchStats: (_limit: number = 10) => [],
     getErrorStats,
     getDeviceStats,
-    getLocationStats: async (startDate: Date, endDate: Date, limit: number = 10) => [],
+    getLocationStats: (_startDate: Date, _endDate: Date, _limit: number = 10) => [],
     getConversionStats,
     getPageFlowStats,
     getAccessTrend,
-    calculateKPIs: async (period: 'day' | 'week' | 'month' = 'month') => ({
+    calculateKPIs: (_period: 'day' | 'week' | 'month' = 'month') => ({
       current: { pageViews: 0, uniqueUsers: 0, avgSessionDuration: 0, bounceRate: 0 },
       previous: { pageViews: 0, uniqueUsers: 0, avgSessionDuration: 0, bounceRate: 0 },
       trends: { pageViewsTrend: 0, uniqueUsersTrend: 0, avgSessionTrend: 0, bounceRateTrend: 0 }

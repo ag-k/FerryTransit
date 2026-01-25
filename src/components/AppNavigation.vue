@@ -418,8 +418,6 @@ onMounted(() => {
 
       // 最低でも24px、最大でも80pxに制限
       statusBarHeight.value = Math.max(24, Math.min(detectedHeight, 80))
-
-      console.log('Android status bar height detected:', statusBarHeight.value)
     }
 
     // 初回計算
