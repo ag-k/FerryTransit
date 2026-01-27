@@ -15,7 +15,7 @@ const PortSelectorStub = defineComponent({
     'dogoPorts',
     'margin'
   ],
-  emits: ['update:modelValue'],
+  emits: ['update:modelValue', 'selectRoute'],
   methods: {
     nextValue() {
       // テストでは $t がキー文字列を返す想定なので placeholder で出発/目的地を判別する
@@ -23,13 +23,22 @@ const PortSelectorStub = defineComponent({
     }
   },
   template: `
-    <button
-      type="button"
-      :data-testid="'port-selector-stub-' + placeholder"
-      @click="$emit('update:modelValue', nextValue())"
-    >
-      {{ modelValue || placeholder }}
-    </button>
+    <div>
+      <button
+        type="button"
+        :data-testid="'port-selector-stub-' + placeholder"
+        @click="$emit('update:modelValue', nextValue())"
+      >
+        {{ modelValue || placeholder }}
+      </button>
+      <button
+        type="button"
+        :data-testid="'port-selector-route-stub-' + placeholder"
+        @click="$emit('selectRoute', { departure: 'HONDO_SHICHIRUI', arrival: 'SAIGO' })"
+      >
+        route
+      </button>
+    </div>
   `
 })
 
@@ -115,6 +124,15 @@ describe('RouteEndpointsSelector', () => {
     const wrapper = mountComponent({ showVia: true })
     await wrapper.find('[data-testid="route-endpoints-add-via"]').trigger('click')
     expect(wrapper.emitted('addVia')).toBeTruthy()
+  })
+
+  it('sets both departure and arrival when favorite route is selected', async () => {
+    const wrapper = mountComponent()
+    await wrapper.find('[data-testid="port-selector-route-stub-DEPARTURE"]').trigger('click')
+    expect(wrapper.emitted('update:departure')).toBeTruthy()
+    expect(wrapper.emitted('update:arrival')).toBeTruthy()
+    expect(wrapper.emitted('update:departure')!.at(-1)![0]).toBe('HONDO_SHICHIRUI')
+    expect(wrapper.emitted('update:arrival')!.at(-1)![0]).toBe('SAIGO')
   })
 
   it('hides +via button by default', () => {

@@ -92,6 +92,32 @@
             <div class="p-4 max-h-[calc(90vh-4.5rem)] overflow-y-auto">
               <div class="space-y-5">
                 <section
+                  v-if="favoriteRoutes.length > 0"
+                  class="space-y-2"
+                  data-testid="port-section-favorite-routes"
+                >
+                  <h4 class="text-sm font-semibold text-app-fg">
+                    {{ $t('favorites.favoriteRoutes') }}
+                  </h4>
+                  <div class="grid grid-cols-1 gap-2">
+                    <button
+                      v-for="route in favoriteRoutes"
+                      :key="route.id"
+                      type="button"
+                      class="w-full px-3 py-3 rounded-md border border-app-border text-left transition-colors focus:outline-none focus:ring-2 focus:ring-app-primary-2 bg-app-surface text-app-fg hover:bg-app-surface-2"
+                      :aria-label="getRouteLabel(route)"
+                      @click="selectRoute(route)"
+                    >
+                      <span class="flex items-start gap-3">
+                        <span class="min-w-0 flex-1">
+                          <span class="block text-sm font-semibold truncate">{{ getRouteDisplayName(route) }}</span>
+                          <span v-if="route.nickname" class="block text-xs text-app-muted truncate">{{ getRouteLabel(route) }}</span>
+                        </span>
+                      </span>
+                    </button>
+                  </div>
+                </section>
+                <section
                   v-for="section in sections"
                   :key="section.key"
                   class="space-y-2"
@@ -137,6 +163,7 @@ import { useFavoriteStore } from '@/stores/favorite'
 import PortBadges from '@/components/common/PortBadges.vue'
 import LocationTypeIcon from '@/components/common/LocationTypeIcon.vue'
 import type { LocationType } from '@/types'
+import type { FavoriteRoute } from '@/types/favorite'
 
 interface Props {
   modelValue: string
@@ -161,6 +188,7 @@ const props = withDefaults(defineProps<Props>(), {
 const emit = defineEmits<{
   'update:modelValue': [value: string]
   'change': [value: string]
+  'selectRoute': [route: FavoriteRoute]
 }>()
 
 const ferryStore = process.client ? useFerryStore() : null
@@ -198,6 +226,11 @@ const favoritePortCodes = computed(() => {
   return unique.filter(code => availablePortsSet.value.has(code))
 })
 
+const favoriteRoutes = computed(() => {
+  const raw = favoriteStore?.orderedRoutes || []
+  return raw.filter(route => availablePortsSet.value.has(route.departure) && availablePortsSet.value.has(route.arrival))
+})
+
 type Section = { key: 'favorites' | 'mainland' | 'dozen' | 'dogo'; labelKey: string; ports: string[] }
 
 const sections = computed<Section[]>(() => {
@@ -212,9 +245,9 @@ const sections = computed<Section[]>(() => {
   }
 
   result.push(
-    { key: 'mainland', labelKey: 'MAINLAND', ports: hondoPorts.value },
     { key: 'dozen', labelKey: 'DOZEN', ports: dozenPorts.value },
-    { key: 'dogo', labelKey: 'DOGO', ports: dogoPorts.value }
+    { key: 'dogo', labelKey: 'DOGO', ports: dogoPorts.value },
+    { key: 'mainland', labelKey: 'MAINLAND', ports: hondoPorts.value }
   )
 
   return result
@@ -244,6 +277,17 @@ const getPortLabelParts = (port: string) => {
   }
 }
 
+const getRouteLabel = (route: FavoriteRoute) => {
+  const departure = getPortLabelParts(route.departure).name
+  const arrival = getPortLabelParts(route.arrival).name
+  return `${departure} → ${arrival}`
+}
+
+const getRouteDisplayName = (route: FavoriteRoute) => {
+  if (route.nickname) return route.nickname
+  return getRouteLabel(route)
+}
+
 const open = () => {
   if (props.disabled) return
   isOpen.value = true
@@ -257,6 +301,12 @@ const selectPort = (port: string) => {
   if (isPortDisabled(port)) return
   emit('update:modelValue', port)
   emit('change', port)
+  close()
+}
+
+const selectRoute = (route: FavoriteRoute) => {
+  if (props.disabled) return
+  emit('selectRoute', route)
   close()
 }
 
