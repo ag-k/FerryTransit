@@ -217,7 +217,6 @@ import {
   TrashIcon,
   CalendarIcon,
   CurrencyYenIcon,
-  MegaphoneIcon,
   UserGroupIcon,
   ChartBarIcon,
   NewspaperIcon
@@ -270,13 +269,6 @@ const dataTypes: DataType[] = [
     description: '運賃・割引設定',
     icon: CurrencyYenIcon,
     lastUpdate: new Date('2024-01-14T15:20:00')
-  },
-  {
-    id: 'alerts',
-    name: 'アラートデータ',
-    description: '運航状況・遅延・欠航情報',
-    icon: MegaphoneIcon,
-    lastUpdate: new Date('2024-01-15T09:00:00')
   },
   {
     id: 'users',

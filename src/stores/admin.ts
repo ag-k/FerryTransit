@@ -1,5 +1,24 @@
 import { defineStore } from 'pinia'
+import { format, startOfDay, endOfDay, subDays } from 'date-fns'
+import { toZonedTime } from 'date-fns-tz'
+import { limit, orderBy } from 'firebase/firestore'
 import type { DashboardStats, AdminLog, SystemSettings } from '~/types/admin'
+import type { PopularRoute as AnalyticsPopularRoute } from '~/types/analytics'
+import { PORTS_DATA } from '~/data/ports'
+import { useAnalytics } from '~/composables/useAnalytics'
+import { useAdminFirestore } from '~/composables/useAdminFirestore'
+
+const TIMEZONE = 'Asia/Tokyo'
+
+const normalizeBackupInterval = (value?: string) => {
+  const mapping: Record<string, string> = {
+    daily: '毎日',
+    weekly: '毎週',
+    monthly: '毎月'
+  }
+  if (!value) return undefined
+  return mapping[value] || value
+}
 
 interface AdminState {
   dashboardStats: DashboardStats | null
@@ -19,30 +38,75 @@ export const useAdminStore = defineStore('admin', {
   }),
 
   actions: {
-    fetchDashboardStats() {
+    async fetchDashboardStats() {
       this.isLoading = true
       this.error = null
-      
+
       try {
-        // TODO: Firestoreから統計データを取得
-        // 現在はダミーデータ
+        const { 
+          getDailyAnalytics, 
+          getMonthlyAnalytics, 
+          getPopularRoutes,
+          getUniqueUsersCount,
+          getErrorStats
+        } = useAnalytics()
+
+        const now = new Date()
+        const tokyoNow = toZonedTime(now, TIMEZONE)
+        const dateKey = format(tokyoNow, 'yyyy-MM-dd')
+        const monthKey = format(tokyoNow, 'yyyy-MM')
+        const rangeStart = startOfDay(subDays(tokyoNow, 6))
+        const rangeEnd = endOfDay(tokyoNow)
+
+        const [
+          dailyAnalytics,
+          monthlyAnalytics,
+          popularRoutesRaw,
+          activeUsers,
+          errorStats
+        ] = await Promise.all([
+          getDailyAnalytics(dateKey),
+          getMonthlyAnalytics(monthKey),
+          getPopularRoutes(rangeStart, rangeEnd, 5),
+          getUniqueUsersCount(rangeStart, rangeEnd),
+          getErrorStats(rangeStart, rangeEnd)
+        ])
+
+        const mappedRoutes = (popularRoutesRaw || []).map((route: AnalyticsPopularRoute) => {
+          const fromPort = PORTS_DATA[route.depId]?.name || route.depId
+          const toPort = PORTS_DATA[route.arrId]?.name || route.arrId
+          return {
+            fromPort,
+            toPort,
+            count: route.count,
+            percentage: 0
+          }
+        })
+
+        const maxCount = mappedRoutes.reduce((max, route) => Math.max(max, route.count), 0)
+        const popularRoutes = mappedRoutes.map(route => ({
+          ...route,
+          percentage: maxCount > 0 ? Math.round((route.count / maxCount) * 100) : 0
+        }))
+
+        const errorCount = errorStats
+          ? Object.values(errorStats).reduce((sum, value) => {
+            if (typeof value !== 'number') return sum
+            return sum + value
+          }, 0)
+          : 0
+
         this.dashboardStats = {
-          dailyAccess: 1234,
-          monthlyAccess: 45678,
-          activeUsers: 56,
-          popularRoutes: [
-            { fromPort: '西郷', toPort: '本土七類', count: 234, percentage: 100 },
-            { fromPort: '本土七類', toPort: '西郷', count: 198, percentage: 85 },
-            { fromPort: '西郷', toPort: '菱浦', count: 156, percentage: 67 },
-            { fromPort: '菱浦', toPort: '西郷', count: 143, percentage: 61 },
-            { fromPort: '西郷', toPort: '別府', count: 98, percentage: 42 }
-          ],
+          dailyAccess: dailyAnalytics?.pvTotal ?? 0,
+          monthlyAccess: monthlyAnalytics?.pvTotal ?? 0,
+          activeUsers: activeUsers ?? 0,
+          popularRoutes,
           favoriteStats: {
-            totalFavorites: 789,
-            routeFavorites: 456,
-            portFavorites: 333
+            totalFavorites: 0,
+            routeFavorites: 0,
+            portFavorites: 0
           },
-          errorCount: 3
+          errorCount
         }
       } catch (error: any) {
         this.error = error.message || '統計データの取得に失敗しました'
@@ -52,57 +116,61 @@ export const useAdminStore = defineStore('admin', {
       }
     },
 
-    fetchRecentLogs(limit: number = 10) {
+    async fetchRecentLogs(limitValue: number = 10) {
       try {
-        // TODO: Firestoreから管理者ログを取得
-        // 現在はダミーデータ
-        const logs: AdminLog[] = [
-          {
-            id: '1',
-            adminId: 'admin1',
-            adminEmail: 'admin@example.com',
-            action: 'update',
-            resource: 'timetable',
-            resourceId: 'timetable_001',
-            changes: { updated_fields: ['departure_time', 'arrival_time'] },
-            timestamp: new Date(Date.now() - 1000 * 60 * 5)
-          },
-          {
-            id: '2',
-            adminId: 'admin1',
-            adminEmail: 'admin@example.com',
-            action: 'create',
-            resource: 'announcement',
-            resourceId: 'announcement_001',
-            timestamp: new Date(Date.now() - 1000 * 60 * 30)
-          },
-          {
-            id: '3',
-            adminId: 'admin2',
-            adminEmail: 'admin2@example.com',
-            action: 'delete',
-            resource: 'alert',
-            resourceId: 'alert_001',
-            timestamp: new Date(Date.now() - 1000 * 60 * 60)
+        const { getCollection } = useAdminFirestore()
+        const logs = await getCollection<any>('adminLogs', [
+          orderBy('timestamp', 'desc'),
+          limit(limitValue)
+        ])
+
+        const allowedActions: AdminLog['action'][] = ['create', 'update', 'delete', 'publish']
+
+        this.recentLogs = logs.map((log) => {
+          const rawAction = typeof log.action === 'string' ? log.action : ''
+          const normalizedAction =
+            allowedActions.find(action => action === rawAction) || 'update'
+
+          return {
+            id: log.id ?? '',
+            adminId: log.adminId || '',
+            adminEmail: log.adminEmail || '',
+            action: normalizedAction,
+            resource: log.target || log.resource || '',
+            resourceId: log.targetId || log.resourceId,
+            changes: log.details || log.changes,
+            timestamp: log.timestamp || log.updatedAt || log.createdAt || new Date(0)
           }
-        ]
-        this.recentLogs = logs.slice(0, limit)
+        })
       } catch (error: any) {
         this.error = error.message || 'ログの取得に失敗しました'
         throw error
       }
     },
 
-    fetchSystemSettings() {
+    async fetchSystemSettings() {
       try {
-        // TODO: Firestoreからシステム設定を取得
-        // 現在はダミーデータ
+        const { getDocument } = useAdminFirestore()
+        const settingsDoc = await getDocument<any>('adminSettings', 'global')
+
+        if (!settingsDoc) {
+          this.systemSettings = {
+            maintenanceMode: false,
+            maintenanceMessage: '',
+            autoBackupEnabled: false
+          }
+          return
+        }
+
+        const site = settingsDoc.site || {}
+        const data = settingsDoc.data || {}
+
         this.systemSettings = {
-          maintenanceMode: false,
-          maintenanceMessage: '',
-          dataUpdateSchedule: '毎日 午前3時',
-          autoBackupEnabled: true,
-          backupSchedule: '毎日 午前2時'
+          maintenanceMode: Boolean(site.maintenanceMode),
+          maintenanceMessage: site.maintenanceMessage || '',
+          dataUpdateSchedule: site.dataUpdateSchedule,
+          autoBackupEnabled: Boolean(data.autoBackup),
+          backupSchedule: normalizeBackupInterval(data.backupInterval)
         }
       } catch (error: any) {
         this.error = error.message || 'システム設定の取得に失敗しました'
@@ -110,11 +178,40 @@ export const useAdminStore = defineStore('admin', {
       }
     },
 
-    updateSystemSettings(settings: Partial<SystemSettings>) {
+    async updateSystemSettings(settings: Partial<SystemSettings>) {
       try {
-        // TODO: Firestoreにシステム設定を保存
+        const { updateDocument } = useAdminFirestore()
+        const updateData: Record<string, any> = {}
+
+        if (settings.maintenanceMode !== undefined) {
+          updateData['site.maintenanceMode'] = settings.maintenanceMode
+        }
+        if (settings.maintenanceMessage !== undefined) {
+          updateData['site.maintenanceMessage'] = settings.maintenanceMessage
+        }
+        if (settings.dataUpdateSchedule !== undefined) {
+          updateData['site.dataUpdateSchedule'] = settings.dataUpdateSchedule
+        }
+        if (settings.autoBackupEnabled !== undefined) {
+          updateData['data.autoBackup'] = settings.autoBackupEnabled
+        }
+        if (settings.backupSchedule !== undefined) {
+          updateData['data.backupInterval'] = settings.backupSchedule
+        }
+
+        if (Object.keys(updateData).length > 0) {
+          await updateDocument('adminSettings', 'global', updateData)
+        }
+
+        const baseSettings =
+          this.systemSettings || {
+            maintenanceMode: false,
+            maintenanceMessage: '',
+            autoBackupEnabled: false
+          }
+
         this.systemSettings = {
-          ...this.systemSettings!,
+          ...baseSettings,
           ...settings
         }
       } catch (error: any) {
@@ -123,9 +220,16 @@ export const useAdminStore = defineStore('admin', {
       }
     },
 
-    logAdminAction(action: Omit<AdminLog, 'id' | 'timestamp'>) {
+    async logAdminAction(action: Omit<AdminLog, 'id' | 'timestamp'>) {
       try {
-        // TODO: Firestoreに管理者アクションログを記録
+        const { logAdminAction } = useAdminFirestore()
+        await logAdminAction(
+          action.action,
+          action.resource,
+          action.resourceId || '',
+          { changes: action.changes || {} }
+        )
+
         const log: AdminLog = {
           ...action,
           id: Date.now().toString(),

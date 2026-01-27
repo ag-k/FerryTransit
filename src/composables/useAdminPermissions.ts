@@ -10,7 +10,6 @@ export const useAdminPermissions = () => {
     // スーパー管理者と一般管理者
     MANAGE_TIMETABLE: ['super', 'general'],
     MANAGE_FARE: ['super', 'general'],
-    MANAGE_ALERTS: ['super', 'general'],
     MANAGE_ANNOUNCEMENTS: ['super', 'general'],
     VIEW_ANALYTICS: ['super', 'general'],
     EXPORT_DATA: ['super', 'general'],
@@ -34,7 +33,6 @@ export const useAdminPermissions = () => {
       '/admin/settings': 'SYSTEM_SETTINGS',
       '/admin/timetable': 'MANAGE_TIMETABLE',
       '/admin/fare': 'MANAGE_FARE',
-      '/admin/alerts': 'MANAGE_ALERTS',
       '/admin/announcements': 'MANAGE_ANNOUNCEMENTS',
       '/admin/analytics': 'VIEW_ANALYTICS',
       '/admin/data-management': 'EXPORT_DATA'

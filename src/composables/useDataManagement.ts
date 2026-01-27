@@ -128,7 +128,7 @@ export const useDataManagement = () => {
    * データのエクスポート
    */
   const exportData = async (
-    dataType: 'timetable' | 'fare' | 'holidays' | 'alerts' | 'announcements',
+    dataType: 'timetable' | 'fare' | 'holidays' | 'announcements',
     format: 'json' | 'csv'
   ): Promise<Blob> => {
     const data = await getCollection(`${dataType}s`)

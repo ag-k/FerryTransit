@@ -14,9 +14,10 @@ export default defineNuxtPlugin({
   
     // ルート遷移ごとにPVを記録
     router.afterEach((to) => {
-      if (to.path) {
-        trackPageView({ pagePath: to.path })
+      if (!to.path || to.path.startsWith('/admin')) {
+        return
       }
+      trackPageView({ pagePath: to.path })
     })
   }
 })

@@ -1,5 +1,4 @@
 import { collection, doc, setDoc, updateDoc, deleteDoc, getDoc, getDocs, query, limit, startAfter, type DocumentData, type QueryConstraint, serverTimestamp, writeBatch } from 'firebase/firestore'
-import type { Alert } from '~/types'
 import { createLogger } from '~/utils/logger'
 
 export const useAdminFirestore = () => {
@@ -282,13 +281,6 @@ export const useAdminFirestore = () => {
   }
 
   /**
-   * アラートの保存
-   */
-  const saveAlert = (alertData: Partial<Alert>): Promise<string> => {
-    return createDocument('alerts', alertData)
-  }
-
-  /**
    * お知らせの保存
    */
   const saveAnnouncement = (announcementData: any): Promise<string> => {
@@ -417,7 +409,6 @@ export const useAdminFirestore = () => {
     // 専用データ操作
     saveTimetable,
     saveFare,
-    saveAlert,
     saveAnnouncement,
 
     // データ検証
