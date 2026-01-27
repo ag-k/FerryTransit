@@ -550,4 +550,58 @@ describe('Transit Page - Fare Display', () => {
       expect(pageText).toContain('TOTAL: ¥410')
     })
   })
+
+  describe('Rainbow Jet Seat Availability', () => {
+    it('should show seat availability button with month parameter from search date', async () => {
+      const wrapper = mountWithI18n(Transit, {
+        global: {
+          plugins: [router],
+          stubs: {
+            PortSelector: true,
+            DatePicker: true,
+            CommonShipModal: true,
+            StatusAlerts: true,
+            FavoriteButton: true,
+            RouteMapModal: true
+          }
+        }
+      })
+
+      wrapper.vm.departure = 'BEPPU'
+      wrapper.vm.arrival = 'HISHIURA'
+      wrapper.vm.date = new Date('2026-04-01')
+      wrapper.vm.searchDateForResults = new Date('2026-03-05')
+      wrapper.vm.hasSearched = true
+      wrapper.vm.searchResults = [
+        {
+          segments: [
+            {
+              tripId: '200',
+              ship: 'RAINBOWJET',
+              departure: 'BEPPU',
+              arrival: 'HISHIURA',
+              departureTime: new Date('2026-03-05T08:00:00'),
+              arrivalTime: new Date('2026-03-05T08:40:00'),
+              status: 0,
+              fare: 0
+            }
+          ],
+          departureTime: new Date('2026-03-05T08:00:00'),
+          arrivalTime: new Date('2026-03-05T08:40:00'),
+          totalFare: 0,
+          transferCount: 0
+        }
+      ]
+
+      await wrapper.vm.$nextTick()
+
+      const seatLink = wrapper.find('a[href*="kuuseki_rainbow"]')
+
+      expect(seatLink.exists(), '空席確認リンクが表示されること').toBe(true)
+      expect(seatLink.text()).toContain('CHECK_SEAT_AVAILABILITY')
+      expect(seatLink!.attributes('href')).toBe(
+        'https://www.oki-kisen.co.jp/kuuseki/kuuseki_rainbow/?time=2026-03'
+      )
+    })
+  })
 })
