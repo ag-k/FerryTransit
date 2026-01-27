@@ -88,7 +88,7 @@ export const useDataPublish = () => {
    * Firestoreデータを JSON に変換してStorageに公開
    */
   const publishData = async (
-    dataType: 'timetable' | 'fare' | 'holidays' | 'alerts' | 'news',
+    dataType: 'timetable' | 'fare' | 'holidays' | 'news',
     preview: boolean = false
   ): Promise<string> => {
 
@@ -111,10 +111,6 @@ export const useDataPublish = () => {
         case 'holidays':
           data = await prepareHolidayData()
           fileName = 'holidays.json'
-          break
-        case 'alerts':
-          data = await prepareAlertData()
-          fileName = 'alerts.json'
           break
         case 'news':
           data = await prepareNewsData()
@@ -479,30 +475,6 @@ export const useDataPublish = () => {
   }
 
   /**
-   * アラートデータの準備
-   */
-  const prepareAlertData = async () => {
-    const { where } = await import('firebase/firestore')
-    const alerts = await getCollection('alerts', [where('active', '==', true)])
-    
-    // アクティブなアラートのみをエクスポート
-    return alerts.map(alert => ({
-      id: alert.id,
-      ship: alert.ship,
-      route: alert.route,
-      status: alert.status,
-      severity: alert.severity || 'medium',
-      summary: alert.summary,
-      comment: alert.comment,
-      summaryEn: alert.summaryEn,
-      commentEn: alert.commentEn,
-      startDate: alert.startDate,
-      endDate: alert.endDate,
-      affectedRoutes: alert.affectedRoutes || []
-    }))
-  }
-
-  /**
    * ニュースデータの準備
    */
   const prepareNewsData = async () => {
@@ -610,9 +582,6 @@ export const useDataPublish = () => {
           break
         case 'holidays':
           fileName = 'holidays.json'
-          break
-        case 'alerts':
-          fileName = 'alerts.json'
           break
         case 'news':
           fileName = 'news.json'
