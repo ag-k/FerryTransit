@@ -266,11 +266,23 @@ v-else-if="segment.status === 4" type="button" data-test="resumed-status-icon"
                           </svg>
                         </button>
                         <div class="flex flex-col">
-                          <a
+                          <div class="flex items-center gap-2 flex-wrap">
+                            <a
 href="#" class="text-app-primary hover:underline"
-                            @click.prevent="showShipInfo(segment.ship)">
-                            🚢 {{ $t(segment.ship) }}
-                          </a>
+                              @click.prevent="showShipInfo(segment.ship)">
+                              🚢 {{ $t(segment.ship) }}
+                            </a>
+                            <a
+                              v-if="segment.ship === 'RAINBOWJET'"
+                              :href="rainbowJetSeatAvailabilityUrl"
+                              class="inline-flex items-center rounded border border-app-primary text-app-primary text-xs px-2 py-0.5 whitespace-nowrap hover:bg-app-primary/10 focus:outline-none focus-visible:ring-2 focus-visible:ring-app-primary/60"
+                              target="_blank"
+                              rel="noopener noreferrer"
+                              :aria-label="$t('CHECK_SEAT_AVAILABILITY')"
+                            >
+                              {{ $t('CHECK_SEAT_AVAILABILITY') }}
+                            </a>
+                          </div>
                           <span v-if="formatSegmentMeta(segment)" class="text-xs text-app-muted mt-0.5">
                             {{ formatSegmentMeta(segment) }}
                           </span>
@@ -516,6 +528,7 @@ watch(() => ferryStore?.arrival, (newVal) => {
 const isSearching = ref(false)
 const hasSearched = ref(false)
 const searchResults = ref<TransitRoute[]>([])
+const searchDateForResults = ref<Date | null>(null)
 const displayLimit = ref(5)
 const showDetailsModal = ref(false)
 const selectedRoute = ref<TransitRoute | null>(null)
@@ -796,12 +809,28 @@ const retrySearchLabel = computed(() => {
     : t('TRANSIT_RETRY_EARLIER', { minutes: RETRY_TIME_SHIFT_MINUTES })
 })
 
+const rainbowJetSeatAvailabilityUrl = computed(() => {
+  const targetDate = searchDateForResults.value ?? date.value ?? new Date()
+  return buildRainbowJetSeatAvailabilityUrl(targetDate)
+})
+
 // Methods
 function getCurrentTimeString(): string {
   const now = new Date()
   const hours = Math.floor(now.getHours() / 1) * 1
   const minutes = Math.floor(now.getMinutes() / 15) * 15
   return `${hours.toString().padStart(2, '0')}:${minutes.toString().padStart(2, '0')}`
+}
+
+function formatRainbowJetSeatAvailabilityMonth(targetDate: Date): string {
+  const year = targetDate.getFullYear()
+  const month = String(targetDate.getMonth() + 1).padStart(2, '0')
+  return `${year}-${month}`
+}
+
+function buildRainbowJetSeatAvailabilityUrl(targetDate: Date): string {
+  const month = formatRainbowJetSeatAvailabilityMonth(targetDate)
+  return `https://www.oki-kisen.co.jp/kuuseki/kuuseki_rainbow/?time=${month}`
 }
 
 function buildSearchDateTime(baseDate: Date, timeStr: string): Date {
@@ -991,6 +1020,7 @@ async function handleSearch() {
   isSearching.value = true
   hasSearched.value = true
   displayLimit.value = 5
+  searchDateForResults.value = new Date(date.value)
 
   try {
     const results = await searchRoutes(
