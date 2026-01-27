@@ -247,4 +247,55 @@ describe('PortSelector', () => {
     expect(sectionEls.length).toBeGreaterThan(0)
     expect(sectionEls[0].attributes('data-testid')).toBe('port-section-favorites')
   })
+
+  it('shows favorite routes section on top when favorite routes exist', async () => {
+    const favoriteStore = useFavoriteStore()
+    favoriteStore.addFavoriteRoute({ departure: 'HONDO_SHICHIRUI', arrival: 'SAIGO' })
+
+    const wrapper = mount(PortSelector, {
+      props: defaultProps,
+      global: {
+        mocks: {
+          $t: (key: string) => key
+        },
+        stubs: {
+          Teleport: true
+        }
+      }
+    })
+
+    await wrapper.find('[data-testid="port-selector-button"]').trigger('click')
+
+    expect(wrapper.find('[data-testid="port-section-favorite-routes"]').exists()).toBe(true)
+    const sectionEls = wrapper.findAll('section')
+    expect(sectionEls.length).toBeGreaterThan(0)
+    expect(sectionEls[0].attributes('data-testid')).toBe('port-section-favorite-routes')
+  })
+
+  it('emits selectRoute when a favorite route is selected', async () => {
+    const favoriteStore = useFavoriteStore()
+    favoriteStore.addFavoriteRoute({ departure: 'HONDO_SHICHIRUI', arrival: 'SAIGO' })
+
+    const wrapper = mount(PortSelector, {
+      props: defaultProps,
+      global: {
+        mocks: {
+          $t: (key: string) => key
+        },
+        stubs: {
+          Teleport: true
+        }
+      }
+    })
+
+    await wrapper.find('[data-testid="port-selector-button"]').trigger('click')
+    const routeButton = wrapper.find('[data-testid="port-section-favorite-routes"]').find('button')
+    await routeButton.trigger('click')
+
+    expect(wrapper.emitted('selectRoute')).toBeTruthy()
+    expect(wrapper.emitted('selectRoute')![0][0]).toMatchObject({
+      departure: 'HONDO_SHICHIRUI',
+      arrival: 'SAIGO'
+    })
+  })
 })

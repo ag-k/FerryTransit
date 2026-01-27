@@ -22,6 +22,7 @@
           :dozen-ports="dozenPorts"
           :dogo-ports="dogoPorts"
           margin="none"
+          @selectRoute="handleSelectRoute"
         />
         <button
           v-if="departureProxy && !disabled"
@@ -95,6 +96,7 @@
           :dozen-ports="dozenPorts"
           :dogo-ports="dogoPorts"
           margin="none"
+          @selectRoute="handleSelectRoute"
         />
         <button
           v-if="arrivalProxy && !disabled"
@@ -120,6 +122,7 @@
 
 <script setup lang="ts">
 import PortSelector from '@/components/common/PortSelector.vue'
+import type { FavoriteRoute } from '@/types/favorite'
 
 type Props = {
   departure: string
@@ -194,6 +197,12 @@ const clearDeparture = () => {
 
 const clearArrival = () => {
   arrivalProxy.value = ''
+}
+
+const handleSelectRoute = (route: FavoriteRoute) => {
+  if (disabled.value) return
+  emit('update:departure', route.departure)
+  emit('update:arrival', route.arrival)
 }
 
 // 既に本土港同士になっている状態（URL/地図/履歴など経由）を補正

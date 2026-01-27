@@ -1,7 +1,7 @@
 /* eslint-disable no-console */
 import { onRequest, onCall, HttpsError } from 'firebase-functions/v2/https'
 import * as admin from 'firebase-admin'
-import * as cors from 'cors'
+import cors from 'cors'
 
 // CORS設定
 const corsOptions = {
