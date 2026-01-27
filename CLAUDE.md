@@ -27,10 +27,15 @@ FerryTransit/
 │       ├── ja.json          # 日本語
 │       └── en.json          # 英語
 ├── docs/                      # ドキュメント
+│   ├── project/              # プロジェクト指針
+│   │   └── CLAUDE.md         # このファイル
+│   ├── operations/           # 運用・デプロイ
+│   ├── issues/               # 障害管理
+│   ├── reports/              # 調査・検証レポート
 │   ├── phase-plans/          # フェーズごとの計画
 │   ├── work-logs/            # 日付ごとの作業ログ
 │   └── migration/            # 移行関連ドキュメント
-└── CLAUDE.md                  # このファイル
+└── README.md                  # リポジトリ概要
 ```
 
 ## 技術スタック
@@ -134,17 +139,17 @@ node scripts/cap-build.mjs android --dev --open
 ### 完了済みフェーズ
 
 - ✅ **フェーズ 1-3**: 基盤構築、データ層、UI/UX 基本実装
-- ✅ **フェーズ 4**: ビジネスロジックの詳細実装 → [詳細](docs/phase-plans/PHASE4_BUSINESS_LOGIC.md)
-- ✅ **フェーズ 5**: UI/UX 完成 → [詳細](docs/phase-plans/PHASE5_UI_UX.md)
+- ✅ **フェーズ 4**: ビジネスロジックの詳細実装 → [詳細](../phase-plans/PHASE4_BUSINESS_LOGIC.md)
+- ✅ **フェーズ 5**: UI/UX 完成 → [詳細](../phase-plans/PHASE5_UI_UX.md)
 
 ### 今後の計画
 
-- **フェーズ 5.5**: 管理画面実装 → [詳細](docs/phase-plans/PHASE5.5_ADMIN_PANEL.md)
+- **フェーズ 5.5**: 管理画面実装 → [詳細](../phase-plans/PHASE5.5_ADMIN_PANEL.md)
 - **フェーズ 6**: Capacitor 統合・ネイティブアプリ化
 
 ## 作業ログ
 
-日付ごとの作業内容は [docs/work-logs/](docs/work-logs/) を参照してください。
+日付ごとの作業内容は [work-logs](../work-logs/) を参照してください。
 
 ## 現在の課題
 
@@ -154,9 +159,9 @@ node scripts/cap-build.mjs android --dev --open
 
 ## 関連ドキュメント
 
-- [移行計画](docs/migration/MIGRATION_PLAN.md)
-- [フェーズ 1 タスクリスト](docs/migration/PHASE1_TASKS.md)
-- [Nuxt3 開発ドキュメント](docs/nuxt/README.md)
+- [移行計画](../migration/MIGRATION_PLAN.md)
+- [フェーズ 1 タスクリスト](../migration/PHASE1_TASKS.md)
+- [Nuxt3 開発ドキュメント](../nuxt/README.md)
 
 ## Firebase 設定・デプロイ
 
@@ -242,9 +247,9 @@ gsutil cors set src/cors.json gs://oki-ferryguide.firebasestorage.app
 
 ### セキュリティルールの詳細
 
-- [Firestore ルール詳細](src/scripts/README_FIRESTORE_RULES.md)
-- [Storage ルール詳細](src/scripts/README_STORAGE_RULES.md)
-- [管理者設定ガイド](src/scripts/README_ADMIN_SETUP.md)
+- [Firestore ルール詳細](../operations/firebase/firestore-rules.md)
+- [Storage ルール詳細](../operations/firebase/storage-rules.md)
+- [管理者設定ガイド](../operations/firebase/admin-account-setup.md)
 
 ### Firestore ルール更新履歴
 
@@ -271,9 +276,9 @@ gsutil cors set src/cors.json gs://oki-ferryguide.firebasestorage.app
 
 ## 障害管理
 
-プロジェクトの障害は `bugs.md` ファイルで管理しています。新しい障害を発見した場合や修正作業を行う際は、このファイルを確認・更新してください。
+プロジェクトの障害は `issues/bugs.md` で管理しています。新しい障害を発見した場合や修正作業を行う際は、このファイルを確認・更新してください。
 
-- **障害管理ファイル**: [`bugs.md`](bugs.md)
+- **障害管理ファイル**: [`issues/bugs.md`](../issues/bugs.md)
 - **障害ID形式**: `BUG-XXX` (XXXは3桁の連番)
 - **優先度**: 高 (🔥), 中 (⚠️), 低 (💡)
 - **ステータス**: 未対応 (🆕), 調査中 (🔍), 対応中 (🔨), 検証中 (🧪), 完了 (✅)
