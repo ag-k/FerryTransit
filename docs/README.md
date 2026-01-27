@@ -1,82 +1,73 @@
 # FerryTransit ドキュメント
 
-このディレクトリには、FerryTransitプロジェクトのすべてのドキュメントが整理されています。
+このディレクトリには、FerryTransit プロジェクトのドキュメントを用途別に整理しています。
 
 ## ディレクトリ構造
 
 ```
 docs/
 ├── README.md              # このファイル
-├── project/               # プロジェクト全体のドキュメント
-│   └── CLAUDE.md         # Claude Code用の指示書
-├── migration/             # 移行関連のドキュメント
-│   ├── MIGRATION_PLAN.md # AngularJSからNuxt3への移行計画
-│   └── PHASE1_TASKS.md   # フェーズ1のタスクリスト
-├── nuxt/                  # Nuxt3版のドキュメント
-│   ├── README.md         # Nuxt3版の概要
-│   ├── README_FIREBASE_DEPLOY.md    # Firebaseデプロイ手順
-│   ├── README_SUPABASE_DEPLOY.md    # Supabaseデプロイ手順
-│   ├── NAVIGATION_FIX_SUMMARY.md    # ナビゲーション修正サマリー
-│   ├── OPERATION_CHECK.md           # 動作確認チェックリスト
-│   ├── PHASE2_SUMMARY.md            # フェーズ2実装サマリー
-│   ├── PHASE3_SUMMARY.md            # フェーズ3実装サマリー
-│   ├── TEST_IMPLEMENTATION.md       # テスト実装ガイド
-│   ├── TIMETABLE_FIX_REPORT.md      # 時刻表修正レポート
-│   └── missing-translations-report.md # 翻訳漏れレポート
+├── project/               # プロジェクト全体の指針
+├── operations/            # 運用・デプロイ・スクリプト手順
+│   ├── firebase/          # Firebase 関連の手順
+│   └── scripts/           # 運用スクリプトの手順
+├── issues/                # 障害・課題管理
+├── reports/               # 調査・検証レポート
+├── development/           # 開発環境の補助資料
+├── migration/             # 移行関連ドキュメント
+├── nuxt/                  # Nuxt3 版のドキュメント
+├── phase-plans/           # フェーズごとの計画
 ├── specs/                 # 機能別仕様書（仕様・設計）
-│   └── NEWS_SYSTEM.md     # お知らせ機能の仕様書
+├── status-api/            # 運航状況API関連
 ├── tasks/                 # 機能別タスク（TODO・実装チェック）
-│   └── TODO_INDEX.md      # タスク一覧（各TODOへのリンク集）
-├── features/              # 旧配置（互換用の案内のみ。中身は specs/ と tasks/ へ移動）
-└── archive/               # アーカイブ版（AngularJS）のドキュメント
+├── testing/               # テスト関連
+└── work-logs/             # 作業ログ
 ```
 
 ## ドキュメント概要
 
-### プロジェクトドキュメント (`project/`)
+### プロジェクト指針 (`project/`)
 
-- **CLAUDE.md**: Claude Codeでコードを扱う際のガイドライン。プロジェクトの概要、技術スタック、開発コマンド、実装状況などを記載。
+- **CLAUDE.md**: 開発ガイドライン、コマンド、技術スタック、実装状況
 
-### 移行ドキュメント (`migration/`)
+### 運用・デプロイ手順 (`operations/`)
 
-- **MIGRATION_PLAN.md**: AngularJS版からNuxt3版への詳細な移行計画。フェーズごとのタスクとスケジュール。
-- **PHASE1_TASKS.md**: フェーズ1（基盤構築）の詳細なタスクリスト。
+- Firebase 設定、ルール、Cloud Build 対応など
+- 運用スクリプトの実行手順
 
-### Nuxt3ドキュメント (`nuxt/`)
+### 障害・課題 (`issues/`)
 
-- **README.md**: Nuxt3版の概要と基本的な使い方
-- **README_FIREBASE_DEPLOY.md**: FirebaseへのNuxt3アプリケーションのデプロイ手順
-- **README_SUPABASE_DEPLOY.md**: SupabaseへのNuxt3アプリケーションのデプロイ手順
-- **NAVIGATION_FIX_SUMMARY.md**: ナビゲーション関連の修正内容のサマリー
-- **OPERATION_CHECK.md**: 実装した機能の動作確認チェックリスト
-- **PHASE2_SUMMARY.md**: フェーズ2（データ層実装）の実装サマリー
-- **PHASE3_SUMMARY.md**: フェーズ3（UI/UX実装）の実装サマリー
-- **TEST_IMPLEMENTATION.md**: ユニットテストの実装ガイド
-- **TIMETABLE_FIX_REPORT.md**: 時刻表機能の修正レポート
-- **missing-translations-report.md**: 国際化対応での翻訳漏れのレポート
+- **bugs.md**: 障害管理リスト
 
-### 機能別仕様書 (`specs/`)
+### 調査・検証レポート (`reports/`)
 
-- **NEWS_SYSTEM.md**: お知らせ機能の詳細仕様書。データ構造、システムアーキテクチャ、管理機能、表示機能、セキュリティ設定などを網羅的に記載。
+- 仕様検証や検索結果の分析メモ
 
-### 機能別タスク (`tasks/`)
+### 開発・移行・実装 (`development/`, `migration/`, `nuxt/`, `phase-plans/`)
 
-- **TODO_INDEX.md**: 機能別TODOの目次。各機能の実装タスクへリンク。
+- 開発環境、移行計画、Nuxt3 実装サマリー
 
-### アーカイブドキュメント (`archive/`)
+### 仕様・タスク (`specs/`, `tasks/`)
 
-AngularJS版に関するドキュメント（今後追加予定）
+- 機能別の仕様書・TODO
+
+### テスト (`testing/`)
+
+- テスト計画や手順
+
+### 作業ログ (`work-logs/`)
+
+- 日付ごとの作業記録
 
 ## 参照方法
 
-各ドキュメントは、プロジェクトの異なる側面を説明しています：
-
-1. **新規開発者向け**: `project/CLAUDE.md`から始めて、プロジェクトの全体像を把握
-2. **移行作業の確認**: `migration/`ディレクトリ内のドキュメントを参照
-3. **Nuxt3版の詳細**: `nuxt/`ディレクトリ内の各ドキュメントを参照
-4. **デプロイ手順**: `nuxt/README_FIREBASE_DEPLOY.md`または`nuxt/README_SUPABASE_DEPLOY.md`を参照
+1. **新規開発者向け**: `project/CLAUDE.md`
+2. **Firebase/運用**: `operations/`
+3. **仕様・タスク確認**: `specs/` / `tasks/`
+4. **作業履歴の確認**: `work-logs/`
 
 ## 更新履歴
 
-- 2025-07-04: ドキュメントを`docs`ディレクトリに整理
+- 2026-01-27: ドキュメント構成を再整理（運用・障害・レポートを追加）
 - 2025-07-15: お知らせ機能の仕様書（`specs/NEWS_SYSTEM.md`）を追加
+- 2025-07-04: ドキュメントを`docs`ディレクトリに整理

@@ -9,8 +9,7 @@
     </div>
 
     <!-- Error state -->
-    <div
-v-else-if="error"
+    <div v-else-if="error"
       class="bg-red-100 dark:bg-red-900/20 border border-red-400 dark:border-red-700 text-red-700 dark:text-red-300 px-4 py-3 rounded"
       role="alert">
       {{ $t(error) }}
@@ -19,14 +18,11 @@ v-else-if="error"
     <!-- Fare tables -->
     <div v-else>
       <!-- Tab navigation -->
-      <div
-ref="tabBarRef"
+      <div ref="tabBarRef"
         class="sticky top-0 z-20 mb-6 border-b border-gray-200 dark:border-gray-700 dark:bg-gray-900/90 backdrop-blur">
-        <nav
-class="-mb-px flex space-x-1 overflow-x-auto scrollbar-hide" aria-label="Tabs" role="tablist"
+        <nav class="-mb-px flex space-x-1 overflow-x-auto scrollbar-hide" aria-label="Tabs" role="tablist"
           style="scrollbar-width: none; -ms-overflow-style: none;">
-          <button
-v-for="tab in tabs" :id="`fare-tab-${tab.id}`" :key="tab.id" type="button" role="tab"
+          <button v-for="tab in tabs" :id="`fare-tab-${tab.id}`" :key="tab.id" type="button" role="tab"
             :aria-controls="`fare-tabpanel-${tab.id}`" :aria-selected="activeTab === tab.id"
             :tabindex="activeTab === tab.id ? 0 : -1" :class="[
               'flex-shrink-0 select-none whitespace-nowrap rounded-t-lg px-4 py-2 text-sm font-medium transition-colors',
@@ -45,8 +41,7 @@ v-for="tab in tabs" :id="`fare-tab-${tab.id}`" :key="tab.id" type="button" role=
       </p>
 
       <!-- Oki Kisen Ferry -->
-      <div
-v-show="activeTab === 'okiKisen'" id="fare-tabpanel-okiKisen" role="tabpanel" tabindex="0"
+      <div v-show="activeTab === 'okiKisen'" id="fare-tabpanel-okiKisen" role="tabpanel" tabindex="0"
         aria-labelledby="fare-tab-okiKisen" class="mb-4">
         <div class="mb-4">
           <div class="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
@@ -63,8 +58,7 @@ v-show="activeTab === 'okiKisen'" id="fare-tabpanel-okiKisen" role="tabpanel" ta
         <div class="mb-8">
           <div class="flex flex-col gap-3 md:items-center md:justify-between">
             <nav class="flex flex-wrap gap-2" aria-label="Passenger categories" role="tablist">
-              <button
-v-for="category in passengerCategories" :key="category.id" :class="[
+              <button v-for="category in passengerCategories" :key="category.id" :class="[
                 okiKisenPassengerActiveCategory === category.id
                   ? 'bg-app-primary text-white border border-app-primary'
                   : 'bg-white text-gray-700 dark:bg-gray-800 dark:text-gray-200 border border-gray-300 dark:border-gray-600',
@@ -75,8 +69,7 @@ v-for="category in passengerCategories" :key="category.id" :class="[
               </button>
             </nav>
             <nav class="flex flex-wrap gap-2 md:hidden" aria-label="Seat classes" role="tablist">
-              <button
-v-for="seatClass in seatClasses" :key="`seat-class-tab-${seatClass.key}`" :class="[
+              <button v-for="seatClass in seatClasses" :key="`seat-class-tab-${seatClass.key}`" :class="[
                 okiKisenActiveSeatClass === seatClass.key
                   ? 'bg-app-primary text-white border border-app-primary'
                   : 'bg-white text-gray-700 dark:bg-gray-800 dark:text-gray-200 border border-gray-300 dark:border-gray-600',
@@ -108,8 +101,7 @@ v-for="seatClass in seatClasses" :key="`seat-class-tab-${seatClass.key}`" :class
                 </tr>
               </thead>
               <tbody>
-                <tr
-v-for="group in okiKisenRouteGroups" :key="`mobile-seat-class-${group.id}`"
+                <tr v-for="group in okiKisenRouteGroups" :key="`mobile-seat-class-${group.id}`"
                   class="hover:bg-gray-50 dark:hover:bg-gray-700/50">
                   <td class="border border-gray-300 dark:border-gray-600 px-4 py-3 font-medium dark:text-gray-100">
                     {{ translateLabel(group.labelKey) }}
@@ -134,29 +126,24 @@ v-for="group in okiKisenRouteGroups" :key="`mobile-seat-class-${group.id}`"
           <table class="w-full text-sm border-collapse">
             <thead>
               <tr class="bg-gray-100 dark:bg-gray-800">
-                <th
-scope="col"
+                <th scope="col"
                   class="border border-gray-300 dark:border-gray-600 px-4 py-3 text-left dark:text-gray-100">
                   {{ $t('ROUTE') }}
                 </th>
-                <th
-v-for="seatClass in seatClasses" :key="`seat-class-header-${seatClass.key}`" scope="col"
+                <th v-for="seatClass in seatClasses" :key="`seat-class-header-${seatClass.key}`" scope="col"
                   class="border border-gray-300 dark:border-gray-600 px-4 py-3 text-center dark:text-gray-100">
                   {{ $t(seatClass.nameKey) }}
                 </th>
               </tr>
             </thead>
             <tbody>
-              <tr
-v-for="group in okiKisenRouteGroups" :key="`seat-class-row-${group.id}`"
+              <tr v-for="group in okiKisenRouteGroups" :key="`seat-class-row-${group.id}`"
                 class="hover:bg-gray-50 dark:hover:bg-gray-700/50">
-                <th
-scope="row"
+                <th scope="row"
                   class="border border-gray-300 dark:border-gray-600 px-4 py-3 text-left font-medium dark:text-gray-100">
                   {{ translateLabel(group.labelKey) }}
                 </th>
-                <td
-v-for="seatClass in seatClasses" :key="`seat-class-cell-${group.id}-${seatClass.key}`"
+                <td v-for="seatClass in seatClasses" :key="`seat-class-cell-${group.id}-${seatClass.key}`"
                   class="border border-gray-300 dark:border-gray-600 px-4 py-3 text-center font-mono dark:text-gray-100">
                   {{ getSeatClassFareForCategory(group.id, seatClass.key, okiKisenPassengerActiveCategory) }}
                 </td>
@@ -204,8 +191,7 @@ v-for="seatClass in seatClasses" :key="`seat-class-cell-${group.id}-${seatClass.
         </div>
         <div class="md:hidden mb-8">
           <nav class="flex flex-wrap gap-2 mb-3" aria-label="Vehicle routes" role="tablist">
-            <button
-v-for="group in okiKisenRouteGroups" :key="`vehicle-route-tab-${group.id}`" :class="[
+            <button v-for="group in okiKisenRouteGroups" :key="`vehicle-route-tab-${group.id}`" :class="[
               okiKisenVehicleActiveRoute === group.id
                 ? 'bg-app-primary text-white border border-app-primary'
                 : 'bg-white text-gray-700 dark:bg-gray-800 dark:text-gray-200 border border-gray-300 dark:border-gray-600',
@@ -228,8 +214,7 @@ v-for="group in okiKisenRouteGroups" :key="`vehicle-route-tab-${group.id}`" :cla
                 </tr>
               </thead>
               <tbody>
-                <tr
-v-for="size in vehicleSizeList" :key="`vehicle-mobile-${size.key}`"
+                <tr v-for="size in vehicleSizeList" :key="`vehicle-mobile-${size.key}`"
                   class="hover:bg-gray-50 dark:hover:bg-gray-700/50">
                   <td
                     class="border border-gray-300 dark:border-gray-600 px-4 py-3 font-normal dark:text-gray-100 whitespace-pre-line">
@@ -310,19 +295,17 @@ v-for="size in vehicleSizeList" :key="`vehicle-mobile-${size.key}`"
 
           <!-- Mobile accordion header -->
           <button
-class="md:hidden w-full p-4 bg-gray-50 dark:bg-gray-800/50 text-left flex items-center justify-between hover:bg-gray-100 dark:hover:bg-gray-700/50 transition-colors"
+            class="md:hidden w-full p-4 bg-gray-50 dark:bg-gray-800/50 text-left flex items-center justify-between hover:bg-gray-100 dark:hover:bg-gray-700/50 transition-colors"
             @click="toggleVehicleNotes">
             <h5 class="font-semibold text-gray-900 dark:text-gray-100">{{ $t('VEHICLE_OPERATION_NOTES_TITLE') }}</h5>
-            <svg
-class="w-5 h-5 text-gray-500 dark:text-gray-400 transition-transform duration-200"
+            <svg class="w-5 h-5 text-gray-500 dark:text-gray-400 transition-transform duration-200"
               :class="{ 'rotate-180': showVehicleNotes }" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path>
             </svg>
           </button>
 
           <!-- Content - Desktop always visible, Mobile collapsible -->
-          <div
-class="p-4 bg-gray-50 dark:bg-gray-800/50 border-t border-gray-200 dark:border-gray-700"
+          <div class="p-4 bg-gray-50 dark:bg-gray-800/50 border-t border-gray-200 dark:border-gray-700"
             :class="{ 'hidden md:block': !showVehicleNotes, 'block': showVehicleNotes }">
             <div class="text-sm text-gray-700 dark:text-gray-300 space-y-2">
               <ul class="list-disc list-inside space-y-2">
@@ -341,13 +324,11 @@ class="p-4 bg-gray-50 dark:bg-gray-800/50 border-t border-gray-200 dark:border-g
           </div>
         </div>
         <div class="mt-4 text-center">
-          <a
-href="https://www.oki-kisen.co.jp/fare/" target="_blank" rel="noopener noreferrer"
+          <a href="https://www.oki-kisen.co.jp/fare/" target="_blank" rel="noopener noreferrer"
             class="inline-flex items-center px-4 py-2 bg-app-primary hover:bg-app-primary-2 text-white text-sm font-medium rounded-lg transition-colors duration-200">
             {{ $t('FARE_DETAILS') }}
             <svg class="ml-2 w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path
-stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                 d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14"></path>
             </svg>
           </a>
@@ -355,8 +336,7 @@ stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
       </div>
 
       <!-- Naiko Sen (Ferry Dozen / Isokaze) -->
-      <div
-v-show="activeTab === 'naikoSen'" id="fare-tabpanel-naikoSen" role="tabpanel" tabindex="0"
+      <div v-show="activeTab === 'naikoSen'" id="fare-tabpanel-naikoSen" role="tabpanel" tabindex="0"
         aria-labelledby="fare-tab-naikoSen" class="mb-4">
         <div class="mb-4">
           <div class="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
@@ -373,8 +353,7 @@ v-show="activeTab === 'naikoSen'" id="fare-tabpanel-naikoSen" role="tabpanel" ta
           {{ $t('PASSENGER_FARE') }}</h4>
         <div class="md:hidden">
           <div class="flex flex-wrap gap-2 mb-3">
-            <button
-v-for="category in passengerCategories" :key="category.id" :class="[
+            <button v-for="category in passengerCategories" :key="category.id" :class="[
               naikoSenPassengerActiveCategory === category.id
                 ? 'bg-app-primary text-white border border-app-primary'
                 : 'bg-white text-gray-700 dark:bg-gray-800 dark:text-gray-200 border border-gray-300 dark:border-gray-600',
@@ -515,13 +494,11 @@ v-for="category in passengerCategories" :key="category.id" :class="[
           <p>{{ $t('VEHICLE_LENGTH_NOTE') }}</p>
         </div>
         <div class="mt-4 text-center">
-          <a
-href="https://www.okikankou.com/fee_detail/" target="_blank" rel="noopener noreferrer"
+          <a href="https://www.okikankou.com/fee_detail/" target="_blank" rel="noopener noreferrer"
             class="inline-flex items-center px-4 py-2 bg-app-primary hover:bg-app-primary-2 text-white text-sm font-medium rounded-lg transition-colors duration-200">
             {{ $t('INNER_ISLAND_FARE_DETAILS') }}
             <svg class="ml-2 w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path
-stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                 d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14"></path>
             </svg>
           </a>
@@ -529,8 +506,7 @@ stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
       </div>
 
       <!-- Rainbow Jet -->
-      <div
-v-show="activeTab === 'rainbowJet'" id="fare-tabpanel-rainbowJet" role="tabpanel" tabindex="0"
+      <div v-show="activeTab === 'rainbowJet'" id="fare-tabpanel-rainbowJet" role="tabpanel" tabindex="0"
         aria-labelledby="fare-tab-rainbowJet" class="mb-4">
         <div class="mb-4">
           <div class="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
@@ -547,8 +523,7 @@ v-show="activeTab === 'rainbowJet'" id="fare-tabpanel-rainbowJet" role="tabpanel
           {{ $t('PASSENGER_FARE') }}</h4>
         <div class="md:hidden">
           <div class="flex flex-wrap gap-2 mb-3">
-            <button
-v-for="category in passengerCategories" :key="category.id" :class="[
+            <button v-for="category in passengerCategories" :key="category.id" :class="[
               rainbowJetPassengerActiveCategory === category.id
                 ? 'bg-app-primary text-white border border-app-primary'
                 : 'bg-white text-gray-700 dark:bg-gray-800 dark:text-gray-200 border border-gray-300 dark:border-gray-600',
@@ -572,8 +547,7 @@ v-for="category in passengerCategories" :key="category.id" :class="[
                 </tr>
               </thead>
               <tbody>
-                <tr
-v-for="group in rainbowJetRouteGroups" :key="group.id"
+                <tr v-for="group in rainbowJetRouteGroups" :key="group.id"
                   class="hover:bg-gray-50 dark:hover:bg-gray-700/50">
                   <td class="border border-gray-300 dark:border-gray-600 px-4 py-3 dark:text-gray-100">
                     {{ translateLabel(group.labelKey) }}
@@ -594,22 +568,19 @@ v-for="group in rainbowJetRouteGroups" :key="group.id"
               <tr class="bg-gray-100 dark:bg-gray-800">
                 <th class="border border-gray-300 dark:border-gray-600 px-4 py-3 text-left dark:text-gray-100">{{
                   $t('ROUTE') }}</th>
-                <th
-v-for="category in passengerCategories" :key="`rainbow-jet-header-${category.id}`"
+                <th v-for="category in passengerCategories" :key="`rainbow-jet-header-${category.id}`"
                   class="border border-gray-300 dark:border-gray-600 px-4 py-3 text-center dark:text-gray-100">
                   {{ translateLabel(category.labelKey, category.fallback) }}
                 </th>
               </tr>
             </thead>
             <tbody>
-              <tr
-v-for="group in rainbowJetRouteGroups" :key="`rainbow-jet-row-${group.id}`"
+              <tr v-for="group in rainbowJetRouteGroups" :key="`rainbow-jet-row-${group.id}`"
                 class="hover:bg-gray-50 dark:hover:bg-gray-700/50">
                 <td class="border border-gray-300 dark:border-gray-600 px-4 py-3 dark:text-gray-100">
                   {{ translateLabel(group.labelKey) }}
                 </td>
-                <td
-v-for="category in passengerCategories" :key="`rainbow-jet-cell-${group.id}-${category.id}`"
+                <td v-for="category in passengerCategories" :key="`rainbow-jet-cell-${group.id}-${category.id}`"
                   class="border border-gray-300 dark:border-gray-600 px-4 py-3 text-right font-mono dark:text-gray-100">
                   {{ getRainbowJetPassengerFare(group.id, category.id) }}
                 </td>
@@ -670,13 +641,11 @@ v-for="category in passengerCategories" :key="`rainbow-jet-cell-${group.id}-${ca
           </div>
         </div>
         <div class="mt-4 text-center">
-          <a
-href="https://www.oki-kisen.co.jp/fare/" target="_blank" rel="noopener noreferrer"
+          <a href="https://www.oki-kisen.co.jp/fare/" target="_blank" rel="noopener noreferrer"
             class="inline-flex items-center px-4 py-2 bg-app-primary hover:bg-app-primary-2 text-white text-sm font-medium rounded-lg transition-colors duration-200">
             {{ $t('FARE_DETAILS') }}
             <svg class="ml-2 w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path
-stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                 d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14"></path>
             </svg>
           </a>
@@ -688,6 +657,7 @@ stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
 </template>
 
 <script setup lang="ts">
+import { watch, nextTick } from 'vue'
 import type { FareVersion } from '@/types/fare'
 import { roundUpToTen } from '@/utils/currency'
 import { mapHighspeedToCanonicalRoute, normalizeRouteId } from '@/utils/fareRoutes'
