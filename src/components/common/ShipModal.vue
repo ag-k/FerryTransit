@@ -1,22 +1,16 @@
 <template>
   <Teleport to="body">
-    <!-- Modal Overlay -->
-    <Transition name="modal-fade">
+    <Transition name="modal">
       <div 
         v-if="visible" 
-        class="fixed inset-0 bg-black bg-opacity-50 z-40"
-        @click="handleClose"
-      ></div>
-    </Transition>
-    
-    <!-- Modal Content -->
-    <Transition name="modal-slide">
-      <div 
-        v-if="visible" 
-        class="fixed inset-0 z-50 flex items-end sm:items-center justify-center sm:p-4 overflow-y-auto"
+        class="fixed inset-0 z-40 flex items-end sm:items-center justify-center sm:p-4 overflow-y-auto"
         @click.self="handleClose"
       >
-        <div class="bg-app-surface text-app-fg border border-app-border/70 rounded-t-2xl sm:rounded-lg shadow-xl w-full max-h-[90vh] sm:max-h-[90vh] sm:h-auto h-full" 
+        <!-- Modal Overlay -->
+        <div class="absolute inset-0 bg-black bg-opacity-50" @click="handleClose"></div>
+        
+        <!-- Modal Content -->
+        <div class="relative z-50 bg-app-surface text-app-fg border border-app-border/70 rounded-t-2xl sm:rounded-lg shadow-xl w-full max-h-[90vh] sm:max-h-[90vh] sm:h-auto h-full" 
              :class="type === 'port' ? 'max-w-5xl' : 'max-w-4xl'" 
              @click.stop>
           <!-- Header -->
@@ -461,12 +455,17 @@ onMounted(() => {
   })
 })
 
-// Prevent body scroll when modal is open
+// Prevent body scroll when modal is open and reset state
 watch(() => props.visible, (newValue) => {
   if (newValue) {
     document.body.style.overflow = 'hidden'
   } else {
     document.body.style.overflow = ''
+    // Reset internal state when modal closes
+    selectedBoardingKey.value = ''
+    if (props.portId === 'HONDO') {
+      selectedHondoPort.value = 'HONDO_SHICHIRUI'
+    }
   }
 })
 
@@ -502,27 +501,30 @@ onUnmounted(() => {
 }
 
 /* Transitions */
-.modal-fade-enter-active,
-.modal-fade-leave-active {
+.modal-enter-active,
+.modal-leave-active {
   transition: opacity 0.3s ease;
 }
 
-.modal-fade-enter-from,
-.modal-fade-leave-to {
-  opacity: 0;
-}
-
-.modal-slide-enter-active,
-.modal-slide-leave-active {
+.modal-enter-active > .relative,
+.modal-leave-active > .relative {
   transition: opacity 0.3s ease, transform 0.3s ease;
 }
 
-.modal-slide-enter-from {
+.modal-enter-from {
+  opacity: 0;
+}
+
+.modal-leave-to {
+  opacity: 0;
+}
+
+.modal-enter-from > .relative {
   opacity: 0;
   transform: scale(0.95);
 }
 
-.modal-slide-leave-to {
+.modal-leave-to > .relative {
   opacity: 0;
   transform: scale(0.95);
 }
