@@ -42,7 +42,7 @@
           
           <!-- Body -->
           <div class="p-4 sm:p-6 max-h-[calc(90vh-8rem)] sm:max-h-[calc(90vh-8rem)] overflow-y-auto">
-            <!-- Ship image -->
+            <!-- Ship image + details -->
             <div v-if="type === 'ship' && shipId" class="text-center mb-4">
               <img 
                 :src="`/images/${shipId}.jpg`"
@@ -50,6 +50,41 @@
                 class="max-w-full h-auto max-h-72 sm:max-h-96 rounded-lg shadow-lg mx-auto"
                 @error="handleImageError"
               >
+              <div v-if="shipDetails" class="mt-4 text-left">
+                <dl class="grid gap-3 sm:grid-cols-2">
+                  <div class="rounded-lg border border-app-border/70 bg-app-surface-2/60 px-3 py-2">
+                    <dt class="text-xs font-semibold text-app-muted">{{ t('ship.modal.operator') }}</dt>
+                    <dd class="mt-1 text-sm font-medium text-app-fg">
+                      <a
+                        v-if="operatorInfo?.url"
+                        class="inline-flex items-center gap-1 text-app-primary-2 hover:underline"
+                        :href="operatorInfo.url"
+                        target="_blank"
+                        rel="noopener noreferrer"
+                      >
+                        {{ t(operatorInfo.nameKey) }}
+                        <Icon name="heroicons:arrow-top-right-on-square" class="w-3.5 h-3.5" />
+                      </a>
+                      <span v-else>{{ t(operatorInfo?.nameKey || shipDetails.operatorKey) }}</span>
+                    </dd>
+                  </div>
+                  <div class="rounded-lg border border-app-border/70 bg-app-surface-2/60 px-3 py-2">
+                    <dt class="text-xs font-semibold text-app-muted">{{ t('ship.modal.capacity') }}</dt>
+                    <dd class="mt-1 text-sm font-medium text-app-fg">{{ shipCapacityLabel }}</dd>
+                  </div>
+                  <div class="rounded-lg border border-app-border/70 bg-app-surface-2/60 px-3 py-2">
+                    <dt class="text-xs font-semibold text-app-muted">{{ t('ship.modal.carCarry') }}</dt>
+                    <dd class="mt-1 text-sm font-medium text-app-fg">{{ shipCarCarryLabel }}</dd>
+                  </div>
+                  <div
+                    v-if="shipCabinLabel"
+                    class="rounded-lg border border-app-border/70 bg-app-surface-2/60 px-3 py-2"
+                  >
+                    <dt class="text-xs font-semibold text-app-muted">{{ t('ship.modal.cabin') }}</dt>
+                    <dd class="mt-1 text-sm font-medium text-app-fg">{{ shipCabinLabel }}</dd>
+                  </div>
+                </dl>
+              </div>
             </div>
             
             <!-- Port map -->
@@ -170,6 +205,7 @@
 import PortAreaLeafletMap from '@/components/map/PortAreaLeafletMap.client.vue'
 import PortBadges from '@/components/common/PortBadges.vue'
 import { PORTS_DATA } from '~/data/ports'
+import { SHIP_DETAILS } from '~/data/ships'
 
 interface Props {
   visible: boolean
@@ -249,6 +285,61 @@ const headerTitle = computed(() => {
   }
   // No parentheses → just ensure "港" suffix if missing
   return raw.endsWith('港') ? raw : `${raw}港`
+})
+
+const shipDetails = computed(() => {
+  if (!props.shipId) return null
+  return (SHIP_DETAILS as any)?.[props.shipId] ?? null
+})
+
+const operatorInfo = computed(() => {
+  if (!shipDetails.value) return null
+  const operatorKey = shipDetails.value.operatorKey
+  const infoMap: Record<string, { nameKey: string; url: string }> = {
+    OKI_KISEN: {
+      nameKey: 'OKI_KISEN_CORP',
+      url: 'https://www.oki-kisen.co.jp/'
+    },
+    OKI_DOUZEN: {
+      nameKey: 'OKI_DOUZEN',
+      url: 'https://www.okikankou.com/'
+    }
+  }
+  return infoMap[operatorKey] ?? { nameKey: operatorKey, url: '' }
+})
+
+const shipCapacityLabel = computed(() => {
+  if (!shipDetails.value) return t('UNKNOWN')
+  const passengers = shipDetails.value.capacityPassengers
+  if (!passengers && passengers !== 0) return t('ship.modal.capacityUnknown')
+  return `${passengers}${t('ship.modal.capacityPeople')}`
+})
+
+const shipCarCarryLabel = computed(() => {
+  if (!shipDetails.value) return t('UNKNOWN')
+  const isJa = currentLocale.value.startsWith('ja')
+  const openParen = isJa ? '（' : ' ('
+  const closeParen = isJa ? '）' : ')'
+  if (shipDetails.value.carCarry === false) return t('ship.modal.carCarryNo')
+  if (shipDetails.value.carCarry === true) {
+    if (shipDetails.value.capacityCars !== undefined && shipDetails.value.capacityCars !== null) {
+      return `${t('ship.modal.carCarryYes')}${openParen}${shipDetails.value.capacityCars}${t('ship.modal.capacityCars')}${closeParen}`
+    }
+    return t('ship.modal.carCarryYes')
+  }
+  if (shipDetails.value.capacityCars === 0) return t('ship.modal.carCarryNo')
+  if (shipDetails.value.capacityCars && shipDetails.value.capacityCars > 0) {
+    return `${t('ship.modal.carCarryYes')}${openParen}${shipDetails.value.capacityCars}${t('ship.modal.capacityCars')}${closeParen}`
+  }
+  return t('ship.modal.carCarryUnknown')
+})
+
+const shipCabinLabel = computed(() => {
+  if (!shipDetails.value) return ''
+  if (Array.isArray(shipDetails.value.cabinTypes) && shipDetails.value.cabinTypes.length > 0) {
+    return shipDetails.value.cabinTypes.join(' / ')
+  }
+  return ''
 })
 
 const getBadgeList = (label: string) => {
