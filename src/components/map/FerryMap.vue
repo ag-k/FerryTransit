@@ -552,11 +552,15 @@ const ensureLabelOverlayCtor = (): any | null => {
     text: string
     div: HTMLDivElement | null
     badgeClass: string
-    constructor(position: any, text: string, badgeClass: string) {
+    portId: string
+    onClick: ((portId: string) => void) | null
+    constructor(position: any, text: string, badgeClass: string, portId: string, onClick?: (portId: string) => void) {
       super()
       this.position = position
       this.text = text
       this.badgeClass = badgeClass
+      this.portId = portId
+      this.onClick = onClick || null
       this.div = null
     }
     onAdd() {
@@ -564,9 +568,13 @@ const ensureLabelOverlayCtor = (): any | null => {
       div.style.position = 'absolute'
       div.style.whiteSpace = 'nowrap'
       div.style.boxShadow = '0 1px 2px rgba(0,0,0,0.06)'
-      div.style.pointerEvents = 'none'
+      div.style.pointerEvents = 'auto'
+      div.style.cursor = 'pointer'
       div.className = `inline-flex items-center rounded-full px-2 py-0.5 text-[11px] font-semibold whitespace-nowrap ring-1 ring-inset ${this.badgeClass}`
       div.textContent = this.text
+      div.addEventListener('click', () => {
+        if (this.onClick) this.onClick(this.portId)
+      })
       this.div = div
       const panes = (this as any).getPanes()
       panes?.overlayLayer.appendChild(div)
@@ -632,7 +640,15 @@ const showOrUpdateLabel = (portId: string) => {
   }
   const Ctor = ensureLabelOverlayCtor()
   if (!Ctor) return
-  const overlay = new Ctor(pos, text, badgeClass)
+  const handleLabelClick = (clickedPortId: string) => {
+    if (props.showPortDetails) {
+      modalPortId.value = clickedPortId
+      showPortModal.value = true
+    }
+    const port = PORTS_DATA[clickedPortId]
+    if (port) emit('portClick', port)
+  }
+  const overlay = new Ctor(pos, text, badgeClass, portId, handleLabelClick)
   overlay.setMap(map.value)
   labelOverlays.value.set(portId, overlay)
 }
