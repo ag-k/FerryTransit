@@ -578,6 +578,21 @@
       "pinMissing": "（ピン位置未登録）"
     }
   },
+  "ship": {
+    "modal": {
+      "operator": "運航会社",
+      "capacity": "定員",
+      "capacityPeople": "名",
+      "capacityCars": "台",
+      "capacityUnknown": "不明",
+      "carCarry": "車載可否",
+      "carCarryYes": "可",
+      "carCarryNo": "不可",
+      "carCarryUnknown": "不明",
+      "cabin": "船室タイプ",
+      "cabinUnknown": "不明"
+    }
+  },
   "admin": {
     "title": "管理画面",
     "dashboard": "ダッシュボード",

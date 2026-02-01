@@ -43,6 +43,8 @@ body {
   --app-border: 215 28% 17%;    // slate-800
   --app-fg: 210 40% 98%;        // slate-50
   --app-muted: 215 20% 65%;     // slate-300/400
+  --app-primary: 217 92% 70%;   // brighter for link contrast
+  --app-primary-2: 214 100% 78%; // brighter hover/secondary
 
   // Navigation gradient (dark) - keep nav toned down in dark mode
   --app-nav-from: var(--app-bg);
