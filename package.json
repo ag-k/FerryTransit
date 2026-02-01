@@ -6,6 +6,7 @@
   "scripts": {
     "build": "nuxt build",
     "dev": "npm run dev:setup && cp .env.local .env && nuxt dev",
+    "opencode": "bash scripts/start-opencode.sh",
     "dev:setup": "node scripts/dev-setup.mjs",
     "dev:full": "concurrently -k --kill-others-on-fail --kill-signal SIGINT --names \"emulators,nuxt\" \"npm run firebase:emulators:with-data\" \"npm run dev\"",
     "generate": "nuxt generate",
@@ -47,8 +48,7 @@
     "build-dev:build": "NODE_ENV=development nuxt build",
     "deploy-prod": "run-s build-prod deploy",
     "deploy-dev": "run-s build-dev deploy",
-    "build-app-dev": "cp .env.development .env && CAPACITOR_BUILD=true npm run generate && npx cap copy",
-    "build-app-prod": "cp .env.production .env && CAPACITOR_BUILD=true npm run generate && npx cap copy"
+    "build-app-dev": "cp .env.development .env && CAPACITOR_BUILD=true npm run generate && npx cap copy"
   },
   "dependencies": {
     "@capacitor/android": "^7.4.2",
