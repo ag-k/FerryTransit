@@ -7,7 +7,7 @@
       <button v-for="locale in locales" :key="locale.code" @click="switchLocale(locale.code)"
         class="w-full text-left px-4 py-3 rounded-lg border transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-app-primary-2 focus:ring-offset-2 focus:ring-offset-app-bg" :class="[
           currentLocale === locale.code
-            ? 'bg-app-surface-2 border-app-primary-2 text-app-primary'
+            ? 'bg-app-surface-2 border-app-primary-2 text-app-primary dark:text-white'
             : 'bg-app-surface border-app-border hover:bg-app-surface-2 text-app-fg'
         ]">
         <div class="flex items-center justify-between">

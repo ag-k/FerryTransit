@@ -28,7 +28,7 @@
               'flex-shrink-0 select-none whitespace-nowrap rounded-t-lg px-4 py-2 text-sm font-medium transition-colors',
               'focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 focus-visible:ring-offset-2 dark:focus-visible:ring-offset-gray-900',
               activeTab === tab.id
-                ? 'bg-app-surface-2 text-app-primary border-b-2 border-app-primary-2'
+                ? 'bg-app-surface-2 text-app-primary dark:text-white border-b-2 border-app-primary-2'
                 : 'text-app-muted hover:text-app-fg hover:bg-app-surface-2/60'
             ]" @click="activeTab = tab.id">
             {{ $t(tab.nameKey) }}
@@ -1142,7 +1142,7 @@ useHead({
 
 <style scoped>
 :deep(td) {
-  background-color: #fff;
+  background-color: hsl(var(--app-surface));
 }
 
 :deep(th) {

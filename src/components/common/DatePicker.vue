@@ -62,7 +62,7 @@ const containerClass = computed(() => {
 })
 
 const inputClass = computed(() => {
-  const base = 'flex-1 px-3 border border-app-border rounded-l-md bg-app-surface text-app-fg focus:outline-none focus:ring-2 focus:ring-app-primary-2 focus:border-app-primary-2 disabled:bg-app-surface-2 disabled:text-app-muted disabled:cursor-not-allowed touch-manipulation'
+  const base = 'flex-1 px-3 border border-app-border rounded-l-md bg-app-surface text-app-fg focus:outline-none focus:ring-2 focus:ring-app-primary-2 focus:border-app-primary-2 disabled:bg-app-surface-2 disabled:text-app-muted disabled:cursor-not-allowed touch-manipulation dark:[color-scheme:dark]'
   if (props.size === 'compact') {
     return `${base} py-2 text-base`
   }

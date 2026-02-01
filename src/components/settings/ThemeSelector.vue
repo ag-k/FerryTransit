@@ -10,8 +10,8 @@
         @click="selectTheme(theme.value)"
         class="w-full text-left px-4 py-3 rounded-lg border transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-app-primary-2 focus:ring-offset-2 focus:ring-offset-app-bg"
         :class="[
-          uiStore?.theme === theme.value 
-            ? 'bg-app-surface-2 border-app-primary-2 text-app-primary' 
+          uiStore?.theme === theme.value
+            ? 'bg-app-surface-2 border-app-primary-2 text-app-primary dark:text-white'
             : 'bg-app-surface border-app-border hover:bg-app-surface-2 text-app-fg'
         ]"
       >

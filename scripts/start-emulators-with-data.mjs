@@ -73,6 +73,51 @@ function getPidsListeningOnTcpPort(port) {
   }
 }
 
+function getProcessCommand(pid) {
+  try {
+    const out = execFileSync('ps', ['-p', String(pid), '-o', 'command='], {
+      encoding: 'utf8',
+      stdio: ['ignore', 'pipe', 'ignore']
+    })
+    return out.trim()
+  } catch {
+    return ''
+  }
+}
+
+function getProcessCwd(pid) {
+  try {
+    const out = execFileSync('lsof', ['-a', '-p', String(pid), '-d', 'cwd', '-Fn'], {
+      encoding: 'utf8',
+      stdio: ['ignore', 'pipe', 'ignore']
+    })
+    const line = out
+      .split('\n')
+      .find((entry) => entry.startsWith('n'))
+    return line ? line.slice(1) : ''
+  } catch {
+    return ''
+  }
+}
+
+function isSameProjectEmulatorProcess(pid, projectRootPath) {
+  const cwd = getProcessCwd(pid)
+  if (cwd && cwd !== projectRootPath) return false
+
+  const command = getProcessCommand(pid)
+  if (!command) return false
+
+  const commandLower = command.toLowerCase()
+  const looksLikeEmulator =
+    commandLower.includes('firebase') ||
+    commandLower.includes('emulator') ||
+    commandLower.includes('firestore')
+
+  const includesProjectPath = command.includes(projectRootPath)
+
+  return looksLikeEmulator && (cwd === projectRootPath || includesProjectPath)
+}
+
 function killPids(pids, signal = 'SIGTERM') {
   for (const pid of pids) {
     try {
@@ -97,17 +142,63 @@ async function cleanupFirestoreResidue(firestorePort) {
   }
 }
 
+async function cleanupExistingEmulators({ firestorePort, authPort }) {
+  const firestorePids = getPidsListeningOnTcpPort(firestorePort)
+  const authPids = getPidsListeningOnTcpPort(authPort)
+  const pids = Array.from(new Set([...firestorePids, ...authPids]))
+
+  if (pids.length === 0) return { cleaned: false, blocked: false }
+
+  const sameProjectPids = pids.filter((pid) => isSameProjectEmulatorProcess(pid, projectRoot))
+  const otherPids = pids.filter((pid) => !sameProjectPids.includes(pid))
+
+  if (sameProjectPids.length === 0 && otherPids.length > 0) {
+    return { cleaned: false, blocked: true, otherPids }
+  }
+
+  if (sameProjectPids.length > 0) {
+    console.log(`🧹 Found existing emulator process(es) from this project: ${sameProjectPids.join(', ')}`)
+    killPids(sameProjectPids, 'SIGTERM')
+    await new Promise((r) => setTimeout(r, 800))
+    const still = sameProjectPids.filter((pid) => {
+      try {
+        process.kill(pid, 0)
+        return true
+      } catch {
+        return false
+      }
+    })
+    if (still.length) {
+      killPids(still, 'SIGKILL')
+    }
+    return { cleaned: true, blocked: otherPids.length > 0, otherPids }
+  }
+
+  return { cleaned: false, blocked: otherPids.length > 0, otherPids }
+}
+
 try {
   const { firestorePort, authPort } = readEmulatorPortsFromFirebaseJson()
 
   // If the emulator suite is already running, don't try to start another one.
   // Firestore emulator does NOT auto-fallback to another port when taken and will fail hard.
-  const [firestoreOpen, authOpen] = await Promise.all([isPortOpen(firestorePort), isPortOpen(authPort)])
+  let [firestoreOpen, authOpen] = await Promise.all([isPortOpen(firestorePort), isPortOpen(authPort)])
 
-  if (firestoreOpen && authOpen) {
-    console.log(`✅ Firebase emulators already appear to be running (ports ${firestorePort}/${authPort} are open).`)
-    console.log('↪️  Skipping firebase emulators:start. If you need a clean restart, stop the running emulators and re-run this command.')
-    process.exit(0)
+  if (firestoreOpen || authOpen) {
+    const result = await cleanupExistingEmulators({ firestorePort, authPort })
+    if (result.blocked) {
+      const ports = [firestoreOpen ? firestorePort : null, authOpen ? authPort : null].filter(Boolean)
+      console.log(`❌ Port(s) already in use: ${ports.join(', ')}`)
+      console.log('↪️  These ports are held by another project or unknown process. Please stop them manually and retry.')
+      process.exit(1)
+    }
+    ;[firestoreOpen, authOpen] = await Promise.all([isPortOpen(firestorePort), isPortOpen(authPort)])
+    if (firestoreOpen || authOpen) {
+      const ports = [firestoreOpen ? firestorePort : null, authOpen ? authPort : null].filter(Boolean)
+      console.log(`❌ Port(s) still in use after cleanup attempt: ${ports.join(', ')}`)
+      console.log('↪️  Please stop them manually and retry.')
+      process.exit(1)
+    }
   }
 
   // Check if export data exists

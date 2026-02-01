@@ -87,7 +87,7 @@ stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
               <select
                 :id="sortSelectId"
                 v-model="sortOption"
-                class="w-full px-3 py-2 text-sm font-medium rounded-md border border-app-primary text-app-primary bg-white dark:bg-gray-800 transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-app-primary/60"
+                class="w-full px-3 py-2 text-sm font-medium rounded-md border border-app-primary text-app-primary bg-app-surface dark:bg-slate-700 dark:text-white dark:border-slate-500 transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-app-primary/60"
               >
                 <option v-for="option in sortOptions" :key="option.value" :value="option.value">
                   {{ $t(option.labelKey) }}
@@ -101,7 +101,7 @@ v-for="option in sortOptions" :key="option.value" type="button" role="tab"
                 class="px-3 py-2 text-sm font-medium rounded-md border transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-app-primary/60 flex items-center justify-center"
                 :class="sortOption === option.value
                   ? 'bg-app-primary text-white border-app-primary shadow-sm'
-                  : 'border-app-primary text-app-primary bg-white dark:bg-gray-800 hover:bg-app-primary/10 dark:hover:bg-app-primary/20'"
+                  : 'border-app-primary text-app-primary bg-app-surface dark:bg-slate-700 dark:text-white dark:border-slate-500 hover:bg-app-primary/10 dark:hover:bg-slate-600'"
                 @click="sortOption = option.value">
                 {{ $t(option.labelKey) }}
               </button>
@@ -192,7 +192,7 @@ stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                   <td class="py-2 pl-4 pr-4 text-left text-app-fg">{{ formatTime(route.departureTime) }}</td>
                   <td class="py-2 pl-4">
                     <a
-href="#" class="text-app-primary group inline-flex items-center gap-2 flex-wrap"
+href="#" class="text-app-primary dark:text-white group inline-flex items-center gap-2 flex-wrap"
                       @click.prevent="showPortInfo(route.segments[0].departure)">
                       <span class="group-hover:underline inline-flex items-center gap-2">
                         <LocationTypeIcon :type="resolveLocationType(route.segments[0].departureType)" />
@@ -268,14 +268,14 @@ v-else-if="segment.status === 4" type="button" data-test="resumed-status-icon"
                         <div class="flex flex-col">
                           <div class="flex items-center gap-2 flex-wrap">
                             <a
-href="#" class="text-app-primary hover:underline"
+href="#" class="text-app-primary dark:text-white hover:underline"
                               @click.prevent="showShipInfo(segment.ship)">
                               🚢 {{ $t(segment.ship) }}
                             </a>
                             <a
                               v-if="segment.ship === 'RAINBOWJET'"
                               :href="rainbowJetSeatAvailabilityUrl"
-                              class="inline-flex items-center rounded border border-app-primary text-app-primary text-xs px-2 py-0.5 whitespace-nowrap hover:bg-app-primary/10 focus:outline-none focus-visible:ring-2 focus-visible:ring-app-primary/60"
+                              class="inline-flex items-center rounded border border-app-primary dark:border-white text-app-primary dark:text-white text-xs px-2 py-0.5 whitespace-nowrap hover:bg-app-primary/10 dark:hover:bg-white/10 focus:outline-none focus-visible:ring-2 focus-visible:ring-app-primary/60 dark:focus-visible:ring-white/60"
                               target="_blank"
                               rel="noopener noreferrer"
                               :aria-label="$t('CHECK_SEAT_AVAILABILITY')"
@@ -302,7 +302,7 @@ href="#" class="text-app-primary hover:underline"
                     </td>
                     <td class="py-2 pl-4">
                       <a
-href="#" class="text-app-primary group inline-flex items-center gap-2 flex-wrap"
+href="#" class="text-app-primary dark:text-white group inline-flex items-center gap-2 flex-wrap"
                         @click.prevent="showPortInfo(segment.arrival)">
                         <span class="group-hover:underline inline-flex items-center gap-2">
                           <LocationTypeIcon :type="resolveLocationType(segment.arrivalType)" />
@@ -324,7 +324,7 @@ href="#" class="text-app-primary group inline-flex items-center gap-2 flex-wrap"
                   <td class="py-2 pl-4 pr-4 text-left text-app-fg">{{ formatTime(route.arrivalTime) }}</td>
                   <td class="py-2 pl-4">
                     <a
-href="#" class="text-app-primary group inline-flex items-center gap-2 flex-wrap"
+href="#" class="text-app-primary dark:text-white group inline-flex items-center gap-2 flex-wrap"
                       @click.prevent="showPortInfo(route.segments[route.segments.length - 1].arrival)">
                       <span class="group-hover:underline inline-flex items-center gap-2">
                         <LocationTypeIcon :type="resolveLocationType(route.segments[route.segments.length - 1].arrivalType)" />
