@@ -72,9 +72,9 @@
             <li v-for="item in menuItems" :key="item.matchPath">
               <NuxtLink
                 class="block px-4 py-3 lg:py-2 rounded-lg transition-colors text-base lg:text-sm font-bold touch-manipulation"
-                :class="isRouteActive(item.matchPath)
-                  ? 'bg-app-surface-2 text-app-primary lg:bg-white/10 lg:text-white'
-                  : 'hover:bg-app-surface-2 lg:hover:bg-white/10'"
+                 :class="isRouteActive(item.matchPath)
+                   ? 'bg-app-surface-2 text-app-primary dark:text-white lg:bg-white/10 lg:text-white'
+                   : 'hover:bg-app-surface-2 lg:hover:bg-white/10'"
                 :to="item.to"
                 :aria-label="item.label === 'SETTINGS' ? $t(item.label) : undefined"
                 :data-testid="`app-nav-item-${item.label}`"
@@ -118,7 +118,7 @@
                 type="button"
                 class="flex-1 px-3 py-2 rounded-md text-sm font-medium transition-colors touch-manipulation"
                 :class="lng.code === locale
-                  ? 'bg-app-surface text-app-primary shadow'
+                  ? 'bg-app-surface text-app-primary dark:text-white shadow'
                   : 'text-app-muted hover:bg-app-surface/60'"
                 :aria-pressed="lng.code === locale"
                 :data-testid="`app-nav-lang-${lng.code}`"

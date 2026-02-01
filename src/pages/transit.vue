@@ -297,23 +297,25 @@ href="#" class="text-app-primary dark:text-white hover:underline"
 
                   <!-- Transfer Port (if not last segment) -->
                   <tr v-if="segIndex < route.segments.length - 1" class="bg-app-surface-2/60">
-                    <td class="py-2 pl-4 pr-4 text-left text-app-fg whitespace-pre-line">
+                    <td class="py-2 pl-4 pr-4 text-left text-app-fg whitespace-pre-line align-middle">
                       {{ formatTransferPortTimes(segment.arrivalTime, route.segments[segIndex + 1].departureTime) }}
                     </td>
-                    <td class="py-2 pl-4">
-                      <a
+                    <td class="py-2 pl-4 align-middle">
+                      <div class="flex items-center flex-wrap gap-x-2">
+                        <a
 href="#" class="text-app-primary dark:text-white group inline-flex items-center gap-2 flex-wrap"
-                        @click.prevent="showPortInfo(segment.arrival)">
-                        <span class="group-hover:underline inline-flex items-center gap-2">
-                          <LocationTypeIcon :type="resolveLocationType(segment.arrivalType)" />
-                          <span>{{ getPortLabelParts(segment.arrival).name }}</span>
+                          @click.prevent="showPortInfo(segment.arrival)">
+                          <span class="group-hover:underline inline-flex items-center gap-2">
+                            <LocationTypeIcon :type="resolveLocationType(segment.arrivalType)" />
+                            <span>{{ getPortLabelParts(segment.arrival).name }}</span>
+                          </span>
+                          <PortBadges :badges="getPortLabelParts(segment.arrival).badges" class="flex flex-wrap gap-1" />
+                        </a>
+                        <span class="text-xs text-app-muted">
+                          ({{ $t('TRANSFER') }}) {{ formatTransferWaitTime(segment.arrivalTime, route.segments[segIndex +
+                            1].departureTime) }}
                         </span>
-                        <PortBadges :badges="getPortLabelParts(segment.arrival).badges" class="flex flex-wrap gap-1" />
-                      </a>
-                      <span class="text-xs text-app-muted ml-2">
-                        ({{ $t('TRANSFER') }}) {{ formatTransferWaitTime(segment.arrivalTime, route.segments[segIndex +
-                          1].departureTime) }}
-                      </span>
+                      </div>
                     </td>
                     <td class="py-2"></td>
                   </tr>

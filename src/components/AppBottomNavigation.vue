@@ -12,8 +12,8 @@
           :to="item.path"
           class="group relative flex flex-col items-center justify-center min-w-0 flex-1 touch-manipulation transition-colors duration-200 py-2"
           :class="[
-            isActive(item.path) 
-              ? 'text-app-primary' 
+            isActive(item.path)
+              ? 'text-app-primary dark:text-white'
               : 'text-app-muted hover:text-app-fg'
           ]"
           :aria-current="isActive(item.path) ? 'page' : undefined"
