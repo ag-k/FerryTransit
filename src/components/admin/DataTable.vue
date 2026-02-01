@@ -13,7 +13,7 @@
               'px-3 py-1.5 text-sm font-medium rounded transition-colors',
               viewMode === 'card'
                 ? 'bg-white dark:bg-gray-600 text-gray-900 dark:text-white shadow'
-                : 'text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white'
+                : 'text-gray-600 dark:text-gray-200 hover:text-gray-900 dark:hover:text-white'
             ]"
           >
             カード
@@ -24,7 +24,7 @@
               'px-3 py-1.5 text-sm font-medium rounded transition-colors',
               viewMode === 'table'
                 ? 'bg-white dark:bg-gray-600 text-gray-900 dark:text-white shadow'
-                : 'text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white'
+                : 'text-gray-600 dark:text-gray-200 hover:text-gray-900 dark:hover:text-white'
             ]"
           >
             テーブル

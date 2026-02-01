@@ -171,7 +171,7 @@ v-if="departure && arrival" :type="'route'" :route="{ departure, arrival }"
                   <th class="px-3 sm:px-4 py-3 text-right font-medium text-app-muted align-middle">
                     <a
 href="#"
-                      class="text-app-primary font-semibold inline-flex flex-col items-center justify-center gap-1 py-1 -my-1 px-2 -mx-2 touch-manipulation text-center min-h-[40px] w-fit ml-auto group"
+                      class="text-app-primary dark:text-white font-semibold inline-flex flex-col items-center justify-center gap-1 py-1 -my-1 px-2 -mx-2 touch-manipulation text-center min-h-[40px] w-fit ml-auto group"
                       @click.prevent="showPortInfo(departure)">
                       <span class="leading-tight group-hover:underline inline-flex items-center gap-2">
                         <LocationTypeIcon v-if="departure" :type="resolveLocationType()" />
@@ -183,7 +183,7 @@ href="#"
                   <th class="px-3 sm:px-4 py-3 text-right font-medium text-app-muted align-middle">
                     <a
 href="#"
-                      class="text-app-primary font-semibold inline-flex flex-col items-center justify-center gap-1 py-1 -my-1 px-2 -mx-2 touch-manipulation text-center min-h-[40px] w-fit ml-auto group"
+                      class="text-app-primary dark:text-white font-semibold inline-flex flex-col items-center justify-center gap-1 py-1 -my-1 px-2 -mx-2 touch-manipulation text-center min-h-[40px] w-fit ml-auto group"
                       @click.prevent="showPortInfo(arrival)">
                       <span class="leading-tight group-hover:underline inline-flex items-center gap-2">
                         <LocationTypeIcon v-if="arrival" :type="resolveLocationType()" />
@@ -262,7 +262,7 @@ xmlns="http://www.w3.org/2000/svg" width="18" height="18" fill="currentColor"
                       </button>
                       <a
 href="#"
-                        class="text-app-primary hover:underline font-medium inline-block py-1 -my-1 px-2 -mx-2 touch-manipulation"
+                        class="text-app-primary dark:text-white hover:underline font-medium inline-block py-1 -my-1 px-2 -mx-2 touch-manipulation"
                         @click.prevent="showShipInfo(trip.name)">
                         {{ $t(trip.name) }}
                       </a>

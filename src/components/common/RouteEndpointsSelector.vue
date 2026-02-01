@@ -62,7 +62,7 @@
 
       <button
         type="button"
-        class="p-3 text-base text-app-primary hover:bg-app-surface-2 transition-colors touch-manipulation"
+        class="p-3 text-base text-app-primary dark:text-white hover:bg-app-surface-2 transition-colors touch-manipulation"
         title="出発地と到着地を入れ替え"
         aria-label="Reverse route"
         :disabled="disabled"

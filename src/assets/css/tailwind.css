@@ -6,6 +6,9 @@
  */
 @import "tailwindcss";
 
+/* Use .dark class on html for dark mode (same as main.scss theme tokens) */
+@custom-variant dark (&&:where(.dark, .dark *));
+
 /* Nuxt module also defines `#tailwindcss/sources`, but `#tailwindcss` is aliased to THIS file,
  * which can cause prefix-based alias resolution to turn `#tailwindcss/sources` into
  * `.../tailwind.css/sources` (ENOTDIR). To avoid that, we declare sources explicitly.

@@ -481,8 +481,8 @@ v-model.number="discount.ratePercent" type="number" min="0" max="100" step="0.1"
                 </label>
                 <input
 :value="formatRateMultiplierValue(discount.ratePercent)" type="text" readonly
-                  class="w-full rounded-md border border-gray-300 dark:border-gray-600 dark:bg-gray-900 text-gray-500 dark:text-gray-400 focus:outline-none text-sm">
-                <p class="mt-1 text-xs text-gray-500 dark:text-gray-400">
+                  class="w-full rounded-md border border-gray-300 dark:border-gray-600 dark:bg-gray-900 text-gray-500 dark:text-gray-200 focus:outline-none text-sm">
+                <p class="mt-1 text-xs text-gray-500 dark:text-gray-300">
                   保存時にこの係数が rate / rateMultiplier として保存されます。
                 </p>
               </div>

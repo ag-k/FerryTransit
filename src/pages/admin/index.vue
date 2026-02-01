@@ -72,7 +72,7 @@
         </StatisticsChart>
         <div
           v-else
-          class="h-64 flex items-center justify-center rounded-lg bg-white dark:bg-gray-800 shadow text-sm text-gray-500 dark:text-gray-400"
+          class="h-64 flex items-center justify-center rounded-lg bg-white dark:bg-gray-800 shadow text-sm text-gray-500 dark:text-gray-200"
         >
           アクセス数のデータがありません
         </div>
@@ -91,7 +91,7 @@
         </StatisticsChart>
         <div
           v-else
-          class="h-64 flex items-center justify-center rounded-lg bg-white dark:bg-gray-800 shadow text-sm text-gray-500 dark:text-gray-400"
+          class="h-64 flex items-center justify-center rounded-lg bg-white dark:bg-gray-800 shadow text-sm text-gray-500 dark:text-gray-200"
         >
           検索回数のデータがありません
         </div>
@@ -150,7 +150,7 @@
         />
         <div
           v-else
-          class="h-64 flex items-center justify-center rounded-lg bg-white dark:bg-gray-800 shadow text-sm text-gray-500 dark:text-gray-400"
+          class="h-64 flex items-center justify-center rounded-lg bg-white dark:bg-gray-800 shadow text-sm text-gray-500 dark:text-gray-200"
         >
           お気に入りのデータがありません
         </div>

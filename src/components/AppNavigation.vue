@@ -159,7 +159,7 @@
                   :id="`lang-option-desktop-${loc.code}`"
                   class="flex items-center justify-between w-full text-left px-4 py-2.5 hover:bg-app-surface-2 transition-colors text-sm"
                   :class="loc.code === locale
-                    ? 'bg-app-surface-2 text-app-primary font-medium'
+                    ? 'bg-app-surface-2 text-app-primary dark:text-white font-medium'
                     : 'text-app-muted'"
                   role="option"
                   :aria-selected="loc.code === locale"
@@ -194,7 +194,7 @@
             <div class="flex items-center justify-between">
               <NuxtLink :to="localePath(`/news/${latestNews[0].id}`)"
                 class="group flex items-center space-x-2 flex-1 min-w-0">
-                <span class="text-xs text-gray-500 dark:text-gray-400 flex-shrink-0">
+                <span class="text-xs text-gray-500 dark:text-gray-300 flex-shrink-0">
                   {{ formatDate(latestNews[0].publishDate) }}
                 </span>
                 <h3
@@ -222,7 +222,7 @@
               <NuxtLink v-for="item in latestNews.slice(1, 4)" :key="item.id" :to="localePath(`/news/${item.id}`)"
                 class="block group">
                 <div class="flex items-center space-x-2">
-                  <span class="text-xs text-gray-500 dark:text-gray-500 flex-shrink-0">
+                  <span class="text-xs text-gray-500 dark:text-gray-300 flex-shrink-0">
                     {{ formatDate(item.publishDate) }}
                   </span>
                   <h4

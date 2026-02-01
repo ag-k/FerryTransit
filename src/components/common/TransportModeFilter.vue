@@ -11,7 +11,7 @@
         class="px-3 py-2 text-sm font-medium rounded-md border transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-app-primary/60 flex items-center justify-center"
         :class="modelValue === option
           ? 'bg-app-primary text-white border-app-primary shadow-sm'
-          : 'border-app-primary text-app-primary bg-white dark:bg-gray-800 hover:bg-app-primary/10 dark:hover:bg-app-primary/20'"
+          : 'border-app-primary text-app-primary bg-app-surface dark:bg-slate-700 dark:text-white dark:border-slate-500 hover:bg-app-primary/10 dark:hover:bg-slate-600'"
         @click="emit('update:modelValue', option)"
       >
         {{ getOptionLabel(option) }}
