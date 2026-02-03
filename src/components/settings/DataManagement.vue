@@ -187,8 +187,8 @@ const confirmClearCache = () => {
 const clearAllData = () => {
   try {
     if (offlineStore) offlineStore.clearOfflineData()
-    if (favoriteStore) favoriteStore.clearAll()
-    if (historyStore) historyStore.clearAll()
+    if (favoriteStore) favoriteStore.clearAllFavorites()
+    if (historyStore) historyStore.clearHistory()
     success('すべてのデータを削除しました')
   } catch (e) {
     logger.error('Failed to clear all data:', e)

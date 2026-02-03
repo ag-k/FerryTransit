@@ -118,7 +118,7 @@ fill-rule="evenodd"
             <p class="text-gray-600 dark:text-gray-300 text-sm mt-1">{{ $t('OKI_KISEN_DESC') }}</p>
           </a>
           <a
-href="https://oki-douzen.com/" target="_blank"
+ href="https://www.okikankou.com/" target="_blank"
             class="block p-4 bg-white dark:bg-gray-900 text-gray-800 dark:text-white rounded-lg border border-gray-200 dark:border-gray-600 hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors group">
             <div class="flex justify-between items-start">
               <h6 class="font-semibold group-hover:text-blue-700 dark:text-white dark:group-hover:text-blue-400">{{
