@@ -1,7 +1,7 @@
 <template>
   <nav
-    class="bg-gradient-to-r from-app-nav-from to-app-nav-to text-white relative border-b border-white/10 safe-area-top sticky top-0 z-50"
-    :style="{ paddingTop: `${totalTopPadding}px` }">
+    class="bg-app-primary dark:bg-app-surface text-white relative border-b border-white/10 sticky top-0 z-50"
+    :style="{ paddingTop: navPaddingTop }">
     <!-- Mobile menu overlay -->
     <transition
       enter-active-class="transition duration-200 ease-out"
@@ -63,7 +63,7 @@
             id="navbarNav"
             class="fixed lg:static inset-x-0 lg:inset-auto bg-app-surface text-app-fg lg:bg-transparent lg:text-white w-full lg:w-auto lg:flex lg:items-center pl-[max(env(safe-area-inset-left),1rem)] pr-[max(env(safe-area-inset-right),1rem)] lg:px-0 pb-4 lg:pb-0 shadow-xl lg:shadow-none z-40 lg:z-auto border-b border-app-border/70 lg:border-none overflow-y-auto overscroll-contain"
             :style="{
-              top: `${mobileMenuTop}px`,
+              top: mobileMenuTop,
               maxHeight: mobileMenuMaxHeight
             }"
             data-testid="app-navigation-mobile-panel"
@@ -251,6 +251,7 @@
 <script setup lang="ts">
 import { useNews } from '~/composables/useNews'
 import { useAndroidNavigation } from '~/composables/useAndroidNavigation'
+import { Capacitor } from '@capacitor/core'
 
 const { locale, locales, t } = useI18n()
 const route = useRoute()
@@ -266,6 +267,7 @@ const envSafeAreaTop = ref(0)
 
 // 画面サイズを判定
 const isMobile = ref(true)
+const isIOSNative = computed(() => process.client && Capacitor.isNativePlatform() && Capacitor.getPlatform() === 'ios')
 
 // 総合的な上部パディングを計算
 const totalTopPadding = computed(() => {
@@ -279,8 +281,18 @@ const totalTopPadding = computed(() => {
 })
 
 const mobileHeaderHeight = 44
-const mobileMenuTop = computed(() => mobileHeaderHeight + totalTopPadding.value)
-const mobileMenuMaxHeight = computed(() => `calc(100dvh - ${mobileMenuTop.value}px)`)
+const navPaddingTop = computed(() => {
+  if (isIOSNative.value) return 'env(safe-area-inset-top)'
+  return `${totalTopPadding.value}px`
+})
+const mobileMenuTop = computed(() => {
+  if (isIOSNative.value) return `calc(${mobileHeaderHeight}px + env(safe-area-inset-top))`
+  return `${mobileHeaderHeight + totalTopPadding.value}px`
+})
+const mobileMenuMaxHeight = computed(() => {
+  if (isIOSNative.value) return `calc(100dvh - (${mobileHeaderHeight}px + env(safe-area-inset-top)))`
+  return `calc(100dvh - ${mobileHeaderHeight + totalTopPadding.value}px)`
+})
 
 const menuItems = computed(() => {
   const items: Array<{ to: string, matchPath: string, label: string, icon: string }> = [
@@ -377,9 +389,17 @@ onMounted(() => {
 
   // iOS safe areaの値を取得
   const updateSafeArea = () => {
-    const rootStyles = getComputedStyle(document.documentElement)
-    const safeAreaTop = rootStyles.getPropertyValue('env(safe-area-inset-top)')
-    envSafeAreaTop.value = safeAreaTop ? parseInt(safeAreaTop) : 0
+    const probe = document.createElement('div')
+    probe.style.position = 'fixed'
+    probe.style.top = '0'
+    probe.style.left = '0'
+    probe.style.paddingTop = 'env(safe-area-inset-top)'
+    probe.style.visibility = 'hidden'
+    probe.style.pointerEvents = 'none'
+    document.body.appendChild(probe)
+    const safeAreaTop = parseFloat(getComputedStyle(probe).paddingTop || '0')
+    probe.remove()
+    envSafeAreaTop.value = Number.isFinite(safeAreaTop) ? Math.max(0, Math.round(safeAreaTop)) : 0
   }
 
   updateSafeArea()
