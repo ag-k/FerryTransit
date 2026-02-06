@@ -8,6 +8,20 @@ const parseBooleanEnv = (value?: string) => {
   return ["1", "true", "yes", "on"].includes(value.toLowerCase());
 };
 
+const normalizeFirebaseBucket = (bucket?: string) => {
+  if (!bucket) {
+    return "";
+  }
+
+  if (bucket.endsWith(".appspot.com")) {
+    return bucket.replace(/\.appspot\.com$/, ".firebasestorage.app");
+  }
+
+  return bucket;
+};
+
+const isProductionBuild = process.env.NODE_ENV === "production";
+
 export default defineNuxtConfig({
   srcDir: "src/",
   compatibilityDate: "2025-05-15",
@@ -109,14 +123,16 @@ export default defineNuxtConfig({
         apiKey: process.env.NUXT_PUBLIC_FIREBASE_API_KEY || "",
         authDomain: process.env.NUXT_PUBLIC_FIREBASE_AUTH_DOMAIN || "",
         projectId: process.env.NUXT_PUBLIC_FIREBASE_PROJECT_ID || "",
-        storageBucket: process.env.NUXT_PUBLIC_FIREBASE_STORAGE_BUCKET || "",
+        storageBucket: normalizeFirebaseBucket(
+          process.env.NUXT_PUBLIC_FIREBASE_STORAGE_BUCKET
+        ),
         messagingSenderId:
           process.env.NUXT_PUBLIC_FIREBASE_MESSAGING_SENDER_ID || "",
         appId: process.env.NUXT_PUBLIC_FIREBASE_APP_ID || "",
         measurementId: process.env.NUXT_PUBLIC_FIREBASE_MEASUREMENT_ID || "",
-        useEmulators: parseBooleanEnv(
-          process.env.NUXT_PUBLIC_FIREBASE_USE_EMULATORS
-        ),
+        useEmulators: isProductionBuild
+          ? false
+          : parseBooleanEnv(process.env.NUXT_PUBLIC_FIREBASE_USE_EMULATORS),
         emulatorHost:
           process.env.NUXT_PUBLIC_FIREBASE_EMULATOR_HOST || "localhost",
         ports: {
