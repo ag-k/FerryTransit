@@ -26,9 +26,8 @@ export default defineNuxtPlugin({
   const config = useRuntimeConfig()
   const logger = createLogger('FirebasePlugin')
   
-  const normalizedStorageBucket = normalizeStorageBucket(
-    config.public.firebase.storageBucket
-  )
+  const configuredStorageBucket = config.public.firebase.storageBucket
+  const normalizedStorageBucket = normalizeStorageBucket(configuredStorageBucket)
 
   const firebaseConfig = {
     apiKey: config.public.firebase.apiKey,
@@ -40,9 +39,9 @@ export default defineNuxtPlugin({
     measurementId: config.public.firebase.measurementId
   }
 
-  if (normalizedStorageBucket !== config.public.firebase.storageBucket) {
+  if (normalizedStorageBucket !== configuredStorageBucket) {
     logger.warn(
-      `storageBucket was normalized: ${config.public.firebase.storageBucket} -> ${normalizedStorageBucket}`
+      `storageBucket was normalized: ${configuredStorageBucket} -> ${normalizedStorageBucket}`
     )
   }
 

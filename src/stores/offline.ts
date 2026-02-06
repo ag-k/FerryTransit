@@ -14,19 +14,9 @@ const getStoragePublicURLCandidates = (path: string): string[] => {
   const config = useRuntimeConfig()
   const bucket = config.public.firebase.storageBucket
   const encodedPath = encodeURIComponent(`data/${path}`)
-  const urls = new Set<string>()
-  const buildUrl = (bucketName: string) =>
-    `https://firebasestorage.googleapis.com/v0/b/${bucketName}/o/${encodedPath}?alt=media`
-
-  urls.add(buildUrl(bucket))
-
-  if (bucket.endsWith('.firebasestorage.app')) {
-    urls.add(buildUrl(bucket.replace(/\.firebasestorage\.app$/, '.appspot.com')))
-  } else if (bucket.endsWith('.appspot.com')) {
-    urls.add(buildUrl(bucket.replace(/\.appspot\.com$/, '.firebasestorage.app')))
-  }
-
-  return Array.from(urls)
+  return [
+    `https://firebasestorage.googleapis.com/v0/b/${bucket}/o/${encodedPath}?alt=media`
+  ]
 }
 
 export const useOfflineStore = defineStore('offline', () => {

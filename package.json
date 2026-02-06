@@ -34,6 +34,7 @@
     "firebase:deploy:hosting": "firebase deploy --only hosting",
     "firebase:deploy:functions": "firebase deploy --only functions",
     "deploy": "npm run build && firebase deploy",
+    "deploy:only": "firebase deploy",
     "fetch:routes": "node scripts/fetch-routes.mjs",
     "fetch:routes:online": "node scripts/fetch-online-routes.mjs",
     "cap:ios": "node scripts/cap-build.mjs ios --open",
@@ -46,8 +47,8 @@
     "build-dev": "run-s build-dev:firebase build-dev:build",
     "build-dev:firebase": "firebase use dev",
     "build-dev:build": "NODE_ENV=development nuxt build",
-    "deploy-prod": "run-s build-prod deploy",
-    "deploy-dev": "run-s build-dev deploy",
+    "deploy-prod": "run-s build-prod deploy:only",
+    "deploy-dev": "run-s build-dev deploy:only",
     "build-app-dev": "cp .env.development .env && CAPACITOR_BUILD=true npm run generate && npx cap copy",
     "functions:deploy:script": "bash scripts/deploy-functions.sh"
   },
