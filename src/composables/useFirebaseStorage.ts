@@ -1,4 +1,4 @@
-import { ref as storageRef, getDownloadURL, getMetadata, getBytes } from 'firebase/storage'
+import { ref as storageRef, getDownloadURL, getMetadata } from 'firebase/storage'
 import { useFirebase } from './useFirebase'
 import { createLogger } from '~/utils/logger'
 
@@ -52,15 +52,14 @@ export const useFirebaseStorage = () => {
    */
   const getJsonFile = async <T = any>(path: string): Promise<T> => {
     try {
-      const fileRef = storageRef(storage, path)
-      const bytes = await getBytes(fileRef)
+      const url = await getFileUrl(path)
+      const response = await fetch(url, { cache: 'no-store' })
 
-      // ArrayBuffer を文字列に変換
-      const decoder = new TextDecoder('utf-8')
-      const jsonString = decoder.decode(bytes)
+      if (!response.ok) {
+        throw new Error(`Failed to fetch JSON (${response.status})`)
+      }
 
-      // JSON をパース
-      const data = JSON.parse(jsonString) as T
+      const data = await response.json() as T
       return data
     } catch (error) {
       logger.error(`Failed to get JSON file from ${path}`, error)

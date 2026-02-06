@@ -8,20 +8,42 @@ import { createLogger } from '~/utils/logger'
 
 let db: ReturnType<typeof getFirestore>
 
+const normalizeStorageBucket = (bucket: string): string => {
+  if (!bucket) {
+    return bucket
+  }
+
+  if (bucket.endsWith('.appspot.com')) {
+    return bucket.replace(/\.appspot\.com$/, '.firebasestorage.app')
+  }
+
+  return bucket
+}
+
 export default defineNuxtPlugin({
   name: 'firebase',
   setup: async () => {
   const config = useRuntimeConfig()
   const logger = createLogger('FirebasePlugin')
   
+  const normalizedStorageBucket = normalizeStorageBucket(
+    config.public.firebase.storageBucket
+  )
+
   const firebaseConfig = {
     apiKey: config.public.firebase.apiKey,
     authDomain: config.public.firebase.authDomain,
     projectId: config.public.firebase.projectId,
-    storageBucket: config.public.firebase.storageBucket,
+    storageBucket: normalizedStorageBucket,
     messagingSenderId: config.public.firebase.messagingSenderId,
     appId: config.public.firebase.appId,
     measurementId: config.public.firebase.measurementId
+  }
+
+  if (normalizedStorageBucket !== config.public.firebase.storageBucket) {
+    logger.warn(
+      `storageBucket was normalized: ${config.public.firebase.storageBucket} -> ${normalizedStorageBucket}`
+    )
   }
 
   // Initialize Firebase
