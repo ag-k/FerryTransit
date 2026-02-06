@@ -2,13 +2,16 @@
 import { onCall, HttpsError } from 'firebase-functions/v2/https'
 import { onSchedule } from 'firebase-functions/v2/scheduler'
 import * as admin from 'firebase-admin'
+import { adminServiceAccountJson } from '../secrets'
+import { ensureAdminApp } from '../utils/adminApp'
 
 /**
  * 全データのバックアップ作成（管理者のみ実行可能）
  */
 export const createBackup = onCall(
-  { region: 'asia-northeast1' },
+  { region: 'asia-northeast1', secrets: [adminServiceAccountJson] },
   async (request) => {
+  ensureAdminApp()
   // 呼び出し元の認証確認
   if (!request.auth) {
     throw new HttpsError('unauthenticated', 'Authentication required')
@@ -95,8 +98,10 @@ export const cleanupOldBackups = onSchedule(
     schedule: 'every 24 hours',
     timeZone: 'Asia/Tokyo',
     region: 'asia-northeast1',
+    secrets: [adminServiceAccountJson],
   },
   async (_event) => {
+    ensureAdminApp()
     const thirtyDaysAgo = new Date()
     thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30)
 

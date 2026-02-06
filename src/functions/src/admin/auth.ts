@@ -1,13 +1,16 @@
 /* eslint-disable no-console */
 import { onCall, HttpsError } from 'firebase-functions/v2/https'
 import * as admin from 'firebase-admin'
+import { adminServiceAccountJson } from '../secrets'
+import { ensureAdminApp } from '../utils/adminApp'
 
 /**
  * 管理者権限の設定（スーパー管理者のみ実行可能）
  */
 export const setAdminClaim = onCall(
-  { region: 'asia-northeast1' },
+  { region: 'asia-northeast1', secrets: [adminServiceAccountJson] },
   async (request) => {
+  ensureAdminApp()
   // 呼び出し元の認証確認
   if (!request.auth) {
     throw new HttpsError('unauthenticated', 'Authentication required')
@@ -62,8 +65,9 @@ export const setAdminClaim = onCall(
  * ユーザーの無効化/有効化（管理者のみ実行可能）
  */
 export const setUserDisabled = onCall(
-  { region: 'asia-northeast1' },
+  { region: 'asia-northeast1', secrets: [adminServiceAccountJson] },
   async (request) => {
+  ensureAdminApp()
   // 呼び出し元の認証確認
   if (!request.auth) {
     throw new HttpsError('unauthenticated', 'Authentication required')
@@ -114,8 +118,9 @@ export const setUserDisabled = onCall(
  * ユーザーの完全削除（スーパー管理者のみ実行可能）
  */
 export const deleteUser = onCall(
-  { region: 'asia-northeast1' },
+  { region: 'asia-northeast1', secrets: [adminServiceAccountJson] },
   async (request) => {
+  ensureAdminApp()
   // 呼び出し元の認証確認
   if (!request.auth) {
     throw new HttpsError('unauthenticated', 'Authentication required')

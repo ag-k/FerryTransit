@@ -6,6 +6,8 @@ import {
   normalizeRouteId,
   mapHighspeedPortsToCanonicalRoute
 } from '../../../utils/fareRoutes'
+import { adminServiceAccountJson } from '../secrets'
+import { ensureAdminApp } from '../utils/adminApp'
 
 type TimestampLike = string | number | Date | { toDate: () => Date } | null | undefined
 
@@ -95,8 +97,9 @@ interface VersionPayload {
  * FirestoreからStorageへデータを公開
  */
 export const publishData = onCall(
-  { region: 'asia-northeast1' },
+  { region: 'asia-northeast1', secrets: [adminServiceAccountJson] },
   async (request) => {
+  ensureAdminApp()
   // 呼び出し元の認証確認
   if (!request.auth) {
     throw new HttpsError('unauthenticated', 'Authentication required')
@@ -194,8 +197,9 @@ export const publishData = onCall(
  * データのロールバック（管理者のみ実行可能）
  */
 export const rollbackData = onCall(
-  { region: 'asia-northeast1' },
+  { region: 'asia-northeast1', secrets: [adminServiceAccountJson] },
   async (request) => {
+  ensureAdminApp()
   // 呼び出し元の認証確認
   if (!request.auth) {
     throw new HttpsError('unauthenticated', 'Authentication required')

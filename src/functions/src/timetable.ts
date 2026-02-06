@@ -2,6 +2,8 @@
 import { onRequest, onCall, HttpsError } from 'firebase-functions/v2/https'
 import * as admin from 'firebase-admin'
 import cors from 'cors'
+import { adminServiceAccountJson } from './secrets'
+import { ensureAdminApp } from './utils/adminApp'
 
 // CORS設定
 const corsOptions = {
@@ -16,11 +18,13 @@ const corsHandler = cors(corsOptions)
 export const getTimetableFromStorage = onRequest(
   { 
     region: 'asia-northeast1',
-    cors: true
+    cors: true,
+    secrets: [adminServiceAccountJson]
   },
   (request, response) => {
     return corsHandler(request, response, async () => {
       try {
+        ensureAdminApp()
         // Firebase Storage からファイルを取得
         const bucket = admin.storage().bucket()
         const file = bucket.file('data/timetable.json')
@@ -54,8 +58,9 @@ export const getTimetableFromStorage = onRequest(
  * Firestore から時刻表データを取得（既存の関数）
  */
 export const getTimetable = onCall(
-  { region: 'asia-northeast1' },
+  { region: 'asia-northeast1', secrets: [adminServiceAccountJson] },
   async (request) => {
+    ensureAdminApp()
     const { fromPort, toPort, date } = request.data
     
     if (!fromPort || !toPort || !date) {
