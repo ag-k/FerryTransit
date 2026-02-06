@@ -48,7 +48,8 @@
     "build-dev:build": "NODE_ENV=development nuxt build",
     "deploy-prod": "run-s build-prod deploy",
     "deploy-dev": "run-s build-dev deploy",
-    "build-app-dev": "cp .env.development .env && CAPACITOR_BUILD=true npm run generate && npx cap copy"
+    "build-app-dev": "cp .env.development .env && CAPACITOR_BUILD=true npm run generate && npx cap copy",
+    "functions:deploy:script": "bash scripts/deploy-functions.sh"
   },
   "dependencies": {
     "@capacitor/android": "^7.4.2",
