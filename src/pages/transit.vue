@@ -1118,6 +1118,12 @@ onMounted(() => {
   if (route.query.searchedAt) {
     historySearchedAt.value = new Date(route.query.searchedAt as string)
   }
+
+  if (route.query.autoSearch === '1') {
+    void nextTick(async () => {
+      await handleSearch()
+    })
+  }
 })
 
 // Page metadata

@@ -760,6 +760,20 @@ onMounted(async () => {
     ferryStore.setArrival(route.query.arrival as string)
   }
 
+  if (route.query.date && ferryStore) {
+    const value = String(route.query.date)
+    const [year, month, day] = value.split('-').map(v => Number(v))
+    if (
+      Number.isInteger(year) &&
+      Number.isInteger(month) &&
+      Number.isInteger(day) &&
+      month >= 1 && month <= 12 &&
+      day >= 1 && day <= 31
+    ) {
+      ferryStore.setSelectedDate(new Date(year, month - 1, day))
+    }
+  }
+
   if (ferryStore && ferryStore.timetableData.length === 0) {
     await initializeData()
   }

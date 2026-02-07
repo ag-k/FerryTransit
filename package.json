@@ -1,6 +1,6 @@
 {
   "name": "nuxt-app",
-  "version": "2.0.0",
+  "version": "2.2.0",
   "private": true,
   "type": "module",
   "scripts": {
@@ -24,6 +24,7 @@
     "test:all": "vitest run src/test/unit/api/ src/test/integration/",
     "test:e2e": "playwright test",
     "test:e2e:ui": "playwright test --ui",
+    "test:e2e:appstore-screenshots": "APPSTORE_STATIC_ROOT=.output/public APPSTORE_SCREENSHOT_DIR=output/appstore-screenshots/ios-6.7-ja playwright test -c playwright.appstore.config.ts src/tests/e2e/appstore-screenshots.spec.ts --workers=1",
     "lint": "eslint src",
     "typecheck": "nuxt typecheck",
     "firebase:emulators": "firebase emulators:start",
@@ -42,6 +43,7 @@
     "cap:android": "node scripts/cap-build.mjs android --open",
     "cap:ios:build": "node scripts/cap-build.mjs ios",
     "cap:android:build": "node scripts/cap-build.mjs android",
+    "cap:ios:appstore-screenshots": "node scripts/capture-ios-simulator-screenshots.mjs",
     "build-prod": "run-s build-prod:firebase build-prod:build",
     "build-prod:firebase": "firebase use prod",
     "build-prod:build": "NODE_ENV=production nuxt generate --dotenv .env.production",
