@@ -13,6 +13,11 @@
         "oki-ferryguide": [
           "oki-ferryguide"
         ]
+      },
+      "hosting": {
+        "oki-ferryguide": [
+          "oki-ferryguide"
+        ]
       }
     }
   },

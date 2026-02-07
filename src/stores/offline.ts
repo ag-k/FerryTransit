@@ -43,6 +43,41 @@ export const useOfflineStore = defineStore('offline', () => {
     fare?: number
     holiday?: number
   }>({})
+
+  const fetchJsonFromStorageCandidates = async <T>(
+    path: string,
+    timeoutMs = 5000
+  ): Promise<T | null> => {
+    const remoteUrls = getStoragePublicURLCandidates(path)
+
+    for (const remoteUrl of remoteUrls) {
+      logger.debug(`Fetching ${path} from:`, remoteUrl)
+
+      const response = await Promise.race([
+        fetch(remoteUrl, { cache: 'no-store' }),
+        new Promise<Response>((_resolve, reject) => {
+          setTimeout(() => reject(new Error('Timeout')), timeoutMs)
+        })
+      ]).catch((e) => {
+        logger.warn(`Fetch failed or timeout for ${path}`, e)
+        return null
+      })
+
+      if (response?.ok) {
+        const data = await response.json() as T
+        return data
+      }
+
+      if (response) {
+        logger.warn(`Failed to fetch ${path} from Cloud Storage`, {
+          status: response.status,
+          url: remoteUrl
+        })
+      }
+    }
+
+    return null
+  }
   
   // オフライン状態の監視
   const setupOfflineDetection = () => {
@@ -64,16 +99,17 @@ export const useOfflineStore = defineStore('offline', () => {
     try {
       // オンラインの場合は通常通り取得
       if (!isOffline.value) {
-        // publicディレクトリから直接取得
-        const data = await $fetch<TimetableData>('/data/timetable.json')
+        const data = await fetchJsonFromStorageCandidates<TimetableData>('timetable.json')
         // 成功したらローカルに保存
         if (data) {
           saveTimetableData(data)
           lastSync.value.timetable = Date.now()
+          logger.info('Timetable data loaded from Cloud Storage')
+          return data
         }
-        return data
       }
     } catch (e) {
+      logger.warn('Failed to fetch timetable data from Cloud Storage', e)
       /* ignore network failures and fallback to cached data */
     }
     
@@ -178,10 +214,12 @@ export const useOfflineStore = defineStore('offline', () => {
     
     // 時刻表データ
     try {
-      const timetable = await $fetch<TimetableData>('/data/timetable.json')
+      const timetable = await fetchJsonFromStorageCandidates<TimetableData>('timetable.json')
       if (timetable) {
         saveTimetableData(timetable)
         lastSync.value.timetable = Date.now()
+      } else {
+        errors.push('Failed to download timetable data')
       }
     } catch (e) {
       errors.push('Failed to download timetable data')

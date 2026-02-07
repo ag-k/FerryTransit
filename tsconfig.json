@@ -1,4 +1,22 @@
 {
   // https://nuxt.com/docs/guide/concepts/typescript
-  "extends": "./.nuxt/tsconfig.json"
+  "extends": "./.nuxt/tsconfig.json",
+  "exclude": [
+    "archive",
+    "archive/**",
+    "dist",
+    ".data",
+    "node_modules",
+    "node_modules/nuxt/node_modules",
+    "node_modules/@nuxtjs/i18n/node_modules",
+    "node_modules/@nuxtjs/google-fonts/node_modules",
+    "node_modules/@pinia/nuxt/node_modules",
+    "node_modules/@nuxtjs/tailwindcss/node_modules",
+    "node_modules/@nuxt/icon/node_modules",
+    "node_modules/@nuxt/devtools/node_modules",
+    "node_modules/@nuxt/telemetry/node_modules",
+    "node_modules/runtime/server",
+    "node_modules/dist/runtime/server",
+    ".output"
+  ]
 }
