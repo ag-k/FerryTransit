@@ -7,14 +7,9 @@
 
     <!-- 出発地・到着地選択 -->
     <ClientOnly>
-      <TransportModeFilter
-        v-if="transportModeOptions.length > 1"
-        v-model="selectedTransportMode"
-        :options="transportModeOptions"
-        class="mb-3"
-      />
-      <TimetableForm
-:departure="departure" :arrival="arrival" :hondo-ports="hondoPorts" :dozen-ports="dozenPorts"
+      <TransportModeFilter v-if="transportModeOptions.length > 1" v-model="selectedTransportMode"
+        :options="transportModeOptions" class="mb-3" />
+      <TimetableForm :departure="departure" :arrival="arrival" :hondo-ports="hondoPorts" :dozen-ports="dozenPorts"
         :dogo-ports="dogoPorts" @update:departure="handleDepartureChange" @update:arrival="handleArrivalChange"
         @reverse="reverseRoute" />
       <template #fallback>
@@ -30,13 +25,11 @@
               </select>
             </div>
             <div class="md:col-span-2 text-center hidden md:block">
-              <button
-type="button"
+              <button type="button"
                 class="px-3 py-1 text-sm border border-gray-300 dark:border-gray-600 rounded bg-gray-100 dark:bg-slate-700 dark:text-gray-200"
                 disabled>
                 <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" viewBox="0 0 16 16">
-                  <path
-fill-rule="evenodd"
+                  <path fill-rule="evenodd"
                     d="M1 11.5a.5.5 0 0 0 .5.5h11.793l-3.147 3.146a.5.5 0 0 0 .708.708l4-4a.5.5 0 0 0 0-.708l-4-4a.5.5 0 0 0-.708.708L13.293 11H1.5a.5.5 0 0 0-.5.5zm14-7a.5.5 0 0 1-.5.5H2.707l3.147 3.146a.5.5 0 1 1-.708.708l-4-4a.5.5 0 0 1 0-.708l4-4a.5.5 0 1 1 .708.708L2.707 4H14.5a.5.5 0 0 1 .5.5z" />
                 </svg>
               </button>
@@ -60,17 +53,14 @@ fill-rule="evenodd"
         <div class="flex items-end gap-3">
           <div class="w-full md:w-1/3">
             <!-- 乗換案内（/transit）と同じ DatePicker 表示に統一（時刻なし） -->
-            <DatePicker
-:model-value="selectedDate" :min-date="today" margin="none" size="compact"
+            <DatePicker :model-value="selectedDate" :min-date="today" margin="none" size="compact"
               @update:model-value="handleDateChange" />
           </div>
           <!-- 地図表示ボタン（地図が非表示の時だけ表示、右端に配置） -->
           <SecondaryButton v-if="!settingsStore.mapEnabled" size="sm" class="ml-auto" @click="toggleMapDisplay">
-            <svg
-xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="mr-1.5"
+            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="mr-1.5"
               viewBox="0 0 16 16" aria-hidden="true">
-              <path
-                d="M8 8.75a2.5 2.5 0 1 1 0-5 2.5 2.5 0 0 1 0 5z" />
+              <path d="M8 8.75a2.5 2.5 0 1 1 0-5 2.5 2.5 0 0 1 0 5z" />
               <path
                 d="M8 0a5.5 5.5 0 0 0-5.5 5.5c0 4.13 5.5 10.5 5.5 10.5s5.5-6.37 5.5-10.5A5.5 5.5 0 0 0 8 0zm0 14.09C6.28 11.74 3.5 7.98 3.5 5.5a4.5 4.5 0 0 1 9 0c0 2.48-2.78 6.24-4.5 8.59z" />
             </svg>
@@ -82,12 +72,10 @@ xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" cl
         <div class="mb-4">
           <div class="w-full md:w-1/3">
             <div class="flex">
-              <input
-type="date"
+              <input type="date"
                 class="flex-1 px-3 py-2 text-base border border-gray-300 dark:border-gray-600 rounded-l-md bg-gray-100 dark:bg-slate-700 dark:text-gray-200"
                 disabled>
-              <button
-type="button"
+              <button type="button"
                 class="px-4 py-2 text-base border border-l-0 border-gray-300 dark:border-gray-600 rounded-r-md bg-gray-100 dark:bg-slate-700 dark:text-gray-200"
                 disabled>
                 {{ $t('TODAY') }}
@@ -100,35 +88,28 @@ type="button"
 
     <!-- 地図表示 -->
     <ClientOnly>
-      <TimetableMap
-        :selected-port="selectedMapPort"
-        :selected-route="selectedMapRoute"
-        :show-port-details="true"
-        height="300px"
-        @port-click="handleMapPortClick"
-        @route-select="handleMapRouteSelect"
-      />
+      <TimetableMap :selected-port="selectedMapPort" :selected-route="selectedMapRoute" :show-port-details="true"
+        height="300px" @port-click="handleMapPortClick" @route-select="handleMapRouteSelect" />
     </ClientOnly>
 
     <!-- 時刻表 -->
     <Card class="overflow-hidden" padding="none">
-      <div class="bg-gradient-to-r from-app-primary to-app-primary-2 text-white px-4 py-3 flex items-center justify-between border-b border-white/10">
+      <div
+        class="bg-gradient-to-r from-app-primary to-app-primary-2 text-white px-4 py-3 flex items-center justify-between border-b border-white/10">
         <div class="flex flex-col min-w-0">
           <div class="flex items-baseline justify-between gap-3 min-w-0">
             <h3 data-test="timetable-date-title" class="text-lg font-medium leading-tight truncate tabular-nums">
               {{ headerDateLabel }}
             </h3>
           </div>
-          <p
-data-test="timetable-summary" class="text-xs text-blue-100/90 leading-tight mt-0.5 truncate"
+          <p data-test="timetable-summary" class="text-xs text-blue-100/90 leading-tight mt-0.5 truncate"
             :title="`${$t('DATE')}: ${selectedDateString} / ${$t('_FROM')}: ${departure ? $t(departure) : '-'} / ${$t('_TO')}: ${arrival ? $t(arrival) : '-'}`">
             <span>{{ departure ? $t(departure) : '-' }}</span>
             <span class="mx-1">→</span>
             <span>{{ arrival ? $t(arrival) : '-' }}</span>
           </p>
         </div>
-        <FavoriteButton
-v-if="departure && arrival" :type="'route'" :route="{ departure, arrival }"
+        <FavoriteButton v-if="departure && arrival" :type="'route'" :route="{ departure, arrival }"
           class="text-white hover:text-yellow-300" />
       </div>
       <ClientOnly>
@@ -138,16 +119,11 @@ v-if="departure && arrival" :type="'route'" :route="{ departure, arrival }"
             <span class="sr-only">Loading...</span>
           </div>
 
-          <Alert
-            v-else-if="error"
-            :visible="true"
-            type="danger"
-            :dismissible="false"
-            class="mx-4 my-3"
-            :message="$t(error)"
-          />
+          <Alert v-else-if="error" :visible="true" type="danger" :dismissible="false" class="mx-4 my-3"
+            :message="$t(error)" />
 
-          <div v-else-if="filteredTimetableByMode.length === 0" class="text-center py-6 text-gray-500 dark:text-gray-300">
+          <div v-else-if="filteredTimetableByMode.length === 0"
+            class="text-center py-6 text-gray-500 dark:text-gray-300">
             <small v-if="!departure && !arrival">
               {{ $t('SELECT_BOTH_PORTS') }}
             </small>
@@ -169,99 +145,80 @@ v-if="departure && arrival" :type="'route'" :route="{ departure, arrival }"
                   <th class="px-3 sm:px-4 py-3 text-left font-medium text-app-muted">{{ $t('SHIP') }}
                   </th>
                   <th class="px-3 sm:px-4 py-3 text-right font-medium text-app-muted align-middle">
-                    <a
-href="#"
-                      class="text-app-primary dark:text-white font-semibold inline-flex flex-col items-center justify-center gap-1 py-1 -my-1 px-2 -mx-2 touch-manipulation text-center min-h-[40px] w-fit ml-auto group"
+                    <a href="#"
+                      class="text-app-primary dark:text-white font-semibold inline-flex flex-col items-center justify-center gap-1 -my-1 -mx-2 touch-manipulation text-center min-h-[40px] w-fit ml-auto group"
                       @click.prevent="showPortInfo(departure)">
                       <span class="leading-tight group-hover:underline inline-flex items-center gap-2">
                         <LocationTypeIcon v-if="departure" :type="resolveLocationType()" />
                         <span>{{ departureLabelParts.name }}</span>
                       </span>
-                      <PortBadges :badges="departureLabelParts.badges" class="flex flex-wrap justify-end gap-1" />
+                      <PortBadges :badges="departureLabelParts.badges"
+                        class="flex flex-1 flex-wrap justify-end gap-1" />
                     </a>
                   </th>
                   <th class="px-3 sm:px-4 py-3 text-right font-medium text-app-muted align-middle">
-                    <a
-href="#"
-                      class="text-app-primary dark:text-white font-semibold inline-flex flex-col items-center justify-center gap-1 py-1 -my-1 px-2 -mx-2 touch-manipulation text-center min-h-[40px] w-fit ml-auto group"
+                    <a href="#"
+                      class="text-app-primary dark:text-white font-semibold inline-flex flex-col items-center justify-center gap-1 -my-1 -mx-2 touch-manipulation text-center min-h-[40px] w-fit ml-auto group"
                       @click.prevent="showPortInfo(arrival)">
                       <span class="leading-tight group-hover:underline inline-flex items-center gap-2">
                         <LocationTypeIcon v-if="arrival" :type="resolveLocationType()" />
                         <span>{{ arrivalLabelParts.name }}</span>
                       </span>
-                      <PortBadges :badges="arrivalLabelParts.badges" class="flex flex-wrap justify-end gap-1" />
+                      <PortBadges :badges="arrivalLabelParts.badges" class="flex flex-1 flex-wrap justify-end gap-1" />
                     </a>
                   </th>
                 </tr>
               </thead>
               <tbody class="divide-y divide-app-border/60">
-                <tr
-v-for="trip in sortedTimetable" :key="trip.tripId"
+                <tr v-for="trip in sortedTimetable" :key="trip.tripId"
                   class="hover:bg-app-surface-2/50 transition-colors duration-150"
                   :class="{ 'line-through opacity-60': tripStatus(trip) === 2 }">
                   <td class="px-3 sm:px-4 py-4 sm:py-3">
                     <div class="flex items-center gap-1 min-h-[20px]">
-                      <button
-v-if="tripStatus(trip) === 2" type="button" data-test="cancel-status-icon"
+                      <button v-if="tripStatus(trip) === 2" type="button" data-test="cancel-status-icon"
                         class="inline-flex items-center text-red-600 dark:text-red-300" :title="$t('OPERATION_STATUS')"
                         aria-label="運航状況を見る" @click.stop="showOperationStatus(trip.name)">
-                        <svg
-xmlns="http://www.w3.org/2000/svg" width="18" height="18" fill="currentColor"
+                        <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" fill="currentColor"
                           viewBox="0 0 16 16">
                           <path
                             d="M16 8A8 8 0 1 1 0 8a8 8 0 0 1 16 0zM5.354 4.646a.5.5 0 1 0-.708.708L7.293 8l-2.647 2.646a.5.5 0 0 0 .708.708L8 8.707l2.646 2.647a.5.5 0 0 0 .708-.708L8.707 8l2.647-2.646a.5.5 0 0 0-.708-.708L8 7.293 5.354 4.646z" />
                         </svg>
                       </button>
-                      <button
-v-else-if="tripStatus(trip) === 3" type="button" data-test="warning-status-icon"
+                      <button v-else-if="tripStatus(trip) === 3" type="button" data-test="warning-status-icon"
                         class="inline-flex items-center text-yellow-600 dark:text-yellow-300"
-                        :title="$t('OPERATION_STATUS')"
-                        aria-label="運航状況を見る"
+                        :title="$t('OPERATION_STATUS')" aria-label="運航状況を見る"
                         @click.stop="showOperationStatus(trip.name)">
-                        <svg
-xmlns="http://www.w3.org/2000/svg" width="18" height="18" fill="currentColor"
+                        <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" fill="currentColor"
                           viewBox="0 0 16 16">
                           <path
                             d="M8.982 1.566a1.13 1.13 0 0 0-1.96 0L.165 13.233c-.457.778.091 1.767.98 1.767h13.713c.889 0 1.438-.99.98-1.767L8.982 1.566zM8 5c.535 0 .954.462.9.995l-.35 3.507a.552.552 0 0 1-1.1 0L7.1 5.995A.905.905 0 0 1 8 5zm.002 6a1 1 0 1 1 0 2 1 1 0 0 1 0-2z" />
                         </svg>
                       </button>
-                      <button
-v-else-if="tripStatus(trip) === 4" type="button" data-test="resumed-status-icon"
+                      <button v-else-if="tripStatus(trip) === 4" type="button" data-test="resumed-status-icon"
                         class="inline-flex items-center text-green-600 dark:text-green-300"
-                        :title="$t('OPERATION_STATUS')"
-                        aria-label="運航状況を見る"
+                        :title="$t('OPERATION_STATUS')" aria-label="運航状況を見る"
                         @click.stop="showOperationStatus(trip.name)">
-                        <svg
-xmlns="http://www.w3.org/2000/svg" width="18" height="18" fill="currentColor"
+                        <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" fill="currentColor"
                           viewBox="0 0 16 16">
                           <path
                             d="M16 8A8 8 0 1 1 0 8a8 8 0 0 1 16 0zM8.5 4.5a.5.5 0 0 0-1 0v3h-3a.5.5 0 0 0 0 1h3v3a.5.5 0 0 0 1 0v-3h3a.5.5 0 0 0 0-1h-3v-3z" />
                         </svg>
                       </button>
                       <!-- 船種全体の運航状況に変更がある場合の注意マーク（便ごとのステータスが通常の場合のみ表示） -->
-                      <button
-                        v-else-if="getShipStatusAlert(trip.name)"
-                        type="button"
-                        data-test="ship-status-alert-icon"
-                        class="inline-flex items-center"
-                        :class="{
+                      <button v-else-if="getShipStatusAlert(trip.name)" type="button" data-test="ship-status-alert-icon"
+                        class="inline-flex items-center" :class="{
                           'text-red-600 dark:text-red-300': getShipStatusAlert(trip.name)?.severity === 'danger',
                           'text-yellow-600 dark:text-yellow-300': getShipStatusAlert(trip.name)?.severity === 'warning',
                           'text-green-600 dark:text-green-300': getShipStatusAlert(trip.name)?.severity === 'info'
-                        }"
-                        :title="$t('OPERATION_STATUS')"
-                        aria-label="運航状況を見る"
-                        @click.stop="showOperationStatus(trip.name)"
-                      >
-                        <svg
-xmlns="http://www.w3.org/2000/svg" width="18" height="18" fill="currentColor"
+                        }" :title="$t('OPERATION_STATUS')" aria-label="運航状況を見る"
+                        @click.stop="showOperationStatus(trip.name)">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" fill="currentColor"
                           viewBox="0 0 16 16">
                           <path
                             d="M8.982 1.566a1.13 1.13 0 0 0-1.96 0L.165 13.233c-.457.778.091 1.767.98 1.767h13.713c.889 0 1.438-.99.98-1.767L8.982 1.566zM8 5c.535 0 .954.462.9.995l-.35 3.507a.552.552 0 0 1-1.1 0L7.1 5.995A.905.905 0 0 1 8 5zm.002 6a1 1 0 1 1 0 2 1 1 0 0 1 0-2z" />
                         </svg>
                       </button>
-                      <a
-href="#"
+                      <a href="#"
                         class="text-app-primary dark:text-white hover:underline font-medium inline-block py-1 -my-1 px-2 -mx-2 touch-manipulation"
                         @click.prevent="showShipInfo(trip.name)">
                         {{ $t(trip.name) }}
@@ -273,17 +230,13 @@ href="#"
                   </td>
                   <td class="px-3 sm:px-4 py-4 sm:py-3 font-mono tabular-nums text-right text-app-fg">
                     {{ formatTime(trip.departureTime) }}
-                    <span
-v-if="trip.departureLabel"
-                      class="block text-app-muted text-xs sm:text-xs mt-0.5">
+                    <span v-if="trip.departureLabel" class="block text-app-muted text-xs sm:text-xs mt-0.5">
                       {{ $t(trip.departureLabel) }}
                     </span>
                   </td>
                   <td class="px-3 sm:px-4 py-4 sm:py-3 font-mono tabular-nums text-right text-app-fg">
                     {{ formatTime(trip.arrivalTime) }}
-                    <span
-v-if="trip.arrivalLabel"
-                      class="block text-app-muted text-xs sm:text-xs mt-0.5">
+                    <span v-if="trip.arrivalLabel" class="block text-app-muted text-xs sm:text-xs mt-0.5">
                       {{ $t(trip.arrivalLabel) }}
                     </span>
                   </td>
@@ -301,23 +254,18 @@ v-if="trip.arrivalLabel"
         </template>
       </ClientOnly>
 
-      <!-- 時刻表最終更新日 -->
-      <div
-v-if="ferryStore.lastFetchTime"
-        class="px-4 py-3 bg-app-surface-2/70 border-t border-app-border/70">
+      <!-- 時刻表最終取得日 -->
+      <div v-if="ferryStore.lastFetchTime" class="px-4 py-3 bg-app-surface-2/70 border-t border-app-border/70">
         <p class="text-xs text-app-muted text-center">
           {{ $t('TIMETABLE_LAST_UPDATE') }}: {{ formatDateTime(ferryStore.lastFetchTime) }}
         </p>
       </div>
 
       <!-- 乗換を含むルートを検索ボタン -->
-      <div
-v-if="showTransferSearchButton"
-        class="px-4 py-3 bg-app-surface-2/70 border-t border-app-border/70">
+      <div v-if="showTransferSearchButton" class="px-4 py-3 bg-app-surface-2/70 border-t border-app-border/70">
         <PrimaryButton type="button" data-test="transfer-search-button" block size="md" @click="navigateToTransit">
           <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-            <path
-stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
               d="M8 7h12m0 0l-4-4m4 4l-4 4m0 6H4m0 0l4 4m-4-4l4-4" />
           </svg>
           {{ $t('SEARCH_WITH_TRANSFER') }}
@@ -327,13 +275,9 @@ stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
 
     <!-- モーダル -->
     <ClientOnly>
-      <CommonShipModal
-v-model:visible="modalVisible" :title="modalTitle" :type="modalType" :ship-id="modalShipId"
+      <CommonShipModal v-model:visible="modalVisible" :title="modalTitle" :type="modalType" :ship-id="modalShipId"
         :port-id="modalPortId" :port-zoom="modalPortZoom" :content="modalContent" />
-      <OperationStatusModal
-        v-model:visible="operationStatusModalVisible"
-        :ship-name="operationStatusShipName"
-      />
+      <OperationStatusModal v-model:visible="operationStatusModalVisible" :ship-name="operationStatusShipName" />
     </ClientOnly>
   </div>
 </template>
