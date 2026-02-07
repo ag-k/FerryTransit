@@ -9,6 +9,7 @@ import {
   parseYmdAsJstMidnight,
   addDaysJst,
 } from "@/utils/jstDate";
+import { buildStorageObjectDownloadUrl } from "@/utils/firebaseStorageUrl";
 
 // Port and Ship interfaces
 interface Port {
@@ -482,9 +483,10 @@ export const useFerryStore = defineStore("ferry", () => {
       };
 
       const fetchFromStoragePublicUrl = async () => {
-        const bucket = config.public.firebase.storageBucket;
-        const encodedPath = encodeURIComponent(TIMETABLE_STORAGE_PATH);
-        const url = `https://firebasestorage.googleapis.com/v0/b/${bucket}/o/${encodedPath}?alt=media`;
+        const url = buildStorageObjectDownloadUrl(
+          config.public.firebase,
+          TIMETABLE_STORAGE_PATH
+        );
 
         const response = await fetch(url, { cache: "no-store" });
         if (!response.ok) {

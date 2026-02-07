@@ -1,6 +1,7 @@
 import { ref, computed } from "vue";
 import type { News } from "~/types";
 import { createLogger } from "~/utils/logger";
+import { buildStorageObjectDownloadUrl } from "~/utils/firebaseStorageUrl";
 
 export const useNews = () => {
   const newsList = ref<News[]>([]);
@@ -23,8 +24,14 @@ export const useNews = () => {
       // Firebase Storageから最新データを取得（クライアントサイドのみ）
       if (import.meta.client) {
         try {
+          const config = useRuntimeConfig();
+          const newsUrl = buildStorageObjectDownloadUrl(
+            config.public.firebase,
+            "data/news.json"
+          );
+
           const response = await fetch(
-            "https://firebasestorage.googleapis.com/v0/b/oki-ferryguide.firebasestorage.app/o/data%2Fnews.json?alt=media",
+            newsUrl,
             {
               method: "GET",
               mode: "cors",

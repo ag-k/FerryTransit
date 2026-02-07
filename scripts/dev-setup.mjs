@@ -7,9 +7,11 @@
 
 import { execSync } from 'child_process'
 import { existsSync, readFileSync, writeFileSync } from 'fs'
+import { createRequire } from 'module'
 import { join } from 'path'
 
 const projectRoot = process.cwd()
+const require = createRequire(import.meta.url)
 
 console.log('🔧 Setting up Firebase emulators for local development...\n')
 
@@ -20,6 +22,10 @@ const skipFirebaseCli =
   process.env.PLAYWRIGHT === '1' ||
   process.env.PLAYWRIGHT === 'true' ||
   process.env.CI === 'true'
+
+const skipOxcBindingSetup =
+  process.env.SKIP_OXC_BINDING_SETUP === '1' ||
+  process.env.SKIP_OXC_BINDING_SETUP === 'true'
 
 // Check if .env.local exists, if not create it from example
 const envLocalPath = join(projectRoot, '.env.local')
@@ -70,6 +76,100 @@ if (skipFirebaseCli) {
   } catch (error) {
     console.log('⚠️  Firebase emulators may not be properly installed')
   }
+}
+
+const getOxcBindingSpec = () => {
+  if (process.platform !== 'darwin') {
+    return null
+  }
+
+  const bindingPackageNameByArch = {
+    arm64: '@oxc-parser/binding-darwin-arm64',
+    x64: '@oxc-parser/binding-darwin-x64'
+  }
+
+  const packageName = bindingPackageNameByArch[process.arch]
+  if (!packageName) {
+    return null
+  }
+
+  const oxcPackagePaths = [
+    join(projectRoot, 'node_modules/nuxt/node_modules/oxc-parser/package.json'),
+    join(projectRoot, 'node_modules/oxc-parser/package.json')
+  ]
+
+  for (const packagePath of oxcPackagePaths) {
+    if (!existsSync(packagePath)) {
+      continue
+    }
+
+    try {
+      const raw = readFileSync(packagePath, 'utf8')
+      const oxcPackage = JSON.parse(raw)
+      const expectedVersion = oxcPackage?.optionalDependencies?.[packageName]
+
+      if (!expectedVersion) {
+        continue
+      }
+
+      return { packageName, expectedVersion }
+    } catch (error) {
+      // Continue to next candidate
+    }
+  }
+
+  return null
+}
+
+const ensureOxcBinding = () => {
+  const bindingSpec = getOxcBindingSpec()
+  if (!bindingSpec) {
+    return
+  }
+
+  const { packageName, expectedVersion } = bindingSpec
+  let installedVersion = null
+
+  try {
+    const installedPath = require.resolve(`${packageName}/package.json`, {
+      paths: [projectRoot]
+    })
+    installedVersion = JSON.parse(readFileSync(installedPath, 'utf8')).version
+  } catch (error) {
+    installedVersion = null
+  }
+
+  if (installedVersion === expectedVersion) {
+    console.log(`✅ ${packageName}@${installedVersion} is available`)
+    return
+  }
+
+  const desiredSpecifier = `${packageName}@${expectedVersion}`
+  if (installedVersion) {
+    console.log(
+      `📦 Updating ${packageName} (${installedVersion} -> ${expectedVersion})...`
+    )
+  } else {
+    console.log(`📦 Installing ${desiredSpecifier}...`)
+  }
+
+  try {
+    execSync(
+      `npm install --no-save --ignore-scripts --no-audit --no-fund ${desiredSpecifier}`,
+      { stdio: 'inherit', cwd: projectRoot }
+    )
+    console.log(`✅ ${desiredSpecifier} installed`)
+  } catch (error) {
+    console.error(`❌ Failed to install ${desiredSpecifier}`)
+    console.error(`   Run manually: npm install --no-save ${desiredSpecifier}`)
+    process.exit(1)
+  }
+}
+
+if (skipOxcBindingSetup) {
+  console.log('⏭️  Skipping OXC native binding setup (SKIP_OXC_BINDING_SETUP is set)')
+} else {
+  ensureOxcBinding()
 }
 
 console.log('\n🎉 Development environment setup complete!')

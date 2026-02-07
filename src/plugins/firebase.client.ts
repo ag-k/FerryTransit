@@ -20,6 +20,19 @@ const normalizeStorageBucket = (bucket: string): string => {
   return bucket
 }
 
+const resolveStorageBucketForEnvironment = (
+  normalizedBucket: string,
+  projectId: string,
+  useEmulators: boolean
+): string => {
+  // Storage emulator stores data under the classic appspot bucket namespace.
+  if (process.dev && useEmulators && projectId) {
+    return `${projectId}.appspot.com`
+  }
+
+  return normalizedBucket
+}
+
 export default defineNuxtPlugin({
   name: 'firebase',
   setup: async () => {
@@ -28,12 +41,17 @@ export default defineNuxtPlugin({
   
   const configuredStorageBucket = config.public.firebase.storageBucket
   const normalizedStorageBucket = normalizeStorageBucket(configuredStorageBucket)
+  const resolvedStorageBucket = resolveStorageBucketForEnvironment(
+    normalizedStorageBucket,
+    config.public.firebase.projectId,
+    config.public.firebase.useEmulators
+  )
 
   const firebaseConfig = {
     apiKey: config.public.firebase.apiKey,
     authDomain: config.public.firebase.authDomain,
     projectId: config.public.firebase.projectId,
-    storageBucket: normalizedStorageBucket,
+    storageBucket: resolvedStorageBucket,
     messagingSenderId: config.public.firebase.messagingSenderId,
     appId: config.public.firebase.appId,
     measurementId: config.public.firebase.measurementId
@@ -42,6 +60,12 @@ export default defineNuxtPlugin({
   if (normalizedStorageBucket !== configuredStorageBucket) {
     logger.warn(
       `storageBucket was normalized: ${configuredStorageBucket} -> ${normalizedStorageBucket}`
+    )
+  }
+
+  if (resolvedStorageBucket !== normalizedStorageBucket) {
+    logger.info(
+      `storageBucket switched for emulator: ${normalizedStorageBucket} -> ${resolvedStorageBucket}`
     )
   }
 

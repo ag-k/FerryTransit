@@ -5,7 +5,7 @@
   "type": "module",
   "scripts": {
     "build": "nuxt build",
-    "dev": "npm run dev:setup && cp .env.local .env && nuxt dev",
+    "dev": "npm run dev:setup && nuxt dev --dotenv .env.local",
     "opencode": "bash scripts/start-opencode.sh",
     "dev:setup": "node scripts/dev-setup.mjs",
     "dev:full": "concurrently -k --kill-others-on-fail --kill-signal SIGINT --names \"emulators,nuxt\" \"npm run firebase:emulators:with-data\" \"npm run dev\"",
@@ -96,7 +96,7 @@
     "@playwright/test": "^1.54.1",
     "@testing-library/vue": "^8.1.0",
     "@types/node": "^24.1.0",
-    "@vitejs/plugin-vue": "^5.2.4",
+    "@vitejs/plugin-vue": "^6.0.3",
     "@vitest/coverage-v8": "^3.2.4",
     "@vue/test-utils": "^2.4.6",
     "autoprefixer": "^10.4.21",
@@ -109,10 +109,12 @@
     "sass": "^1.89.2",
     "sass-loader": "^16.0.5",
     "tailwindcss": "^4.1.11",
+    "vite": "^7.3.1",
     "vitest": "^3.2.4",
     "vue-tsc": "^3.1.4"
   },
   "optionalDependencies": {
-    "@oxc-parser/binding-darwin-arm64": "^0.73.2"
+    "@oxc-parser/binding-darwin-arm64": "0.102.0",
+    "@oxc-parser/binding-darwin-x64": "0.102.0"
   }
 }

@@ -5,6 +5,7 @@ import type { TimetableData } from '@/types/timetable'
 import type { FareMaster } from '@/types/fare'
 import type { HolidayMaster } from '@/types/holiday'
 import { createLogger } from '@/utils/logger'
+import { buildStorageObjectDownloadUrl } from '@/utils/firebaseStorageUrl'
 
 /**
  * Firebase Storage公開URLを構築（SDKに依存しない）
@@ -12,10 +13,12 @@ import { createLogger } from '@/utils/logger'
  */
 const getStoragePublicURLCandidates = (path: string): string[] => {
   const config = useRuntimeConfig()
-  const bucket = config.public.firebase.storageBucket
-  const encodedPath = encodeURIComponent(`data/${path}`)
+  const url = buildStorageObjectDownloadUrl(
+    config.public.firebase,
+    `data/${path}`
+  )
   return [
-    `https://firebasestorage.googleapis.com/v0/b/${bucket}/o/${encodedPath}?alt=media`
+    url
   ]
 }
 
