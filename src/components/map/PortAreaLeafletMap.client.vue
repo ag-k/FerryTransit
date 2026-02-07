@@ -26,7 +26,7 @@ interface Props {
 }
 
 const props = withDefaults(defineProps<Props>(), {
-  zoom: 15
+  zoom: 16
 })
 
 declare global {
@@ -41,10 +41,23 @@ const LEAFLET_JS_URL = 'https://unpkg.com/leaflet@1.9.4/dist/leaflet.js'
 const mapEl = ref<HTMLDivElement | null>(null)
 let map: any | null = null
 let markerById: Map<string, any> | null = null
+const isFiniteCoord = (value: unknown) => Number.isFinite(Number(value))
+
+const uniqueByCoordinate = (list: MarkerPoint[]): MarkerPoint[] => {
+  const seen = new Set<string>()
+  const unique: MarkerPoint[] = []
+  for (const point of list) {
+    const key = `${point.lat.toFixed(6)},${point.lng.toFixed(6)}`
+    if (seen.has(key)) continue
+    seen.add(key)
+    unique.push(point)
+  }
+  return unique
+}
 
 const points = computed<MarkerPoint[]>(() => {
   // 乗り場など、明示的なフォーカス座標が来たらそれを優先（=ピンを移動）
-  if (props.focus && Number.isFinite(props.focus.lat) && Number.isFinite(props.focus.lng)) {
+  if (props.focus && isFiniteCoord(props.focus.lat) && isFiniteCoord(props.focus.lng)) {
     return [
       {
         id: 'FOCUS',
@@ -58,9 +71,28 @@ const points = computed<MarkerPoint[]>(() => {
   const id = props.portId
   if (!id) return []
 
-  // 通常の港は data/ports.ts の location を利用
   const port = (PORTS_DATA as any)?.[id]
-  if (port?.location?.lat != null && port?.location?.lng != null) {
+  const boardingPoints: MarkerPoint[] = Array.isArray(port?.boarding)
+    ? port.boarding
+      .map((item: any, idx: number) => {
+        const lat = item?.location?.lat
+        const lng = item?.location?.lng
+        if (!isFiniteCoord(lat) || !isFiniteCoord(lng)) return null
+        return {
+          id: `${id}-BOARDING-${idx}`,
+          title: String(item?.labelJa || item?.labelEn || item?.placeJa || item?.placeEn || port?.name || id),
+          lat: Number(lat),
+          lng: Number(lng)
+        }
+      })
+      .filter((point: MarkerPoint | null): point is MarkerPoint => point !== null)
+    : []
+  if (boardingPoints.length > 0) {
+    return uniqueByCoordinate(boardingPoints)
+  }
+
+  // 乗り場情報がない港は港座標を表示
+  if (isFiniteCoord(port?.location?.lat) && isFiniteCoord(port?.location?.lng)) {
     const title = String(props.title || port?.name || port?.nameEn || id)
     return [{ id, title, lat: Number(port.location.lat), lng: Number(port.location.lng) }]
   }
@@ -70,7 +102,7 @@ const points = computed<MarkerPoint[]>(() => {
     const shichirui = (PORTS_DATA as any)?.HONDO_SHICHIRUI
     const sakaiminato = (PORTS_DATA as any)?.HONDO_SAKAIMINATO
     const list: MarkerPoint[] = []
-    if (shichirui?.location?.lat != null && shichirui?.location?.lng != null) {
+    if (isFiniteCoord(shichirui?.location?.lat) && isFiniteCoord(shichirui?.location?.lng)) {
       list.push({
         id: 'HONDO_SHICHIRUI',
         title: String(shichirui?.name || shichirui?.nameEn || 'HONDO_SHICHIRUI'),
@@ -78,7 +110,7 @@ const points = computed<MarkerPoint[]>(() => {
         lng: Number(shichirui.location.lng)
       })
     }
-    if (sakaiminato?.location?.lat != null && sakaiminato?.location?.lng != null) {
+    if (isFiniteCoord(sakaiminato?.location?.lat) && isFiniteCoord(sakaiminato?.location?.lng)) {
       list.push({
         id: 'HONDO_SAKAIMINATO',
         title: String(sakaiminato?.name || sakaiminato?.nameEn || 'HONDO_SAKAIMINATO'),
@@ -245,5 +277,3 @@ onUnmounted(() => {
   height: 100%;
 }
 </style>
-
-

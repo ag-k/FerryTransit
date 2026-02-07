@@ -200,6 +200,7 @@ import PortAreaLeafletMap from '@/components/map/PortAreaLeafletMap.client.vue'
 import PortBadges from '@/components/common/PortBadges.vue'
 import { PORTS_DATA } from '~/data/ports'
 import { SHIP_DETAILS } from '~/data/ships'
+import { BOARDING_FOCUS_ZOOM, getPortMapZoom } from '@/utils/portMapZoom'
 
 interface Props {
   visible: boolean
@@ -370,11 +371,14 @@ const headerTitleParts = computed(() => {
 
 // Current port zoom
 const currentPortZoom = computed(() => {
-  if (props.portId === 'HONDO') {
-    // HONDO_SHICHIRUI と HONDO_SAKAIMINATO のズームレベル（デフォルト15）
-    return 15
+  if (selectedBoarding.value?.location) {
+    // 乗り場ピン選択時は周辺導線が分かるように少し寄せる
+    return BOARDING_FOCUS_ZOOM
   }
-  return props.portZoom || 15
+  if (props.portId === 'HONDO') {
+    return getPortMapZoom(currentPortId.value)
+  }
+  return props.portZoom ?? getPortMapZoom(currentPortId.value)
 })
 
 const portBoarding = computed(() => {

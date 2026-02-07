@@ -484,6 +484,7 @@ import TransportModeFilter from '@/components/common/TransportModeFilter.vue'
 import LocationTypeIcon from '@/components/common/LocationTypeIcon.vue'
 import type { LocationType, TransportMode, TransitRoute, TransitSegment } from '@/types'
 import { createLogger } from '~/utils/logger'
+import { getPortMapZoom } from '@/utils/portMapZoom'
 
 // Stores
 const ferryStore = process.client ? useFerryStore() : null
@@ -922,12 +923,7 @@ const operationStatusModalVisible = ref(false)
 const operationStatusShipName = ref('')
 
 const modalPortZoom = computed<number>(() => {
-  const id = modalPortId.value
-  if (!id) return 15
-  return id === 'BEPPU' ? 17
-    : id === 'HISHIURA' ? 18
-    : id === 'KURI' ? 18
-    : 15
+  return getPortMapZoom(modalPortId.value)
 })
 
 // 船種の運航状況に変更があるかチェック（当日のみ）
