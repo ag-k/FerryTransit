@@ -1,7 +1,7 @@
 <template>
   <div class="history-manager">
     <div class="flex items-center justify-between mb-6">
-      <h1 class="hidden lg:block text-2xl font-bold dark:text-white">{{ $t('history.title') }}</h1>
+      <h1 class="text-xl lg:text-2xl font-bold dark:text-white">{{ $t('history.title') }}</h1>
       <div class="flex space-x-2">
         <button
           v-if="historyStore && historyStore.history.length > 0"
