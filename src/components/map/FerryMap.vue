@@ -50,6 +50,7 @@ import type { RouteData, RoutePoint, RoutesDataFile } from '~/types/route'
 import { getJSONData } from '~/composables/useDataPublish'
 import { createLogger } from '~/utils/logger'
 import { getGoogleMapsLocaleOptions } from '~/utils/googleMapsLocale'
+import { getPortMapZoom } from '@/utils/portMapZoom'
 import { useSettingsStore } from '@/stores/settings'
 
 // Props
@@ -92,12 +93,7 @@ const isLoading = ref(false)
 const showPortModal = ref(false)
 const modalPortId = ref<string>('')
 const modalPortZoom = computed<number>(() => {
-  const id = modalPortId.value
-  if (!id) return 15
-  return id === 'BEPPU' ? 17
-    : id === 'HISHIURA' ? 18
-    : id === 'KURI' ? 18
-    : 15
+  return getPortMapZoom(modalPortId.value)
 })
 const modalPortTitle = computed(() => {
   return modalPortId.value ? String($i18n.t(modalPortId.value)) : ''

@@ -302,6 +302,7 @@ import SecondaryButton from '@/components/common/SecondaryButton.vue'
 import TransportModeFilter from '@/components/common/TransportModeFilter.vue'
 import LocationTypeIcon from '@/components/common/LocationTypeIcon.vue'
 import { formatDateYmdJst, getJstDateParts, getTodayJstMidnight } from '@/utils/jstDate'
+import { getPortMapZoom } from '@/utils/portMapZoom'
 import type { LocationType, TransportMode, Trip } from '@/types'
 
 // Store and composables
@@ -329,7 +330,7 @@ const modalTitle = ref('')
 const modalType = ref<'ship' | 'port'>('ship')
 const modalShipId = ref('')
 const modalPortId = ref('')
-const modalPortZoom = ref(15)
+const modalPortZoom = ref(getPortMapZoom())
 const modalContent = ref('')
 const selectedMapPort = ref<string>('')
 const selectedMapRoute = ref<{ from: string; to: string } | undefined>()
@@ -645,7 +646,7 @@ const showShipInfo = (shipName: string) => {
   modalType.value = 'ship'
   modalShipId.value = shipName
   modalPortId.value = ''
-  modalPortZoom.value = 15
+  modalPortZoom.value = getPortMapZoom()
   modalVisible.value = true
 }
 
@@ -654,12 +655,8 @@ const showPortInfo = (portName: string) => {
   modalType.value = 'port'
   modalShipId.value = ''
   modalPortId.value = portName
-  // 港ごとに固定のズーム値を親で決定して渡す
-  modalPortZoom.value =
-    portName === 'BEPPU' ? 17
-      : portName === 'HISHIURA' ? 18
-        : portName === 'KURI' ? 18
-          : 15
+  // 港ごとの表示内容に合わせたズーム値を適用
+  modalPortZoom.value = getPortMapZoom(portName)
   // 旧 iframe は廃止。互換用に content は空にしておく
   modalContent.value = ''
   modalVisible.value = true
