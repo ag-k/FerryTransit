@@ -8,7 +8,17 @@ import {
   mockFerryStatus,
 } from "@/test/mocks/mockData";
 
+const { mockIsNativePlatform } = vi.hoisted(() => ({
+  mockIsNativePlatform: vi.fn(() => false),
+}));
+
 const mockGetCachedJsonFile = vi.fn();
+
+vi.mock("@capacitor/core", () => ({
+  Capacitor: {
+    isNativePlatform: mockIsNativePlatform,
+  },
+}));
 
 // Mock fetch
 global.fetch = vi.fn();
@@ -52,6 +62,8 @@ describe("Ferry Store", () => {
     vi.clearAllMocks();
     localStorage.clear();
     mockGetCachedJsonFile.mockReset();
+    mockIsNativePlatform.mockReset();
+    mockIsNativePlatform.mockReturnValue(false);
   });
 
   describe("Initial State", () => {
@@ -121,6 +133,92 @@ describe("Ferry Store", () => {
 
       expect(store.timetableData).toEqual([]);
       expect(store.isLoading).toBe(false);
+      expect(store.error).toBe("LOAD_TIMETABLE_ERROR");
+    });
+
+    it("should fetch timetable via storage public URL first on native platform", async () => {
+      const store = useFerryStore();
+      mockIsNativePlatform.mockReturnValueOnce(true);
+
+      const mockData = mockTrips.map((trip) => ({
+        trip_id: trip.tripId.toString(),
+        start_date: trip.startDate,
+        end_date: trip.endDate,
+        name: trip.name,
+        departure: trip.departure,
+        departure_time: trip.departureTime,
+        arrival: trip.arrival,
+        arrival_time: trip.arrivalTime,
+        status: trip.status.toString(),
+      }));
+
+      (global.fetch as any).mockResolvedValueOnce({
+        ok: true,
+        status: 200,
+        headers: {
+          get: () => null,
+        },
+        json: () => Promise.resolve(mockData),
+      });
+
+      await store.fetchTimetable();
+
+      expect(global.fetch).toHaveBeenCalledWith(
+        "https://firebasestorage.googleapis.com/v0/b/test-bucket/o/data%2Ftimetable.json?alt=media",
+        { cache: "no-store" }
+      );
+      expect(mockGetCachedJsonFile).not.toHaveBeenCalled();
+      expect(global.$fetch).not.toHaveBeenCalled();
+      expect(store.timetableData).toHaveLength(mockTrips.length);
+    });
+
+    it("should fallback to Storage SDK when native storage public URL fails", async () => {
+      const store = useFerryStore();
+      mockIsNativePlatform.mockReturnValueOnce(true);
+
+      const mockData = mockTrips.map((trip) => ({
+        trip_id: trip.tripId.toString(),
+        start_date: trip.startDate,
+        end_date: trip.endDate,
+        name: trip.name,
+        departure: trip.departure,
+        departure_time: trip.departureTime,
+        arrival: trip.arrival,
+        arrival_time: trip.arrivalTime,
+        status: trip.status.toString(),
+      }));
+
+      (global.fetch as any).mockRejectedValueOnce(new Error("Public URL failed"));
+      mockGetCachedJsonFile.mockResolvedValueOnce(mockData);
+
+      await store.fetchTimetable();
+
+      expect(global.$fetch).not.toHaveBeenCalled();
+      expect(global.fetch).toHaveBeenCalledWith(
+        "https://firebasestorage.googleapis.com/v0/b/test-bucket/o/data%2Ftimetable.json?alt=media",
+        { cache: "no-store" }
+      );
+      expect(mockGetCachedJsonFile).toHaveBeenCalledTimes(1);
+      expect(store.timetableData).toHaveLength(mockTrips.length);
+      expect(store.error).toBeNull();
+    });
+
+    it("should set load error when native public URL and Storage SDK both fail", async () => {
+      const store = useFerryStore();
+      mockIsNativePlatform.mockReturnValueOnce(true);
+
+      (global.fetch as any).mockRejectedValueOnce(new Error("Public URL unavailable"));
+      mockGetCachedJsonFile.mockRejectedValueOnce(new Error("Storage SDK failed"));
+
+      await store.fetchTimetable();
+
+      expect(global.$fetch).not.toHaveBeenCalled();
+      expect(global.fetch).toHaveBeenCalledWith(
+        "https://firebasestorage.googleapis.com/v0/b/test-bucket/o/data%2Ftimetable.json?alt=media",
+        { cache: "no-store" }
+      );
+      expect(mockGetCachedJsonFile).toHaveBeenCalledTimes(1);
+      expect(store.timetableData).toEqual([]);
       expect(store.error).toBe("LOAD_TIMETABLE_ERROR");
     });
 

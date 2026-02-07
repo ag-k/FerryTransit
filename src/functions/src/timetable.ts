@@ -19,6 +19,7 @@ export const getTimetableFromStorage = onRequest(
   { 
     region: 'asia-northeast1',
     cors: true,
+    invoker: 'public',
     secrets: [adminServiceAccountJson]
   },
   (request, response) => {

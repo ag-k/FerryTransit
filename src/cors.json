@@ -1,7 +1,14 @@
 [
   {
-    "origin": ["*"],
-    "method": ["GET"],
-    "maxAgeSeconds": 300
+    "maxAgeSeconds": 3600,
+    "method": ["GET", "HEAD", "OPTIONS"],
+    "origin": [
+      "https://transit.oki-digilab.com",
+      "https://oki-ferryguide.web.app",
+      "capacitor://localhost",
+      "http://localhost",
+      "https://localhost"
+    ],
+    "responseHeader": ["Content-Type", "x-goog-meta-*"]
   }
 ]

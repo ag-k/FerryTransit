@@ -1,6 +1,8 @@
 import { defineStore } from "pinia";
+import { Capacitor } from "@capacitor/core";
 import { useFirebaseStorage } from "@/composables/useFirebaseStorage";
 import type { Trip, ShipStatus, FerryStatus, SightseeingStatus, ShipStatusStoreState } from "@/types";
+import { createLogger } from "~/utils/logger";
 import {
   formatDateYmdJst,
   getTodayJstMidnight,
@@ -28,7 +30,89 @@ const formatDateLocal = (date: Date): string => {
   return formatDateYmdJst(date);
 };
 
+const TIMETABLE_STORAGE_PATH = "data/timetable.json";
+const TIMETABLE_CACHE_KEY = "rawTimetable";
+const NATIVE_STORAGE_SDK_TIMEOUT_MS = 5000;
+
+const toLoggableError = (error: unknown): Record<string, unknown> => {
+  if (error instanceof Error) {
+    const enriched = error as Error & {
+      code?: string | number;
+      status?: number;
+      statusCode?: number;
+      response?: {
+        status?: number;
+        statusText?: string;
+      };
+      cause?: unknown;
+    };
+
+    const summary: Record<string, unknown> = {
+      name: error.name,
+      message: error.message,
+    };
+
+    if (enriched.code !== undefined) summary.code = enriched.code;
+    if (typeof enriched.status === "number") summary.status = enriched.status;
+    if (typeof enriched.statusCode === "number") summary.statusCode = enriched.statusCode;
+    if (typeof enriched.response?.status === "number") summary.responseStatus = enriched.response.status;
+    if (typeof enriched.response?.statusText === "string") {
+      summary.responseStatusText = enriched.response.statusText;
+    }
+
+    if (enriched.cause instanceof Error) {
+      summary.cause = {
+        name: enriched.cause.name,
+        message: enriched.cause.message,
+      };
+    } else if (enriched.cause !== undefined) {
+      summary.cause = String(enriched.cause);
+    }
+
+    return summary;
+  }
+
+  if (typeof error === "object" && error !== null) {
+    return { error };
+  }
+
+  return {
+    error: String(error),
+  };
+};
+
+const withTimeout = async <T>(promise: Promise<T>, timeoutMs: number, label: string): Promise<T> => {
+  let timerId: ReturnType<typeof setTimeout> | null = null;
+
+  try {
+    const timeoutPromise = new Promise<never>((_resolve, reject) => {
+      timerId = setTimeout(() => {
+        reject(new Error(`${label} timed out after ${timeoutMs}ms`));
+      }, timeoutMs);
+    });
+
+    return await Promise.race([promise, timeoutPromise]);
+  } finally {
+    if (timerId) {
+      clearTimeout(timerId);
+    }
+  }
+};
+
+const isNativeClientPlatform = (): boolean => {
+  if (!process.client) {
+    return false;
+  }
+
+  try {
+    return Capacitor.isNativePlatform();
+  } catch {
+    return false;
+  }
+};
+
 export const useFerryStore = defineStore("ferry", () => {
+  const logger = createLogger("ferryStore");
   // State
   const timetableData = ref<Trip[]>([]);
   const shipStatus = ref<ShipStatusStoreState>({
@@ -376,6 +460,7 @@ export const useFerryStore = defineStore("ferry", () => {
 
   // Actions
   const fetchTimetable = async (force = false) => {
+    const nativeAtEntry = process.client && isNativeClientPlatform();
     if (!force && !isDataStale.value && timetableData.value.length > 0) {
       return; // キャッシュが有効な場合はスキップ
     }
@@ -384,24 +469,75 @@ export const useFerryStore = defineStore("ferry", () => {
     error.value = null;
 
     try {
-      let data: any[];
+      let data: any[] | null = null;
+      let dataSource: "functions" | "storage-sdk" | "storage-public" | null = null;
+      const isNativeClient = nativeAtEntry;
+      const useStorageDirect = process.client && !isNativeClient;
+      const config = useRuntimeConfig();
+      const functionsUrl = `https://asia-northeast1-${config.public.firebase.projectId}.cloudfunctions.net/getTimetableStorage`;
 
-      // Firebase Functions を使用する場合
-      const useFirebaseFunctions = true; // 設定で切り替え可能
-
-      if (useFirebaseFunctions && process.client) {
-        // Firebase Storage から直接取得
+      const fetchFromStorageSdk = async () => {
         const { getCachedJsonFile } = useFirebaseStorage();
-        data = await getCachedJsonFile<any[]>(
-          "data/timetable.json",
-          "rawTimetable",
-          15
-        );
+        return getCachedJsonFile<any[]>(TIMETABLE_STORAGE_PATH, TIMETABLE_CACHE_KEY, 15);
+      };
+
+      const fetchFromStoragePublicUrl = async () => {
+        const bucket = config.public.firebase.storageBucket;
+        const encodedPath = encodeURIComponent(TIMETABLE_STORAGE_PATH);
+        const url = `https://firebasestorage.googleapis.com/v0/b/${bucket}/o/${encodedPath}?alt=media`;
+
+        const response = await fetch(url, { cache: "no-store" });
+        if (!response.ok) {
+          throw new Error(`Failed to fetch timetable from storage public URL (${response.status})`);
+        }
+        return (await response.json()) as any[];
+      };
+
+      const fetchFromFunctions = async () => {
+        return $fetch<any[]>(functionsUrl);
+      };
+
+      if (isNativeClient) {
+        // iOS/Android ネイティブアプリは最初から public URL 経由で取得
+        try {
+          data = await fetchFromStoragePublicUrl();
+          dataSource = "storage-public";
+        } catch (publicUrlError) {
+          logger.warn("Native public storage URL timetable fetch failed", {
+            error: toLoggableError(publicUrlError),
+          });
+
+          try {
+            data = await withTimeout(
+              fetchFromStorageSdk(),
+              NATIVE_STORAGE_SDK_TIMEOUT_MS,
+              "Storage SDK timetable fetch"
+            );
+            dataSource = "storage-sdk";
+          } catch (storageError) {
+            logger.warn("Native storage SDK fallback timetable fetch failed", {
+              storagePath: TIMETABLE_STORAGE_PATH,
+              error: toLoggableError(storageError),
+            });
+            throw storageError;
+          }
+        }
+      } else if (useStorageDirect) {
+        // Web は Firebase Storage から直接取得
+        data = await fetchFromStorageSdk();
+        dataSource = "storage-sdk";
       } else {
-        // Firebase Functions 経由で取得（サーバーサイドまたはフォールバック）
-        const config = useRuntimeConfig();
-        const functionsUrl = `https://asia-northeast1-${config.public.firebase.projectId}.cloudfunctions.net/getTimetableStorage`;
-        data = await $fetch<any[]>(functionsUrl);
+        // サーバーサイドは Firebase Functions 経由
+        try {
+          data = await fetchFromFunctions();
+          dataSource = "functions";
+        } catch (functionsError) {
+          logger.warn("Functions timetable fetch failed", {
+            functionsUrl,
+            error: functionsError,
+          });
+          throw functionsError;
+        }
       }
 
       if (!Array.isArray(data) || data.length === 0) {
@@ -426,10 +562,10 @@ export const useFerryStore = defineStore("ferry", () => {
 
       lastFetchTime.value = new Date();
 
-      // LocalStorageにキャッシュ（Firebase Storage の getCachedJsonFile が既に処理）
-      if (process.client && !useFirebaseFunctions) {
+      // LocalStorageにキャッシュ（Webは getCachedJsonFile 側で保存済み）
+      if (process.client && dataSource !== "storage-sdk") {
         try {
-          localStorage.setItem("rawTimetable", JSON.stringify(data));
+          localStorage.setItem(TIMETABLE_CACHE_KEY, JSON.stringify(data));
           localStorage.setItem(
             "lastFetchTime",
             lastFetchTime.value.toISOString()
@@ -439,12 +575,17 @@ export const useFerryStore = defineStore("ferry", () => {
         }
       }
     } catch (e) {
+      if (nativeAtEntry) {
+        logger.error("Native timetable fetch failed", {
+          error: toLoggableError(e),
+        });
+      }
       error.value = "LOAD_TIMETABLE_ERROR";
 
       // オフラインの場合はキャッシュから読み込み
       if (process.client) {
         try {
-          const cached = localStorage.getItem("rawTimetable");
+          const cached = localStorage.getItem(TIMETABLE_CACHE_KEY);
           if (cached) {
             const data = JSON.parse(cached);
             // Map cached data to expected format
