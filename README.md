@@ -187,9 +187,13 @@ npm run preview
 ```bash
 npm run test:unit        # ユニットテスト
 npm run test:e2e         # E2Eテスト（要: npx playwright install）
+npm run test:e2e:appstore-screenshots  # App Store向けスクリーンショットを自動撮影
+npm run cap:ios:appstore-screenshots   # iOSシミュレータでApp Store向けスクリーンショットを自動撮影
 npm run typecheck       # 型チェック
 npm run lint           # コードリント
 ```
+
+スクリーンショット自動撮影の詳細は [`docs/appstore-screenshots.md`](docs/appstore-screenshots.md) を参照してください。
 
 ### Firebase デプロイ
 

@@ -70,3 +70,5 @@ firebase-export-*/
 
 # Kamui
 .kamui
+ios/build
+output

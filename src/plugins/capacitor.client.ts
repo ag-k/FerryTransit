@@ -9,6 +9,37 @@ import { createLogger } from '~/utils/logger'
 export default defineNuxtPlugin(() => {
   const logger = createLogger('CapacitorPlugin')
   if (Capacitor.isNativePlatform()) {
+    const router = useRouter()
+
+    const parseDeepLinkPath = (url?: string | null): string | null => {
+      if (!url) return null
+
+      try {
+        const parsed = new URL(url)
+        if (parsed.protocol !== 'ferrytransit:') return null
+
+        const hostBasedPath = parsed.host && parsed.host !== 'app' ? `/${parsed.host}` : ''
+        const pathname = parsed.pathname && parsed.pathname !== '/' ? parsed.pathname : ''
+        const path = pathname || hostBasedPath || '/'
+
+        return `${path}${parsed.search || ''}${parsed.hash || ''}`
+      } catch (error) {
+        logger.warn('Failed to parse deep link URL', { url, error })
+        return null
+      }
+    }
+
+    const handleDeepLink = async (url?: string | null) => {
+      const path = parseDeepLinkPath(url)
+      if (!path) return
+
+      try {
+        await router.replace(path)
+      } catch (error) {
+        logger.error('Failed to navigate by deep link', { url, path, error })
+      }
+    }
+
     const rgbStringToHex = (rgbString: string, fallbackHex: string) => {
       const match = rgbString.trim().match(/^rgba?\((\d+)\s*,\s*(\d+)\s*,\s*(\d+)/i)
       if (!match) return fallbackHex
@@ -109,7 +140,6 @@ export default defineNuxtPlugin(() => {
     // バックボタンの処理（Android）
     if (Capacitor.getPlatform() === 'android') {
       App.addListener('backButton', ({ canGoBack }) => {
-        const router = useRouter()
         if (!canGoBack || router.currentRoute.value.path === '/') {
           App.exitApp()
         } else {
@@ -117,5 +147,18 @@ export default defineNuxtPlugin(() => {
         }
       })
     }
+
+    // ディープリンクで画面遷移（例: ferrytransit://app/transit?...）
+    App.addListener('appUrlOpen', (event) => {
+      void handleDeepLink(event?.url)
+    })
+
+    App.getLaunchUrl()
+      .then((launchUrl) => {
+        void handleDeepLink(launchUrl?.url)
+      })
+      .catch((error) => {
+        logger.warn('Failed to read launch URL', error)
+      })
   }
 })
