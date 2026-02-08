@@ -10,6 +10,20 @@ const mockStore: any = {
 }
 
 const mockUpdateShipStatus = vi.fn()
+const mockLocale = ref('ja')
+const mockTranslations: Record<string, string> = {
+  BEPPU: '別府港',
+  HISHIURA: '菱浦港',
+  VIA: '経由',
+  EXTRA_SHIPS: '臨時便',
+  LAST_SHIPS: '最終便',
+  DEPARTURE: '出発',
+  ARRIVAL: '到着',
+  定期運航: 'in Operation',
+  欠航: 'Canceled',
+  運航に変更あり: 'Changed',
+  休航: 'Suspended'
+}
 
 vi.mock('@/stores/ferry', () => ({
   useFerryStore: () => mockStore
@@ -64,20 +78,11 @@ describe('StatusPage', () => {
     mockUpdateShipStatus.mockReset()
     vi.unstubAllGlobals()
     vi.stubGlobal('useHead', vi.fn())
-    const locale = ref('ja')
-    const translations: Record<string, string> = {
-      BEPPU: '別府港',
-      HISHIURA: '菱浦港',
-      VIA: '経由',
-      EXTRA_SHIPS: '臨時便',
-      LAST_SHIPS: '最終便',
-      DEPARTURE: '出発',
-      ARRIVAL: '到着'
-    }
+    mockLocale.value = 'ja'
     vi.stubGlobal('useNuxtApp', () => ({
       $i18n: {
-        t: (key: string) => translations[key] ?? key,
-        locale
+        t: (key: string) => mockTranslations[key] ?? key,
+        locale: mockLocale
       }
     }))
     Object.defineProperty(process, 'client', {
@@ -196,5 +201,26 @@ describe('StatusPage', () => {
     const cardText = wrapper.find('[data-test="isokaze-detail"]').text()
     expect(cardText).toContain('別府港')
     expect(cardText).toContain('菱浦港')
+  })
+
+  it('英語ロケールではフェリーバッジの既知ステータスのみ翻訳し、未知ステータスは原文表示する', async () => {
+    mockLocale.value = 'en'
+    mockStore.shipStatus = {
+      isokaze: null,
+      dozen: null,
+      ferry: {
+        ferryState: '定期運航',
+        fastFerryState: '機関点検',
+        ferryComment: null,
+        fastFerryComment: null
+      }
+    }
+
+    const wrapper = mountStatusPage()
+    await flushPromises()
+
+    expect(wrapper.text()).toContain('in Operation')
+    expect(wrapper.text()).toContain('機関点検')
+    expect(wrapper.text()).not.toContain('定期運航')
   })
 })

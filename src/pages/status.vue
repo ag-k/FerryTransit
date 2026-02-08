@@ -35,7 +35,7 @@ v-if="ferryUpdatedAt" class="text-xs font-semibold text-white/90 whitespace-nowr
                     <span
                       class="inline-flex items-center rounded-full px-2.5 py-1 text-xs font-semibold ring-1 ring-inset"
                       :class="getOperationBadgeClass(shipStatus.ferry.ferryState)">
-                      {{ shipStatus.ferry.ferryState }}
+                      {{ getFerryBadgeLabel(shipStatus.ferry.ferryState) }}
                     </span>
                   </div>
 
@@ -59,7 +59,7 @@ v-if="shipStatus.ferry.ferryComment"
                     <span
                       class="inline-flex items-center rounded-full px-2.5 py-1 text-xs font-semibold ring-1 ring-inset"
                       :class="getOperationBadgeClass(shipStatus.ferry.fastFerryState)">
-                      {{ shipStatus.ferry.fastFerryState }}
+                      {{ getFerryBadgeLabel(shipStatus.ferry.fastFerryState) }}
                     </span>
                   </div>
 
@@ -598,26 +598,46 @@ const getFerryCardContainerClass = (ferry?: FerryStatus | null) => statusContain
 
 const getFerryCardHeaderClass = (ferry?: FerryStatus | null) => statusHeaderClassMap[getFerryVariant(ferry)]
 
+const ferryBadgeTranslationStateSet = new Set(['定期運航', '欠航', '運航に変更あり', '休航'])
+
+const getFerryBadgeLabel = (state?: string | null) => {
+  if (!state) return '-'
+  if ($i18n.locale.value !== 'en') return state
+
+  const normalized = state.trim()
+  if (!ferryBadgeTranslationStateSet.has(normalized)) {
+    return state
+  }
+
+  const translated = String($i18n.t(normalized))
+  return translated !== normalized ? translated : state
+}
+
 const getOperationBadgeClass = (state: string) => {
+  const normalized = state?.trim()
+  if (!normalized) {
+    return 'bg-blue-50 text-blue-800 ring-blue-200 dark:bg-blue-900/30 dark:text-blue-200 dark:ring-blue-800'
+  }
+
   // Japanese
-  if (state === '通常運航' || state === '平常運航') {
+  if (['通常運航', '平常運航', '定期運航'].includes(normalized)) {
     return 'bg-emerald-50 text-emerald-700 ring-emerald-200 dark:bg-emerald-900/30 dark:text-emerald-200 dark:ring-emerald-800'
   }
-  if (state === '欠航') {
+  if (normalized === '欠航' || normalized === '休航') {
     return 'bg-red-50 text-red-700 ring-red-200 dark:bg-red-900/30 dark:text-red-200 dark:ring-red-800'
   }
-  if (state === '条件付き運航') {
+  if (normalized === '条件付き運航' || normalized === '運航に変更あり') {
     return 'bg-amber-50 text-amber-800 ring-amber-200 dark:bg-amber-900/30 dark:text-amber-200 dark:ring-amber-800'
   }
 
   // English
-  if (state === 'Normal Operation' || state === 'Normal Service') {
+  if (normalized === 'Normal Operation' || normalized === 'Normal Service' || normalized === 'in Operation') {
     return 'bg-emerald-50 text-emerald-700 ring-emerald-200 dark:bg-emerald-900/30 dark:text-emerald-200 dark:ring-emerald-800'
   }
-  if (state === 'Cancelled' || state === 'Canceled') {
+  if (normalized === 'Cancelled' || normalized === 'Canceled' || normalized === 'Suspended') {
     return 'bg-red-50 text-red-700 ring-red-200 dark:bg-red-900/30 dark:text-red-200 dark:ring-red-800'
   }
-  if (state === 'Conditional Operation') {
+  if (normalized === 'Conditional Operation' || normalized === 'Changed') {
     return 'bg-amber-50 text-amber-800 ring-amber-200 dark:bg-amber-900/30 dark:text-amber-200 dark:ring-amber-800'
   }
 
