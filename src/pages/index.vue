@@ -150,7 +150,7 @@
                       @click.prevent="showPortInfo(departure)">
                       <span class="leading-tight group-hover:underline inline-flex items-center gap-2">
                         <LocationTypeIcon v-if="departure" :type="resolveLocationType()" />
-                        <span>{{ departureLabelParts.name }}</span>
+                        <span class="shrink-0">{{ departureLabelParts.name }}</span>
                       </span>
                       <PortBadges :badges="departureLabelParts.badges"
                         class="flex flex-1 flex-wrap justify-end gap-1" />
@@ -162,7 +162,7 @@
                       @click.prevent="showPortInfo(arrival)">
                       <span class="leading-tight group-hover:underline inline-flex items-center gap-2">
                         <LocationTypeIcon v-if="arrival" :type="resolveLocationType()" />
-                        <span>{{ arrivalLabelParts.name }}</span>
+                        <span class="shrink-0">{{ arrivalLabelParts.name }}</span>
                       </span>
                       <PortBadges :badges="arrivalLabelParts.badges" class="flex flex-1 flex-wrap justify-end gap-1" />
                     </a>
