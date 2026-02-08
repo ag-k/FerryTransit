@@ -25,6 +25,10 @@ const BUNDLE_IDS = {
 };
 
 const CONFIG_PATH = join(projectRoot, 'capacitor.config.ts');
+const OXC_BINDING_BY_ARCH = {
+  arm64: '@oxc-parser/binding-darwin-arm64',
+  x64: '@oxc-parser/binding-darwin-x64',
+};
 
 function readConfig() {
   return readFileSync(CONFIG_PATH, 'utf-8');
@@ -44,6 +48,21 @@ function updateAppId(content, newAppId) {
 function run(command) {
   console.log(`\n> ${command}\n`);
   execSync(command, { stdio: 'inherit', cwd: projectRoot });
+}
+
+function ensureNpmOptionalDeps() {
+  if (process.platform !== 'darwin') return;
+
+  const bindingPackage = OXC_BINDING_BY_ARCH[process.arch];
+  if (!bindingPackage) return;
+
+  const bindingPath = join(projectRoot, 'node_modules', bindingPackage, 'package.json');
+  if (existsSync(bindingPath)) return;
+
+  console.warn(
+    `⚠️  ${bindingPackage} が見つかりません。npm optional dependency の不整合を修復するため npm install を実行します。`
+  );
+  run('npm install');
 }
 
 async function main() {
@@ -86,6 +105,9 @@ async function main() {
     const updatedConfig = updateAppId(originalConfig, targetAppId);
     writeConfig(updatedConfig);
     console.log(`✅ Updated capacitor.config.ts with appId: ${targetAppId}`);
+
+    // npm optionalDependencies 不整合（oxc-parser native binding 欠落）を事前に補修
+    ensureNpmOptionalDeps();
 
     // Run Nuxt generate
     run('CAPACITOR_BUILD=true npm run generate');
