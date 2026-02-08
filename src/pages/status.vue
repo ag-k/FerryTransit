@@ -45,6 +45,14 @@ v-if="shipStatus.ferry.ferryComment"
                     <p class="text-sm leading-relaxed text-slate-700 dark:text-slate-200">
                       {{ shipStatus.ferry.ferryComment }}
                     </p>
+                    <a
+                      :href="buildGoogleTranslateUrl(shipStatus.ferry.ferryComment)"
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      class="mt-2 inline-flex text-xs font-medium text-blue-700 underline decoration-blue-300 underline-offset-2 transition-colors hover:text-blue-800 dark:text-blue-300 dark:hover:text-blue-200"
+                    >
+                      {{ $t('OPEN_IN_GOOGLE_TRANSLATE') }}
+                    </a>
                   </div>
                   <div class="mt-3">
                     <CancelRiskCard mode="ferry" :probability="ferryCancelProbability" />
@@ -69,6 +77,14 @@ v-if="shipStatus.ferry.fastFerryComment"
                     <p class="text-sm leading-relaxed text-slate-700 dark:text-slate-200">
                       {{ shipStatus.ferry.fastFerryComment }}
                     </p>
+                    <a
+                      :href="buildGoogleTranslateUrl(shipStatus.ferry.fastFerryComment)"
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      class="mt-2 inline-flex text-xs font-medium text-blue-700 underline decoration-blue-300 underline-offset-2 transition-colors hover:text-blue-800 dark:text-blue-300 dark:hover:text-blue-200"
+                    >
+                      {{ $t('OPEN_IN_GOOGLE_TRANSLATE') }}
+                    </a>
                   </div>
                   <div class="mt-3">
                     <CancelRiskCard
@@ -611,6 +627,18 @@ const getFerryBadgeLabel = (state?: string | null) => {
 
   const translated = String($i18n.t(normalized))
   return translated !== normalized ? translated : state
+}
+
+const buildGoogleTranslateUrl = (text?: string | null) => {
+  const raw = typeof text === 'string' ? text.trim() : ''
+  if (!raw) return 'https://translate.google.com/'
+  const params = new URLSearchParams({
+    sl: 'ja',
+    tl: 'en',
+    text: raw,
+    op: 'translate'
+  })
+  return `https://translate.google.com/?${params.toString()}`
 }
 
 const getOperationBadgeClass = (state: string) => {

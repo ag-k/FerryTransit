@@ -79,6 +79,14 @@
                       <p class="text-sm leading-relaxed text-slate-700 dark:text-slate-200">
                         {{ shipStatus.ferry.ferryComment }}
                       </p>
+                      <a
+                        :href="buildGoogleTranslateUrl(shipStatus.ferry.ferryComment)"
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        class="mt-2 inline-flex text-xs font-medium text-blue-700 underline decoration-blue-300 underline-offset-2 transition-colors hover:text-blue-800 dark:text-blue-300 dark:hover:text-blue-200"
+                      >
+                        {{ $t('OPEN_IN_GOOGLE_TRANSLATE') }}
+                      </a>
                     </div>
                   </div>
 
@@ -105,6 +113,14 @@
                       <p class="text-sm leading-relaxed text-slate-700 dark:text-slate-200">
                         {{ shipStatus.ferry.fastFerryComment }}
                       </p>
+                      <a
+                        :href="buildGoogleTranslateUrl(shipStatus.ferry.fastFerryComment)"
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        class="mt-2 inline-flex text-xs font-medium text-blue-700 underline decoration-blue-300 underline-offset-2 transition-colors hover:text-blue-800 dark:text-blue-300 dark:hover:text-blue-200"
+                      >
+                        {{ $t('OPEN_IN_GOOGLE_TRANSLATE') }}
+                      </a>
                     </div>
                   </div>
                 </div>
@@ -335,6 +351,18 @@ const getLocalShipSeverity = (status?: number | null): 'danger' | 'warning' | 'i
   if (status === 0 || status === 4) return 'info'
   if (status === 1) return 'danger'
   return 'warning'
+}
+
+const buildGoogleTranslateUrl = (text?: string | null) => {
+  const raw = typeof text === 'string' ? text.trim() : ''
+  if (!raw) return 'https://translate.google.com/'
+  const params = new URLSearchParams({
+    sl: 'ja',
+    tl: 'en',
+    text: raw,
+    op: 'translate'
+  })
+  return `https://translate.google.com/?${params.toString()}`
 }
 
 // Badge classes

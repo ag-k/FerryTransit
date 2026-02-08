@@ -203,6 +203,34 @@ describe('StatusPage', () => {
     expect(cardText).toContain('菱浦港')
   })
 
+  it('フェリー本文にGoogle翻訳リンクを表示し、本文をURLに含める', async () => {
+    const comment = '波浪の影響により午前便を欠航します。'
+    mockStore.shipStatus = {
+      isokaze: null,
+      dozen: null,
+      ferry: {
+        ferryState: '定期運航',
+        fastFerryState: '定期運航',
+        ferryComment: comment,
+        fastFerryComment: null
+      }
+    }
+
+    const wrapper = mountStatusPage()
+    await flushPromises()
+
+    const link = wrapper.find('a[href*="translate.google.com"]')
+    expect(link.exists()).toBe(true)
+    const expectedQuery = new URLSearchParams({
+      sl: 'ja',
+      tl: 'en',
+      text: comment,
+      op: 'translate'
+    }).toString()
+    expect(link.attributes('href')).toBe(`https://translate.google.com/?${expectedQuery}`)
+    expect(link.attributes('target')).toBe('_blank')
+  })
+
   it('英語ロケールではフェリーバッジの既知ステータスのみ翻訳し、未知ステータスは原文表示する', async () => {
     mockLocale.value = 'en'
     mockStore.shipStatus = {
