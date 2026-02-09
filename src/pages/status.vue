@@ -46,6 +46,7 @@ v-if="shipStatus.ferry.ferryComment"
                       {{ shipStatus.ferry.ferryComment }}
                     </p>
                     <a
+                      v-if="isEnglishLocale"
                       :href="buildGoogleTranslateUrl(shipStatus.ferry.ferryComment)"
                       target="_blank"
                       rel="noopener noreferrer"
@@ -78,6 +79,7 @@ v-if="shipStatus.ferry.fastFerryComment"
                       {{ shipStatus.ferry.fastFerryComment }}
                     </p>
                     <a
+                      v-if="isEnglishLocale"
                       :href="buildGoogleTranslateUrl(shipStatus.ferry.fastFerryComment)"
                       target="_blank"
                       rel="noopener noreferrer"
@@ -448,6 +450,7 @@ import CancelRiskCard from '@/components/CancelRiskCard.vue'
 const ferryStore = process.client ? useFerryStore() : null
 const { updateShipStatus } = useFerryData()
 const { $i18n } = useNuxtApp()
+const isEnglishLocale = computed(() => $i18n.locale.value === 'en')
 
 // State
 const isLoading = ref(false)
