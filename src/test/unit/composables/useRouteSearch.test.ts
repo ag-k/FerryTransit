@@ -807,6 +807,74 @@ describe("useRouteSearch", () => {
       ).toBe(false);
     });
 
+    it("should not apply live cancellation status to resumed leg on non-today searches (JST)", async () => {
+      vi.useFakeTimers();
+      // 2024-01-15 12:00 JST
+      vi.setSystemTime(new Date("2024-01-15T03:00:00.000Z"));
+      mockGetTripStatus.mockReturnValue(2);
+
+      const store = useFerryStore();
+      store.timetableData = [
+        {
+          tripId: 700,
+          nextId: 701,
+          startDate: "2024-01-01",
+          endDate: "2024-12-31",
+          name: "FERRY_SHIRASHIMA",
+          departure: "KURI",
+          departureTime: "10:55:00" as any,
+          arrival: "HONDO_SAKAIMINATO",
+          arrivalTime: "13:20:00" as any,
+          status: 0,
+        },
+        {
+          tripId: 701,
+          nextId: 702,
+          startDate: "2024-01-01",
+          endDate: "2024-12-31",
+          name: "FERRY_SHIRASHIMA",
+          departure: "HONDO_SAKAIMINATO",
+          departureTime: "14:10:00" as any,
+          arrival: "KURI",
+          arrivalTime: "16:35:00" as any,
+          status: 0,
+        },
+        {
+          tripId: 702,
+          startDate: "2024-01-01",
+          endDate: "2024-12-31",
+          name: "FERRY_SHIRASHIMA",
+          departure: "KURI",
+          departureTime: "16:40:00" as any,
+          arrival: "BEPPU",
+          arrivalTime: "17:10:00" as any,
+          status: 0,
+          via: "HONDO_SAKAIMINATO",
+        },
+      ];
+
+      const { searchRoutes } = useRouteSearch();
+      const results = await searchRoutes(
+        "KURI",
+        "BEPPU",
+        new Date("2024-01-16T00:00:00+09:00"),
+        "10:00",
+        false
+      );
+
+      const resumed = results.find((r) =>
+        r.segments.some((s) => s.departure === "KURI" && s.arrival === "BEPPU")
+      );
+      expect(resumed).toBeDefined();
+
+      const resumedSegment = resumed?.segments.find(
+        (s) => s.departure === "KURI" && s.arrival === "BEPPU"
+      );
+      expect(resumedSegment?.status).toBe(0);
+
+      vi.useRealTimers();
+    });
+
     it("should chain next_id segments on the same ship without counting as transfers", async () => {
       const store = useFerryStore();
       store.timetableData = [

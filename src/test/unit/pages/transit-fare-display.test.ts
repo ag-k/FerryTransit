@@ -551,6 +551,69 @@ describe('Transit Page - Fare Display', () => {
     })
   })
 
+  describe('Operation Status Date Guard', () => {
+    it('should not show ship status alert icon on non-today date (JST)', async () => {
+      vi.useFakeTimers()
+      // 2024-01-15 12:00 JST
+      vi.setSystemTime(new Date('2024-01-15T03:00:00.000Z'))
+
+      const wrapper = mountWithI18n(Transit, {
+        global: {
+          plugins: [router],
+          stubs: {
+            PortSelector: true,
+            DatePicker: true,
+            CommonShipModal: true,
+            StatusAlerts: true,
+            FavoriteButton: true,
+            RouteMapModal: true
+          }
+        }
+      })
+
+      const ferryStore = useFerryStore()
+      ferryStore.shipStatus = {
+        isokaze: null,
+        dozen: null,
+        ferry: {
+          ferryState: '欠航'
+        },
+        kunigaKankou: null
+      } as any
+
+      wrapper.vm.departure = 'HONDO_SHICHIRUI'
+      wrapper.vm.arrival = 'SAIGO'
+      wrapper.vm.date = new Date('2024-01-16T00:00:00+09:00')
+      wrapper.vm.hasSearched = true
+      wrapper.vm.searchResults = [
+        {
+          segments: [
+            {
+              tripId: '300',
+              ship: 'FERRY_OKI',
+              departure: 'HONDO_SHICHIRUI',
+              arrival: 'SAIGO',
+              departureTime: new Date('2024-01-16T09:00:00+09:00'),
+              arrivalTime: new Date('2024-01-16T11:25:00+09:00'),
+              status: 0,
+              fare: 3520
+            }
+          ],
+          departureTime: new Date('2024-01-16T09:00:00+09:00'),
+          arrivalTime: new Date('2024-01-16T11:25:00+09:00'),
+          totalFare: 3520,
+          transferCount: 0
+        }
+      ]
+
+      await wrapper.vm.$nextTick()
+
+      expect(wrapper.find('[data-test="ship-status-alert-icon"]').exists()).toBe(false)
+
+      vi.useRealTimers()
+    })
+  })
+
   describe('Rainbow Jet Seat Availability', () => {
     it('should show seat availability button with month parameter from search date', async () => {
       const wrapper = mountWithI18n(Transit, {

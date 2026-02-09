@@ -485,6 +485,7 @@ import LocationTypeIcon from '@/components/common/LocationTypeIcon.vue'
 import type { LocationType, TransportMode, TransitRoute, TransitSegment } from '@/types'
 import { createLogger } from '~/utils/logger'
 import { getPortMapZoom } from '@/utils/portMapZoom'
+import { isTodayJst } from '@/utils/jstDate'
 
 // Stores
 const ferryStore = process.client ? useFerryStore() : null
@@ -929,9 +930,7 @@ const modalPortZoom = computed<number>(() => {
 // 船種の運航状況に変更があるかチェック（当日のみ）
 const getShipStatusAlert = (shipName: string): { hasAlert: boolean; severity: 'warning' | 'danger' | 'info' } | null => {
   // 当日以外は表示しない
-  const todayStr = new Date().toISOString().slice(0, 10)
-  const dateStr = date.value.toISOString().slice(0, 10)
-  if (dateStr !== todayStr) {
+  if (!isTodayJst(date.value)) {
     return null
   }
 
