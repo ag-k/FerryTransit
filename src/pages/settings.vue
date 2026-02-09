@@ -46,7 +46,7 @@
         <h3 class="text-lg font-medium mb-4 dark:text-white">{{ $t('LINKS') }}</h3>
         <div class="space-y-3">
           <a
-            href="https://github.com/yourusername/ferry-transit"
+            href="https://oki-digilab.com/"
             target="_blank"
             rel="noopener noreferrer"
             class="flex items-center justify-between px-4 py-3 bg-gray-50 dark:bg-gray-600 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-500 transition-colors duration-200"
@@ -66,6 +66,26 @@
               />
             </svg>
           </a>
+
+          <NuxtLink
+            :to="localePath('/privacy')"
+            class="flex items-center justify-between px-4 py-3 bg-gray-50 dark:bg-gray-600 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-500 transition-colors duration-200"
+          >
+            <span class="text-blue-700 dark:text-blue-200">{{ $t('PRIVACY_POLICY') }}</span>
+            <svg
+              class="w-5 h-5 text-gray-400 dark:text-gray-300"
+              fill="none"
+              stroke="currentColor"
+              viewBox="0 0 24 24"
+            >
+              <path
+                stroke-linecap="round"
+                stroke-linejoin="round"
+                stroke-width="2"
+                d="M9 5l7 7-7 7"
+              />
+            </svg>
+          </NuxtLink>
         </div>
       </div>
     </div>
@@ -79,6 +99,7 @@ import MapSettings from '~/components/settings/MapSettings.vue'
 import DataManagement from '~/components/settings/DataManagement.vue'
 
 const runtimeConfig = useRuntimeConfig()
+const localePath = useLocalePath()
 
 definePageMeta({
   title: 'SETTINGS'
