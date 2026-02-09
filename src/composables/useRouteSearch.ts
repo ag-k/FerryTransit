@@ -556,7 +556,7 @@ export const useRouteSearch = () => {
               break;
             }
 
-            const status = getTripStatus(t);
+            const status = getStatusForSearchDate(t, applyLiveStatus);
             if (status === 2) {
               resumeSegments.length = 0;
               break;
