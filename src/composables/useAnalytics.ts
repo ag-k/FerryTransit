@@ -413,6 +413,9 @@ export const useAnalytics = () => {
   // ========================================
 
   const getAdminCollection = async <T = any>(collectionName: string) => {
+    if (__CAPACITOR_BUILD__) {
+      return [] as T[]
+    }
     if (typeof useAdminFirestore !== 'function') {
       return [] as T[]
     }

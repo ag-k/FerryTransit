@@ -8,13 +8,22 @@ export default defineNuxtPlugin({
   dependsOn: ['firebase'],
   setup: () => {
     const { trackPageView } = useAnalytics()
+    const shouldSkipTracking = (path?: string) => {
+      if (!path) {
+        return true
+      }
+      if (__CAPACITOR_BUILD__) {
+        return false
+      }
+      return path.startsWith('/admin')
+    }
   
     // ルート遷移の監視
     const router = useRouter()
   
     // ルート遷移ごとにPVを記録
     router.afterEach((to) => {
-      if (!to.path || to.path.startsWith('/admin')) {
+      if (shouldSkipTracking(to.path)) {
         return
       }
       trackPageView({ pagePath: to.path })
