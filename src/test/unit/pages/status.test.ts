@@ -205,6 +205,7 @@ describe('StatusPage', () => {
 
   it('フェリー本文にGoogle翻訳リンクを表示し、本文をURLに含める', async () => {
     const comment = '波浪の影響により午前便を欠航します。'
+    mockLocale.value = 'en'
     mockStore.shipStatus = {
       isokaze: null,
       dozen: null,
@@ -229,6 +230,25 @@ describe('StatusPage', () => {
     }).toString()
     expect(link.attributes('href')).toBe(`https://translate.google.com/?${expectedQuery}`)
     expect(link.attributes('target')).toBe('_blank')
+  })
+
+  it('日本語ロケールではフェリー本文のGoogle翻訳リンクを表示しない', async () => {
+    mockLocale.value = 'ja'
+    mockStore.shipStatus = {
+      isokaze: null,
+      dozen: null,
+      ferry: {
+        ferryState: '定期運航',
+        fastFerryState: '定期運航',
+        ferryComment: '波浪の影響により午前便を欠航します。',
+        fastFerryComment: null
+      }
+    }
+
+    const wrapper = mountStatusPage()
+    await flushPromises()
+
+    expect(wrapper.find('a[href*="translate.google.com"]').exists()).toBe(false)
   })
 
   it('英語ロケールではフェリーバッジの既知ステータスのみ翻訳し、未知ステータスは原文表示する', async () => {

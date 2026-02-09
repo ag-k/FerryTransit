@@ -80,6 +80,7 @@
                         {{ shipStatus.ferry.ferryComment }}
                       </p>
                       <a
+                        v-if="isEnglishLocale"
                         :href="buildGoogleTranslateUrl(shipStatus.ferry.ferryComment)"
                         target="_blank"
                         rel="noopener noreferrer"
@@ -114,6 +115,7 @@
                         {{ shipStatus.ferry.fastFerryComment }}
                       </p>
                       <a
+                        v-if="isEnglishLocale"
                         :href="buildGoogleTranslateUrl(shipStatus.ferry.fastFerryComment)"
                         target="_blank"
                         rel="noopener noreferrer"
@@ -269,10 +271,11 @@ const emit = defineEmits<{
   close: []
 }>()
 
-const { t } = useI18n()
+const { t, locale } = useI18n()
 const router = useRouter()
 const localePath = useLocalePath()
 const ferryStore = process.client ? useFerryStore() : null
+const isEnglishLocale = computed(() => locale.value === 'en')
 
 const isLoading = computed(() => !ferryStore?.shipStatus)
 const shipStatus = computed(() => ferryStore?.shipStatus || {})
