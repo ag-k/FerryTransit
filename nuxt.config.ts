@@ -21,9 +21,40 @@ const normalizeFirebaseBucket = (bucket?: string) => {
 };
 
 const isProductionBuild = process.env.NODE_ENV === "production";
+const isCapacitorBuild = process.env.CAPACITOR_BUILD === "true";
+const capacitorIgnorePatterns = [
+  "**/pages/admin/**",
+  "**/layouts/admin.vue",
+  "**/middleware/admin.ts",
+  "**/components/admin/**",
+  "**/stores/admin.ts",
+  "**/composables/useAdmin*.ts",
+  "**/types/admin.ts",
+];
+
+type NuxtPageNode = {
+  path?: string;
+  children?: NuxtPageNode[];
+};
+
+const pruneAdminPages = (pages: NuxtPageNode[]) => {
+  for (let i = pages.length - 1; i >= 0; i--) {
+    const page = pages[i];
+
+    if (page.path?.startsWith("/admin")) {
+      pages.splice(i, 1);
+      continue;
+    }
+
+    if (page.children?.length) {
+      pruneAdminPages(page.children);
+    }
+  }
+};
 
 export default defineNuxtConfig({
   srcDir: "src/",
+  ignore: isCapacitorBuild ? capacitorIgnorePatterns : [],
   compatibilityDate: "2025-05-15",
   devtools: { enabled: true },
 
@@ -38,12 +69,23 @@ export default defineNuxtConfig({
       routes: ["/404.html"],
       crawlLinks: false,
       // アプリ版では管理画面を除外
-      ignore:
-        process.env.CAPACITOR_BUILD === "true" ? ["/admin", "/admin/**"] : [],
+      ignore: isCapacitorBuild ? ["/admin", "/admin/**"] : [],
+    },
+  },
+
+  hooks: {
+    "pages:extend"(pages) {
+      if (!isCapacitorBuild) {
+        return;
+      }
+      pruneAdminPages(pages as NuxtPageNode[]);
     },
   },
 
   vite: {
+    define: {
+      __CAPACITOR_BUILD__: JSON.stringify(isCapacitorBuild),
+    },
     optimizeDeps: {
       exclude: ["oxc-parser"],
     },
