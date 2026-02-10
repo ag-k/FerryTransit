@@ -1,0 +1,25 @@
+{
+  "projects": {
+    "default": "oki-ferryguide",
+    "prod": "oki-ferryguide",
+    "dev": "oki-ferryguide-dev"
+  },
+  "targets": {
+    "oki-ferryguide": {
+      "storage": {
+        "main": [
+          "oki-ferryguide.firebasestorage.app"
+        ],
+        "oki-ferryguide": [
+          "oki-ferryguide"
+        ]
+      },
+      "hosting": {
+        "oki-ferryguide": [
+          "oki-ferryguide"
+        ]
+      }
+    }
+  },
+  "etags": {}
+}

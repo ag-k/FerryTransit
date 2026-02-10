@@ -1,0 +1,32 @@
+[
+  {
+    "status": 0,
+    "summary": "通常運航",
+    "comment": null,
+    "reason": null,
+    "updated": "2025-01-15T08:00:00+09:00",
+    "hasAlert": false,
+    "lastShips": [],
+    "extraShips": []
+  },
+  {
+    "status": 0,
+    "summary": "通常運航",
+    "comment": null,
+    "reason": null,
+    "updated": "2025-01-15T08:05:00+09:00",
+    "hasAlert": false,
+    "lastShips": [],
+    "extraShips": []
+  },
+  {
+    "status": 0,
+    "hasAlert": false,
+    "ferry_state": "定期運航",
+    "ferry_comment": "",
+    "fast_ferry_state": "( in Operation )",
+    "fast_ferry_comment": "",
+    "today_wave": "1.0m",
+    "tomorrow_wave": "1.5m"
+  }
+]

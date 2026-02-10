@@ -1,8 +1,74 @@
+# Nuxt dev/build outputs
+.output
+.data
+.nuxt
+.nitro
+.cache
+dist
+temp
+
+# Node dependencies
+node_modules
+
+# Logs
+logs
+*.log
+
+# Misc
+.DS_Store
+.fleet
+.idea
+
+# Google Cloud CLI
+.gcloud_cfg/
+
+# Firebase Admin SDK keys
+firebase/
+*.serviceAccountKey.json
+*firebase-adminsdk*.json
+
+# Local env files
+.env
+.env.*
+!.env.example
+.env.backup
+**/.env.backup
+
+# Legacy files
 *.csv
 *.zip
-note_modules
-dist
 .tmp
 .sass-cache
 bower_components
 typings
+
+# Build directories
+ios/App/build
+ios/App/Pods
+ios/capacitor-cordova-ios-plugins
+android/app/build
+android/capacitor-cordova-android-plugins/build
+
+# Firebase config files (sensitive)
+ios/App/App/GoogleService-Info.plist
+android/app/google-services.json
+
+# Config directories
+/config
+.firebase
+test-results
+
+# Test coverage
+coverage/
+
+# Firebase emulator data
+emulator-data/
+firebase-export-*/
+
+# Claude local settings
+.claude/settings.local.json
+
+# Kamui
+.kamui
+ios/build
+output

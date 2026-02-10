@@ -1,0 +1,555 @@
+import type { Port } from "~/types";
+
+export const PORTS_DATA: Record<string, Port> = {
+  HONDO_SHICHIRUI: {
+    id: "HONDO_SHICHIRUI",
+    name: "七類港",
+    nameEn: "Shichirui Port",
+    location: {
+      lat: 35.5714,
+      lng: 133.2298,
+    },
+    type: "mainland",
+    facilities: {
+      parking: true,
+      restaurant: false,
+      shop: true,
+      waitingRoom: true,
+      toilet: true,
+      busStop: true,
+      taxiStand: true,
+    },
+    access: {
+      byBus: "JR松江駅から約40分",
+      byBusEn: "About 40 minutes from JR Matsue Station",
+      byCar: "松江市内から約30分",
+      byCarEn: "About 30 minutes from Matsue",
+      walking: "最寄りのバス停から徒歩3分",
+      walkingEn: "3 minutes walk from the nearest bus stop",
+    },
+    boarding: [
+      {
+        shipIds: ["FERRY_OKI", "FERRY_SHIRASHIMA", "FERRY_KUNIGA"],
+        labelJa: "隠岐汽船フェリー（フェリーおき等）",
+        labelEn: "Oki Kisen Ferry (Ferry Oki, etc.)",
+        placeJa: "七類港フェリーターミナル（メテオプラザ）",
+        placeEn: "Shichirui Port Ferry Terminal (Meteo Plaza)",
+        location: { lat: 35.5712702, lng: 133.2297413 },
+        noteJa: "乗船手続きはターミナル窓口・案内表示をご確認ください。",
+        noteEn: "Please check the terminal counter and information signs for boarding procedures.",
+        sourceUrl: "https://www.oki-kisen.co.jp/terminal/"
+      },
+      {
+        shipIds: ["RAINBOWJET"],
+        labelJa: "高速船レインボージェット",
+        labelEn: "High-speed ship Rainbow Jet",
+        placeJa: "七類港フェリーターミナル（メテオプラザ）",
+        placeEn: "Shichirui Port Ferry Terminal (Meteo Plaza)",
+        location: { lat: 35.5712702, lng: 133.2297413 },
+        noteJa: "乗船手続きはターミナル窓口・案内表示をご確認ください。",
+        noteEn: "Please check the terminal counter and information signs for boarding procedures.",
+        sourceUrl: "https://www.oki-kisen.co.jp/terminal/"
+      }
+    ]
+  },
+  HONDO_SAKAIMINATO: {
+    id: "HONDO_SAKAIMINATO",
+    name: "境港",
+    nameEn: "Sakaiminato Port",
+    location: {
+      lat: 35.5454,
+      lng: 133.2226,
+    },
+    type: "mainland",
+    facilities: {
+      parking: true,
+      restaurant: true,
+      shop: true,
+      waitingRoom: true,
+      toilet: true,
+      busStop: true,
+      taxiStand: true,
+    },
+    access: {
+      byBus: "JR境港駅から約15分",
+      byBusEn: "About 15 minutes from JR Sakaiminato Station",
+      byCar: "米子市内から約40分",
+      byCarEn: "About 40 minutes from Yonago City",
+      walking: "最寄りのバス停から徒歩5分",
+      walkingEn: "5 minutes walk from the nearest bus stop",
+    },
+    boarding: [
+      {
+        shipIds: ["FERRY_OKI", "FERRY_SHIRASHIMA", "FERRY_KUNIGA"],
+        labelJa: "隠岐汽船フェリー（フェリーおき等）",
+        labelEn: "Oki Kisen Ferry (Ferry Oki, etc.)",
+        placeJa: "境港旅客ターミナル2F",
+        placeEn: "Sakaiminato Passenger Terminal 2F",
+        location: { lat: 35.5453155, lng: 133.2227637 },
+        noteJa: "乗船手続きは窓口・案内表示をご確認ください。",
+        noteEn: "Please check the counter and information signs for boarding procedures.",
+        sourceUrl: "https://www.oki-kisen.co.jp/terminal/"
+      },
+      {
+        shipIds: ["RAINBOWJET"],
+        labelJa: "高速船レインボージェット",
+        labelEn: "High-speed ship Rainbow Jet",
+        placeJa: "境港旅客ターミナル前岸壁",
+        placeEn: "Sakaiminato Passenger Terminal Front Wharf",
+        location: { lat: 35.5453155, lng: 133.2227637 },
+        noteJa: "乗船手続きは窓口・案内表示をご確認ください。",
+        noteEn: "Please check the counter and information signs for boarding procedures.",
+        sourceUrl: "https://www.oki-kisen.co.jp/terminal/"
+      }
+    ]
+  },
+  SAIGO: {
+    id: "SAIGO",
+    name: "西郷港",
+    nameEn: "Saigo Port",
+    location: {
+      lat: 36.2035,
+      lng: 133.3351,
+    },
+    type: "dogo",
+    facilities: {
+      parking: true,
+      restaurant: true,
+      shop: true,
+      waitingRoom: true,
+      toilet: true,
+      busStop: true,
+      taxiStand: true,
+    },
+    access: {
+      byBus: "隠岐の島町内各地へバス運行",
+      byBusEn: "Bus service to various locations in Okinoshima Town",
+      byCar: "隠岐空港から約10分",
+      byCarEn: "About 10 minutes from Oki Airport",
+      walking: "西郷中心部から徒歩10分",
+      walkingEn: "10 minutes walk from Saigo center",
+    },
+    boarding: [
+      {
+        shipIds: ["FERRY_OKI", "FERRY_SHIRASHIMA", "FERRY_KUNIGA"],
+        labelJa: "隠岐汽船フェリー（フェリーおき等）",
+        labelEn: "Oki Kisen Ferry (Ferry Oki, etc.)",
+        placeJa: "西郷港フェリーターミナル",
+        placeEn: "Saigo Port Ferry Terminal",
+        location: { lat: 36.203404, lng: 133.335062 },
+        noteJa: "フェリー・高速船切符売場にて乗船券をご購入ください",
+        noteEn: "Please purchase your boarding ticket at the ferry/high-speed ship ticket counter.",
+        sourceUrl: "https://www.oki-kisen.co.jp/terminal/"
+      },
+      {
+        shipIds: ["RAINBOWJET"],
+        labelJa: "高速船レインボージェット",
+        labelEn: "High-speed ship Rainbow Jet",
+        placeJa: "西郷港（高速船のりば）",
+        placeEn: "Saigo Port (high-speed ship boarding area)",
+        location: { lat: 36.203404, lng: 133.335062 },
+        noteJa: "フェリー・高速船切符売場にて予約番号を伝えて乗船券をご購入ください",
+        noteEn: "Please present your reservation number and purchase a boarding ticket at the ferry/high-speed ship ticket counter.",
+        sourceUrl: "https://www.oki-kisen.co.jp/terminal/"
+      }
+    ]
+  },
+  HISHIURA: {
+    id: "HISHIURA",
+    name: "菱浦港",
+    nameEn: "Hishiura Port",
+    location: {
+      lat: 36.1049,
+      lng: 133.0769,
+    },
+    type: "dozen",
+    facilities: {
+      parking: true,
+      restaurant: false,
+      shop: true,
+      waitingRoom: true,
+      toilet: true,
+      busStop: true,
+      taxiStand: false,
+    },
+    access: {
+      byBus: "海士町内各地へバス運行",
+      byBusEn: "Bus service to various locations in Ama Town",
+      byCar: "海士町役場から約5分",
+      byCarEn: "About 5 minutes from Ama Town Office",
+      walking: "菱浦集落内",
+      walkingEn: "Within Hishiura village",
+    },
+    boarding: [
+      {
+        shipIds: ["FERRY_OKI", "FERRY_SHIRASHIMA", "FERRY_KUNIGA"],
+        labelJa: "隠岐汽船フェリー（フェリーおき等）",
+        labelEn: "Oki Kisen Ferry (Ferry Oki, etc.)",
+        placeJa: "菱浦港（隠岐汽船フェリー乗り場）",
+        placeEn: "Hishiura Port (Oki Kisen ferry boarding area)",
+        location: { lat: 36.1048509, lng: 133.0769833 },
+        sourceUrl: "https://www.oki-kisen.co.jp/terminal/"
+      },
+      {
+        shipIds: ["RAINBOWJET"],
+        labelJa: "高速船レインボージェット",
+        labelEn: "High-speed ship Rainbow Jet",
+        placeJa: "菱浦港（レインボージェット乗り場）",
+        placeEn: "Hishiura Port (Rainbow Jet boarding area)",
+        location: { lat: 36.1048509, lng: 133.0769833 },
+        sourceUrl: "https://www.oki-kisen.co.jp/terminal/"
+      },
+      {
+        shipIds: ["ISOKAZE", "ISOKAZE_EX"],
+        labelJa: "内航船いそかぜ",
+        labelEn: "Inter-island ship Isokaze",
+        placeJa: "菱浦港内（いそかぜ乗り場）",
+        placeEn: "Hishiura Port (Isokaze boarding area)",
+        location: { lat: 36.1056776, lng: 133.0766876 },
+        sourceUrl: "https://www.okikankou.com/inter-island-ferry/"
+      },
+      {
+        shipIds: ["FERRY_DOZEN"],
+        labelJa: "フェリーどうぜん（内航船）",
+        labelEn: "Ferry Dozen (inter-island)",
+        placeJa: "菱浦港内（どうぜん乗り場）",
+        placeEn: "Hishiura Port (Dozen boarding area)",
+        location: { lat: 36.1054527, lng: 133.0764842 },
+        sourceUrl: "https://www.okikankou.com/inter-island-ferry/"
+      }
+    ]
+  },
+  BEPPU: {
+    id: "BEPPU",
+    name: "別府港",
+    nameEn: "Beppu Port",
+    location: {
+      lat: 36.1077,
+      lng: 133.0416,
+    },
+    type: "dozen",
+    facilities: {
+      parking: true,
+      restaurant: false,
+      shop: false,
+      waitingRoom: true,
+      toilet: true,
+      busStop: true,
+      taxiStand: false,
+    },
+    access: {
+      byBus: "西ノ島町内各地へバス運行",
+      byBusEn: "Bus service to various locations in Nishinoshima Town",
+      byCar: "浦郷から約15分",
+      byCarEn: "About 15 minutes from Urago",
+      walking: "別府集落内",
+      walkingEn: "Within Beppu village",
+    },
+    boarding: [
+      {
+        shipIds: ["FERRY_OKI", "FERRY_SHIRASHIMA", "FERRY_KUNIGA"],
+        labelJa: "隠岐汽船フェリー（フェリーおき等）",
+        labelEn: "Oki Kisen Ferry (Ferry Oki, etc.)",
+        placeJa: "別府港第一ターミナルビル2F",
+        placeEn: "Beppu Port First Terminal Building 2F",
+        noteJa: "チケットは別府港第一ターミナルビル1Fにてご購入ください。",
+        noteEn: "Tickets can be purchased on the 1F of the Beppu Port First Terminal Building.",
+        location: { lat: 36.1078165, lng: 133.0417934 },
+        sourceUrl: "https://www.oki-kisen.co.jp/terminal/"
+      },
+      {
+        shipIds: ["ISOKAZE", "ISOKAZE_EX"],
+        labelJa: "内航船いそかぜ",
+        labelEn: "Inter-island ship Isokaze",
+        placeJa: "別府港 ターミナルビルから徒歩約2分（いそかぜ乗り場）",
+        placeEn: "About 2 minutes on foot from Beppu Port Terminal Building (Isokaze boarding area)",
+        location: { lat: 36.1073082, lng: 133.0421124 },
+        sourceUrl: "https://bewave.jp/oki/access/beppu.html"
+      },
+      {
+        shipIds: ["FERRY_DOZEN"],
+        labelJa: "フェリーどうぜん（内航船）",
+        labelEn: "Ferry Dozen (inter-island)",
+        placeJa: "別府交通センター",
+        placeEn: "Beppu Transportation Center",
+        location: { lat: 36.1088267, lng: 133.0411866 },
+        sourceUrl: "https://bewave.jp/oki/access/beppu.html"
+      },
+      {
+        shipIds: ["RAINBOWJET"],
+        labelJa: "高速船レインボージェット",
+        labelEn: "High-speed ship Rainbow Jet",
+        placeJa: "別府港ターミナルビルから徒歩3分(レインボージェット乗り場)",
+        placeEn: "3 minutes on foot from Beppu Port Terminal Building (Rainbow Jet boarding area)",
+        noteJa: "[要予約] チケットは別府港第一ターミナルビル1Fにてご購入ください。",
+        noteEn: "[Reservation required] Tickets can be purchased on the 1F of the Beppu Port First Terminal Building.",
+        location: { lat: 36.1072822, lng: 133.0432690 },
+        sourceUrl: "https://www.oki-kisen.co.jp/terminal/"
+      }
+    ]
+  },
+  KURI: {
+    id: "KURI",
+    name: "来居港",
+    nameEn: "Kuri Port",
+    location: {
+      lat: 36.025,
+      lng: 133.0393,
+    },
+    type: "dozen",
+    facilities: {
+      parking: true,
+      restaurant: false,
+      shop: false,
+      waitingRoom: true,
+      toilet: true,
+      busStop: true,
+      taxiStand: false,
+    },
+    access: {
+      byBus: "知夫村内各地へバス運行",
+      byBusEn: "Bus service to various locations in Chibu Village",
+      byCar: "知夫村役場から約5分",
+      byCarEn: "About 5 minutes from Chibu Village Office",
+      walking: "来居集落内",
+      walkingEn: "Within Kuri village",
+    },
+    boarding: [
+      {
+        shipIds: ["FERRY_OKI", "FERRY_SHIRASHIMA", "FERRY_KUNIGA"],
+        labelJa: "隠岐汽船フェリー（フェリーおき等）",
+        labelEn: "Oki Kisen Ferry (Ferry Oki, etc.)",
+        placeJa: "来居港フェリーターミナル",
+        placeEn: "Kuri Port Ferry Terminal",
+        location: { lat: 36.0249446, lng: 133.03939755 },
+        sourceUrl: "https://www.oki-kisen.co.jp/terminal/"
+      },
+      {
+        shipIds: ["ISOKAZE", "ISOKAZE_EX"],
+        labelJa: "内航船いそかぜ",
+        labelEn: "Inter-island ship Isokaze",
+        placeJa: "来居港内（いそかぜ乗り場）",
+        placeEn: "Kuri Port (Isokaze boarding area)",
+        location: { lat: 36.0243794, lng: 133.0401959 },
+        sourceUrl: "https://www.okikankou.com/inter-island-ferry/"
+      },
+      {
+        shipIds: ["FERRY_DOZEN"],
+        labelJa: "フェリーどうぜん（内航船）",
+        labelEn: "Ferry Dozen (inter-island)",
+        placeJa: "来居港内（どうぜん乗り場）",
+        placeEn: "Kuri Port (Dozen boarding area)",
+        location: { lat: 36.0247636, lng: 133.0400763 },
+        sourceUrl: "https://www.okikankou.com/inter-island-ferry/"
+      }
+    ]
+  },
+};
+
+// 航路データ（港間の接続）
+export const ROUTES_DATA = [
+  // 七類 → 西郷
+  {
+    from: "HONDO_SHICHIRUI",
+    to: "SAIGO",
+    ships: ["FERRY_OKI", "FERRY_SHIRASHIMA", "FERRY_KUNIGA"],
+  },
+  // 七類 → 来居
+  {
+    from: "HONDO_SHICHIRUI",
+    to: "KURI",
+    ships: ["FERRY_OKI", "FERRY_SHIRASHIMA", "FERRY_KUNIGA"],
+  },
+  // 七類 → 菱浦
+  {
+    from: "HONDO_SHICHIRUI",
+    to: "HISHIURA",
+    ships: ["FERRY_OKI", "FERRY_SHIRASHIMA", "FERRY_KUNIGA"],
+  },
+  // 七類 → 別府
+  {
+    from: "HONDO_SHICHIRUI",
+    to: "BEPPU",
+    ships: ["FERRY_OKI", "FERRY_SHIRASHIMA", "FERRY_KUNIGA"],
+  },
+  // 境港 → 西郷
+  {
+    from: "HONDO_SAKAIMINATO",
+    to: "SAIGO",
+    ships: ["FERRY_OKI", "FERRY_SHIRASHIMA", "FERRY_KUNIGA"],
+  },
+  // 境港 → 別府
+  {
+    from: "HONDO_SAKAIMINATO",
+    to: "BEPPU",
+    ships: ["FERRY_OKI", "FERRY_SHIRASHIMA", "FERRY_KUNIGA"],
+  },
+  // 境港 → 菱浦
+  {
+    from: "HONDO_SAKAIMINATO",
+    to: "HISHIURA",
+    ships: ["FERRY_OKI", "FERRY_SHIRASHIMA", "FERRY_KUNIGA"],
+  },
+  // 境港 → 来居
+  {
+    from: "HONDO_SAKAIMINATO",
+    to: "KURI",
+    ships: ["FERRY_OKI", "FERRY_SHIRASHIMA", "FERRY_KUNIGA"],
+  },
+  // 西郷 → 七類
+  {
+    from: "SAIGO",
+    to: "HONDO_SHICHIRUI",
+    ships: ["FERRY_OKI", "FERRY_SHIRASHIMA", "FERRY_KUNIGA"],
+  },
+  // 西郷 → 境港
+  {
+    from: "SAIGO",
+    to: "HONDO_SAKAIMINATO",
+    ships: ["FERRY_OKI", "FERRY_SHIRASHIMA", "FERRY_KUNIGA"],
+  },
+  // 西郷 → 菱浦
+  {
+    from: "SAIGO",
+    to: "HISHIURA",
+    ships: ["FERRY_OKI", "FERRY_SHIRASHIMA", "FERRY_KUNIGA"],
+  },
+  // 西郷 → 別府
+  {
+    from: "SAIGO",
+    to: "BEPPU",
+    ships: ["FERRY_OKI", "FERRY_SHIRASHIMA", "FERRY_KUNIGA"],
+  },
+  // 西郷 → 来居
+  {
+    from: "SAIGO",
+    to: "KURI",
+    ships: ["FERRY_OKI", "FERRY_SHIRASHIMA", "FERRY_KUNIGA"],
+  },
+  // 菱浦 → 七類
+  {
+    from: "HISHIURA",
+    to: "HONDO_SHICHIRUI",
+    ships: ["FERRY_OKI", "FERRY_SHIRASHIMA", "FERRY_KUNIGA"],
+  },
+  // 菱浦 → 境港
+  {
+    from: "HISHIURA",
+    to: "HONDO_SAKAIMINATO",
+    ships: ["FERRY_OKI", "FERRY_SHIRASHIMA", "FERRY_KUNIGA"],
+  },
+  // 菱浦 → 西郷
+  {
+    from: "HISHIURA",
+    to: "SAIGO",
+    ships: ["FERRY_OKI", "FERRY_SHIRASHIMA", "FERRY_KUNIGA"],
+  },
+  // 菱浦 → 別府
+  {
+    from: "HISHIURA",
+    to: "BEPPU",
+    ships: [
+      "ISOKAZE",
+      "FERRY_DOZEN",
+      "FERRY_OKI",
+      "FERRY_SHIRASHIMA",
+      "FERRY_KUNIGA",
+    ],
+  },
+  // 菱浦 → 来居
+  {
+    from: "HISHIURA",
+    to: "KURI",
+    ships: [
+      "ISOKAZE",
+      "FERRY_DOZEN",
+      "FERRY_OKI",
+      "FERRY_SHIRASHIMA",
+      "FERRY_KUNIGA",
+    ],
+  },
+  // 別府 → 七類
+  {
+    from: "BEPPU",
+    to: "HONDO_SHICHIRUI",
+    ships: ["FERRY_OKI", "FERRY_SHIRASHIMA", "FERRY_KUNIGA"],
+  },
+  // 別府 → 境港
+  {
+    from: "BEPPU",
+    to: "HONDO_SAKAIMINATO",
+    ships: ["FERRY_OKI", "FERRY_SHIRASHIMA", "FERRY_KUNIGA"],
+  },
+  // 別府 → 西郷
+  {
+    from: "BEPPU",
+    to: "SAIGO",
+    ships: ["FERRY_OKI", "FERRY_SHIRASHIMA", "FERRY_KUNIGA"],
+  },
+  // 別府 → 菱浦
+  {
+    from: "BEPPU",
+    to: "HISHIURA",
+    ships: [
+      "ISOKAZE",
+      "FERRY_DOZEN",
+      "FERRY_OKI",
+      "FERRY_SHIRASHIMA",
+      "FERRY_KUNIGA",
+    ],
+  },
+  // 別府 → 来居
+  {
+    from: "BEPPU",
+    to: "KURI",
+    ships: [
+      "ISOKAZE",
+      "FERRY_DOZEN",
+      "FERRY_OKI",
+      "FERRY_SHIRASHIMA",
+      "FERRY_KUNIGA",
+    ],
+  },
+  // 来居 → 境港
+  {
+    from: "KURI",
+    to: "HONDO_SAKAIMINATO",
+    ships: ["FERRY_OKI", "FERRY_SHIRASHIMA", "FERRY_KUNIGA"],
+  },
+  // 来居 → 七類
+  {
+    from: "KURI",
+    to: "HONDO_SHICHIRUI",
+    ships: ["FERRY_OKI", "FERRY_SHIRASHIMA", "FERRY_KUNIGA"],
+  },
+  // 来居 → 西郷
+  {
+    from: "KURI",
+    to: "SAIGO",
+    ships: ["FERRY_OKI", "FERRY_SHIRASHIMA", "FERRY_KUNIGA"],
+  },
+  // 来居 → 別府
+  {
+    from: "KURI",
+    to: "BEPPU",
+    ships: [
+      "ISOKAZE",
+      "FERRY_DOZEN",
+      "FERRY_OKI",
+      "FERRY_SHIRASHIMA",
+      "FERRY_KUNIGA",
+    ],
+  },
+  // 来居 → 菱浦
+  {
+    from: "KURI",
+    to: "HISHIURA",
+    ships: [
+      "ISOKAZE",
+      "FERRY_DOZEN",
+      "FERRY_OKI",
+      "FERRY_SHIRASHIMA",
+      "FERRY_KUNIGA",
+    ],
+  },
+];

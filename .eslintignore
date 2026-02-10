@@ -1,0 +1,9 @@
+# テストコードはlint対象外
+src/test/**
+src/tests/**
+tests/**
+**/__tests__/**
+**/*.test.*
+**/*.spec.*
+archive/**
+src/functions/lib/**

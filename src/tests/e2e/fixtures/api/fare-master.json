@@ -1,0 +1,334 @@
+{
+  "innerIslandFare": {
+    "adult": 300,
+    "child": 100
+  },
+  "innerIslandVehicleFare": {
+    "under5m": 1500,
+    "under7m": 2000,
+    "under10m": 2600,
+    "over10m": 3200
+  },
+  "rainbowJetFares": {
+    "hondo-oki": { "adult": 6350, "child": 3200 },
+    "dozen-dogo": { "adult": 2750, "child": 1380 },
+    "beppu-hishiura": { "adult": 2150, "child": 1080 },
+    "hishiura-kuri": { "adult": null, "child": null },
+    "kuri-beppu": { "adult": null, "child": null }
+  },
+  "routes": [
+    {
+      "id": "hondo-saigo",
+      "departure": "HONDO_SHICHIRUI",
+      "arrival": "SAIGO",
+      "fares": {
+        "adult": 3360,
+        "child": 1680,
+        "vehicle": {
+          "under3m": 10860,
+          "under4m": 12420,
+          "under5m": 13980,
+          "under6m": 15540,
+          "under7m": 17100,
+          "under8m": 18660,
+          "under9m": 20220,
+          "under10m": 21780,
+          "under11m": 23340,
+          "under12m": 24900,
+          "over12mPer1m": 2580
+        },
+        "seatClass": {
+          "class2": 3360,
+          "class2Special": 3780,
+          "class1": 5230,
+          "classSpecial": 6810,
+          "specialRoom": 13330
+        }
+      }
+    },
+    {
+      "id": "saigo-hondo",
+      "departure": "SAIGO",
+      "arrival": "HONDO_SHICHIRUI",
+      "fares": {
+        "adult": 3360,
+        "child": 1680,
+        "vehicle": {
+          "under3m": 10860,
+          "under4m": 12420,
+          "under5m": 13980,
+          "under6m": 15540,
+          "under7m": 17100,
+          "under8m": 18660,
+          "under9m": 20220,
+          "under10m": 21780,
+          "under11m": 23340,
+          "under12m": 24900,
+          "over12mPer1m": 2580
+        },
+        "seatClass": {
+          "class2": 3360,
+          "class2Special": 3780,
+          "class1": 5230,
+          "classSpecial": 6810,
+          "specialRoom": 13330
+        }
+      }
+    },
+    {
+      "id": "saigo-beppu",
+      "departure": "SAIGO",
+      "arrival": "BEPPU",
+      "fares": {
+        "adult": 2000,
+        "child": 1000,
+        "vehicle": {
+          "under3m": 5280,
+          "under4m": 5940,
+          "under5m": 6600,
+          "under6m": 7260,
+          "under7m": 7920,
+          "under8m": 8580,
+          "under9m": 9240,
+          "under10m": 9900,
+          "under11m": 10560,
+          "under12m": 11220,
+          "over12mPer1m": 1080
+        },
+        "seatClass": {
+          "class2": 2000,
+          "class2Special": 2300,
+          "class1": 3200,
+          "classSpecial": 4100,
+          "specialRoom": 8000
+        }
+      }
+    },
+    {
+      "id": "beppu-saigo",
+      "departure": "BEPPU",
+      "arrival": "SAIGO",
+      "fares": {
+        "adult": 2000,
+        "child": 1000,
+        "vehicle": {
+          "under3m": 5280,
+          "under4m": 5940,
+          "under5m": 6600,
+          "under6m": 7260,
+          "under7m": 7920,
+          "under8m": 8580,
+          "under9m": 9240,
+          "under10m": 9900,
+          "under11m": 10560,
+          "under12m": 11220,
+          "over12mPer1m": 1080
+        },
+        "seatClass": {
+          "class2": 2000,
+          "class2Special": 2300,
+          "class1": 3200,
+          "classSpecial": 4100,
+          "specialRoom": 8000
+        }
+      }
+    },
+    {
+      "id": "beppu-hishiura",
+      "departure": "BEPPU",
+      "arrival": "HISHIURA",
+      "fares": {
+        "adult": 1500,
+        "child": 750,
+        "vehicle": {
+          "under3m": 3420,
+          "under4m": 3960,
+          "under5m": 4500,
+          "under6m": 5040,
+          "under7m": 5580,
+          "under8m": 6120,
+          "under9m": 6660,
+          "under10m": 7200,
+          "under11m": 7740,
+          "under12m": 8280,
+          "over12mPer1m": 870
+        },
+        "seatClass": {
+          "class2": 1500,
+          "class2Special": 1800,
+          "class1": 2400,
+          "classSpecial": 3100,
+          "specialRoom": 6200
+        }
+      }
+    },
+    {
+      "id": "hishiura-beppu",
+      "departure": "HISHIURA",
+      "arrival": "BEPPU",
+      "fares": {
+        "adult": 1500,
+        "child": 750,
+        "vehicle": {
+          "under3m": 3420,
+          "under4m": 3960,
+          "under5m": 4500,
+          "under6m": 5040,
+          "under7m": 5580,
+          "under8m": 6120,
+          "under9m": 6660,
+          "under10m": 7200,
+          "under11m": 7740,
+          "under12m": 8280,
+          "over12mPer1m": 870
+        },
+        "seatClass": {
+          "class2": 1500,
+          "class2Special": 1800,
+          "class1": 2400,
+          "classSpecial": 3100,
+          "specialRoom": 6200
+        }
+      }
+    },
+    {
+      "id": "hishiura-kuri",
+      "departure": "HISHIURA",
+      "arrival": "KURI",
+      "fares": {
+        "adult": 800,
+        "child": 400,
+        "vehicle": {
+          "under3m": 2280,
+          "under4m": 2640,
+          "under5m": 3000,
+          "under6m": 3360,
+          "under7m": 3720,
+          "under8m": 4080,
+          "under9m": 4440,
+          "under10m": 4800,
+          "under11m": 5160,
+          "under12m": 5520,
+          "over12mPer1m": 720
+        },
+        "seatClass": {
+          "class2": 800,
+          "class2Special": 1000,
+          "class1": 1300,
+          "classSpecial": 1700,
+          "specialRoom": 3400
+        }
+      }
+    },
+    {
+      "id": "kuri-hishiura",
+      "departure": "KURI",
+      "arrival": "HISHIURA",
+      "fares": {
+        "adult": 800,
+        "child": 400,
+        "vehicle": {
+          "under3m": 2280,
+          "under4m": 2640,
+          "under5m": 3000,
+          "under6m": 3360,
+          "under7m": 3720,
+          "under8m": 4080,
+          "under9m": 4440,
+          "under10m": 4800,
+          "under11m": 5160,
+          "under12m": 5520,
+          "over12mPer1m": 720
+        },
+        "seatClass": {
+          "class2": 800,
+          "class2Special": 1000,
+          "class1": 1300,
+          "classSpecial": 1700,
+          "specialRoom": 3400
+        }
+      }
+    },
+    {
+      "id": "kuri-beppu",
+      "departure": "KURI",
+      "arrival": "BEPPU",
+      "fares": {
+        "adult": 900,
+        "child": 450,
+        "vehicle": {
+          "under3m": 2580,
+          "under4m": 2940,
+          "under5m": 3300,
+          "under6m": 3660,
+          "under7m": 4020,
+          "under8m": 4380,
+          "under9m": 4740,
+          "under10m": 5100,
+          "under11m": 5460,
+          "under12m": 5820,
+          "over12mPer1m": 780
+        },
+        "seatClass": {
+          "class2": 900,
+          "class2Special": 1100,
+          "class1": 1400,
+          "classSpecial": 1800,
+          "specialRoom": 3600
+        }
+      }
+    },
+    {
+      "id": "beppu-kuri",
+      "departure": "BEPPU",
+      "arrival": "KURI",
+      "fares": {
+        "adult": 900,
+        "child": 450,
+        "vehicle": {
+          "under3m": 2580,
+          "under4m": 2940,
+          "under5m": 3300,
+          "under6m": 3660,
+          "under7m": 4020,
+          "under8m": 4380,
+          "under9m": 4740,
+          "under10m": 5100,
+          "under11m": 5460,
+          "under12m": 5820,
+          "over12mPer1m": 780
+        },
+        "seatClass": {
+          "class2": 900,
+          "class2Special": 1100,
+          "class1": 1400,
+          "classSpecial": 1800,
+          "specialRoom": 3600
+        }
+      }
+    }
+  ],
+  "discounts": {
+    "roundTrip": {
+      "nameKey": "DISCOUNT_ROUND_TRIP",
+      "rate": 0.9,
+      "descriptionKey": "DISCOUNT_ROUND_TRIP_DESC"
+    },
+    "group": {
+      "nameKey": "DISCOUNT_GROUP",
+      "rate": 0.85,
+      "descriptionKey": "DISCOUNT_GROUP_DESC"
+    },
+    "student": {
+      "nameKey": "DISCOUNT_STUDENT",
+      "rate": 0.8,
+      "descriptionKey": "DISCOUNT_STUDENT_DESC"
+    },
+    "disability": {
+      "nameKey": "DISCOUNT_DISABILITY",
+      "rate": 0.5,
+      "descriptionKey": "DISCOUNT_DISABILITY_DESC"
+    }
+  },
+  "notes": []
+}

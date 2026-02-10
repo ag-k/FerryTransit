@@ -1,0 +1,38 @@
+[
+  {
+    "trip_id": "1",
+    "start_date": "2025-01-01",
+    "end_date": "2025-12-31",
+    "name": "FERRY_OKI",
+    "departure": "HONDO_SHICHIRUI",
+    "departure_time": "09:00",
+    "arrival": "SAIGO",
+    "arrival_time": "11:25",
+    "next_id": null,
+    "status": "0"
+  },
+  {
+    "trip_id": "2",
+    "start_date": "2025-01-01",
+    "end_date": "2025-12-31",
+    "name": "FERRY_DOZEN",
+    "departure": "BEPPU",
+    "departure_time": "10:15",
+    "arrival": "SAIGO",
+    "arrival_time": "11:35",
+    "next_id": null,
+    "status": "0"
+  },
+  {
+    "trip_id": "3",
+    "start_date": "2025-01-01",
+    "end_date": "2025-12-31",
+    "name": "RAINBOWJET",
+    "departure": "SAIGO",
+    "departure_time": "14:00",
+    "arrival": "HONDO_SHICHIRUI",
+    "arrival_time": "15:10",
+    "next_id": null,
+    "status": "0"
+  }
+]

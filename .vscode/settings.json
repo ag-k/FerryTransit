@@ -1,0 +1,6 @@
+{
+  "liveServer.settings.port": 5502,
+  "terminal.integrated.env.osx": {
+    "CLOUDSDK_CONFIG": "${workspaceFolder}/.gcloud_cfg"
+  }
+}
