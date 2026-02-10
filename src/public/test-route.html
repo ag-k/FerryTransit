@@ -1,0 +1,171 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>乗換案内テスト</title>
+    <script src="https://unpkg.com/vue@3/dist/vue.global.js"></script>
+    <script src="https://unpkg.com/pinia@2/dist/pinia.iife.js"></script>
+</head>
+<body>
+    <div id="app">
+        <h1>別府→菱浦 乗換案内テスト (2025/11/2 0:00)</h1>
+        <button @click="searchRoutes" :disabled="loading">
+            {{ loading ? '検索中...' : '乗換案内を検索' }}
+        </button>
+        
+        <div v-if="error" style="color: red; margin: 10px 0;">
+            エラー: {{ error }}
+        </div>
+        
+        <div v-if="results.length > 0">
+            <h2>検索結果 ({{ results.length }}件)</h2>
+            <div v-for="(route, index) in results" :key="index" style="border: 1px solid #ccc; margin: 10px; padding: 10px;">
+                <h3>経路 {{ index + 1 }}</h3>
+                <p><strong>出発時刻:</strong> {{ route.departureTime }}</p>
+                <p><strong>到着時刻:</strong> {{ route.arrivalTime }}</p>
+                <p><strong>合計料金:</strong> 
+                    <span v-if="route.totalFare > 0" style="color: green; font-weight: bold;">
+                        ¥{{ route.totalFare.toLocaleString() }}
+                    </span>
+                    <span v-else style="color: orange; font-weight: bold;">
+                        料金不明
+                    </span>
+                </p>
+                
+                <div v-for="(segment, segIndex) in route.segments" :key="segIndex" style="margin-left: 20px; border-left: 2px solid #eee; padding-left: 10px;">
+                    <h4>セグメント {{ segIndex + 1 }}</h4>
+                    <p><strong>船名:</strong> {{ segment.ship }}</p>
+                    <p><strong>区間:</strong> {{ segment.departure }} → {{ segment.arrival }}</p>
+                    <p><strong>料金:</strong> 
+                        <span v-if="segment.fare > 0" style="color: green;">
+                            ¥{{ segment.fare.toLocaleString() }}
+                        </span>
+                        <span v-else style="color: orange;">
+                            料金不明
+                        </span>
+                    </p>
+                    <p><strong>状態:</strong> {{ segment.status }}</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script type="module">
+        const { createApp, ref, onMounted } = Vue;
+        const { createPinia, defineStore } = Pinia;
+
+        // 簡易的な料金ストア
+        const useFareStore = defineStore('fare', () => {
+            const fareMaster = ref(null);
+            
+            const loadFareMaster = async () => {
+                try {
+                    // 注意: このファイルはテスト用です。本番ではCloud Storageからデータを取得します。
+                    // テスト時はテスト用のfixtureを使用してください。
+                    const response = await fetch('/data/fare-master.json');
+                    const data = await response.json();
+                    fareMaster.value = data;
+                    console.log('料金データ読み込み完了:', data);
+                } catch (error) {
+                    console.error('料金データ読み込みエラー:', error);
+                    console.warn('注意: 本番環境ではCloud Storageからデータを取得してください。');
+                }
+            };
+            
+            const getFareByRoute = (departure, arrival) => {
+                if (!fareMaster.value?.routes) return null;
+                return fareMaster.value.routes.find(route => 
+                    route.departure === departure && route.arrival === arrival
+                );
+            };
+            
+            return { fareMaster, loadFareMaster, getFareByRoute };
+        });
+
+        // 簡易的なフェリーストア
+        const useFerryStore = defineStore('ferry', () => {
+            const timetableData = ref([]);
+            
+            const loadTimetableData = async () => {
+                try {
+                    const response = await fetch('/data/timetable.json');
+                    const data = await response.json();
+                    timetableData.value = data;
+                    console.log('時刻表データ読み込み完了:', data.length, '件');
+                } catch (error) {
+                    console.error('時刻表データ読み込みエラー:', error);
+                }
+            };
+            
+            return { timetableData, loadTimetableData };
+        });
+
+        // アプリケーション
+        createApp({
+            setup() {
+                const loading = ref(false);
+                const error = ref('');
+                const results = ref([]);
+                
+                const searchRoutes = async () => {
+                    loading.value = true;
+                    error.value = '';
+                    results.value = [];
+                    
+                    try {
+                        // データ読み込み
+                        const fareStore = useFareStore();
+                        const ferryStore = useFerryStore();
+                        
+                        await Promise.all([
+                            fareStore.loadFareMaster(),
+                            ferryStore.loadTimetableData()
+                        ]);
+                        
+                        // 別府→菱浦の直行便を検索
+                        const directRoutes = ferryStore.timetableData.filter(trip => 
+                            trip.departure === 'BEPPU' && trip.arrival === 'HISHIURA'
+                        );
+                        
+                        console.log('直行便検索結果:', directRoutes.length, '件');
+                        
+                        // 料金計算
+                        const routeResults = directRoutes.map(trip => {
+                            const fareRoute = fareStore.getFareByRoute('BEPPU', 'HISHIURA');
+                            const fare = fareRoute?.fares?.adult || 0;
+                            
+                            return {
+                                departureTime: `2025-11-02 ${trip.departureTime}`,
+                                arrivalTime: `2025-11-02 ${trip.arrivalTime}`,
+                                totalFare: fare,
+                                segments: [{
+                                    ship: trip.name,
+                                    departure: trip.departure,
+                                    arrival: trip.arrival,
+                                    fare: fare,
+                                    status: trip.status
+                                }]
+                            };
+                        });
+                        
+                        results.value = routeResults;
+                        
+                        // 結果の確認
+                        const hasValidFares = results.value.some(route => route.totalFare > 0);
+                        console.log('料金確認:', hasValidFares ? '✅ 料金が表示されています' : '❌ 料金が表示されていません');
+                        
+                    } catch (err) {
+                        error.value = err.message;
+                        console.error('検索エラー:', err);
+                    } finally {
+                        loading.value = false;
+                    }
+                };
+                
+                return { loading, error, results, searchRoutes };
+            }
+        }).use(createPinia()).mount('#app');
+    </script>
+</body>
+</html>

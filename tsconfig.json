@@ -1,40 +1,22 @@
 {
-  "compilerOptions": {
-    "target": "es5",
-    "module": "commonjs",
-    "declaration": false,
-    "noImplicitAny": false,
-    "removeComments": false,
-    "noLib": false,
-    "preserveConstEnums": true,
-    "suppressImplicitAnyIndexErrors": true
-  },
-  "formatCodeOptions": {
-    "indentSize": 2,
-    "tabSize": 2,
-    "newLineCharacter": "\r\n",
-    "convertTabsToSpaces": true,
-    "insertSpaceAfterCommaDelimiter": true,
-    "insertSpaceAfterSemicolonInForStatements": true,
-    "insertSpaceBeforeAndAfterBinaryOperators": true,
-    "insertSpaceAfterKeywordsInControlFlowStatements": true,
-    "insertSpaceAfterFunctionKeywordForAnonymousFunctions": true,
-    "insertSpaceAfterOpeningAndBeforeClosingNonemptyParenthesis": false,
-    "placeOpenBraceOnNewLineForFunctions": true,
-    "placeOpenBraceOnNewLineForControlBlocks": true
-  },
-  "compileOnSave": true,
-  "filesGlob": [
-    "./**/*.ts",
-    "!./node_modules/**/*.ts",
-    "!./bower_components/**/*.ts",
-    "!./typings/**/*.ts"
-  ],
-  "files": [
-    "./js/controller.ts",
-    "./js/timepicker-ctrl.ts"
-  ],
-  "atom": {
-    "rewriteTsconfig": true
-  }
+  // https://nuxt.com/docs/guide/concepts/typescript
+  "extends": "./.nuxt/tsconfig.json",
+  "exclude": [
+    "archive",
+    "archive/**",
+    "dist",
+    ".data",
+    "node_modules",
+    "node_modules/nuxt/node_modules",
+    "node_modules/@nuxtjs/i18n/node_modules",
+    "node_modules/@nuxtjs/google-fonts/node_modules",
+    "node_modules/@pinia/nuxt/node_modules",
+    "node_modules/@nuxtjs/tailwindcss/node_modules",
+    "node_modules/@nuxt/icon/node_modules",
+    "node_modules/@nuxt/devtools/node_modules",
+    "node_modules/@nuxt/telemetry/node_modules",
+    "node_modules/runtime/server",
+    "node_modules/dist/runtime/server",
+    ".output"
+  ]
 }

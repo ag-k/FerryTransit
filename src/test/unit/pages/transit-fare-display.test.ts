@@ -1,0 +1,670 @@
+import { describe, it, expect, beforeEach, vi } from 'vitest'
+import { mountWithI18n } from '@/test/utils/mountWithI18n'
+import { setActivePinia, createPinia } from 'pinia'
+import { useFerryStore } from '@/stores/ferry'
+import { useFareStore } from '@/stores/fare'
+import { useHistoryStore } from '@/stores/history'
+import Transit from '@/pages/transit.vue'
+import { createRouter, createWebHistory } from 'vue-router'
+
+// Mock data
+const mockBeppuHishiuraTrips = [
+  {
+    tripId: 100,
+    startDate: '2024-01-01',
+    endDate: '2024-12-31',
+    name: 'ISOKAZE',
+    departure: 'BEPPU',
+    departureTime: '08:00:00',
+    arrival: 'HISHIURA',
+    arrivalTime: '08:20:00',
+    status: 0
+  },
+  {
+    tripId: 101,
+    startDate: '2024-01-01',
+    endDate: '2024-12-31',
+    name: 'FERRY_DOZEN',
+    departure: 'BEPPU',
+    departureTime: '14:00:00',
+    arrival: 'HISHIURA',
+    arrivalTime: '14:25:00',
+    status: 0
+  }
+]
+
+const mockFareMaster = {
+  routes: [
+    {
+      id: 'beppu-hishiura',
+      departure: 'BEPPU',
+      arrival: 'HISHIURA',
+      fares: {
+        adult: 410,
+        child: 205,
+        seatClass: {
+          class2: 410,
+          class2Special: 630,
+          class1: 650,
+          classSpecial: 830,
+          specialRoom: 1150
+        }
+      }
+    }
+  ]
+}
+
+// Mock components
+vi.mock('@/components/common/PortSelector.vue', () => ({
+  default: {
+    name: 'PortSelector',
+    template: '<div class="mock-port-selector"><slot /></div>',
+    props: ['modelValue', 'label', 'placeholder', 'disabledPorts'],
+    emits: ['update:modelValue']
+  }
+}))
+
+vi.mock('@/components/common/DatePicker.vue', () => ({
+  default: {
+    name: 'DatePicker',
+    template: '<div class="mock-date-picker"><slot /></div>',
+    props: ['modelValue', 'label', 'minDate'],
+    emits: ['update:modelValue']
+  }
+}))
+
+vi.mock('@/components/common/ShipModal.vue', () => ({
+  default: {
+    name: 'CommonShipModal',
+    template: '<div class="mock-ship-modal"><slot /></div>',
+    props: ['visible', 'title', 'type', 'shipId', 'content'],
+    emits: ['update:visible']
+  }
+}))
+
+vi.mock('@/components/common/StatusAlerts.vue', () => ({
+  default: {
+    name: 'StatusAlerts',
+    template: '<div class="mock-status-alerts" />'
+  }
+}))
+
+vi.mock('@/components/favorites/FavoriteButton.vue', () => ({
+  default: {
+    name: 'FavoriteButton',
+    template: '<div class="mock-favorite-button" />',
+    props: ['type', 'port', 'route']
+  }
+}))
+
+vi.mock('@/components/map/RouteMapModal.vue', () => ({
+  default: {
+    name: 'RouteMapModal',
+    template: '<div class="mock-route-map-modal" />',
+    props: ['visible', 'route'],
+    emits: ['update:visible']
+  }
+}))
+
+// Mock composables
+vi.mock('@/composables/useRouteSearch', () => ({
+  useRouteSearch: () => ({
+    searchRoutes: vi.fn().mockResolvedValue([
+      {
+        segments: [
+          {
+            tripId: '100',
+            ship: 'ISOKAZE',
+            departure: 'BEPPU',
+            arrival: 'HISHIURA',
+            departureTime: new Date('2024-01-15T08:00:00'),
+            arrivalTime: new Date('2024-01-15T08:20:00'),
+            status: 0,
+            fare: 410
+          }
+        ],
+        departureTime: new Date('2024-01-15T08:00:00'),
+        arrivalTime: new Date('2024-01-15T08:20:00'),
+        totalFare: 410,
+        transferCount: 0
+      },
+      {
+        segments: [
+          {
+            tripId: '101',
+            ship: 'FERRY_DOZEN',
+            departure: 'BEPPU',
+            arrival: 'HISHIURA',
+            departureTime: new Date('2024-01-15T14:00:00'),
+            arrivalTime: new Date('2024-01-15T14:25:00'),
+            status: 0,
+            fare: 410
+          }
+        ],
+        departureTime: new Date('2024-01-15T14:00:00'),
+        arrivalTime: new Date('2024-01-15T14:25:00'),
+        totalFare: 410,
+        transferCount: 0
+      }
+    ]),
+    formatTime: vi.fn((date) => {
+      return date.toLocaleTimeString('ja-JP', { 
+        hour: '2-digit', 
+        minute: '2-digit',
+        hour12: false 
+      })
+    }),
+    calculateDuration: vi.fn(() => '20分'),
+    getPortDisplayName: vi.fn((port) => port)
+  })
+}))
+
+vi.mock('@/composables/useFerryData', () => ({
+  useFerryData: () => ({
+    getTripStatus: vi.fn(() => 0),
+    initializeData: vi.fn()
+  })
+}))
+
+vi.mock('@/composables/useHolidayCalendar', () => ({
+  useHolidayCalendar: () => ({})
+}))
+
+describe('Transit Page - Fare Display', () => {
+  let router: any
+
+  beforeEach(() => {
+    setActivePinia(createPinia())
+    vi.clearAllMocks()
+    
+    // Setup router
+    router = createRouter({
+      history: createWebHistory(),
+      routes: [
+        { path: '/transit', component: Transit }
+      ]
+    })
+    
+    // Setup stores
+    const ferryStore = useFerryStore()
+    const fareStore = useFareStore()
+    const historyStore = useHistoryStore()
+    
+    ferryStore.timetableData = mockBeppuHishiuraTrips
+    fareStore.fareMaster = mockFareMaster
+  })
+
+  describe('Fare Display in Search Results', () => {
+    it('should display fare information in route headers', async () => {
+      const wrapper = mountWithI18n(Transit, {
+        global: {
+          plugins: [router],
+          stubs: {
+            PortSelector: true,
+            DatePicker: true,
+            CommonShipModal: true,
+            StatusAlerts: true,
+            FavoriteButton: true,
+            RouteMapModal: true
+          }
+        }
+      })
+
+      // Set search parameters via component refs
+      wrapper.vm.departure = 'BEPPU'
+      wrapper.vm.arrival = 'HISHIURA'
+      wrapper.vm.date = new Date('2024-01-15')
+      wrapper.vm.time = '08:00'
+      wrapper.vm.isArrivalMode = false
+      wrapper.vm.hasSearched = true
+      wrapper.vm.searchResults = [
+        {
+          segments: [
+            {
+              tripId: '100',
+              ship: 'ISOKAZE',
+              departure: 'BEPPU',
+              arrival: 'HISHIURA',
+              departureTime: new Date('2024-01-15T08:00:00'),
+              arrivalTime: new Date('2024-01-15T08:20:00'),
+              status: 0,
+              fare: 410
+            }
+          ],
+          departureTime: new Date('2024-01-15T08:00:00'),
+          arrivalTime: new Date('2024-01-15T08:20:00'),
+          totalFare: 410,
+          transferCount: 0
+        }
+      ]
+
+      await wrapper.vm.$nextTick()
+
+      // Check that fare is displayed in route header
+      const routeHeaders = wrapper.findAll('[data-testid="transit-result-header"]')
+      expect(routeHeaders.length).toBeGreaterThan(0)
+      
+      const fareText = wrapper.text()
+      expect(fareText).toContain('¥410')
+      expect(fareText).toContain('20分') // Duration should also be displayed
+    })
+
+    it('should display fare information in route details table', async () => {
+      const wrapper = mountWithI18n(Transit, {
+        global: {
+          plugins: [router],
+          stubs: {
+            PortSelector: true,
+            DatePicker: true,
+            CommonShipModal: true,
+            StatusAlerts: true,
+            FavoriteButton: true,
+            RouteMapModal: true
+          }
+        }
+      })
+
+      // Set search results via component refs
+      wrapper.vm.departure = 'BEPPU'
+      wrapper.vm.arrival = 'HISHIURA'
+      wrapper.vm.hasSearched = true
+      wrapper.vm.searchResults = [
+        {
+          segments: [
+            {
+              tripId: '100',
+              ship: 'ISOKAZE',
+              departure: 'BEPPU',
+              arrival: 'HISHIURA',
+              departureTime: new Date('2024-01-15T08:00:00'),
+              arrivalTime: new Date('2024-01-15T08:20:00'),
+              status: 0,
+              fare: 410
+            }
+          ],
+          departureTime: new Date('2024-01-15T08:00:00'),
+          arrivalTime: new Date('2024-01-15T08:20:00'),
+          totalFare: 410,
+          transferCount: 0
+        }
+      ]
+
+      await wrapper.vm.$nextTick()
+
+      // Check that fare is displayed in the table
+      const tableCells = wrapper.findAll('td')
+      const fareCells = tableCells.filter(cell => cell.text().includes('¥410'))
+      
+      expect(fareCells.length).toBeGreaterThan(0)
+      
+      // Check total fare display
+      const totalFareText = wrapper.text()
+      expect(totalFareText).toContain('TOTAL: ¥410')
+    })
+
+    it('should display multiple routes with different fares correctly', async () => {
+      const wrapper = mountWithI18n(Transit, {
+        global: {
+          plugins: [router],
+          stubs: {
+            PortSelector: true,
+            DatePicker: true,
+            CommonShipModal: true,
+            StatusAlerts: true,
+            FavoriteButton: true,
+            RouteMapModal: true
+          }
+        }
+      })
+
+      // Set multiple search results with different fares via component refs
+      wrapper.vm.departure = 'BEPPU'
+      wrapper.vm.arrival = 'HISHIURA'
+      wrapper.vm.hasSearched = true
+      wrapper.vm.searchResults = [
+        {
+          segments: [
+            {
+              tripId: '100',
+              ship: 'ISOKAZE',
+              departure: 'BEPPU',
+              arrival: 'HISHIURA',
+              departureTime: new Date('2024-01-15T08:00:00'),
+              arrivalTime: new Date('2024-01-15T08:20:00'),
+              status: 0,
+              fare: 410
+            }
+          ],
+          departureTime: new Date('2024-01-15T08:00:00'),
+          arrivalTime: new Date('2024-01-15T08:20:00'),
+          totalFare: 410,
+          transferCount: 0
+        },
+        {
+          segments: [
+            {
+              tripId: '101',
+              ship: 'FERRY_DOZEN',
+              departure: 'BEPPU',
+              arrival: 'HISHIURA',
+              departureTime: new Date('2024-01-15T14:00:00'),
+              arrivalTime: new Date('2024-01-15T14:25:00'),
+              status: 0,
+              fare: 630 // 2等特別
+            }
+          ],
+          departureTime: new Date('2024-01-15T14:00:00'),
+          arrivalTime: new Date('2024-01-15T14:25:00'),
+          totalFare: 630,
+          transferCount: 0
+        }
+      ]
+
+      await wrapper.vm.$nextTick()
+
+      const pageText = wrapper.text()
+      
+      // Both fares should be displayed
+      expect(pageText).toContain('¥410')
+      expect(pageText).toContain('¥630')
+    })
+
+    it('should display transfer routes with summed fares correctly', async () => {
+      const wrapper = mountWithI18n(Transit, {
+        global: {
+          plugins: [router],
+          stubs: {
+            PortSelector: true,
+            DatePicker: true,
+            CommonShipModal: true,
+            StatusAlerts: true,
+            FavoriteButton: true,
+            RouteMapModal: true
+          }
+        }
+      })
+
+      // Set transfer route results via component refs
+      wrapper.vm.departure = 'BEPPU'
+      wrapper.vm.arrival = 'SAIGO'
+      wrapper.vm.hasSearched = true
+      wrapper.vm.searchResults = [
+        {
+          segments: [
+            {
+              tripId: '100',
+              ship: 'ISOKAZE',
+              departure: 'BEPPU',
+              arrival: 'HISHIURA',
+              departureTime: new Date('2024-01-15T08:00:00'),
+              arrivalTime: new Date('2024-01-15T08:20:00'),
+              status: 0,
+              fare: 410
+            },
+            {
+              tripId: '101',
+              ship: 'FERRY_DOZEN',
+              departure: 'HISHIURA',
+              arrival: 'SAIGO',
+              departureTime: new Date('2024-01-15T09:00:00'),
+              arrivalTime: new Date('2024-01-15T10:30:00'),
+              status: 0,
+              fare: 1540
+            }
+          ],
+          departureTime: new Date('2024-01-15T08:00:00'),
+          arrivalTime: new Date('2024-01-15T10:30:00'),
+          totalFare: 1950, // 410 + 1540
+          transferCount: 1
+        }
+      ]
+
+      await wrapper.vm.$nextTick()
+
+      const pageText = wrapper.text()
+      
+      // Individual segment fares should be displayed
+      expect(pageText).toContain('¥410')
+      expect(pageText).toContain('¥1,540')
+
+      // Total fare should be displayed
+      expect(pageText).toContain('TOTAL: ¥1,950')
+    })
+  })
+
+  describe('Fare Format and Localization', () => {
+    it('should format fares with proper thousand separators', async () => {
+      const wrapper = mountWithI18n(Transit, {
+        global: {
+          plugins: [router],
+          stubs: {
+            PortSelector: true,
+            DatePicker: true,
+            CommonShipModal: true,
+            StatusAlerts: true,
+            FavoriteButton: true,
+            RouteMapModal: true
+          }
+        }
+      })
+
+      // Set search results with high fare via component refs
+      wrapper.vm.departure = 'BEPPU'
+      wrapper.vm.arrival = 'HISHIURA'
+      wrapper.vm.hasSearched = true
+      wrapper.vm.searchResults = [
+        {
+          segments: [
+            {
+              tripId: '100',
+              ship: 'ISOKAZE',
+              departure: 'BEPPU',
+              arrival: 'HISHIURA',
+              departureTime: new Date('2024-01-15T08:00:00'),
+              arrivalTime: new Date('2024-01-15T08:20:00'),
+              status: 0,
+              fare: 1150
+            }
+          ],
+          departureTime: new Date('2024-01-15T08:00:00'),
+          arrivalTime: new Date('2024-01-15T08:20:00'),
+          totalFare: 1150,
+          transferCount: 0
+        }
+      ]
+
+      await wrapper.vm.$nextTick()
+
+      const pageText = wrapper.text()
+      
+      // Should format with thousand separator
+      expect(pageText).toContain('¥1,150')
+      expect(pageText).not.toContain('¥1150')
+    })
+
+    it('should display fare information in route details modal', async () => {
+      const wrapper = mountWithI18n(Transit, {
+        global: {
+          plugins: [router],
+          stubs: {
+            PortSelector: true,
+            DatePicker: true,
+            CommonShipModal: true,
+            StatusAlerts: true,
+            FavoriteButton: true,
+            RouteMapModal: true
+          }
+        }
+      })
+
+      // Set search results and show details modal via component refs
+      wrapper.vm.departure = 'BEPPU'
+      wrapper.vm.arrival = 'HISHIURA'
+      wrapper.vm.hasSearched = true
+      wrapper.vm.searchResults = [
+        {
+          segments: [
+            {
+              tripId: '100',
+              ship: 'ISOKAZE',
+              departure: 'BEPPU',
+              arrival: 'HISHIURA',
+              departureTime: new Date('2024-01-15T08:00:00'),
+              arrivalTime: new Date('2024-01-15T08:20:00'),
+              status: 0,
+              fare: 410
+            }
+          ],
+          departureTime: new Date('2024-01-15T08:00:00'),
+          arrivalTime: new Date('2024-01-15T08:20:00'),
+          totalFare: 410,
+          transferCount: 0
+        }
+      ]
+      wrapper.vm.showDetailsModal = true
+      wrapper.vm.selectedRoute = {
+        segments: [
+          {
+            tripId: '100',
+            ship: 'ISOKAZE',
+            departure: 'BEPPU',
+            arrival: 'HISHIURA',
+            departureTime: new Date('2024-01-15T08:00:00'),
+            arrivalTime: new Date('2024-01-15T08:20:00'),
+            status: 0,
+            fare: 410
+          }
+        ],
+        departureTime: new Date('2024-01-15T08:00:00'),
+        arrivalTime: new Date('2024-01-15T08:20:00'),
+        totalFare: 410,
+        transferCount: 0
+      }
+
+      await wrapper.vm.$nextTick()
+
+      const pageText = wrapper.text()
+      
+      // Should show fare in modal
+      expect(pageText).toContain('¥410')
+      expect(pageText).toContain('TOTAL: ¥410')
+    })
+  })
+
+  describe('Operation Status Date Guard', () => {
+    it('should not show ship status alert icon on non-today date (JST)', async () => {
+      vi.useFakeTimers()
+      // 2024-01-15 12:00 JST
+      vi.setSystemTime(new Date('2024-01-15T03:00:00.000Z'))
+
+      const wrapper = mountWithI18n(Transit, {
+        global: {
+          plugins: [router],
+          stubs: {
+            PortSelector: true,
+            DatePicker: true,
+            CommonShipModal: true,
+            StatusAlerts: true,
+            FavoriteButton: true,
+            RouteMapModal: true
+          }
+        }
+      })
+
+      const ferryStore = useFerryStore()
+      ferryStore.shipStatus = {
+        isokaze: null,
+        dozen: null,
+        ferry: {
+          ferryState: '欠航'
+        },
+        kunigaKankou: null
+      } as any
+
+      wrapper.vm.departure = 'HONDO_SHICHIRUI'
+      wrapper.vm.arrival = 'SAIGO'
+      wrapper.vm.date = new Date('2024-01-16T00:00:00+09:00')
+      wrapper.vm.hasSearched = true
+      wrapper.vm.searchResults = [
+        {
+          segments: [
+            {
+              tripId: '300',
+              ship: 'FERRY_OKI',
+              departure: 'HONDO_SHICHIRUI',
+              arrival: 'SAIGO',
+              departureTime: new Date('2024-01-16T09:00:00+09:00'),
+              arrivalTime: new Date('2024-01-16T11:25:00+09:00'),
+              status: 0,
+              fare: 3520
+            }
+          ],
+          departureTime: new Date('2024-01-16T09:00:00+09:00'),
+          arrivalTime: new Date('2024-01-16T11:25:00+09:00'),
+          totalFare: 3520,
+          transferCount: 0
+        }
+      ]
+
+      await wrapper.vm.$nextTick()
+
+      expect(wrapper.find('[data-test="ship-status-alert-icon"]').exists()).toBe(false)
+
+      vi.useRealTimers()
+    })
+  })
+
+  describe('Rainbow Jet Seat Availability', () => {
+    it('should show seat availability button with month parameter from search date', async () => {
+      const wrapper = mountWithI18n(Transit, {
+        global: {
+          plugins: [router],
+          stubs: {
+            PortSelector: true,
+            DatePicker: true,
+            CommonShipModal: true,
+            StatusAlerts: true,
+            FavoriteButton: true,
+            RouteMapModal: true
+          }
+        }
+      })
+
+      wrapper.vm.departure = 'BEPPU'
+      wrapper.vm.arrival = 'HISHIURA'
+      wrapper.vm.date = new Date('2026-04-01')
+      wrapper.vm.searchDateForResults = new Date('2026-03-05')
+      wrapper.vm.hasSearched = true
+      wrapper.vm.searchResults = [
+        {
+          segments: [
+            {
+              tripId: '200',
+              ship: 'RAINBOWJET',
+              departure: 'BEPPU',
+              arrival: 'HISHIURA',
+              departureTime: new Date('2026-03-05T08:00:00'),
+              arrivalTime: new Date('2026-03-05T08:40:00'),
+              status: 0,
+              fare: 0
+            }
+          ],
+          departureTime: new Date('2026-03-05T08:00:00'),
+          arrivalTime: new Date('2026-03-05T08:40:00'),
+          totalFare: 0,
+          transferCount: 0
+        }
+      ]
+
+      await wrapper.vm.$nextTick()
+
+      const seatLink = wrapper.find('a[href*="kuuseki_rainbow"]')
+
+      expect(seatLink.exists(), '空席確認リンクが表示されること').toBe(true)
+      expect(seatLink.text()).toContain('CHECK_SEAT_AVAILABILITY')
+      expect(seatLink!.attributes('href')).toBe(
+        'https://www.oki-kisen.co.jp/kuuseki/kuuseki_rainbow/?time=2026-03'
+      )
+    })
+  })
+})

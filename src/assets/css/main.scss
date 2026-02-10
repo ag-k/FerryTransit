@@ -1,0 +1,247 @@
+// Custom styles (theme tokens are defined in `src/assets/css/tailwind.css`)
+
+// Custom styles
+body {
+  font-family: 'Inter', 'BIZ UDPGothic', system-ui, -apple-system, 'Segoe UI', sans-serif;
+  font-synthesis: none;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  background-color: hsl(var(--app-bg));
+  color: hsl(var(--app-fg));
+}
+
+// Android navigation bar height variable
+:root {
+  --android-navigation-bar-height: 20px;
+  --android-status-bar-height: 24px;
+
+  // Modern app palette (HSL components: "H S% L%")
+  // Light
+  --app-bg: 210 40% 98%;        // slate-50
+  --app-surface: 0 0% 100%;     // white
+  --app-surface-2: 210 40% 96%; // slate-100
+  --app-border: 214 32% 91%;    // slate-200
+  --app-fg: 222 47% 11%;        // slate-900
+  --app-muted: 215 16% 47%;     // slate-500
+
+  // Accent
+  // Cobalt blue accent (approx #0047AB)
+  --app-primary: 215 100% 34%;
+  // Slightly lighter cobalt-ish (for hover/secondary)
+  --app-primary-2: 217 91% 60%; // blue-500 (#3B82F6)
+
+  // Navigation gradient (light)
+  --app-nav-from: var(--app-primary);
+  --app-nav-to: var(--app-primary-2);
+}
+
+.dark {
+  // Dark
+  --app-bg: 222 47% 5%;         // slate-950
+  --app-surface: 222 47% 11%;   // slate-900
+  --app-surface-2: 215 28% 17%; // slate-800
+  --app-border: 215 28% 17%;    // slate-800
+  --app-fg: 210 40% 98%;        // slate-50
+  --app-muted: 215 20% 65%;     // slate-300/400
+  --app-primary: 217 92% 70%;   // brighter for link contrast
+  --app-primary-2: 214 100% 78%; // brighter hover/secondary
+
+  // Navigation gradient (dark) - keep nav toned down in dark mode
+  --app-nav-from: var(--app-bg);
+  --app-nav-to: var(--app-surface);
+}
+
+@media screen and (-webkit-device-pixel-ratio: 0) and (min-resolution: .001dpcm) {
+  :root {
+    --android-navigation-bar-height: 24px;
+    --android-status-bar-height: 28px;
+  }
+}
+
+// Touch device optimizations
+@media (hover: none) and (pointer: coarse) {
+  // Improve touch targets
+  .touch-manipulation {
+    -webkit-tap-highlight-color: rgba(0, 0, 0, 0.1);
+  }
+  
+  // Disable hover effects on touch devices
+  .hover\:underline:hover,
+  .hover\:opacity-80:hover {
+    text-decoration: none !important;
+    opacity: inherit !important;
+  }
+}
+
+// Custom scrollbar
+::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+
+::-webkit-scrollbar-track {
+  background: hsl(var(--app-bg));
+}
+
+::-webkit-scrollbar-thumb {
+  background: hsl(var(--app-border));
+  border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: hsl(var(--app-muted));
+}
+
+// Enhanced scrollbar hiding for Chrome
+.scrollbar-hide::-webkit-scrollbar {
+  display: none !important;
+  width: 0px !important;
+  height: 0px !important;
+  background: transparent !important;
+}
+
+.scrollbar-hide::-webkit-scrollbar-track {
+  display: none !important;
+  background: transparent !important;
+}
+
+.scrollbar-hide::-webkit-scrollbar-thumb {
+  display: none !important;
+  background: transparent !important;
+}
+
+.scrollbar-hide::-webkit-scrollbar-corner {
+  display: none !important;
+  background: transparent !important;
+}
+
+// Safe area for iOS and Android devices
+.safe-area-bottom {
+  // iOS safe area
+  padding-bottom: env(safe-area-inset-bottom);
+  
+  // Android navigation bar support
+  @supports (padding: max(0px)) {
+    padding-bottom: max(env(safe-area-inset-bottom), 16px);
+  }
+}
+
+// Safe area for top (status bar)
+.safe-area-top {
+  // iOS safe area
+  padding-top: env(safe-area-inset-top);
+  
+  // Android status bar support
+  @supports (padding: max(0px)) {
+    padding-top: max(env(safe-area-inset-top), 24px);
+  }
+}
+
+// Android specific navigation bar handling
+@media screen and (-webkit-device-pixel-ratio: 0) and (min-resolution: .001dpcm) {
+  // Chrome on Android
+  .safe-area-bottom {
+    padding-bottom: max(env(safe-area-inset-bottom, 0px), 30px) !important;
+  }
+  
+  .safe-area-top {
+    padding-top: max(env(safe-area-inset-top, 0px), 28px) !important;
+  }
+}
+
+// Additional Android fallback
+@supports not (padding: max(0px)) {
+  .safe-area-bottom {
+    padding-bottom: 30px !important;
+  }
+  
+  .safe-area-top {
+    padding-top: 28px !important;
+  }
+}
+
+// Android specific styles for bottom navigation
+@media screen {
+  .platform-android .safe-area-bottom {
+    padding-bottom: max(env(safe-area-inset-bottom, 0px), 35px) !important;
+  }
+  
+  .platform-android .safe-area-top {
+    padding-top: max(env(safe-area-inset-top, 0px), 32px) !important;
+  }
+}
+
+// NOTE:
+// 以前は `dark:bg-...` などの Tailwind クラスをここで `!important` 上書きしていましたが、
+// トーンのブレと保守コストが大きいため撤去しました。
+// 今後は `--app-*` の少数トークン（+ `bg-app-surface` 等の semantic utility）を組み合わせて画面を構成します。
+
+// Admin form styles - 管理画面フォーム要素のスタイル改善
+.admin-layout {
+  // Input, Select, Textarea の基本スタイル（borderが見えない場合の修正）
+  input[type="text"],
+  input[type="email"],
+  input[type="password"],
+  input[type="number"],
+  input[type="date"],
+  input[type="datetime-local"],
+  input[type="time"],
+  select,
+  textarea {
+    &[class*="border-gray-300"] {
+      border-width: 1px;
+      border-style: solid;
+    }
+    
+    // フォーカス時のスタイル強化
+    &:focus {
+      --tw-ring-opacity: 0.3;
+      --tw-ring-color: rgba(0, 71, 171, var(--tw-ring-opacity));
+      box-shadow: 0 0 0 calc(2px + var(--tw-ring-offset-width)) var(--tw-ring-color);
+    }
+  }
+  
+  // チェックボックスとラジオボタン
+  input[type="checkbox"],
+  input[type="radio"] {
+    &[class*="border-gray-300"] {
+      border-width: 1px;
+      border-style: solid;
+    }
+  }
+  
+  // ダークモードでのコントラスト改善
+  .dark & {
+    input[type="text"],
+    input[type="email"],
+    input[type="password"],
+    input[type="number"],
+    input[type="date"],
+    input[type="datetime-local"],
+    input[type="time"],
+    select,
+    textarea {
+      &[class*="border-gray-600"] {
+        border-color: rgb(75 85 99) !important;
+      }
+    }
+  }
+}
+
+// 管理画面全体に適用される場合のスタイル
+body:has([data-route*="admin"]) {
+  input[type="text"],
+  input[type="email"],
+  input[type="password"],
+  input[type="number"],
+  input[type="date"],
+  input[type="datetime-local"],
+  input[type="time"],
+  select,
+  textarea {
+    &[class*="border-gray-300"] {
+      border-width: 1px;
+      border-style: solid;
+    }
+  }
+}

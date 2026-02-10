@@ -1,0 +1,23 @@
+{
+  "name": "api-tests",
+  "description": "API単体テストと統合テスト",
+  "scripts": {
+    "test:api": "vitest run src/test/unit/api/",
+    "test:api:watch": "vitest src/test/unit/api/",
+    "test:integration": "vitest run src/test/integration/",
+    "test:integration:watch": "vitest src/test/integration/",
+    "test:helpers": "vitest run src/test/unit/api/helpers.test.ts",
+    "test:all": "vitest run src/test/unit/api/ src/test/integration/",
+    "test:coverage": "vitest run --coverage src/test/unit/api/ src/test/integration/"
+  },
+  "notes": {
+    "unit": "単体テスト - モックを使用してAPIロジックをテスト",
+    "integration": "統合テスト - 実際のAPIエンドポイントをテスト（開発サーバー起動が必要）",
+    "helpers": "ヘルパー関数テスト - APIで使用するユーティリティ関数をテスト"
+  },
+  "usage": {
+    "development": "npm run test:api:watch でウォッチモード実行",
+    "ci": "npm run test:all で全テスト実行",
+    "coverage": "npm run test:coverage でカバレッジ計測"
+  }
+}
