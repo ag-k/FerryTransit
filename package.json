@@ -79,10 +79,10 @@
     "date-fns-tz": "^3.2.0",
     "dayjs": "^1.11.13",
     "firebase": "^11.10.0",
-    "firebase-admin": "^13.4.0",
-    "firebase-functions": "^7.0.2",
+    "firebase-admin": "^13.6.1",
+    "firebase-functions": "^7.0.5",
     "marked": "^16.1.1",
-    "nuxt": "^3.18.0",
+    "nuxt": "^3.21.1",
     "papaparse": "^5.5.3",
     "pinia": "^3.0.3",
     "vue": "^3.5.18",
@@ -90,8 +90,7 @@
     "vuedraggable": "^4.1.0"
   },
   "devDependencies": {
-    "@capacitor/assets": "^3.0.5",
-    "@capacitor/cli": "^7.4.2",
+    "@capacitor/cli": "^7.5.0",
     "@nuxtjs/eslint-config-typescript": "^12.1.0",
     "@nuxtjs/tailwindcss": "^7.0.0-beta.0",
     "@pinia/testing": "^1.0.2",
@@ -118,5 +117,13 @@
   "optionalDependencies": {
     "@oxc-parser/binding-darwin-arm64": "0.102.0",
     "@oxc-parser/binding-darwin-x64": "0.102.0"
+  },
+  "overrides": {
+    "@google-cloud/storage": "^7.19.0",
+    "@isaacs/brace-expansion": "^5.0.1",
+    "diff": "^8.0.3",
+    "lodash": "^4.17.23",
+    "nanotar": "^0.3.0",
+    "qs": "^6.14.2"
   }
 }
