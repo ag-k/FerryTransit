@@ -237,7 +237,7 @@ describe("Ferry Store", () => {
             ...mockFerryStatus,
             ferry_state: "定期運航",
             ferry_comment: mockFerryStatus.ferryComment,
-            fast_ferry_state: "( in Operation )",
+            fast_ferry_state: "定期運航",
             fast_ferry_comment: mockFerryStatus.fastFerryComment,
             today_wave: mockFerryStatus.todayWave,
             tomorrow_wave: mockFerryStatus.tomorrowWave,

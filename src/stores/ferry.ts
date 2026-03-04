@@ -34,6 +34,14 @@ const formatDateLocal = (date: Date): string => {
 const TIMETABLE_STORAGE_PATH = "data/timetable.json";
 const TIMETABLE_CACHE_KEY = "rawTimetable";
 const NATIVE_STORAGE_SDK_TIMEOUT_MS = 5000;
+const NORMAL_FERRY_OPERATION_STATES = new Set(["定期運航", "通常運航"]);
+
+const isNormalFerryOperationState = (state: unknown): boolean => {
+  if (typeof state !== "string") {
+    return false;
+  }
+  return NORMAL_FERRY_OPERATION_STATES.has(state.trim());
+};
 
 const toLoggableError = (error: unknown): Record<string, unknown> => {
   if (error instanceof Error) {
@@ -657,16 +665,19 @@ export const useFerryStore = defineStore("ferry", () => {
         }
 
         if (ferryData) {
+          const ferryState = ferryData.ferry_state || ferryData.ferryState;
+          const fastFerryState =
+            ferryData.fast_ferry_state || ferryData.fastFerryState;
+
           // フェリーデータはスネークケースからキャメルケースに変換
           shipStatus.value.ferry = {
             ...ferryData,
             hasAlert:
-              ferryData.ferry_state !== "定期運航" ||
-              ferryData.fast_ferry_state !== "( in Operation )",
-            ferryState: ferryData.ferry_state || ferryData.ferryState,
+              !isNormalFerryOperationState(ferryState) ||
+              !isNormalFerryOperationState(fastFerryState),
+            ferryState,
             ferryComment: ferryData.ferry_comment || ferryData.ferryComment,
-            fastFerryState:
-              ferryData.fast_ferry_state || ferryData.fastFerryState,
+            fastFerryState,
             fastFerryComment:
               ferryData.fast_ferry_comment || ferryData.fastFerryComment,
             todayWave: ferryData.today_wave || ferryData.todayWave,

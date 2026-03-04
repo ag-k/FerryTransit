@@ -6,7 +6,7 @@
   "scripts": {
     "build": "nuxt build",
     "dev": "npm run dev:setup && nuxt dev --dotenv .env.local",
-    "opencode": "bash scripts/start-opencode.sh",
+    "ai:opencode:commit": "opencode --prompt \"変更点をコミットしてください\"",
     "dev:setup": "node scripts/dev-setup.mjs",
     "dev:full": "concurrently -k --kill-others-on-fail --kill-signal SIGINT --names \"emulators,nuxt\" \"npm run firebase:emulators:with-data\" \"npm run dev\"",
     "generate": "nuxt generate",

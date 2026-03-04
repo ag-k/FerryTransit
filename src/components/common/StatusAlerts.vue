@@ -11,12 +11,12 @@
           </div>
           <div v-if="shipStatus.ferry?.hasAlert">
             <strong>{{ $t('OKI_KISEN_FERRY') }}:</strong>
-            <span v-if="shipStatus.ferry.ferryState !== '通常運航'">
-              {{ $t('FERRY') }}: {{ shipStatus.ferry.ferryState }}
+            <span v-if="hasFerryStateAlert">
+              {{ $t('FERRY') }}: {{ ferryStateLabel }}
             </span>
-            <span v-if="shipStatus.ferry.ferryState !== '通常運航' && shipStatus.ferry.fastFerryState !== '通常運航'"> / </span>
-            <span v-if="shipStatus.ferry.fastFerryState !== '通常運航'">
-              {{ $t('RAINBOWJET') }}: {{ shipStatus.ferry.fastFerryState }}
+            <span v-if="hasFerryStateAlert && hasFastFerryStateAlert"> / </span>
+            <span v-if="hasFastFerryStateAlert">
+              {{ $t('RAINBOWJET') }}: {{ fastFerryStateLabel }}
             </span>
           </div>
         </div>
@@ -53,6 +53,15 @@ const emptyShipStatus: ShipStatusStoreState = {
   kunigaKankou: null
 }
 const shipStatus = computed<ShipStatusStoreState>(() => ferryStore?.shipStatus ?? emptyShipStatus)
+const NORMAL_FERRY_OPERATION_STATES = new Set(['定期運航', '通常運航'])
+const isNormalFerryState = (state?: string | null) => {
+  if (!state) return false
+  return NORMAL_FERRY_OPERATION_STATES.has(state.trim())
+}
+const ferryStateLabel = computed(() => shipStatus.value.ferry?.ferryState || shipStatus.value.ferry?.ferry_state || '')
+const fastFerryStateLabel = computed(() => shipStatus.value.ferry?.fastFerryState || shipStatus.value.ferry?.fast_ferry_state || '')
+const hasFerryStateAlert = computed(() => !isNormalFerryState(ferryStateLabel.value))
+const hasFastFerryStateAlert = computed(() => !isNormalFerryState(fastFerryStateLabel.value))
 
 // Computed
 const hasAlerts = computed(() => {
