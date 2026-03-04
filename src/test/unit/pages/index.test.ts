@@ -46,6 +46,7 @@ const mockSettingsStore = {
 };
 
 const mockUseFerryData = {
+  timetableData: ref([]),
   filteredTimetable: ref([]),
   getTripStatus: vi.fn((trip: any) => trip.status ?? 0),
   selectedDate: ref(new Date("2024-01-01")),
@@ -149,6 +150,7 @@ describe("IndexPage (時刻表ページ)", () => {
     mockUseFerryData.departure.value = "";
     mockUseFerryData.arrival.value = "";
     mockUseFerryData.selectedDate.value = new Date("2024-01-01");
+    mockUseFerryData.timetableData.value = [];
     mockUseFerryData.filteredTimetable.value = [];
     mockUseFerryData.isLoading.value = false;
     mockUseFerryData.error.value = null;

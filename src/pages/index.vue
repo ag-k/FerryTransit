@@ -629,7 +629,7 @@ const getShipStatusAlert = (shipName: string): { hasAlert: boolean; severity: 'w
   // レインボージェット
   if (shipName === 'RAINBOWJET') {
     const fastFerryState = status.ferry?.fastFerryState || status.ferry?.fast_ferry_state
-    if (fastFerryState && !['( in Operation )', '定期運航', '通常運航', '平常運航', 'Normal Operation', 'Normal Service'].includes(fastFerryState)) {
+    if (fastFerryState && !['定期運航', '通常運航', '平常運航', 'Normal Operation', 'Normal Service'].includes(fastFerryState)) {
       if (fastFerryState.includes('欠航') || fastFerryState.includes('Cancelled') || fastFerryState.includes('Canceled')) {
         return { hasAlert: true, severity: 'danger' }
       }
