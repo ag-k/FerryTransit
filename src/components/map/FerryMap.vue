@@ -282,7 +282,7 @@ const initializeMap = async () => {
       : await new Loader({
         apiKey: GOOGLE_MAPS_API_KEY,
         version: 'weekly',
-        libraries: ['places', 'marker', 'geometry', 'routes'],
+        libraries: ['routes'],
         mapIds: ['ca20a2dbd2ddb20bccb48876'],
         language: googleMapsLocaleOptions.value.language,
         region: googleMapsLocaleOptions.value.region

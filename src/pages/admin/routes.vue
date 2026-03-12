@@ -1490,6 +1490,5 @@ onMounted(async () => {
   const authUser = await getCurrentUser()
   currentUser.value = authUser
   await loadCurrentData()
-  await initGoogleMaps()
 })
 </script>
