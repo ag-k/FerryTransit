@@ -6,6 +6,7 @@ interface GoogleMapsOptions {
   zoom?: number
   mapTypeId?: string
   styles?: any[]
+  libraries?: string[]
 }
 
 export const useGoogleMaps = () => {
@@ -14,7 +15,7 @@ export const useGoogleMaps = () => {
   const loadError = ref<Error | null>(null)
   const { locale } = useI18n()
 
-  const loadGoogleMaps = (): Promise<void> => {
+  const loadGoogleMaps = (options: Pick<GoogleMapsOptions, 'libraries'> = {}): Promise<void> => {
     if (isLoaded.value) {
       logger.debug('Google Maps already loaded')
       return Promise.resolve()
@@ -41,7 +42,15 @@ export const useGoogleMaps = () => {
     return new Promise((resolve, reject) => {
       const { language, region } = getGoogleMapsLocaleOptions(locale.value)
       const script = document.createElement('script')
-      script.src = `https://maps.googleapis.com/maps/api/js?key=${apiKey}&libraries=places&language=${language}&region=${region}`
+      const params = new URLSearchParams({
+        key: apiKey,
+        language,
+        region
+      })
+      if (options.libraries && options.libraries.length > 0) {
+        params.set('libraries', options.libraries.join(','))
+      }
+      script.src = `https://maps.googleapis.com/maps/api/js?${params.toString()}`
       script.async = true
       script.defer = true
 
@@ -72,7 +81,8 @@ export const useGoogleMaps = () => {
       return null
     }
 
-    await loadGoogleMaps()
+    const { libraries = [], ...mapOptions } = options
+    await loadGoogleMaps({ libraries })
 
     if (!isLoaded.value || loadError.value) {
       logger.error('Google Maps is not loaded', loadError.value)
@@ -90,7 +100,7 @@ export const useGoogleMaps = () => {
       streetViewControl: false,
       rotateControl: false,
       fullscreenControl: true,
-      ...options
+      ...mapOptions
     }
 
     logger.debug('Creating Google Map with options', defaultOptions)
