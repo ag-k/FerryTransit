@@ -54,13 +54,18 @@ const pruneAdminPages = (pages: NuxtPageNode[]) => {
 
 export default defineNuxtConfig({
   srcDir: "src/",
+  dir: {
+    public: "src/public",
+  },
+  future: {
+    compatibilityVersion: 4,
+  },
   ignore: isCapacitorBuild ? capacitorIgnorePatterns : [],
   compatibilityDate: "2025-05-15",
   devtools: { enabled: true },
 
   experimental: {
     componentIslands: false,
-    treeshakeClientOnly: false,
   },
 
   // Capacitor（アプリ版）の場合は管理画面を除外
