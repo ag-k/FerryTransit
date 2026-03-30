@@ -3,15 +3,17 @@
     <div v-if="points.length === 0" class="p-4 text-sm text-gray-600 dark:text-gray-300">
       {{ fallbackText }}
     </div>
-    <div v-else ref="mapEl" class="port-leaflet-map" />
+    <div v-else class="port-leaflet-map-shell">
+      <div ref="mapEl" class="port-leaflet-map" />
+    </div>
   </div>
 </template>
 
 <script setup lang="ts">
 import { computed, onMounted, onUnmounted, ref, watch } from 'vue'
 import { PORTS_DATA } from '~/data/ports'
+import { ensureLeafletLoaded } from '@/utils/leafletLoader'
 
-type LatLng = { lat: number; lng: number }
 type MarkerPoint = { id: string; title: string; lat: number; lng: number }
 
 interface Props {
@@ -26,17 +28,11 @@ interface Props {
 }
 
 const props = withDefaults(defineProps<Props>(), {
-  zoom: 16
+  zoom: 16,
+  portId: undefined,
+  title: undefined,
+  focus: undefined
 })
-
-declare global {
-  interface Window {
-    L?: any
-  }
-}
-
-const LEAFLET_CSS_URL = 'https://unpkg.com/leaflet@1.9.4/dist/leaflet.css'
-const LEAFLET_JS_URL = 'https://unpkg.com/leaflet@1.9.4/dist/leaflet.js'
 
 const mapEl = ref<HTMLDivElement | null>(null)
 let map: any | null = null
@@ -129,53 +125,6 @@ const fallbackText = computed(() => {
   return 'この港の地図情報が見つかりませんでした。'
 })
 
-const loadStyleOnce = (href: string): Promise<void> => {
-  if (typeof document === 'undefined') return Promise.resolve()
-  const existing = document.querySelector<HTMLLinkElement>(`link[rel="stylesheet"][href="${href}"]`)
-  if (existing) return Promise.resolve()
-
-  return new Promise((resolve, reject) => {
-    const link = document.createElement('link')
-    link.rel = 'stylesheet'
-    link.href = href
-    link.onload = () => resolve()
-    link.onerror = () => reject(new Error(`Failed to load stylesheet: ${href}`))
-    document.head.appendChild(link)
-  })
-}
-
-const loadScriptOnce = (src: string): Promise<void> => {
-  if (typeof document === 'undefined') return Promise.resolve()
-  const existing = document.querySelector<HTMLScriptElement>(`script[src="${src}"]`)
-  if (existing) {
-    // 既にロード済み or ロード中
-    if ((window as any).L) return Promise.resolve()
-    return new Promise((resolve, reject) => {
-      existing.addEventListener('load', () => resolve())
-      existing.addEventListener('error', () => reject(new Error(`Failed to load script: ${src}`)))
-    })
-  }
-
-  return new Promise((resolve, reject) => {
-    const script = document.createElement('script')
-    script.src = src
-    script.async = true
-    script.defer = true
-    script.onload = () => resolve()
-    script.onerror = () => reject(new Error(`Failed to load script: ${src}`))
-    document.head.appendChild(script)
-  })
-}
-
-const ensureLeafletLoaded = async () => {
-  await loadStyleOnce(LEAFLET_CSS_URL)
-  await loadScriptOnce(LEAFLET_JS_URL)
-  if (!window.L) {
-    throw new Error('Leaflet (window.L) is not available after loading scripts.')
-  }
-  return window.L
-}
-
 const createOrUpdateMap = async () => {
   if (!mapEl.value) return
   if (points.value.length === 0) return
@@ -227,6 +176,7 @@ const createOrUpdateMap = async () => {
   // Update view
   if (points.value.length === 1) {
     const p = points.value[0]
+    if (!p) return
     map.setView([p.lat, p.lng], props.zoom, { animate: false })
   } else {
     const bounds = L.latLngBounds(points.value.map(p => [p.lat, p.lng]))
@@ -267,6 +217,11 @@ onUnmounted(() => {
 }
 
 .port-leaflet-map {
+  position: absolute;
+  inset: 0;
+}
+
+.port-leaflet-map-shell {
   position: absolute;
   inset: 0;
 }

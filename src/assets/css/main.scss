@@ -10,6 +10,19 @@ body {
   color: hsl(var(--app-fg));
 }
 
+// Tailwind の img/svg リセットが Leaflet のタイルサイズを潰すため、地図配下だけ打ち消す
+.leaflet-container img,
+.leaflet-container svg,
+.leaflet-container canvas {
+  max-width: none !important;
+  max-height: none !important;
+}
+
+.leaflet-container .leaflet-tile {
+  width: 256px !important;
+  height: 256px !important;
+}
+
 // Android navigation bar height variable
 :root {
   --android-navigation-bar-height: 20px;
