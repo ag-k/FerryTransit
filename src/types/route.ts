@@ -14,7 +14,7 @@ export interface RouteData {
   path: RoutePoint[] // 航路の経路点
   distance?: number // 距離（メートル）
   duration?: number // 所要時間（秒）
-  source: 'manual' | 'google_transit' | 'google_driving' | 'custom'
+  source: 'manual' | 'google_transit' | 'google_driving' | 'custom' | 'overpass_osm'
   geodesic: boolean // 測地線を使用するか
   createdAt: string
   updatedAt: string
