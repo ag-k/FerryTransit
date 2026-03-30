@@ -16,28 +16,10 @@ const PortSelectorStub = defineComponent({
     'margin'
   ],
   emits: ['update:modelValue', 'selectRoute'],
-  methods: {
-    nextValue() {
-      // テストでは $t がキー文字列を返す想定なので placeholder で出発/目的地を判別する
-      return this.placeholder === 'DEPARTURE' ? 'HONDO_SHICHIRUI' : 'SAIGO'
-    }
-  },
   template: `
     <div>
-      <button
-        type="button"
-        :data-testid="'port-selector-stub-' + placeholder"
-        @click="$emit('update:modelValue', nextValue())"
-      >
-        {{ modelValue || placeholder }}
-      </button>
-      <button
-        type="button"
-        :data-testid="'port-selector-route-stub-' + placeholder"
-        @click="$emit('selectRoute', { departure: 'HONDO_SHICHIRUI', arrival: 'SAIGO' })"
-      >
-        route
-      </button>
+      <button type="button" data-testid="port-selector-stub">{{ modelValue || placeholder }}</button>
+      <button type="button" data-testid="port-selector-route-stub">route</button>
     </div>
   `
 })
@@ -74,14 +56,14 @@ describe('RouteEndpointsSelector', () => {
 
   it('emits update:departure when departure selector updates', async () => {
     const wrapper = mountComponent()
-    await wrapper.find('[data-testid="port-selector-stub-DEPARTURE"]').trigger('click')
+    wrapper.findAllComponents(PortSelectorStub)[0].vm.$emit('update:modelValue', 'HONDO_SHICHIRUI')
     expect(wrapper.emitted('update:departure')).toBeTruthy()
     expect(wrapper.emitted('update:departure')![0][0]).toBe('HONDO_SHICHIRUI')
   })
 
   it('emits update:arrival when arrival selector updates', async () => {
     const wrapper = mountComponent()
-    await wrapper.find('[data-testid="port-selector-stub-ARRIVAL"]').trigger('click')
+    wrapper.findAllComponents(PortSelectorStub)[1].vm.$emit('update:modelValue', 'SAIGO')
     expect(wrapper.emitted('update:arrival')).toBeTruthy()
     expect(wrapper.emitted('update:arrival')![0][0]).toBe('SAIGO')
   })
@@ -104,7 +86,7 @@ describe('RouteEndpointsSelector', () => {
   it('disables mainland ports when the other side is mainland', () => {
     const wrapper = mountComponent({ departure: '', arrival: 'HONDO_SHICHIRUI' })
     const stubs = wrapper.findAllComponents(PortSelectorStub)
-    const depStub = stubs.find(w => w.props('placeholder') === 'DEPARTURE')!
+    const depStub = stubs[0]
     expect(depStub.props('disabledPorts')).toEqual(expect.arrayContaining(['HONDO', 'HONDO_SHICHIRUI', 'HONDO_SAKAIMINATO']))
   })
 
@@ -128,7 +110,7 @@ describe('RouteEndpointsSelector', () => {
 
   it('sets both departure and arrival when favorite route is selected', async () => {
     const wrapper = mountComponent()
-    await wrapper.find('[data-testid="port-selector-route-stub-DEPARTURE"]').trigger('click')
+    wrapper.findAllComponents(PortSelectorStub)[0].vm.$emit('selectRoute', { departure: 'HONDO_SHICHIRUI', arrival: 'SAIGO' })
     expect(wrapper.emitted('update:departure')).toBeTruthy()
     expect(wrapper.emitted('update:arrival')).toBeTruthy()
     expect(wrapper.emitted('update:departure')!.at(-1)![0]).toBe('HONDO_SHICHIRUI')

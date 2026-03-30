@@ -35,8 +35,8 @@
             </dd>
           </div>
           <div>
-            <dt class="text-sm text-gray-600 dark:text-gray-300">{{ $t('LAST_UPDATED') }}</dt>
-            <dd class="text-base font-medium dark:text-gray-100">{{ new Date().toLocaleDateString() }}</dd>
+            <dt class="text-sm text-gray-600 dark:text-gray-300">{{ $t('RELEASE_DATE') }}</dt>
+            <dd class="text-base font-medium dark:text-gray-100">{{ releaseDateLabel }}</dd>
           </div>
         </dl>
       </div>
@@ -100,6 +100,15 @@ import DataManagement from '~/components/settings/DataManagement.vue'
 
 const runtimeConfig = useRuntimeConfig()
 const localePath = useLocalePath()
+const releaseDateLabel = computed(() => {
+  const releaseDate = runtimeConfig.public.releaseDate
+  if (!releaseDate) return '-'
+
+  const parsed = new Date(releaseDate)
+  if (Number.isNaN(parsed.getTime())) return releaseDate
+
+  return parsed.toLocaleDateString()
+})
 
 definePageMeta({
   title: 'SETTINGS'

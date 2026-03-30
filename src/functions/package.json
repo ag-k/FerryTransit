@@ -21,13 +21,13 @@
   },
   "devDependencies": {
     "@types/cors": "^2.8.17",
-    "@typescript-eslint/eslint-plugin": "^8.57.1",
-    "@typescript-eslint/parser": "^8.57.1",
+    "@typescript-eslint/eslint-plugin": "^8.57.2",
+    "@typescript-eslint/parser": "^8.57.2",
     "eslint": "^9.39.4",
     "eslint-config-google": "^0.14.0",
     "eslint-plugin-import": "^2.25.4",
     "firebase-functions-test": "^3.1.0",
-    "graphql": "^16.13.1",
+    "graphql": "^16.13.2",
     "typescript": "^5.9.3"
   },
   "overrides": {
