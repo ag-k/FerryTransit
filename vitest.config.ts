@@ -4,6 +4,9 @@ import vue from '@vitejs/plugin-vue'
 
 export default defineConfig({
   plugins: [vue()],
+  define: {
+    __CAPACITOR_BUILD__: 'false'
+  },
   // root の `.env` が権限で読めない環境でもテストが起動できるように、
   // Vitest 実行時の env 読み込み対象ディレクトリをテスト用に切り替える。
   envDir: resolve(__dirname, './src/test'),
