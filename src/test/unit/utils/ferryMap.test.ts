@@ -1,5 +1,6 @@
 import { describe, expect, it } from 'vitest'
 import {
+  buildPortLabelA11yLabel,
   expandMainlandPortId,
   findMatchingRouteForSegment,
   findRoutesForSelection,
@@ -81,5 +82,9 @@ describe('ferryMap utilities', () => {
     expect(getPortLabelVariant('海士町')).toBe('ama')
     expect(getPortLabelVariant('Sakaiminato')).toBe('mainland')
     expect(getPortLabelVariant('')).toBe('default')
+  })
+
+  it('港名ラベル用の aria-label を組み立てる', () => {
+    expect(buildPortLabelA11yLabel('西郷港', '港の詳細')).toBe('西郷港 港の詳細')
   })
 })
