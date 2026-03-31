@@ -131,3 +131,7 @@ export const getPortLabelVariant = (badgeLabel: string): PortLabelVariant => {
       return 'default'
   }
 }
+
+export const buildPortLabelA11yLabel = (portTitle: string, portDetailsLabel: string) => {
+  return `${portTitle} ${portDetailsLabel}`.trim()
+}

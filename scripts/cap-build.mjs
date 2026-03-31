@@ -50,6 +50,10 @@ function run(command) {
   execSync(command, { stdio: 'inherit', cwd: projectRoot });
 }
 
+function runNpmInstall(commandArgs) {
+  run(`npm install --ignore-scripts --no-audit --no-fund ${commandArgs}`);
+}
+
 function ensureNpmOptionalDeps() {
   if (process.platform !== 'darwin') return;
 
@@ -60,9 +64,9 @@ function ensureNpmOptionalDeps() {
   if (existsSync(bindingPath)) return;
 
   console.warn(
-    `⚠️  ${bindingPackage} が見つかりません。npm optional dependency の不整合を修復するため npm install を実行します。`
+    `⚠️  ${bindingPackage} が見つかりません。npm optional dependency の不整合を修復するため、該当 binding のみを安全なオプション付きで追加します。`
   );
-  run('npm install');
+  runNpmInstall(`--no-save ${bindingPackage}`);
 }
 
 async function main() {

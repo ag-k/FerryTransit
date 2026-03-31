@@ -52,6 +52,7 @@ import { getPortMapZoom } from '@/utils/portMapZoom'
 import { useSettingsStore } from '@/stores/settings'
 import { ensureLeafletLoaded } from '@/utils/leafletLoader'
 import {
+  buildPortLabelA11yLabel,
   expandMainlandPortId,
   findMatchingRouteForSegment,
   findRoutesForSelection,
@@ -140,6 +141,14 @@ const closePortModal = () => {
   modalPortId.value = ''
 }
 
+const openPortDetails = (port: Port) => {
+  if (props.showPortDetails) {
+    modalPortId.value = port.id
+    showPortModal.value = true
+  }
+  emit('portClick', port)
+}
+
 const invalidateMapSize = () => {
   if (!map) return
   requestAnimationFrame(() => {
@@ -185,8 +194,26 @@ const setMarkerLabelVisibility = (portId: string, visible: boolean) => {
     return
   }
 
-  record.marker.bindTooltip(getPortTitle(record.port), {
+  const button = document.createElement('button')
+  button.type = 'button'
+  button.className = 'ferry-map-port-label__button'
+  button.textContent = getPortTitle(record.port)
+  button.title = getPortTitle(record.port)
+  button.setAttribute('aria-label', buildPortLabelA11yLabel(
+    getPortTitle(record.port),
+    String($i18n.t('map.portDetails'))
+  ))
+
+  L.DomEvent.disableClickPropagation(button)
+  L.DomEvent.disableScrollPropagation(button)
+  L.DomEvent.on(button, 'click', (event: Event) => {
+    L.DomEvent.stop(event)
+    openPortDetails(record.port)
+  })
+
+  record.marker.bindTooltip(button, {
     permanent: true,
+    interactive: true,
     direction: 'right',
     offset: [12, 0],
     opacity: 1,
@@ -248,11 +275,7 @@ const addPortMarkers = () => {
     }).addTo(map)
 
     marker.on('click', () => {
-      if (props.showPortDetails) {
-        modalPortId.value = port.id
-        showPortModal.value = true
-      }
-      emit('portClick', port)
+      openPortDetails(port)
     })
 
     markers.value.set(port.id, {
@@ -664,10 +687,26 @@ onUnmounted(() => {
 
 .map-container :deep(.ferry-map-port-label .leaflet-tooltip-content) {
   margin: 0;
+  padding: 0;
+}
+
+.map-container :deep(.ferry-map-port-label__button) {
+  display: block;
   padding: 4px 10px;
+  border: 0;
+  background: transparent;
+  font: inherit;
+  color: inherit;
   font-size: 11px;
   font-weight: 700;
+  line-height: 1.2;
   white-space: nowrap;
+  cursor: pointer;
+}
+
+.map-container :deep(.ferry-map-port-label__button:focus-visible) {
+  outline: 2px solid currentColor;
+  outline-offset: 2px;
 }
 
 .map-container :deep(.ferry-map-port-label--nishinoshima) {
