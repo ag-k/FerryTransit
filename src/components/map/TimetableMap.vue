@@ -1,14 +1,24 @@
 <template>
   <div v-if="isVisible" class="mb-6">
-    <div class="relative">
-      <div v-if="showHideButton && settingsStore.mapEnabled" class="absolute left-2 top-2 z-20">
+    <div class="relative isolate">
+      <div
+        v-if="showHideButton && settingsStore.mapEnabled"
+        class="pointer-events-none absolute right-2 top-2 z-20"
+      >
         <SecondaryButton
           size="sm"
-          class="bg-white/90 dark:bg-gray-900/90 border border-gray-300/80 dark:border-gray-700 shadow-sm backdrop-blur"
+          class="pointer-events-auto relative z-10 bg-white/90 dark:bg-gray-900/90 border border-gray-300/80 dark:border-gray-700 shadow-sm backdrop-blur"
           @click="hideMap"
         >
-          <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="mr-1.5"
-            viewBox="0 0 16 16" aria-hidden="true">
+          <svg
+            xmlns="http://www.w3.org/2000/svg"
+            width="16"
+            height="16"
+            fill="currentColor"
+            class="mr-1.5"
+            viewBox="0 0 16 16"
+            aria-hidden="true"
+          >
             <path
               d="M8 8.75a2.5 2.5 0 1 1 0-5 2.5 2.5 0 0 1 0 5z" />
             <path
@@ -17,15 +27,17 @@
           {{ $t('MAP_HIDE') }}
         </SecondaryButton>
       </div>
-      <FerryMap
-        :selected-port="selectedPort"
-        :selected-route="selectedRoute"
-        :selected-route-segments="selectedRouteSegments"
-        :show-port-details="showPortDetails"
-        :height="height"
-        @port-click="emit('portClick', $event)"
-        @route-select="emit('routeSelect', $event)"
-      />
+      <div class="relative z-0">
+        <FerryMap
+          :selected-port="selectedPort"
+          :selected-route="selectedRoute"
+          :selected-route-segments="selectedRouteSegments"
+          :show-port-details="showPortDetails"
+          :height="height"
+          @port-click="emit('portClick', $event)"
+          @route-select="emit('routeSelect', $event)"
+        />
+      </div>
     </div>
   </div>
 </template>
