@@ -608,6 +608,8 @@ onUnmounted(() => {
   position: relative;
   width: 100%;
   height: v-bind(height);
+  z-index: 0;
+  isolation: isolate;
 }
 
 .map-container {
