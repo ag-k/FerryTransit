@@ -11,6 +11,7 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
     private let appStoreLaunchUrlArg = "--appstore-url"
 
     func application(_ application: UIApplication, didFinishLaunchingWithOptions launchOptions: [UIApplication.LaunchOptionsKey: Any]?) -> Bool {
+        WKWebViewConfiguration.installCapacitorFontMimePatch()
         navigateToAppStoreStartPathIfNeeded()
         injectLaunchUrlFromArguments(application)
         // Override point for customization after application launch.
