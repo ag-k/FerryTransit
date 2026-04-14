@@ -14,6 +14,10 @@ const derivedDataPath = resolve(
   process.env.IOS_SIM_DERIVED_DATA_PATH ?? 'ios/build/appstore-screenshots'
 )
 const workspacePath = resolve(process.cwd(), 'ios/App/App.xcworkspace')
+const projectPath = resolve(process.cwd(), 'ios/App/App.xcodeproj')
+const xcodeContainerArgs = existsSync(workspacePath)
+  ? ['-workspace', workspacePath]
+  : ['-project', projectPath]
 const scheme = process.env.IOS_SIM_SCHEME ?? 'App'
 const staticRoot = process.env.APPSTORE_STATIC_ROOT ?? '.output/public'
 const skipCapBuild = process.env.IOS_SIM_SKIP_CAP_BUILD === '1'
@@ -462,7 +466,7 @@ const main = async () => {
 
   if (!skipXcodeBuild) {
     run('xcodebuild', [
-      '-workspace', workspacePath,
+      ...xcodeContainerArgs,
       '-scheme', scheme,
       '-configuration', 'Release',
       '-destination', `id=${buildTargetSimulator.udid}`,

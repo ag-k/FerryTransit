@@ -48,6 +48,9 @@ ios/App/Pods
 ios/capacitor-cordova-ios-plugins
 android/app/build
 android/capacitor-cordova-android-plugins/build
+**/xcuserdata/
+*.xcuserstate
+ios/App/App.xcodeproj/project.xcworkspace/xcshareddata/swiftpm/
 
 # Firebase config files (sensitive)
 ios/App/App/GoogleService-Info.plist
