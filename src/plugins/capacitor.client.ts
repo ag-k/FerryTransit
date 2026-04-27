@@ -116,20 +116,6 @@ export default defineNuxtPlugin(() => {
       })
     }
     
-    // Androidのナビゲーションバーを設定
-    if (Capacitor.getPlatform() === 'android') {
-      // ナビゲーションバーの色を設定
-      try {
-        // @ts-ignore - Android specific API
-        if (window.AndroidInterface) {
-          // @ts-ignore
-          window.AndroidInterface.setNavigationBarColor('#FFFFFF')
-        }
-      } catch (error) {
-        logger.info('Android navigation bar color setting not available')
-      }
-    }
-
     // スプラッシュスクリーンを3秒後に非表示
     setTimeout(() => {
       SplashScreen.hide().catch(error => {
@@ -150,12 +136,14 @@ export default defineNuxtPlugin(() => {
 
     // ディープリンクで画面遷移（例: ferrytransit://app/transit?...）
     App.addListener('appUrlOpen', (event) => {
-      void handleDeepLink(event?.url)
+      handleDeepLink(event?.url).catch(error => {
+        logger.error('Failed to handle app URL open event', error)
+      })
     })
 
     App.getLaunchUrl()
       .then((launchUrl) => {
-        void handleDeepLink(launchUrl?.url)
+        return handleDeepLink(launchUrl?.url)
       })
       .catch((error) => {
         logger.warn('Failed to read launch URL', error)

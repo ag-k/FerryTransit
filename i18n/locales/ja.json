@@ -520,6 +520,7 @@
     "hideRoutes": "航路を非表示",
     "portDetails": "港の詳細",
     "routeDetails": "航路の詳細",
+    "touchHint": "地図の移動は2本指で操作してください",
     "noPortInfo": "港の情報がありません",
     "apiKeyMissing": "Google Maps APIキーが設定されていません。地図機能を利用するには環境変数にAPIキーを設定してください。",
     "settings": {

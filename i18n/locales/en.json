@@ -521,6 +521,7 @@
     "hideRoutes": "Hide Routes",
     "portDetails": "Port Details",
     "routeDetails": "Route Details",
+    "touchHint": "Use two fingers to move the map",
     "noPortInfo": "No port information available",
     "apiKeyMissing": "Google Maps API key is not configured. Please set the API key in environment variables to use map features.",
     "settings": {

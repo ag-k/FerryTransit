@@ -20,6 +20,14 @@
       :class="{ loading: isLoading }"
     >
       <div ref="mapContainer" class="map-surface" />
+      <div
+        v-if="showTouchHint"
+        class="map-touch-hint"
+        role="status"
+        aria-live="polite"
+      >
+        {{ $t('map.touchHint') }}
+      </div>
     </div>
     <div v-if="isLoading && isMapEnabled" class="map-loading">
       <Icon name="heroicons:arrow-path" class="w-8 h-8 animate-spin" />
@@ -51,6 +59,7 @@ import { createLogger } from '~/utils/logger'
 import { getPortMapZoom } from '@/utils/portMapZoom'
 import { useSettingsStore } from '@/stores/settings'
 import { ensureLeafletLoaded } from '@/utils/leafletLoader'
+import { installLeafletTwoFingerTouchGuard } from '@/utils/leafletTouchGuard'
 import {
   buildPortLabelA11yLabel,
   expandMainlandPortId,
@@ -101,6 +110,7 @@ const settingsStore = useSettingsStore()
 const mapContainer = ref<HTMLElement>()
 const isLoading = ref(false)
 const mapError = ref(false)
+const showTouchHint = ref(false)
 const showPortModal = ref(false)
 const modalPortId = ref<string>('')
 const routesFromStorage = ref<RouteData[]>([])
@@ -114,6 +124,8 @@ const modalPortTitle = computed(() => {
 
 let L: any = null
 let map: any | null = null
+let teardownTouchGuard: (() => void) | null = null
+let touchHintTimer: ReturnType<typeof window.setTimeout> | null = null
 const markers = ref<Map<string, PortMarkerRecord>>(new Map())
 const routeLayers = ref<RouteLayerRecord[]>([])
 
@@ -147,6 +159,23 @@ const openPortDetails = (port: Port) => {
     showPortModal.value = true
   }
   emit('portClick', port)
+}
+
+const clearTouchHintTimer = () => {
+  if (!touchHintTimer) return
+  window.clearTimeout(touchHintTimer)
+  touchHintTimer = null
+}
+
+const revealTouchHint = () => {
+  if (typeof window === 'undefined') return
+
+  showTouchHint.value = true
+  clearTouchHintTimer()
+  touchHintTimer = window.setTimeout(() => {
+    showTouchHint.value = false
+    touchHintTimer = null
+  }, 1600)
 }
 
 const invalidateMapSize = () => {
@@ -533,6 +562,13 @@ const initializeMap = async () => {
       attribution: '&copy; OpenStreetMap contributors'
     }).addTo(map)
 
+    teardownTouchGuard?.()
+    teardownTouchGuard = installLeafletTwoFingerTouchGuard({
+      map,
+      container: map.getContainer?.() ?? mapContainer.value,
+      onSingleTouchMove: revealTouchHint
+    })
+
     addPortMarkers()
     await loadRoutesFromStorage()
     renderActiveRoute()
@@ -584,6 +620,10 @@ onMounted(() => {
 })
 
 onUnmounted(() => {
+  teardownTouchGuard?.()
+  teardownTouchGuard = null
+  clearTouchHintTimer()
+  showTouchHint.value = false
   clearRouteLayers()
   markers.value.forEach(({ marker }) => {
     try {
@@ -613,6 +653,7 @@ onUnmounted(() => {
 }
 
 .map-container {
+  position: relative;
   width: 100%;
   height: 100%;
   border-radius: 0.5rem;
@@ -635,6 +676,30 @@ onUnmounted(() => {
   width: 100%;
   height: 100%;
   font: inherit;
+}
+
+.map-touch-hint {
+  position: absolute;
+  left: 50%;
+  bottom: 0.75rem;
+  z-index: 450;
+  transform: translateX(-50%);
+  max-width: calc(100% - 1.5rem);
+  padding: 0.5rem 0.75rem;
+  border-radius: 9999px;
+  background: rgba(15, 23, 42, 0.88);
+  color: #f8fafc;
+  font-size: 0.75rem;
+  line-height: 1.4;
+  text-align: center;
+  box-shadow: 0 10px 24px rgba(15, 23, 42, 0.2);
+  pointer-events: none;
+}
+
+@media (pointer: coarse) {
+  .map-container :deep(.leaflet-container) {
+    touch-action: pan-x pan-y;
+  }
 }
 
 .map-container :deep(.leaflet-control-attribution) {

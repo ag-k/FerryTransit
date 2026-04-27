@@ -5,6 +5,14 @@
     </div>
     <div v-else class="port-leaflet-map-shell">
       <div ref="mapEl" class="port-leaflet-map" />
+      <div
+        v-if="showTouchHint"
+        class="port-leaflet-touch-hint"
+        role="status"
+        aria-live="polite"
+      >
+        {{ $t('map.touchHint') }}
+      </div>
     </div>
   </div>
 </template>
@@ -13,6 +21,7 @@
 import { computed, onMounted, onUnmounted, ref, watch } from 'vue'
 import { PORTS_DATA } from '~/data/ports'
 import { ensureLeafletLoaded } from '@/utils/leafletLoader'
+import { installLeafletTwoFingerTouchGuard } from '@/utils/leafletTouchGuard'
 
 type MarkerPoint = { id: string; title: string; lat: number; lng: number }
 
@@ -35,9 +44,27 @@ const props = withDefaults(defineProps<Props>(), {
 })
 
 const mapEl = ref<HTMLDivElement | null>(null)
+const showTouchHint = ref(false)
 let map: any | null = null
 let markerById: Map<string, any> | null = null
+let teardownTouchGuard: (() => void) | null = null
+let touchHintTimer: ReturnType<typeof window.setTimeout> | null = null
 const isFiniteCoord = (value: unknown) => Number.isFinite(Number(value))
+
+const clearTouchHintTimer = () => {
+  if (!touchHintTimer) return
+  window.clearTimeout(touchHintTimer)
+  touchHintTimer = null
+}
+
+const revealTouchHint = () => {
+  showTouchHint.value = true
+  clearTouchHintTimer()
+  touchHintTimer = window.setTimeout(() => {
+    showTouchHint.value = false
+    touchHintTimer = null
+  }, 1600)
+}
 
 const uniqueByCoordinate = (list: MarkerPoint[]): MarkerPoint[] => {
   const seen = new Set<string>()
@@ -143,6 +170,13 @@ const createOrUpdateMap = async () => {
       attribution: '&copy; OpenStreetMap contributors'
     }).addTo(map)
 
+    teardownTouchGuard?.()
+    teardownTouchGuard = installLeafletTwoFingerTouchGuard({
+      map,
+      container: map.getContainer?.() ?? mapEl.value,
+      onSingleTouchMove: revealTouchHint
+    })
+
     markerById = new Map()
   }
 
@@ -200,6 +234,10 @@ watch(
 )
 
 onUnmounted(() => {
+  teardownTouchGuard?.()
+  teardownTouchGuard = null
+  clearTouchHintTimer()
+  showTouchHint.value = false
   try {
     map?.remove?.()
   } catch {
@@ -230,5 +268,29 @@ onUnmounted(() => {
 .port-leaflet-map :deep(.leaflet-container) {
   width: 100%;
   height: 100%;
+}
+
+.port-leaflet-touch-hint {
+  position: absolute;
+  left: 50%;
+  bottom: 0.75rem;
+  z-index: 450;
+  transform: translateX(-50%);
+  max-width: calc(100% - 1.5rem);
+  padding: 0.5rem 0.75rem;
+  border-radius: 9999px;
+  background: rgba(15, 23, 42, 0.88);
+  color: #f8fafc;
+  font-size: 0.75rem;
+  line-height: 1.4;
+  text-align: center;
+  box-shadow: 0 10px 24px rgba(15, 23, 42, 0.2);
+  pointer-events: none;
+}
+
+@media (pointer: coarse) {
+  .port-leaflet-map :deep(.leaflet-container) {
+    touch-action: pan-x pan-y;
+  }
 }
 </style>

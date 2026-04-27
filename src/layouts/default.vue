@@ -3,7 +3,7 @@
     <AppNavigation />
 
     <!-- Scrollable Content Area -->
-    <div class="flex-1 overflow-y-auto" style="-webkit-overflow-scrolling: touch;">
+    <div class="flex-1 overflow-y-auto" :style="scrollAreaStyle">
       <!-- Alerts -->
       <div v-if="alerts.length > 0" class="container mx-auto px-4 mt-3">
         <CommonAlertComponent
@@ -45,6 +45,11 @@ import ToastContainer from '~/components/ToastContainer.vue'
 // Initialize store on client side only
 const uiStore = process.client ? useUIStore() : null
 const alerts = computed(() => uiStore?.alerts || [])
+
+const scrollAreaStyle = {
+  WebkitOverflowScrolling: 'touch',
+  paddingBottom: 'calc(max(env(safe-area-inset-bottom, 0px), var(--android-bottom-offset, 0px)) + 8px)'
+}
 
 // Method to remove alert
 const removeAlert = (index: number) => {

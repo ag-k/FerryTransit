@@ -2,7 +2,7 @@
   <nav
     aria-label="Global navigation"
     class="lg:hidden fixed bottom-0 left-0 right-0 bg-app-surface/80 backdrop-blur border-t border-app-border/70 z-50"
-    style="transform: translateZ(0); -webkit-transform: translateZ(0); padding-bottom: env(safe-area-inset-bottom, 0px);"
+    :style="bottomNavStyle"
   >
     <div class="mx-auto max-w-screen-lg px-2">
       <div class="grid grid-cols-4">
@@ -58,6 +58,12 @@
 <script setup lang="ts">
 const route = useRoute()
 const localePath = useLocalePath()
+
+const bottomNavStyle = {
+  transform: 'translateZ(0)',
+  WebkitTransform: 'translateZ(0)',
+  paddingBottom: 'calc(max(env(safe-area-inset-bottom, 0px), var(--android-bottom-offset, 0px)) + 8px)'
+}
 
 // Navigation items for bottom tab
 const navItems = computed(() => [
