@@ -1119,7 +1119,7 @@ onMounted(() => {
   }
 
   if (route.query.autoSearch === '1') {
-    void nextTick(async () => {
+    nextTick(async () => {
       await handleSearch()
     })
   }

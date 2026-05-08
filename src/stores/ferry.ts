@@ -485,7 +485,7 @@ export const useFerryStore = defineStore("ferry", () => {
       const config = useRuntimeConfig();
       const functionsUrl = `https://asia-northeast1-${config.public.firebase.projectId}.cloudfunctions.net/getTimetableStorage`;
 
-      const fetchFromStorageSdk = async () => {
+      const fetchFromStorageSdk = () => {
         const { getCachedJsonFile } = useFirebaseStorage();
         return getCachedJsonFile<any[]>(TIMETABLE_STORAGE_PATH, TIMETABLE_CACHE_KEY, 15);
       };
@@ -503,7 +503,7 @@ export const useFerryStore = defineStore("ferry", () => {
         return (await response.json()) as any[];
       };
 
-      const fetchFromFunctions = async () => {
+      const fetchFromFunctions = () => {
         return $fetch<any[]>(functionsUrl);
       };
 
