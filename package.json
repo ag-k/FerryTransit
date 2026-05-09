@@ -5,10 +5,12 @@
   "type": "module",
   "scripts": {
     "build": "nuxt build",
-    "dev": "npm run dev:setup && nuxt dev --dotenv .env.local",
+    "dev": "portless",
+    "dev:local": "npm run dev:setup && nuxt dev --dotenv .env.local",
     "ai:opencode:commit": "opencode --prompt \"変更点をコミットしてください\"",
     "dev:setup": "node scripts/dev-setup.mjs",
-    "dev:full": "concurrently -k --kill-others-on-fail --kill-signal SIGINT --names \"emulators,nuxt\" \"npm run firebase:emulators:with-data\" \"npm run dev\"",
+    "dev:full": "concurrently -k --kill-others-on-fail --kill-signal SIGINT --names \"emulators,portless\" \"npm run firebase:emulators:with-data\" \"npm run dev\"",
+    "dev:full:local": "concurrently -k --kill-others-on-fail --kill-signal SIGINT --names \"emulators,nuxt\" \"npm run firebase:emulators:with-data\" \"npm run dev:local\"",
     "generate": "nuxt generate",
     "preview": "nuxt preview",
     "postinstall": "nuxt prepare",
@@ -55,6 +57,10 @@
     "deploy-dev": "run-s build-dev deploy:only:dev",
     "build-app-dev": "cp .env.development .env && CAPACITOR_BUILD=true npm run generate && npx cap copy",
     "functions:deploy:script": "bash scripts/deploy-functions.sh"
+  },
+  "portless": {
+    "name": "ferry-transit",
+    "script": "dev:local"
   },
   "dependencies": {
     "@capacitor/android": "^7.6.2",
@@ -106,6 +112,7 @@
     "eslint-config-prettier": "^10.1.8",
     "happy-dom": "^20.9.0",
     "npm-run-all": "^4.1.5",
+    "portless": "^0.12.0",
     "postcss": "^8.5.14",
     "sass": "^1.99.0",
     "sass-loader": "^16.0.7",

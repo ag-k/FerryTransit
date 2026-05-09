@@ -35,7 +35,7 @@ npm run dev:full
 This command:
 
 1. Starts Firebase emulators with automatic super admin registration
-2. Starts the Nuxt development server
+2. Starts the Nuxt development server through portless at `https://ferry-transit.localhost`
 3. Opens both services concurrently
 
 ## Manual Registration
@@ -76,6 +76,7 @@ After starting the emulators, you can access the Firebase Emulator UI at:
 | `npm run dev`                           | Runs setup and starts Nuxt dev server                   |
 | `npm run dev:setup`                     | Runs environment setup including admin registration     |
 | `npm run dev:full`                      | Starts emulators with admin and dev server concurrently |
+| `npm run dev:full:local`                | Starts emulators with the raw Nuxt dev server URL       |
 | `npm run firebase:emulators`            | Starts Firebase emulators only                          |
 | `npm run firebase:emulators:with-admin` | Starts emulators with automatic admin registration      |
 

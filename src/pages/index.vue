@@ -93,7 +93,6 @@
           data-test="with-car-toggle"
           :checked="withCar"
           :label="$t('VIA_CAR')"
-          :description="$t('VEHICLE_DRIVER_TICKET_INCLUDED')"
           @update:checked="handleWithCarChange"
         />
         <div v-if="withCar" class="mt-3 max-w-xs">

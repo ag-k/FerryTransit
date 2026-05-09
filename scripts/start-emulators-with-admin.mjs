@@ -172,7 +172,8 @@ console.log('   Email: admin@ferry-dev.local')
 console.log('   Password: Admin123!')
 console.log('   Role: Super Admin')
 console.log('\n🌐 Firebase Emulator UI: http://localhost:4000')
-console.log('📱 Development server: http://localhost:3030 (run npm run dev in another terminal)')
+console.log('📱 Development server: https://ferry-transit.localhost (run npm run dev in another terminal)')
+console.log('   Raw Nuxt server: run npm run dev:local if you need a port-number URL')
 
 // Keep the process running and forward emulator output
 emulatorProcess.stdout.on('data', (data) => {

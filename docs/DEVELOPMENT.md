@@ -31,7 +31,7 @@ npm run dev
 
 ### 3. Access Development Services
 
-- **Application**: http://localhost:3030
+- **Application**: https://ferry-transit.localhost
 - **Firebase Emulator UI**: http://localhost:4000
 - **Firestore Emulator**: localhost:8095
 - **Auth Emulator**: http://localhost:9099
@@ -43,6 +43,9 @@ npm run dev
 ### Environment Variables
 
 The project uses `.env.local` for local development configuration. This file is automatically created from `.env.example` when you run `npm run dev:setup`.
+
+`npm run dev` starts Nuxt through portless at `https://ferry-transit.localhost`. Use `npm run dev:local` when you need the raw Nuxt dev server URL.
+`npm run dev:full` also starts the app through portless. Use `npm run dev:full:local` when you need the full emulator + raw Nuxt setup.
 
 Key emulator settings:
 

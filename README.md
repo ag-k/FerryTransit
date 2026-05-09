@@ -75,7 +75,7 @@ npm run dev
    NUXT_PUBLIC_GOOGLE_MAPS_API_KEY=your_api_key_here
    ```
 
-開発サーバーが起動したら、ブラウザで http://localhost:3000 にアクセスしてください。
+開発サーバーが起動したら、ブラウザで https://ferry-transit.localhost にアクセスしてください。
 
 ## 技術スタック
 
@@ -127,7 +127,10 @@ npm run dev
 
 1. Firebase エミュレーターのセットアップ
 2. スーパー管理者アカウントの自動登録
-3. Nuxt 開発サーバーの起動
+3. `portless` 経由で Nuxt 開発サーバーを起動
+
+アプリケーション URL は https://ferry-transit.localhost です。
+従来どおりポート番号付きで起動したい場合は `npm run dev:local` を使用してください。
 
 #### 完全な開発環境（エミュレーター＋開発サーバー）
 
@@ -137,6 +140,8 @@ npm run dev:full
 ```
 
 このコマンドは**データ永続化機能付き**の Firebase エミュレーターと開発サーバーを同時に起動します。
+アプリケーション URL は https://ferry-transit.localhost です。
+従来どおりポート番号付きで一式起動したい場合は `npm run dev:full:local` を使用してください。
 
 **データ永続化機能:**
 

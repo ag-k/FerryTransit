@@ -41,6 +41,10 @@ const pruneAdminPages = (pages: NuxtPageNode[]) => {
   for (let i = pages.length - 1; i >= 0; i--) {
     const page = pages[i];
 
+    if (!page) {
+      continue;
+    }
+
     if (page.path?.startsWith("/admin")) {
       pages.splice(i, 1);
       continue;
@@ -66,6 +70,7 @@ export default defineNuxtConfig({
 
   experimental: {
     componentIslands: false,
+    viteEnvironmentApi: true,
   },
 
   // Capacitor（アプリ版）の場合は管理画面を除外
