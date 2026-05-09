@@ -34,7 +34,23 @@ vi.mock("@/stores/fare", () => ({
           id: "hondo-shichirui-saigo",
           departure: "HONDO_SHICHIRUI",
           arrival: "SAIGO",
-          fares: { adult: 3520, child: 1760 },
+          fares: {
+            adult: 3520,
+            child: 1760,
+            vehicle: {
+              under3m: 13750,
+              under4m: 18260,
+              under5m: 22870,
+              under6m: 27390,
+              under7m: 35530,
+              under8m: 40700,
+              under9m: 45760,
+              under10m: 50820,
+              under11m: 55870,
+              under12m: 60940,
+              over12mPer1m: 5070,
+            },
+          },
         },
         {
           id: "beppu-hishiura",
@@ -65,6 +81,12 @@ vi.mock("@/stores/fare", () => ({
         adult: 300,
         child: 100,
       },
+      innerIslandVehicleFare: {
+        under5m: 1000,
+        under7m: 2000,
+        under10m: 3000,
+        over10m: 3000,
+      },
     },
     isLoading: { value: false },
     error: { value: null },
@@ -74,7 +96,23 @@ vi.mock("@/stores/fare", () => ({
           id: "hondo-shichirui-saigo",
           departure: "HONDO_SHICHIRUI",
           arrival: "SAIGO",
-          fares: { adult: 3520, child: 1760 },
+          fares: {
+            adult: 3520,
+            child: 1760,
+            vehicle: {
+              under3m: 13750,
+              under4m: 18260,
+              under5m: 22870,
+              under6m: 27390,
+              under7m: 35530,
+              under8m: 40700,
+              under9m: 45760,
+              under10m: 50820,
+              under11m: 55870,
+              under12m: 60940,
+              over12mPer1m: 5070,
+            },
+          },
         },
         {
           id: "hondo-saigo",
@@ -248,6 +286,165 @@ describe("useRouteSearch", () => {
       expect(transferRoute!.segments).toHaveLength(2);
       expect(transferRoute!.segments[0].arrival).toBe("SAIGO");
       expect(transferRoute!.segments[1].departure).toBe("SAIGO");
+    });
+
+    it("should keep existing results when car boarding is off", async () => {
+      const store = useFerryStore();
+      store.timetableData = mockTrips;
+
+      const { searchRoutes } = useRouteSearch();
+
+      const results = await searchRoutes(
+        "SAIGO",
+        "HONDO_SHICHIRUI",
+        new Date("2024-01-15"),
+        "13:00",
+        false
+      );
+
+      expect(
+        results.some((route) =>
+          route.segments.some((segment) => segment.ship === "RAINBOWJET")
+        )
+      ).toBe(true);
+    });
+
+    it("should exclude non-vehicle vessels when car boarding is on", async () => {
+      const store = useFerryStore();
+      store.timetableData = [
+        {
+          tripId: 91,
+          startDate: "2024-01-01",
+          endDate: "2024-12-31",
+          name: "ISOKAZE",
+          departure: "BEPPU",
+          departureTime: "08:00:00" as any,
+          arrival: "KURI",
+          arrivalTime: "08:30:00" as any,
+          status: 0,
+        },
+        {
+          tripId: 92,
+          startDate: "2024-01-01",
+          endDate: "2024-12-31",
+          name: "FERRY_DOZEN",
+          departure: "BEPPU",
+          departureTime: "09:00:00" as any,
+          arrival: "KURI",
+          arrivalTime: "09:30:00" as any,
+          status: 0,
+        },
+      ];
+
+      const { searchRoutes } = useRouteSearch();
+
+      const results = await searchRoutes(
+        "BEPPU",
+        "KURI",
+        new Date("2024-01-15"),
+        "00:00",
+        false,
+        true,
+        5
+      );
+
+      const ships = results.flatMap((route) =>
+        route.segments.map((segment) => segment.ship)
+      );
+      expect(results.length).toBeGreaterThan(0);
+      expect(ships).not.toContain("ISOKAZE");
+      expect(ships).not.toContain("RAINBOWJET");
+    });
+
+    it("should exclude transfer routes with any non-vehicle segment when car boarding is on", async () => {
+      const store = useFerryStore();
+      store.timetableData = [
+        {
+          tripId: 101,
+          startDate: "2024-01-01",
+          endDate: "2024-12-31",
+          name: "FERRY_DOZEN",
+          departure: "BEPPU",
+          departureTime: "08:00:00" as any,
+          arrival: "KURI",
+          arrivalTime: "08:30:00" as any,
+          status: 0,
+        },
+        {
+          tripId: 102,
+          startDate: "2024-01-01",
+          endDate: "2024-12-31",
+          name: "ISOKAZE",
+          departure: "KURI",
+          departureTime: "09:00:00" as any,
+          arrival: "HISHIURA",
+          arrivalTime: "09:30:00" as any,
+          status: 0,
+        },
+      ];
+
+      const { searchRoutes } = useRouteSearch();
+
+      const results = await searchRoutes(
+        "BEPPU",
+        "HISHIURA",
+        new Date("2024-01-15"),
+        "00:00",
+        false,
+        true,
+        5
+      );
+
+      expect(results).toHaveLength(0);
+    });
+
+    it("should use only vehicle fare for Oki Kisen ferry routes when car boarding is on", async () => {
+      const store = useFerryStore();
+      store.timetableData = mockTrips;
+
+      const { searchRoutes } = useRouteSearch();
+
+      const results = await searchRoutes(
+        "HONDO_SHICHIRUI",
+        "SAIGO",
+        new Date("2024-01-15"),
+        "08:00",
+        false,
+        true,
+        5
+      );
+
+      expect(results).toHaveLength(1);
+      expect(results[0].totalFare).toBe(22870);
+      expect(results[0].segments[0].fare).toBe(22870);
+      expect(results[0].segments[0].passengerFare).toBe(3520);
+      expect(results[0].segments[0].vehicleFare).toBe(22870);
+    });
+
+    it("should use only vehicle fare for Ferry Dozen routes when car boarding is on", async () => {
+      const store = useFerryStore();
+      store.timetableData = mockTrips;
+
+      const { searchRoutes } = useRouteSearch();
+
+      const results = await searchRoutes(
+        "BEPPU",
+        "KURI",
+        new Date("2024-01-15"),
+        "00:00",
+        false,
+        true,
+        5
+      );
+
+      const ferryDozenRoute = results.find((route) =>
+        route.segments.some((segment) => segment.ship === "FERRY_DOZEN")
+      );
+      expect(ferryDozenRoute).toBeDefined();
+      expect(ferryDozenRoute?.totalFare).toBe(1000);
+      expect(ferryDozenRoute?.segments[0].fare).toBe(1000);
+      expect(ferryDozenRoute?.segments[0].passengerFare).toBe(300);
+      expect(ferryDozenRoute?.segments[0].vehicleFare).toBe(1000);
     });
 
     it("should keep only the transfer route with the shortest wait time when path and vessel sequence are the same", async () => {

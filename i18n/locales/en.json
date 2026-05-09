@@ -88,6 +88,8 @@
   },
   "DO_NOT_USE_FAST_FERRY": "Except Fast Ferry",
   "VIA_CAR": "Via car",
+  "VEHICLE_LENGTH_METERS": "{meters}m",
+  "VEHICLE_FARE_WITH_DRIVER": "Vehicle fare (includes 1 driver)",
   "ADD_CONDITIONS": "Add conditions",
   "SEARCH_ROUTE": "Search Route",
   "TODAY": "Today",

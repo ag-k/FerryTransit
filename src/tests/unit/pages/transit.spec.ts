@@ -1,4 +1,4 @@
-import { describe, it, expect, vi } from 'vitest'
+import { beforeEach, describe, it, expect, vi } from 'vitest'
 import { mount } from '@vue/test-utils'
 import { createTestingPinia } from '@pinia/testing'
 import Transit from '~/pages/transit.vue'
@@ -6,7 +6,7 @@ import type { TransitRoute } from '@/types'
 
 const flushPromises = () => new Promise(resolve => setTimeout(resolve, 0))
 
-let routeQuery: Record<string, any> = {}
+const routeQuery: Record<string, any> = {}
 
 // Mock the router
 vi.mock('#app', () => ({
@@ -163,6 +163,14 @@ const buildSampleRoutes = (): TransitRoute[] => {
 }
 
 describe('Transit Page', () => {
+  beforeEach(() => {
+    Object.keys(routeQuery).forEach((key) => {
+      delete routeQuery[key]
+    })
+    searchRoutesMock.mockReset()
+    searchRoutesMock.mockResolvedValue([])
+  })
+
   const createWrapper = () => {
     return mount(Transit, {
       global: {
@@ -184,6 +192,54 @@ describe('Transit Page', () => {
   it('renders correctly', () => {
     const wrapper = createWrapper()
     expect(wrapper.find('h2').text()).toBe('TRANSIT')
+  })
+
+  it('shows vehicle length select when car boarding is enabled', async () => {
+    const wrapper = createWrapper()
+    await flushPromises()
+
+    expect(wrapper.find('[data-testid="transit-vehicle-length-select"]').exists()).toBe(false)
+
+    const checkbox = wrapper.find('[data-testid="transit-with-car-toggle"] input[type="checkbox"]')
+    expect(checkbox.exists()).toBe(true)
+    await checkbox.setValue(true)
+
+    const select = wrapper.find('[data-testid="transit-vehicle-length-select"]')
+    expect(select.exists()).toBe(true)
+    expect((select.element as HTMLSelectElement).value).toBe('5')
+  })
+
+  it('initializes car boarding options from URL query and passes them to search', async () => {
+    Object.assign(routeQuery, {
+      departure: 'HONDO',
+      arrival: 'SAIGO',
+      date: '2024-01-15',
+      time: '08:00',
+      autoSearch: '1',
+      withCar: '1',
+      vehicleLengthMeters: '7'
+    })
+
+    const wrapper = createWrapper()
+    await flushPromises()
+    await wrapper.vm.$nextTick()
+    await flushPromises()
+
+    const vm = wrapper.vm as typeof wrapper.vm & {
+      withCar: boolean
+      vehicleLengthMeters: number
+    }
+    expect(vm.withCar).toBe(true)
+    expect(vm.vehicleLengthMeters).toBe(7)
+    expect(searchRoutesMock).toHaveBeenCalledWith(
+      'HONDO',
+      'SAIGO',
+      expect.any(Date),
+      '08:00',
+      false,
+      true,
+      7
+    )
   })
 
   it('shows retry search button on empty results and searches with earlier time in departure mode', async () => {
@@ -219,7 +275,9 @@ describe('Transit Page', () => {
       'SAIGO',
       expect.any(Date),
       '09:00',
-      false
+      false,
+      false,
+      5
     )
   })
 
@@ -254,7 +312,9 @@ describe('Transit Page', () => {
       'SAIGO',
       expect.any(Date),
       '11:00',
-      true
+      true,
+      false,
+      5
     )
   })
 

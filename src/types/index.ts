@@ -187,6 +187,7 @@ export interface RouteSearchParams {
   time: Date;
   mode: "departureTime" | "arrivalTime";
   withCar?: boolean;
+  vehicleLengthMeters?: number;
   exceptFastFerry?: boolean;
 }
 
@@ -274,6 +275,8 @@ export interface TransitSegment {
   gate?: string;
   status: number;
   fare: number;
+  passengerFare?: number;
+  vehicleFare?: number;
 }
 
 export interface TransitRoute {

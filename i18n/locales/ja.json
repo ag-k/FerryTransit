@@ -83,6 +83,8 @@
   },
   "DO_NOT_USE_FAST_FERRY": "高速船を利用しない",
   "VIA_CAR": "車で乗船する",
+  "VEHICLE_LENGTH_METERS": "{meters}m",
+  "VEHICLE_FARE_WITH_DRIVER": "車両運賃（運転者1名込み）",
   "ADD_CONDITIONS": "条件を追加",
   "SEARCH_ROUTE": "経路検索",
   "TODAY": "本日",

@@ -38,6 +38,12 @@ const mockHistoryStore = {
   addSearchHistory: vi.fn(),
 };
 
+const mockFareStore = {
+  fareMaster: null,
+  getFareByRoute: vi.fn(),
+  loadFareMaster: vi.fn().mockResolvedValue(undefined),
+};
+
 const mockSettingsStore = {
   mapEnabled: ref(false),
   setMapEnabled: vi.fn((value: boolean) => {
@@ -66,6 +72,10 @@ vi.mock("@/stores/ferry", () => ({
 
 vi.mock("@/stores/history", () => ({
   useHistoryStore: () => mockHistoryStore,
+}));
+
+vi.mock("@/stores/fare", () => ({
+  useFareStore: () => mockFareStore,
 }));
 
 vi.mock("@/stores/settings", () => ({
@@ -345,6 +355,85 @@ describe("IndexPage (時刻表ページ)", () => {
           time: "00:00",
         },
       });
+    });
+
+    it("車で乗船する条件を乗換案内画面に引き継ぐ", async () => {
+      mockUseFerryData.departure.value = "HONDO_SHICHIRUI";
+      mockUseFerryData.arrival.value = "SAIGO";
+      mockUseFerryData.selectedDate.value = new Date("2024-01-15");
+
+      const wrapper = mountIndexPage();
+      await flushPromises();
+      const vm = wrapper.vm as typeof wrapper.vm & {
+        withCar: boolean
+        vehicleLengthMeters: number
+      }
+      vm.withCar = true;
+      vm.vehicleLengthMeters = 7;
+      await wrapper.vm.$nextTick();
+
+      const button = wrapper.find('[data-test="transfer-search-button"]');
+      await button.trigger("click");
+
+      expect(mockRouter.push).toHaveBeenCalledWith({
+        path: "/transit",
+        query: {
+          departure: "HONDO_SHICHIRUI",
+          arrival: "SAIGO",
+          date: "2024-01-15",
+          time: "00:00",
+          withCar: "1",
+          vehicleLengthMeters: "7",
+        },
+      });
+    });
+  });
+
+  describe("自動車乗船オプション", () => {
+    it("トグルをONにすると車長セレクトを表示する", async () => {
+      const wrapper = mountIndexPage();
+      await flushPromises();
+
+      expect(wrapper.find('[data-test="vehicle-length-select"]').exists()).toBe(false);
+
+      const checkbox = wrapper.find('[data-test="with-car-toggle"] input[type="checkbox"]');
+      expect(checkbox.exists()).toBe(true);
+      await checkbox.setValue(true);
+
+      expect(wrapper.find('[data-test="vehicle-length-select"]').exists()).toBe(true);
+      expect((wrapper.find('[data-test="vehicle-length-select"]').element as HTMLSelectElement).value).toBe("5");
+    });
+
+    it("車条件の変更を時刻表履歴に保存する", async () => {
+      mockUseFerryData.departure.value = "HONDO_SHICHIRUI";
+      mockUseFerryData.arrival.value = "SAIGO";
+      mockUseFerryData.selectedDate.value = new Date("2024-01-15");
+
+      const wrapper = mountIndexPage();
+      await flushPromises();
+      mockHistoryStore.addSearchHistory.mockClear();
+
+      const checkbox = wrapper.find('[data-test="with-car-toggle"] input[type="checkbox"]');
+      await checkbox.setValue(true);
+
+      expect(mockHistoryStore.addSearchHistory).toHaveBeenLastCalledWith(expect.objectContaining({
+        type: "timetable",
+        departure: "HONDO_SHICHIRUI",
+        arrival: "SAIGO",
+        withCar: true,
+        vehicleLengthMeters: 5,
+      }));
+
+      const select = wrapper.find('[data-test="vehicle-length-select"]');
+      await select.setValue("7");
+
+      expect(mockHistoryStore.addSearchHistory).toHaveBeenLastCalledWith(expect.objectContaining({
+        type: "timetable",
+        departure: "HONDO_SHICHIRUI",
+        arrival: "SAIGO",
+        withCar: true,
+        vehicleLengthMeters: 7,
+      }));
     });
   });
 

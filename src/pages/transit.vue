@@ -53,6 +53,32 @@ v-model="isArrivalMode"
         </div>
       </div>
 
+      <!-- Vehicle boarding option -->
+      <div class="mb-3 rounded-md border border-app-border bg-app-surface px-4 py-3">
+        <ToggleSwitch
+          data-testid="transit-with-car-toggle"
+          :checked="withCar"
+          :label="$t('VIA_CAR')"
+          :description="$t('VEHICLE_DRIVER_TICKET_INCLUDED')"
+          @update:checked="handleWithCarChange"
+        />
+        <div v-if="withCar" class="mt-3 max-w-xs">
+          <label :for="vehicleLengthSelectId" class="block text-sm font-medium text-app-muted mb-1">
+            {{ $t('VEHICLE_SIZE') }}
+          </label>
+          <select
+            :id="vehicleLengthSelectId"
+            v-model.number="vehicleLengthMeters"
+            data-testid="transit-vehicle-length-select"
+            class="w-full px-3 py-2 text-sm border border-gray-300 dark:border-gray-600 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 bg-white dark:bg-gray-700 dark:text-white"
+          >
+            <option v-for="length in vehicleLengthOptions" :key="length" :value="length">
+              {{ formatVehicleLengthOptionLabel(length) }}
+            </option>
+          </select>
+        </div>
+      </div>
+
       <!-- Search Button -->
       <div>
         <PrimaryButton type="button" block size="lg" :disabled="!canSearch || isSearching" @click="handleSearch">
@@ -193,12 +219,12 @@ stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                   <td class="py-2 pl-4">
                     <a
 href="#" class="text-app-primary dark:text-white group inline-flex items-center gap-2 flex-wrap"
-                      @click.prevent="showPortInfo(route.segments[0].departure)">
+                      @click.prevent="showPortInfo(getRouteDeparture(route))">
                       <span class="group-hover:underline inline-flex items-center gap-2">
-                        <LocationTypeIcon :type="resolveLocationType(route.segments[0].departureType)" />
-                        <span>{{ getPortLabelParts(route.segments[0].departure).name }}</span>
+                        <LocationTypeIcon :type="resolveLocationType(getRouteDepartureType(route))" />
+                        <span>{{ getPortLabelParts(getRouteDeparture(route)).name }}</span>
                       </span>
-                      <PortBadges :badges="getPortLabelParts(route.segments[0].departure).badges" class="flex flex-wrap gap-1" />
+                      <PortBadges :badges="getPortLabelParts(getRouteDeparture(route)).badges" class="flex flex-wrap gap-1" />
                     </a>
                   </td>
                   <td class="py-2"></td>
@@ -290,7 +316,10 @@ href="#" class="text-app-primary dark:text-white hover:underline"
                       </div>
                     </td>
                     <td class="py-2 text-app-fg">
-                    <span v-if="segment.fare > 0">¥{{ segment.fare.toLocaleString() }}</span>
+                    <span v-if="segment.fare > 0">
+                      <span v-if="withCar" class="block text-xs text-app-muted">{{ $t('VEHICLE_FARE_WITH_DRIVER') }}</span>
+                      ¥{{ segment.fare.toLocaleString() }}
+                    </span>
                     <span v-else class="text-app-muted">{{ $t('FARE_UNAVAILABLE') }}</span>
                   </td>
                   </tr>
@@ -298,7 +327,7 @@ href="#" class="text-app-primary dark:text-white hover:underline"
                   <!-- Transfer Port (if not last segment) -->
                   <tr v-if="segIndex < route.segments.length - 1" class="bg-app-surface-2/60">
                     <td class="py-2 pl-4 pr-4 text-left text-app-fg whitespace-pre-line align-middle">
-                      {{ formatTransferPortTimes(segment.arrivalTime, route.segments[segIndex + 1].departureTime) }}
+                      {{ formatTransferPortTimes(segment.arrivalTime, getNextDepartureTime(route, segIndex)) }}
                     </td>
                     <td class="py-2 pl-4 align-middle">
                       <div class="flex items-center flex-wrap gap-x-2">
@@ -312,8 +341,7 @@ href="#" class="text-app-primary dark:text-white group inline-flex items-center 
                           <PortBadges :badges="getPortLabelParts(segment.arrival).badges" class="flex flex-wrap gap-1" />
                         </a>
                         <span class="text-xs text-app-muted">
-                          ({{ $t('TRANSFER') }}) {{ formatTransferWaitTime(segment.arrivalTime, route.segments[segIndex +
-                            1].departureTime) }}
+                          ({{ $t('TRANSFER') }}) {{ formatTransferWaitTime(segment.arrivalTime, getNextDepartureTime(route, segIndex)) }}
                         </span>
                       </div>
                     </td>
@@ -327,16 +355,19 @@ href="#" class="text-app-primary dark:text-white group inline-flex items-center 
                   <td class="py-2 pl-4">
                     <a
 href="#" class="text-app-primary dark:text-white group inline-flex items-center gap-2 flex-wrap"
-                      @click.prevent="showPortInfo(route.segments[route.segments.length - 1].arrival)">
+                      @click.prevent="showPortInfo(getRouteArrival(route))">
                       <span class="group-hover:underline inline-flex items-center gap-2">
-                        <LocationTypeIcon :type="resolveLocationType(route.segments[route.segments.length - 1].arrivalType)" />
-                        <span>{{ getPortLabelParts(route.segments[route.segments.length - 1].arrival).name }}</span>
+                        <LocationTypeIcon :type="resolveLocationType(getRouteArrivalType(route))" />
+                        <span>{{ getPortLabelParts(getRouteArrival(route)).name }}</span>
                       </span>
-                      <PortBadges :badges="getPortLabelParts(route.segments[route.segments.length - 1].arrival).badges" class="flex flex-wrap gap-1" />
+                      <PortBadges :badges="getPortLabelParts(getRouteArrival(route)).badges" class="flex flex-wrap gap-1" />
                     </a>
                   </td>
                   <td class="py-2 font-medium text-app-fg">
-                    <span v-if="route.totalFare > 0">{{ $t('TOTAL') }}: ¥{{ route.totalFare.toLocaleString() }}</span>
+                    <span v-if="route.totalFare > 0">
+                      <span v-if="withCar" class="block text-xs font-normal text-app-muted">{{ $t('VEHICLE_FARE_WITH_DRIVER') }}</span>
+                      {{ $t('TOTAL') }}: ¥{{ route.totalFare.toLocaleString() }}
+                    </span>
                     <span v-else class="text-app-muted">{{ $t('FARE_UNAVAILABLE') }}</span>
                   </td>
                 </tr>
@@ -420,7 +451,10 @@ v-else-if="hasSearched && !isSearching"
               <div class="mt-2">
                 <small class="text-gray-500 dark:text-gray-300">
                   {{ $t('FARE') }}: 
-                  <span v-if="segment.fare > 0">¥{{ segment.fare.toLocaleString() }}</span>
+                  <span v-if="segment.fare > 0">
+                    <span v-if="withCar">{{ $t('VEHICLE_FARE_WITH_DRIVER') }}: </span>
+                    ¥{{ segment.fare.toLocaleString() }}
+                  </span>
                   <span v-else class="text-gray-500">{{ $t('FARE_UNAVAILABLE') }}</span>
                 </small>
               </div>
@@ -436,7 +470,10 @@ v-else-if="hasSearched && !isSearching"
             </div>
             <div class="text-right dark:text-gray-300">
               <strong>{{ $t('TOTAL_FARE') }}:</strong>
-              <span v-if="selectedRoute.totalFare > 0">¥{{ selectedRoute.totalFare.toLocaleString() }}</span>
+              <span v-if="selectedRoute.totalFare > 0">
+                <span v-if="withCar">{{ $t('VEHICLE_FARE_WITH_DRIVER') }}: </span>
+                ¥{{ selectedRoute.totalFare.toLocaleString() }}
+              </span>
               <span v-else class="text-gray-500">{{ $t('FARE_UNAVAILABLE') }}</span>
             </div>
           </div>
@@ -464,7 +501,8 @@ v-model:visible="showPortModal" :title="getPortDisplayName(modalPortId)" type="p
 </template>
 
 <script setup lang="ts">
-import { nextTick, getCurrentInstance, markRaw } from 'vue'
+import { computed, getCurrentInstance, markRaw, nextTick, onMounted, ref, watch } from 'vue'
+import { useHead, useI18n, useNuxtApp, useRoute } from '#imports'
 import { useRouteSearch } from '@/composables/useRouteSearch'
 import { useAnalytics } from '@/composables/useAnalytics'
 import { useHistoryStore } from '@/stores/history'
@@ -481,11 +519,18 @@ import Card from '@/components/common/Card.vue'
 import PrimaryButton from '@/components/common/PrimaryButton.vue'
 import Badge from '@/components/common/Badge.vue'
 import TransportModeFilter from '@/components/common/TransportModeFilter.vue'
+import ToggleSwitch from '@/components/common/ToggleSwitch.vue'
 import LocationTypeIcon from '@/components/common/LocationTypeIcon.vue'
 import type { LocationType, TransportMode, TransitRoute, TransitSegment } from '@/types'
 import { createLogger } from '~/utils/logger'
 import { getPortMapZoom } from '@/utils/portMapZoom'
 import { isTodayJst } from '@/utils/jstDate'
+import {
+  DEFAULT_VEHICLE_LENGTH_METERS,
+  VEHICLE_LENGTH_OPTIONS,
+  getVehicleLengthLabelKey,
+  normalizeVehicleLengthMeters
+} from '@/utils/vehicleFare'
 
 // Stores
 const ferryStore = process.client ? useFerryStore() : null
@@ -501,6 +546,10 @@ const timeInputId = 'transit-time-input'
 const sortSelectId = 'transit-sort-select'
 const isArrivalMode = ref(false)
 const historySearchedAt = ref<Date | null>(null)
+const withCar = ref(false)
+const vehicleLengthMeters = ref(DEFAULT_VEHICLE_LENGTH_METERS)
+const vehicleLengthSelectId = 'transit-vehicle-length-select'
+const vehicleLengthOptions = VEHICLE_LENGTH_OPTIONS
 
 // Watch for changes in departure/arrival and update ferryStore
 watch(departure, (newVal) => {
@@ -581,6 +630,34 @@ const getPortLabelParts = (portId?: string) => {
 
 const resolveLocationType = (value?: LocationType) => value ?? 'PORT'
 
+const getRouteFirstSegment = (route: TransitRoute): TransitSegment | undefined => {
+  return route.segments[0]
+}
+
+const getRouteLastSegment = (route: TransitRoute): TransitSegment | undefined => {
+  return route.segments[route.segments.length - 1]
+}
+
+const getRouteDeparture = (route: TransitRoute): string => {
+  return getRouteFirstSegment(route)?.departure ?? ''
+}
+
+const getRouteDepartureType = (route: TransitRoute): LocationType | undefined => {
+  return getRouteFirstSegment(route)?.departureType
+}
+
+const getRouteArrival = (route: TransitRoute): string => {
+  return getRouteLastSegment(route)?.arrival ?? ''
+}
+
+const getRouteArrivalType = (route: TransitRoute): LocationType | undefined => {
+  return getRouteLastSegment(route)?.arrivalType
+}
+
+const getNextDepartureTime = (route: TransitRoute, segmentIndex: number): Date => {
+  return route.segments[segmentIndex + 1]?.departureTime ?? route.segments[segmentIndex]?.arrivalTime ?? route.arrivalTime
+}
+
 const formatSegmentMeta = (segment: TransitSegment) => {
   const parts = [
     segment.platform ? `${t('SEGMENT.PLATFORM')}: ${segment.platform}` : '',
@@ -588,6 +665,15 @@ const formatSegmentMeta = (segment: TransitSegment) => {
     segment.gate ? `${t('SEGMENT.GATE')}: ${segment.gate}` : ''
   ].filter(Boolean)
   return parts.join(' / ')
+}
+
+const formatVehicleLengthOptionLabel = (length: number) => {
+  const key = getVehicleLengthLabelKey(length)
+  return key ? t(key) : t('VEHICLE_LENGTH_METERS', { meters: length })
+}
+
+const handleWithCarChange = (value: boolean) => {
+  withCar.value = value
 }
 
 const hasCancelledSegment = (route: TransitRoute): boolean => {
@@ -839,7 +925,7 @@ function buildRainbowJetSeatAvailabilityUrl(targetDate: Date): string {
 
 function buildSearchDateTime(baseDate: Date, timeStr: string): Date {
   const dt = new Date(baseDate)
-  const [h, m] = (timeStr || '00:00').split(':').map(Number)
+  const [h = 0, m = 0] = (timeStr || '00:00').split(':').map(Number)
   dt.setHours(Number.isFinite(h) ? h : 0, Number.isFinite(m) ? m : 0, 0, 0)
   return dt
 }
@@ -1025,7 +1111,9 @@ async function handleSearch() {
       arrival.value,
       date.value,
       time.value,
-      isArrivalMode.value
+      isArrivalMode.value,
+      withCar.value,
+      vehicleLengthMeters.value
     )
 
     logger.debug('Search results', results)
@@ -1035,7 +1123,7 @@ async function handleSearch() {
     // アナリティクスに検索を記録
     const searchDateTime = new Date(date.value)
     if (time.value) {
-      const [hours, minutes] = time.value.split(':')
+      const [hours = '0', minutes = '0'] = time.value.split(':')
       searchDateTime.setHours(parseInt(hours), parseInt(minutes), 0, 0)
     }
     trackSearch({
@@ -1049,7 +1137,7 @@ async function handleSearch() {
       // Create a proper Date object for the time by combining date and time
       const searchDateTime = new Date(date.value)
       if (time.value) {
-        const [hours, minutes] = time.value.split(':')
+        const [hours = '0', minutes = '0'] = time.value.split(':')
         searchDateTime.setHours(parseInt(hours), parseInt(minutes), 0, 0)
       }
 
@@ -1060,7 +1148,9 @@ async function handleSearch() {
         arrival: arrival.value,
         date: date.value,
         time: searchDateTime,
-        isArrivalMode: isArrivalMode.value
+        isArrivalMode: isArrivalMode.value,
+        withCar: withCar.value,
+        ...(withCar.value ? { vehicleLengthMeters: vehicleLengthMeters.value } : {})
       }, historySearchedAt.value || undefined)
     }
   } catch (error) {
@@ -1112,6 +1202,12 @@ onMounted(() => {
   }
   if (route.query.isArrivalMode) {
     isArrivalMode.value = route.query.isArrivalMode === '1'
+  }
+  if (route.query.withCar === '1') {
+    withCar.value = true
+  }
+  if (route.query.vehicleLengthMeters) {
+    vehicleLengthMeters.value = normalizeVehicleLengthMeters(String(route.query.vehicleLengthMeters))
   }
   // 検索履歴から遷移してきた場合は、元の検索日時を保持
   if (route.query.searchedAt) {

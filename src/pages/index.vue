@@ -86,6 +86,34 @@
       </template>
     </ClientOnly>
 
+    <!-- 車両乗船オプション -->
+    <ClientOnly>
+      <div class="mb-4 rounded-md border border-app-border bg-app-surface px-4 py-3">
+        <ToggleSwitch
+          data-test="with-car-toggle"
+          :checked="withCar"
+          :label="$t('VIA_CAR')"
+          :description="$t('VEHICLE_DRIVER_TICKET_INCLUDED')"
+          @update:checked="handleWithCarChange"
+        />
+        <div v-if="withCar" class="mt-3 max-w-xs">
+          <label :for="vehicleLengthSelectId" class="block text-sm font-medium text-app-muted mb-1">
+            {{ $t('VEHICLE_SIZE') }}
+          </label>
+          <select
+            :id="vehicleLengthSelectId"
+            v-model.number="vehicleLengthMeters"
+            data-test="vehicle-length-select"
+            class="w-full px-3 py-2 text-sm border border-gray-300 dark:border-gray-600 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 bg-white dark:bg-gray-700 dark:text-white"
+          >
+            <option v-for="length in vehicleLengthOptions" :key="length" :value="length">
+              {{ formatVehicleLengthOptionLabel(length) }}
+            </option>
+          </select>
+        </div>
+      </div>
+    </ClientOnly>
+
     <!-- 地図表示 -->
     <ClientOnly>
       <TimetableMap :selected-port="selectedMapPort" :selected-route="selectedMapRoute" :show-port-details="true"
@@ -227,6 +255,10 @@
                     <p v-if="formatTripMeta(trip)" class="text-xs text-app-muted mt-1">
                       {{ formatTripMeta(trip) }}
                     </p>
+                    <p v-if="withCar" data-test="timetable-vehicle-fare" class="text-xs text-app-muted mt-1">
+                      {{ $t('VEHICLE_FARE_WITH_DRIVER') }}:
+                      {{ formatVehicleFare(getTripVehicleFare(trip)) }}
+                    </p>
                   </td>
                   <td class="px-3 sm:px-4 py-4 sm:py-3 font-mono tabular-nums text-right text-app-fg">
                     {{ formatTime(trip.departureTime) }}
@@ -286,6 +318,7 @@
 import { nextTick, onMounted, ref, computed, watch, unref } from 'vue'
 import { useHead, useI18n, useRoute, useRouter, useLocalePath } from '#imports'
 import { useFerryStore } from '@/stores/ferry'
+import { useFareStore } from '@/stores/fare'
 import { useHistoryStore } from '@/stores/history'
 import { useSettingsStore } from '@/stores/settings'
 import { useFerryData } from '@/composables/useFerryData'
@@ -300,13 +333,24 @@ import Alert from '@/components/common/Alert.vue'
 import PrimaryButton from '@/components/common/PrimaryButton.vue'
 import SecondaryButton from '@/components/common/SecondaryButton.vue'
 import TransportModeFilter from '@/components/common/TransportModeFilter.vue'
+import ToggleSwitch from '@/components/common/ToggleSwitch.vue'
 import LocationTypeIcon from '@/components/common/LocationTypeIcon.vue'
 import { formatDateYmdJst, getJstDateParts, getTodayJstMidnight } from '@/utils/jstDate'
 import { getPortMapZoom } from '@/utils/portMapZoom'
 import type { LocationType, TransportMode, Trip } from '@/types'
+import {
+  DEFAULT_VEHICLE_LENGTH_METERS,
+  VEHICLE_LENGTH_OPTIONS,
+  calculateVehicleFareForShip,
+  getVehicleLengthLabelKey,
+  isOkiKisenVehicleFerry,
+  isVehicleSearchShip,
+  normalizeVehicleLengthMeters
+} from '@/utils/vehicleFare'
 
 // Store and composables
 const ferryStore = useFerryStore()
+const fareStore = useFareStore()
 const historyStore = useHistoryStore()
 const settingsStore = useSettingsStore()
 const {
@@ -336,6 +380,10 @@ const selectedMapPort = ref<string>('')
 const selectedMapRoute = ref<{ from: string; to: string } | undefined>()
 const operationStatusModalVisible = ref(false)
 const operationStatusShipName = ref('')
+const withCar = ref(false)
+const vehicleLengthMeters = ref(DEFAULT_VEHICLE_LENGTH_METERS)
+const vehicleLengthSelectId = 'timetable-vehicle-length-select'
+const vehicleLengthOptions = VEHICLE_LENGTH_OPTIONS
 
 const today = getTodayJstMidnight()
 
@@ -422,10 +470,17 @@ watch(transportModeOptions, (options) => {
 })
 
 const filteredTimetableByMode = computed(() => {
-  if (selectedTransportMode.value === 'ALL' || transportModeOptions.value.length === 0) {
-    return filteredTimetable.value
+  let trips = filteredTimetable.value
+
+  if (selectedTransportMode.value !== 'ALL' && transportModeOptions.value.length > 0) {
+    trips = trips.filter((trip) => normalizeTransportMode(trip.mode) === selectedTransportMode.value)
   }
-  return filteredTimetable.value.filter((trip) => normalizeTransportMode(trip.mode) === selectedTransportMode.value)
+
+  if (withCar.value) {
+    trips = trips.filter((trip) => isVehicleSearchShip(trip.name))
+  }
+
+  return trips
 })
 
 const sortedTimetable = computed(() => {
@@ -457,6 +512,89 @@ const formatTripMeta = (trip: Trip) => {
   return parts.join(' / ')
 }
 
+const formatVehicleLengthOptionLabel = (length: number) => {
+  const key = getVehicleLengthLabelKey(length)
+  return key ? t(key) : t('VEHICLE_LENGTH_METERS', { meters: length })
+}
+
+const formatVehicleFare = (fare: number | null) => {
+  return typeof fare === 'number' && fare > 0
+    ? `¥${fare.toLocaleString()}`
+    : t('FARE_UNAVAILABLE')
+}
+
+const getFarePortVariants = (port: string): string[] => {
+  if (port === 'HONDO') return ['HONDO', 'HONDO_SHICHIRUI', 'HONDO_SAKAIMINATO']
+  if (port === 'HONDO_SHICHIRUI' || port === 'HONDO_SAKAIMINATO') return [port, 'HONDO']
+  return [port]
+}
+
+const getTripFareRoute = (trip: Trip) => {
+  const departures = getFarePortVariants(trip.departure)
+  const arrivals = getFarePortVariants(trip.arrival)
+
+  for (const dep of departures) {
+    for (const arr of arrivals) {
+      const route = fareStore.getFareByRoute(dep, arr, {
+        date: selectedDate.value,
+        vesselType: 'ferry'
+      })
+      if (route) return route
+    }
+  }
+
+  return undefined
+}
+
+const getTripVehicleFare = (trip: Trip) => {
+  if (!withCar.value || !fareStore.fareMaster || !isVehicleSearchShip(trip.name)) {
+    return null
+  }
+
+  const fareRoute = isOkiKisenVehicleFerry(trip.name)
+    ? getTripFareRoute(trip)
+    : undefined
+
+  return calculateVehicleFareForShip(
+    trip.name,
+    fareRoute,
+    fareStore.fareMaster,
+    vehicleLengthMeters.value
+  )
+}
+
+const saveCurrentTimetableHistory = () => {
+  if (!departure.value || !arrival.value) {
+    return
+  }
+
+  historyStore.addSearchHistory({
+    type: 'timetable',
+    departure: departure.value,
+    arrival: arrival.value,
+    date: selectedDate.value,
+    withCar: withCar.value,
+    ...(withCar.value ? { vehicleLengthMeters: vehicleLengthMeters.value } : {})
+  })
+}
+
+const handleWithCarChange = (value: boolean) => {
+  withCar.value = value
+  saveCurrentTimetableHistory()
+}
+
+watch(withCar, async (enabled) => {
+  if (enabled) {
+    await fareStore.loadFareMaster()
+  }
+})
+
+watch(vehicleLengthMeters, () => {
+  if (withCar.value) {
+    saveCurrentTimetableHistory()
+  }
+})
+
 // 島前3島間のルートかどうかを判定
 const isDozenRoute = computed(() => {
   const dozenPorts = ['BEPPU', 'HISHIURA', 'KURI']
@@ -481,7 +619,9 @@ const handleDateChange = (newDate: Date) => {
       type: 'timetable',
       departure: departure.value,
       arrival: arrival.value,
-      date: newDate
+      date: newDate,
+      withCar: withCar.value,
+      ...(withCar.value ? { vehicleLengthMeters: vehicleLengthMeters.value } : {})
     })
   }
 }
@@ -495,7 +635,9 @@ const handleDepartureChange = (value: string) => {
       type: 'timetable',
       departure: value,
       arrival: arrival.value,
-      date: selectedDate.value
+      date: selectedDate.value,
+      withCar: withCar.value,
+      ...(withCar.value ? { vehicleLengthMeters: vehicleLengthMeters.value } : {})
     })
   }
 }
@@ -509,7 +651,9 @@ const handleArrivalChange = (value: string) => {
       type: 'timetable',
       departure: departure.value,
       arrival: value,
-      date: selectedDate.value
+      date: selectedDate.value,
+      withCar: withCar.value,
+      ...(withCar.value ? { vehicleLengthMeters: vehicleLengthMeters.value } : {})
     })
   }
 }
@@ -525,7 +669,9 @@ const reverseRoute = () => {
       type: 'timetable',
       departure: arrival.value,
       arrival: departure.value,
-      date: selectedDate.value
+      date: selectedDate.value,
+      withCar: withCar.value,
+      ...(withCar.value ? { vehicleLengthMeters: vehicleLengthMeters.value } : {})
     })
   }
 }
@@ -702,7 +848,11 @@ const navigateToTransit = () => {
       departure: departure.value,
       arrival: arrival.value,
       date: dateStr,
-      time: '00:00'
+      time: '00:00',
+      ...(withCar.value ? {
+        withCar: '1',
+        vehicleLengthMeters: String(vehicleLengthMeters.value)
+      } : {})
     }
   })
 }
@@ -762,7 +912,10 @@ onMounted(async () => {
 
   if (route.query.date && ferryStore) {
     const value = String(route.query.date)
-    const [year, month, day] = value.split('-').map(v => Number(v))
+    const [yearPart, monthPart, dayPart] = value.split('-')
+    const year = Number(yearPart)
+    const month = Number(monthPart)
+    const day = Number(dayPart)
     if (
       Number.isInteger(year) &&
       Number.isInteger(month) &&
@@ -772,6 +925,13 @@ onMounted(async () => {
     ) {
       ferryStore.setSelectedDate(new Date(year, month - 1, day))
     }
+  }
+
+  if (route.query.withCar === '1') {
+    withCar.value = true
+  }
+  if (route.query.vehicleLengthMeters) {
+    vehicleLengthMeters.value = normalizeVehicleLengthMeters(String(route.query.vehicleLengthMeters))
   }
 
   if (ferryStore && ferryStore.timetableData.length === 0) {

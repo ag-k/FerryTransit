@@ -103,6 +103,51 @@ describe('History Store', () => {
       expect(store.history[0].date).toEqual(new Date('2025-06-24'))
     })
 
+    it('車両条件が異なる検索は別履歴として保持される', () => {
+      const store = useHistoryStore()
+      const historyItem: Omit<SearchHistoryItem, 'id' | 'searchedAt'> = {
+        type: 'route',
+        departure: 'hongo',
+        arrival: 'saigo',
+        date: new Date('2025-06-23'),
+        isArrivalMode: false,
+        withCar: false
+      }
+
+      store.addSearchHistory(historyItem)
+      store.addSearchHistory({
+        ...historyItem,
+        withCar: true,
+        vehicleLengthMeters: 5
+      })
+
+      expect(store.history).toHaveLength(2)
+      expect(store.history.some(item => item.withCar === true && item.vehicleLengthMeters === 5)).toBe(true)
+      expect(store.history.some(item => item.withCar === false)).toBe(true)
+    })
+
+    it('車両オプションOFFでは車長の違いを重複判定に使わない', () => {
+      const store = useHistoryStore()
+      const historyItem: Omit<SearchHistoryItem, 'id' | 'searchedAt'> = {
+        type: 'route',
+        departure: 'hongo',
+        arrival: 'saigo',
+        date: new Date('2025-06-23'),
+        isArrivalMode: false,
+        withCar: false,
+        vehicleLengthMeters: 5
+      }
+
+      store.addSearchHistory(historyItem)
+      store.addSearchHistory({
+        ...historyItem,
+        vehicleLengthMeters: 7
+      })
+
+      expect(store.history).toHaveLength(1)
+      expect(store.history[0].vehicleLengthMeters).toBe(7)
+    })
+
     it('カスタムsearchedAtを指定して検索履歴を追加できる', () => {
       const store = useHistoryStore()
       const customSearchedAt = new Date('2025-01-15T10:00:00')
