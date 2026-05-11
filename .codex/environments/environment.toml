@@ -8,4 +8,4 @@ script = ""
 [[actions]]
 name = "実行する"
 icon = "run"
-command = "npm run dev:full"
+command = "npm run dev:full:local"
