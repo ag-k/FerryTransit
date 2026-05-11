@@ -300,12 +300,23 @@ const editNews = (news: News & { id: string }) => {
   navigateTo(`/admin/news/edit?id=${news.id}`)
 }
 
+const publishNewsDataAfterChange = async (successMessage: string) => {
+  try {
+    await publishData('news')
+    $toast.success(successMessage)
+  } catch (error) {
+    logger.error('Failed to auto publish news data after change', error)
+    $toast.error('お知らせは更新されましたが、データ公開に失敗しました')
+  }
+}
+
 const deleteNews = async (news: News & { id: string }) => {
   if (!news.id) return
   
   if (confirm(`「${news.title}」を削除しますか？`)) {
     try {
       await deleteDocument('news', news.id)
+      await publishNewsDataAfterChange('お知らせデータを公開しました')
       await refreshData()
       $toast.success('お知らせを削除しました')
     } catch (error) {
@@ -356,6 +367,7 @@ const updateNewsStatus = async () => {
       data: update.data
     }))
     await batchWrite(operations)
+    await publishNewsDataAfterChange('予約投稿のお知らせデータを公開しました')
     await refreshData()
   }
 }

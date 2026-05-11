@@ -240,8 +240,10 @@ href="#" class="text-app-primary dark:text-white group inline-flex items-center 
                       <div class="flex items-center">
                         <!-- 欠航アイコン -->
                         <button
-v-if="segment.status === 2" type="button" data-test="cancel-status-icon"
-                          class="mr-2 inline-flex items-center text-red-600 dark:text-red-300"
+                          v-if="segment.status === 2"
+                          type="button"
+                          data-test="cancel-status-icon"
+                          class="mr-2 inline-flex items-center rounded-full p-1 text-red-600 transition-colors hover:bg-red-50 hover:ring-2 hover:ring-red-300 hover:shadow-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-red-500 dark:text-red-300 dark:hover:bg-red-900/30 dark:hover:ring-red-400"
                           :title="$t('OPERATION_STATUS')"
                           aria-label="運航状況を見る"
                           @click.stop="showOperationStatus(segment.ship)">
@@ -251,8 +253,10 @@ v-if="segment.status === 2" type="button" data-test="cancel-status-icon"
                         </button>
                         <!-- 警告/変更アイコン -->
                         <button
-v-else-if="segment.status === 3" type="button" data-test="warning-status-icon"
-                          class="mr-2 inline-flex items-center text-yellow-600 dark:text-yellow-300"
+                          v-else-if="segment.status === 3"
+                          type="button"
+                          data-test="warning-status-icon"
+                          class="mr-2 inline-flex items-center rounded-full p-1 text-yellow-600 transition-colors hover:bg-yellow-50 hover:ring-2 hover:ring-yellow-300 hover:shadow-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-yellow-500 dark:text-yellow-300 dark:hover:bg-yellow-900/30 dark:hover:ring-yellow-400"
                           :title="$t('OPERATION_STATUS')"
                           aria-label="運航状況を見る"
                           @click.stop="showOperationStatus(segment.ship)">
@@ -262,8 +266,10 @@ v-else-if="segment.status === 3" type="button" data-test="warning-status-icon"
                         </button>
                         <!-- 運航再開アイコン -->
                         <button
-v-else-if="segment.status === 4" type="button" data-test="resumed-status-icon"
-                          class="mr-2 inline-flex items-center text-green-600 dark:text-green-300"
+                          v-else-if="segment.status === 4"
+                          type="button"
+                          data-test="resumed-status-icon"
+                          class="mr-2 inline-flex items-center rounded-full p-1 text-green-600 transition-colors hover:bg-green-50 hover:ring-2 hover:ring-green-300 hover:shadow-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-green-500 dark:text-green-300 dark:hover:bg-green-900/30 dark:hover:ring-green-400"
                           :title="$t('OPERATION_STATUS')"
                           aria-label="運航状況を見る"
                           @click.stop="showOperationStatus(segment.ship)">
@@ -276,11 +282,11 @@ v-else-if="segment.status === 4" type="button" data-test="resumed-status-icon"
                           v-else-if="getShipStatusAlert(segment.ship)"
                           type="button"
                           data-test="ship-status-alert-icon"
-                          class="mr-2 inline-flex items-center"
+                          class="mr-2 inline-flex items-center rounded-full p-1 transition-colors hover:shadow-sm focus-visible:outline-none focus-visible:ring-2"
                           :class="{
-                            'text-red-600 dark:text-red-300': getShipStatusAlert(segment.ship)?.severity === 'danger',
-                            'text-yellow-600 dark:text-yellow-300': getShipStatusAlert(segment.ship)?.severity === 'warning',
-                            'text-green-600 dark:text-green-300': getShipStatusAlert(segment.ship)?.severity === 'info'
+                            'text-red-600 hover:bg-red-50 hover:ring-2 hover:ring-red-300 focus-visible:ring-red-500 dark:text-red-300 dark:hover:bg-red-900/30 dark:hover:ring-red-400': getShipStatusAlert(segment.ship)?.severity === 'danger',
+                            'text-yellow-600 hover:bg-yellow-50 hover:ring-2 hover:ring-yellow-300 focus-visible:ring-yellow-500 dark:text-yellow-300 dark:hover:bg-yellow-900/30 dark:hover:ring-yellow-400': getShipStatusAlert(segment.ship)?.severity === 'warning',
+                            'text-green-600 hover:bg-green-50 hover:ring-2 hover:ring-green-300 focus-visible:ring-green-500 dark:text-green-300 dark:hover:bg-green-900/30 dark:hover:ring-green-400': getShipStatusAlert(segment.ship)?.severity === 'info'
                           }"
                           :title="$t('OPERATION_STATUS')"
                           aria-label="運航状況を見る"

@@ -263,6 +263,7 @@ import {
 import FormModal from '~/components/admin/FormModal.vue'
 import { useAdminFirestore } from '~/composables/useAdminFirestore'
 import { useAdminAuth } from '~/composables/useAdminAuth'
+import { useDataPublish } from '~/composables/useDataPublish'
 import type { News } from '~/types'
 import { createLogger } from '~/utils/logger'
 import { sanitizeHtml } from '~/utils/sanitizeHtml'
@@ -276,6 +277,7 @@ definePageMeta({
 
 const route = useRoute()
 const { getDocument, createDocument, updateDocument } = useAdminFirestore()
+const { publishData } = useDataPublish()
 const adminAuth = useAdminAuth()
 const { $toast } = useNuxtApp()
 const logger = createLogger('AdminNewsEditPage')
@@ -370,6 +372,16 @@ const previewNews = () => {
   showPreviewModal.value = true
 }
 
+const publishNewsDataAfterSave = async () => {
+  try {
+    await publishData('news')
+    $toast.success('お知らせデータを公開しました')
+  } catch (error) {
+    logger.error('Failed to auto publish news data after save', error)
+    $toast.error('保存しましたが、データ公開に失敗しました')
+  }
+}
+
 const saveNews = async () => {
   isSaving.value = true
   try {
@@ -399,6 +411,8 @@ const saveNews = async () => {
       await createDocument('news', newsData)
       $toast.success('お知らせを作成しました')
     }
+
+    await publishNewsDataAfterSave()
     
     await navigateTo('/admin/news')
   } catch (error) {
