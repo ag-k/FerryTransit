@@ -1,0 +1,102 @@
+[
+  {
+    "routeId": "10",
+    "agencyId": "9000020325252",
+    "shortName": "",
+    "longName": "豊田線",
+    "description": "",
+    "type": 3,
+    "color": "E26B0A",
+    "textColor": "000000"
+  },
+  {
+    "routeId": "21",
+    "agencyId": "9000020325252",
+    "shortName": "",
+    "longName": "海士島線1",
+    "description": "",
+    "type": 3,
+    "color": "00B0F0",
+    "textColor": "000000"
+  },
+  {
+    "routeId": "22",
+    "agencyId": "9000020325252",
+    "shortName": "",
+    "longName": "海士島線2",
+    "description": "",
+    "type": 3,
+    "color": "00B0F0",
+    "textColor": "000000"
+  },
+  {
+    "routeId": "23",
+    "agencyId": "9000020325252",
+    "shortName": "",
+    "longName": "海士島線3",
+    "description": "",
+    "type": 3,
+    "color": "00B0F0",
+    "textColor": "000000"
+  },
+  {
+    "routeId": "24",
+    "agencyId": "9000020325252",
+    "shortName": "",
+    "longName": "海士島線4",
+    "description": "",
+    "type": 3,
+    "color": "00B0F0",
+    "textColor": "000000"
+  },
+  {
+    "routeId": "25",
+    "agencyId": "9000020325252",
+    "shortName": "",
+    "longName": "海士島線5",
+    "description": "",
+    "type": 3,
+    "color": "00B0F0",
+    "textColor": "000000"
+  },
+  {
+    "routeId": "26",
+    "agencyId": "9000020325252",
+    "shortName": "",
+    "longName": "海士島線6",
+    "description": "",
+    "type": 3,
+    "color": "00B0F0",
+    "textColor": "000000"
+  },
+  {
+    "routeId": "27",
+    "agencyId": "9000020325252",
+    "shortName": "",
+    "longName": "海士島線7",
+    "description": "",
+    "type": 3,
+    "color": "00B0F0",
+    "textColor": "000000"
+  },
+  {
+    "routeId": "28",
+    "agencyId": "9000020325252",
+    "shortName": "",
+    "longName": "海士島線8",
+    "description": "",
+    "type": 3,
+    "color": "00B0F0",
+    "textColor": "000000"
+  },
+  {
+    "routeId": "29",
+    "agencyId": "9000020325252",
+    "shortName": "",
+    "longName": "海士島線9",
+    "description": "",
+    "type": 3,
+    "color": "00B0F0",
+    "textColor": "000000"
+  }
+]

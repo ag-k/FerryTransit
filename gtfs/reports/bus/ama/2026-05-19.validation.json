@@ -1,0 +1,26 @@
+{
+  "ok": true,
+  "checkedAt": "2026-05-19T06:49:56.560Z",
+  "mode": "bus",
+  "id": "ama",
+  "gtfsDir": "/Users/ag/works/FerryTransit/gtfs/current/bus/ama",
+  "summary": {
+    "agencyCount": 1,
+    "routeCount": 10,
+    "stopCount": 36,
+    "tripCount": 88,
+    "stopTimeCount": 1637,
+    "serviceCount": 8,
+    "feedStartDate": "20240323",
+    "feedEndDate": "20241231",
+    "feedVersion": "2024/01/02改正-見える化ver2.6e"
+  },
+  "issues": [],
+  "warnings": [
+    {
+      "code": "feed_expired",
+      "file": "feed_info.txt",
+      "feed_end_date": "20241231"
+    }
+  ]
+}

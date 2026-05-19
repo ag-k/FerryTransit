@@ -59,7 +59,9 @@
     "deploy-prod:hosting": "run-s build-prod:build firebase:deploy:hosting",
     "deploy-dev": "run-s build-dev deploy:only:dev",
     "build-app-dev": "cp .env.development .env && CAPACITOR_BUILD=true npm run generate && npx cap copy",
-    "functions:deploy:script": "bash scripts/deploy-functions.sh"
+    "functions:deploy:script": "bash scripts/deploy-functions.sh",
+    "gtfs:validate": "node scripts/gtfs/validate.mjs",
+    "gtfs:build": "node scripts/gtfs/build-public-data.mjs"
   },
   "portless": {
     "name": "ferry-transit",
