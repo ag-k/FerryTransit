@@ -129,7 +129,7 @@ import PortBadges from '@/components/common/PortBadges.vue'
 import LocationTypeIcon from '@/components/common/LocationTypeIcon.vue'
 import type { LocationType } from '@/types'
 import type { FavoriteRoute } from '@/types/favorite'
-import { getBusStopTownLabelKey, getLocationTypeForCode } from '@/utils/gtfsBusTimetable'
+import { getBusStopPortBadgeLabel, getBusStopTownLabelKey, getLocationTypeForCode } from '@/utils/gtfsBusTimetable'
 
 interface Props {
   modelValue: string
@@ -304,11 +304,13 @@ const getPortLabelParts = (port: string) => {
   const parenRegex = /[（(]([^）)]+)[）)]/g
   const townLabelKey = getLocationType(port) === 'STOP' ? getBusStopTownLabelKey(port) : null
   const badges: string[] = townLabelKey ? [getTownBadgeLabel(townLabelKey)] : []
+  const portBadgeLabel = getBusStopPortBadgeLabel(port)
+  if (portBadgeLabel) badges.push(portBadgeLabel)
 
   let match = parenRegex.exec(label)
   while (match) {
     const value = match[1]?.trim()
-    if (value) badges.push(value)
+    if (value && !badges.includes(value)) badges.push(value)
     match = parenRegex.exec(label)
   }
 

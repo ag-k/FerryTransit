@@ -132,6 +132,10 @@ const mountIndexPage = () =>
         StatusAlerts: {
           template: '<div data-test="status-alerts">StatusAlerts</div>',
         },
+        Icon: {
+          template: '<span data-test="mode-filter-icon" :data-name="name" aria-hidden="true" />',
+          props: ["name"],
+        },
         CommonShipModal: {
           template: '<div v-if="visible" data-test="ship-modal">Modal</div>',
           props: ["visible", "title", "type", "shipId", "portId", "portZoom", "content"],
@@ -484,7 +488,18 @@ describe("IndexPage (時刻表ページ)", () => {
       const wrapper = mountIndexPage();
       await flushPromises();
 
-      expect(wrapper.findAll('[role="tab"]').map(tab => tab.text())).toEqual([
+      const tablist = wrapper.find('[role="tablist"]');
+      const tabs = wrapper.findAll('[role="tab"]');
+
+      expect(wrapper.text()).not.toContain("UI.TRANSPORT_FILTER");
+      expect(tablist.attributes("aria-label")).toBe("UI.TRANSPORT_FILTER");
+      expect(tablist.classes()).toContain("w-full");
+      expect(tabs.every(tab => tab.classes().includes("flex-1"))).toBe(true);
+      expect(wrapper.findAll('[data-test="mode-filter-icon"]').map(icon => icon.attributes("data-name"))).toEqual([
+        "mdi:ferry",
+        "mdi:bus",
+      ]);
+      expect(tabs.map(tab => tab.text())).toEqual([
         "FERRY",
         "BUS",
       ]);

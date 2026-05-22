@@ -1,20 +1,28 @@
 <template>
-  <div v-if="options.length > 1" class="flex flex-wrap items-center gap-2">
-    <span class="text-sm font-medium text-app-muted">{{ labelText }}</span>
-    <div class="flex flex-wrap gap-2" role="tablist" :aria-label="labelText">
+  <div v-if="options.length > 1" class="w-full">
+    <div
+      class="flex w-full gap-1 rounded-md border border-app-border bg-app-surface-2 p-1 shadow-sm dark:border-slate-600 dark:bg-slate-800"
+      role="tablist"
+      :aria-label="labelText"
+    >
       <button
         v-for="option in options"
         :key="option"
         type="button"
         role="tab"
         :aria-selected="modelValue === option"
-        class="px-3 py-2 text-sm font-medium rounded-md border transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-app-primary/60 flex items-center justify-center"
+        class="flex min-h-11 flex-1 items-center justify-center gap-2 rounded px-3 py-2 text-sm font-semibold transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-app-primary/60"
         :class="modelValue === option
-          ? 'bg-app-primary text-white border-app-primary shadow-sm'
-          : 'border-app-primary text-app-primary bg-app-surface dark:bg-slate-700 dark:text-white dark:border-slate-500 hover:bg-app-primary/10 dark:hover:bg-slate-600'"
+          ? 'bg-app-primary text-white shadow-sm'
+          : 'text-app-primary hover:bg-app-primary/10 dark:text-slate-100 dark:hover:bg-slate-700'"
         @click="emit('update:modelValue', option)"
       >
-        {{ getOptionLabel(option) }}
+        <Icon
+          :name="getOptionIcon(option)"
+          class="h-5 w-5 shrink-0"
+          aria-hidden="true"
+        />
+        <span class="truncate">{{ getOptionLabel(option) }}</span>
       </button>
     </div>
   </div>
@@ -42,4 +50,13 @@ const getOptionLabel = (option: string) => {
   const translated = t(key)
   return translated === key ? option : translated
 }
+
+const optionIcons: Record<string, string> = {
+  FERRY: 'mdi:ferry',
+  BUS: 'mdi:bus',
+  AIR: 'mdi:airplane',
+  ALL: 'mdi:apps'
+}
+
+const getOptionIcon = (option: string) => optionIcons[option] ?? 'mdi:transit-connection'
 </script>

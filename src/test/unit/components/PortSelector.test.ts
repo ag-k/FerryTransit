@@ -104,11 +104,12 @@ describe('PortSelector', () => {
 
   it('shows bus stop section grouped by town tabs when allowedLocationType is STOP', async () => {
     const store = useFerryStore()
-    store.busStops = ['BUS_AMA_100_01', 'BUS_AMA_100_02', 'BUS_NISHINOSHIMA_nishinoshima_001']
+    store.busStops = ['BUS_AMA_100_01', 'BUS_AMA_100_02', 'BUS_AMA_126_01', 'BUS_NISHINOSHIMA_nishinoshima_006']
     store.locationLabels = {
       BUS_AMA_100_01: '豊田',
       BUS_AMA_100_02: '隠岐神社前',
-      BUS_NISHINOSHIMA_nishinoshima_001: '宇賀'
+      BUS_AMA_126_01: '隠岐汽船乗り場',
+      BUS_NISHINOSHIMA_nishinoshima_006: '隠岐汽船（別府港）'
     }
 
     const wrapper = mount(PortSelector, {
@@ -141,16 +142,20 @@ describe('PortSelector', () => {
     expect(wrapper.text()).toContain('豊田')
     expect(wrapper.text()).toContain('海士町')
     expect(wrapper.text()).toContain('隠岐神社前')
-    expect(wrapper.text()).not.toContain('宇賀')
+    expect(wrapper.text()).toContain('隠岐汽船乗り場')
+    expect(wrapper.text()).toContain('菱浦港')
+    expect(wrapper.text()).not.toContain('別府港')
 
     await tabs[1].trigger('click')
 
     const updatedTabs = wrapper.findAll('[data-testid="bus-stop-town-tab"]')
     expect(updatedTabs[1].attributes('aria-selected')).toBe('true')
-    expect(wrapper.text()).toContain('宇賀')
+    expect(wrapper.text()).toContain('隠岐汽船')
     expect(wrapper.text()).toContain('西ノ島町')
+    expect(wrapper.text()).toContain('別府港')
     expect(wrapper.text()).not.toContain('豊田')
     expect(wrapper.text()).not.toContain('隠岐神社前')
+    expect(wrapper.text()).not.toContain('菱浦港')
   })
 
   it('emits update:modelValue when selecting a port in the modal', async () => {

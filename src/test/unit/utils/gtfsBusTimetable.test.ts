@@ -1,5 +1,6 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest'
 import {
+  getBusStopPortBadgeLabel,
   getBusStopTownLabelKey,
   getLocationTypeForCode,
   isAmaBusStopCode,
@@ -28,6 +29,8 @@ describe('gtfsBusTimetable', () => {
     expect(getLocationTypeForCode(stopCode)).toBe('STOP')
     expect(getLocationTypeForCode('BEPPU')).toBe('PORT')
     expect(getBusStopTownLabelKey(stopCode)).toBe('AMA_CHO')
+    expect(getBusStopPortBadgeLabel(toAmaBusStopCode('126_01'))).toBe('菱浦港')
+    expect(getBusStopPortBadgeLabel(stopCode)).toBeNull()
   })
 
   it('西ノ島町営バス停コードを停留所として扱う', () => {
@@ -74,6 +77,26 @@ describe('gtfsBusTimetable', () => {
     expect(isTripActiveOnDate(trip, new Date('2026-01-06'), '2026-01-06')).toBe(true)
     expect(isTripActiveOnDate(trip, new Date('2026-01-11'), '2026-01-11')).toBe(false)
     expect(isTripActiveOnDate(trip, new Date('2026-02-02'), '2026-02-02')).toBe(false)
+  })
+
+  it('calendar_datesのみのserviceは追加日だけ運行と判定する', () => {
+    const trip: Trip = {
+      tripId: 1,
+      startDate: '2026-08-08',
+      endDate: '2026-08-16',
+      name: 'NISHINOSHIMA_TOWN_BUS',
+      departure: 'BUS_NISHINOSHIMA_nishinoshima_006',
+      departureTime: '14:20',
+      arrival: 'BUS_NISHINOSHIMA_nishinoshima_022',
+      arrivalTime: '14:55',
+      activeDays: [],
+      addedDates: ['2026-08-08', '2026-08-16'],
+      status: 0
+    }
+
+    expect(isTripActiveOnDate(trip, new Date('2026-08-08'), '2026-08-08')).toBe(true)
+    expect(isTripActiveOnDate(trip, new Date('2026-08-09'), '2026-08-09')).toBe(false)
+    expect(isTripActiveOnDate(trip, new Date('2026-08-16'), '2026-08-16')).toBe(true)
   })
 
   it('GTFS JSONから下流停留所ペアのバス時刻表を生成する', async () => {
@@ -268,6 +291,60 @@ describe('gtfsBusTimetable', () => {
       departureTime: '11:46',
       arrivalTime: '12:03',
       via: '波止線'
+    })
+  })
+
+  it('calendar_datesのみで定義された期間限定便も読み込む', async () => {
+    const fixtures: Record<string, unknown> = {
+      'routes.json': [
+        { routeId: 'NISHINOSHIMA_KUNIGA', shortName: '国賀線', longName: '西ノ島町営バス 国賀線' }
+      ],
+      'stops.json': [
+        { stopId: 'nishinoshima_006', name: '隠岐汽船（別府港）' },
+        { stopId: 'nishinoshima_022', name: '国賀' }
+      ],
+      'trips.json': [
+        {
+          routeId: 'NISHINOSHIMA_KUNIGA',
+          serviceId: 'range_0501_0506_0808_0816',
+          tripId: 'special_kuniga',
+          headsign: '国賀',
+          shortName: '5/1-5/6・8/8-8/16'
+        }
+      ],
+      'stopTimes.json': [
+        { tripId: 'special_kuniga', arrivalTime: '14:20:00', departureTime: '14:20:00', stopId: 'nishinoshima_006', stopSequence: 1 },
+        { tripId: 'special_kuniga', arrivalTime: '14:55:00', departureTime: '14:55:00', stopId: 'nishinoshima_022', stopSequence: 2 }
+      ],
+      'calendar.json': [],
+      'calendarDates.json': [
+        { service_id: 'range_0501_0506_0808_0816', date: '20260808', exception_type: '1' },
+        { service_id: 'range_0501_0506_0808_0816', date: '20260816', exception_type: '1' }
+      ]
+    }
+
+    vi.stubGlobal('fetch', vi.fn((input: string | URL | Request) => {
+      const fileName = String(input).split('/').pop() ?? ''
+      return Promise.resolve({
+        ok: true,
+        status: 200,
+        json: () => Promise.resolve(fixtures[fileName])
+      } as Response)
+    }))
+
+    const result = await loadNishinoshimaBusTimetable()
+
+    expect(result.trips).toHaveLength(1)
+    expect(result.trips[0]).toMatchObject({
+      startDate: '2026-08-08',
+      endDate: '2026-08-16',
+      activeDays: [],
+      addedDates: ['2026-08-08', '2026-08-16'],
+      departure: 'BUS_NISHINOSHIMA_nishinoshima_006',
+      arrival: 'BUS_NISHINOSHIMA_nishinoshima_022',
+      departureTime: '14:20',
+      arrivalTime: '14:55',
+      via: '国賀線'
     })
   })
 })

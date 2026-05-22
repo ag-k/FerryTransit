@@ -138,6 +138,11 @@ export const getBusStopTownLabelKey = (value?: string): string | null => {
   return null
 }
 
+export const getBusStopPortBadgeLabel = (value?: string): string | null => {
+  if (value === toAmaBusStopCode('126_01')) return '菱浦港'
+  return null
+}
+
 export const getLocationTypeForCode = (value?: string, fallback: LocationType = 'PORT'): LocationType => {
   if (isBusStopCode(value)) return 'STOP'
   return fallback
@@ -168,7 +173,8 @@ export const isTripActiveOnDate = (trip: Trip, _date: Date, dateYmd: string): bo
   const removedDates = new Set(trip.removedDates ?? [])
   if (removedDates.has(dateYmd)) return false
   if (addedDates.has(dateYmd)) return true
-  if (!trip.activeDays || trip.activeDays.length === 0) return true
+  if (!trip.activeDays) return true
+  if (trip.activeDays.length === 0) return false
 
   const year = Number(dateYmd.slice(0, 4))
   const month = Number(dateYmd.slice(5, 7)) - 1
@@ -297,9 +303,23 @@ const buildServices = (calendar: GtfsCalendar[], calendarDates: GtfsCalendarDate
   }
 
   for (const row of calendarDates) {
-    const service = services.get(row.service_id)
-    if (!service) continue
     const date = formatGtfsDate(row.date)
+    let service = services.get(row.service_id)
+    if (!service) {
+      service = {
+        serviceId: row.service_id,
+        startDate: date,
+        endDate: date,
+        activeDays: [],
+        addedDates: [],
+        removedDates: []
+      }
+      services.set(row.service_id, service)
+    } else {
+      if (date < service.startDate) service.startDate = date
+      if (date > service.endDate) service.endDate = date
+    }
+
     if (row.exception_type === '1') {
       service.addedDates.push(date)
     } else if (row.exception_type === '2') {
