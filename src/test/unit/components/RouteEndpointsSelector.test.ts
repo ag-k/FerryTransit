@@ -13,6 +13,7 @@ const PortSelectorStub = defineComponent({
     'hondoPorts',
     'dozenPorts',
     'dogoPorts',
+    'allowedLocationType',
     'margin'
   ],
   emits: ['update:modelValue', 'selectRoute'],
@@ -54,14 +55,14 @@ describe('RouteEndpointsSelector', () => {
     expect(wrapper.find('button[aria-label="Reverse route"]').exists()).toBe(true)
   })
 
-  it('emits update:departure when departure selector updates', async () => {
+  it('emits update:departure when departure selector updates', () => {
     const wrapper = mountComponent()
     wrapper.findAllComponents(PortSelectorStub)[0].vm.$emit('update:modelValue', 'HONDO_SHICHIRUI')
     expect(wrapper.emitted('update:departure')).toBeTruthy()
     expect(wrapper.emitted('update:departure')![0][0]).toBe('HONDO_SHICHIRUI')
   })
 
-  it('emits update:arrival when arrival selector updates', async () => {
+  it('emits update:arrival when arrival selector updates', () => {
     const wrapper = mountComponent()
     wrapper.findAllComponents(PortSelectorStub)[1].vm.$emit('update:modelValue', 'SAIGO')
     expect(wrapper.emitted('update:arrival')).toBeTruthy()
@@ -108,13 +109,21 @@ describe('RouteEndpointsSelector', () => {
     expect(wrapper.emitted('addVia')).toBeTruthy()
   })
 
-  it('sets both departure and arrival when favorite route is selected', async () => {
+  it('sets both departure and arrival when favorite route is selected', () => {
     const wrapper = mountComponent()
     wrapper.findAllComponents(PortSelectorStub)[0].vm.$emit('selectRoute', { departure: 'HONDO_SHICHIRUI', arrival: 'SAIGO' })
     expect(wrapper.emitted('update:departure')).toBeTruthy()
     expect(wrapper.emitted('update:arrival')).toBeTruthy()
     expect(wrapper.emitted('update:departure')!.at(-1)![0]).toBe('HONDO_SHICHIRUI')
     expect(wrapper.emitted('update:arrival')!.at(-1)![0]).toBe('SAIGO')
+  })
+
+  it('passes allowed location type to both selectors', () => {
+    const wrapper = mountComponent({ allowedLocationType: 'STOP' } as any)
+    const stubs = wrapper.findAllComponents(PortSelectorStub)
+
+    expect(stubs[0].props('allowedLocationType')).toBe('STOP')
+    expect(stubs[1].props('allowedLocationType')).toBe('STOP')
   })
 
   it('hides +via button by default', () => {

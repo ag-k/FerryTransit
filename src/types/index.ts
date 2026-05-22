@@ -96,6 +96,9 @@ export interface Trip {
   arrival: string;
   arrivalType?: LocationType;
   arrivalTime: Date | string;
+  activeDays?: number[];
+  addedDates?: string[];
+  removedDates?: string[];
   platform?: string;
   terminal?: string;
   gate?: string;

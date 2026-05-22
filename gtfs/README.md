@@ -25,9 +25,36 @@ gtfs/
 ## 現在の採用データ
 
 - 種別: `bus`
-- ID: `ama`
-- 事業者: 海士町
-- 元データ日付: `2024-03-23`
-- GTFS フィード期間: `2024-03-23` から `2024-12-31`
+  - ID: `ama`
+  - 事業者: 海士町
+  - 元データ日付: `2025-12-22`
+  - GTFS フィード期間: `2026-01-02` から `2026-12-31`
+- 種別: `bus`
+  - ID: `nishinoshima`
+  - 事業者: 西ノ島町
+  - 元データ日付: `2026-01-01`
+  - GTFS フィード期間: `2026-03-01` から `2026-12-31`
 
-現在の採用データは期限切れです。最新データへ更新するときは、同じ構造で新しい日付ディレクトリを追加してください。
+## R8 PDF からの変換
+
+`gtfs/pdf/bus/ama/r8/` の時刻表 PDF から GTFS を生成します。
+
+```bash
+npm run gtfs:convert:ama:r8 -- --current
+npm run gtfs:validate -- bus ama
+npm run gtfs:build -- bus ama
+```
+
+変換処理は PDF から時刻行と運行期間を抽出し、停留所並びは `scripts/gtfs/convert-ama-r8-pdf.mjs` の行パターン定義に従って `trips.txt` / `stop_times.txt` を生成します。
+
+## 西ノ島町営バス PDF からの変換
+
+`gtfs/pdf/bus/nishinoshima/20260220140915710489010da.pdf` の時刻表 PDF から GTFS を生成します。
+
+```bash
+npm run gtfs:convert:nishinoshima:2026 -- --current
+npm run gtfs:validate -- bus nishinoshima
+npm run gtfs:build -- bus nishinoshima
+```
+
+変換処理は PDF の主要時刻表欄を `trips.txt` / `stop_times.txt` に転記し、PDF 注記の `★`、`※`、`◎`、`●`、期間便を `calendar.txt` / `calendar_dates.txt` に反映します。

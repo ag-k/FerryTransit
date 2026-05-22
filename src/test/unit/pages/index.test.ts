@@ -32,6 +32,7 @@ const mockFerryStore = {
   setSelectedDate: vi.fn((value: Date) => {
     mockFerryStore.selectedDate.value = value;
   }),
+  getLocationLabel: vi.fn(() => null),
 };
 
 const mockHistoryStore = {
@@ -110,6 +111,7 @@ const mountIndexPage = () =>
           template: "<div><slot /></div>",
         },
         TimetableForm: {
+          name: "TimetableForm",
           template: '<div data-test="timetable-form">TimetableForm</div>',
           props: [
             "departure",
@@ -117,6 +119,7 @@ const mountIndexPage = () =>
             "hondoPorts",
             "dozenPorts",
             "dogoPorts",
+            "allowedLocationType",
           ],
           emits: ["update:departure", "update:arrival", "reverse"],
         },
@@ -141,7 +144,7 @@ const mountIndexPage = () =>
       config: {
         globalProperties: {
           $t: (key: string) => key,
-        },
+        } as any,
       },
     },
   });
@@ -473,6 +476,103 @@ describe("IndexPage (時刻表ページ)", () => {
     });
   });
 
+  describe("交通手段タブ", () => {
+    it("時刻表データ取得前でも船とバスのタブを表示する", async () => {
+      mockUseFerryData.timetableData.value = [];
+      mockUseFerryData.filteredTimetable.value = [];
+
+      const wrapper = mountIndexPage();
+      await flushPromises();
+
+      expect(wrapper.findAll('[role="tab"]').map(tab => tab.text())).toEqual([
+        "FERRY",
+        "BUS",
+      ]);
+    });
+
+    it("船とバスを「すべて」なしの別タブで切り替える", async () => {
+      mockUseFerryData.timetableData.value = [
+        {
+          tripId: 1,
+          startDate: "2024-01-01",
+          endDate: "2024-12-31",
+          name: "FERRY_OKI",
+          mode: "FERRY",
+          departure: "HONDO_SHICHIRUI",
+          departureTime: "09:00",
+          arrival: "SAIGO",
+          arrivalTime: "11:25",
+          status: 0,
+        },
+        {
+          tripId: 3000000,
+          startDate: "2024-01-01",
+          endDate: "2024-12-31",
+          name: "AMA_TOWN_BUS",
+          mode: "BUS",
+          departure: "BUS_AMA_100_01",
+          departureTime: "08:00",
+          arrival: "BUS_AMA_100_02",
+          arrivalTime: "08:10",
+          via: "豊田線",
+          status: 0,
+        },
+        {
+          tripId: 4000000,
+          startDate: "2024-01-01",
+          endDate: "2024-12-31",
+          name: "NISHINOSHIMA_TOWN_BUS",
+          mode: "BUS",
+          departure: "BUS_NISHINOSHIMA_nishinoshima_007",
+          departureTime: "07:07",
+          arrival: "BUS_NISHINOSHIMA_nishinoshima_001",
+          arrivalTime: "07:17",
+          via: "宇賀線",
+          status: 0,
+        },
+      ] as any;
+      mockUseFerryData.filteredTimetable.value = mockUseFerryData.timetableData.value as any;
+
+      const wrapper = mountIndexPage();
+      await flushPromises();
+
+      const tabs = wrapper.findAll('[role="tab"]');
+      expect(tabs.map(tab => tab.text())).toEqual([
+        "FERRY",
+        "BUS",
+      ]);
+      expect(wrapper.text()).toContain("FERRY_OKI");
+      expect(wrapper.text()).not.toContain("海士町路線バス（豊田線）");
+
+      expect(tabs[1]).toBeTruthy();
+      await tabs[1]!.trigger("click");
+
+      expect(wrapper.text()).toContain("海士町路線バス（豊田線）");
+      expect(wrapper.text()).toContain("西ノ島町営バス（宇賀線）");
+      expect(wrapper.text()).not.toContain("FERRY_OKI");
+      expect(wrapper.text()).not.toContain("AMA_TOWN_BUS");
+      expect(wrapper.text()).not.toContain("NISHINOSHIMA_TOWN_BUS");
+      expect(wrapper.find('[data-test="with-car-toggle"]').exists()).toBe(false);
+    });
+
+    it("選択中のタブに応じて出発地・目的地の種別を切り替える", async () => {
+      mockUseFerryData.timetableData.value = [];
+      mockUseFerryData.filteredTimetable.value = [];
+
+      const wrapper = mountIndexPage();
+      await flushPromises();
+
+      const form = () => wrapper.findComponent({ name: "TimetableForm" });
+      expect(form().props("allowedLocationType")).toBe("PORT");
+
+      const tabs = wrapper.findAll('[role="tab"]');
+      expect(tabs[1]).toBeTruthy();
+      await tabs[1]!.trigger("click");
+
+      expect(form().props("allowedLocationType")).toBe("STOP");
+    });
+  });
+
   describe("運航状態（欠航表示）の当日ガード", () => {
     it("当日以外の日付では欠航アイコンを表示しない（ライブ運航状況は反映しない）", async () => {
       vi.useFakeTimers();
@@ -570,7 +670,7 @@ describe("IndexPage (時刻表ページ)", () => {
           arrivalTime: "18:35:00",
           status: 2,
         } as any,
-      ];
+      ] as any;
 
       const wrapper = mountIndexPage();
       await flushPromises();

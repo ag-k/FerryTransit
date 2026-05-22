@@ -17,7 +17,16 @@ function readCsv(filePath) {
     const first = parsed.errors[0]
     throw new Error(`${filePath}: ${first.message}`)
   }
-  return parsed.data
+  return parsed.data.map(trimRow)
+}
+
+function trimRow(row) {
+  return Object.fromEntries(
+    Object.entries(row).map(([key, value]) => [
+      key,
+      typeof value === 'string' ? value.trim() : value
+    ])
+  )
 }
 
 function writeJson(filePath, data) {

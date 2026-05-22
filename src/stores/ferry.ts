@@ -10,6 +10,15 @@ import {
   addDaysJst,
 } from "@/utils/jstDate";
 import { buildStorageObjectDownloadUrl } from "@/utils/firebaseStorageUrl";
+import {
+  type BusTimetableData,
+  getLocationTypeForCode,
+  isAmaBusStopCode,
+  isNishinoshimaBusStopCode,
+  isTripActiveOnDate,
+  loadAmaBusTimetable,
+  loadNishinoshimaBusTimetable,
+} from "@/utils/gtfsBusTimetable";
 
 // Port and Ship interfaces
 interface Port {
@@ -142,6 +151,8 @@ export const useFerryStore = defineStore("ferry", () => {
   const isLoading = ref(false);
   const error = ref<string | null>(null);
   const lastFetchTime = ref<Date | null>(null);
+  const busStops = ref<string[]>([]);
+  const locationLabels = ref<Record<string, string>>({});
 
   // Port definitions
   const hondoPorts = ["HONDO", "HONDO_SHICHIRUI", "HONDO_SAKAIMINATO"];
@@ -149,6 +160,16 @@ export const useFerryStore = defineStore("ferry", () => {
   const dogoPorts = ["SAIGO"];
 
   const allPorts = computed(() => [...hondoPorts, ...dozenPorts, ...dogoPorts]);
+
+  const allLocations = computed(() => [...allPorts.value, ...busStops.value]);
+
+  const getLocationLabel = (locationId: string): string | null => {
+    return locationLabels.value[locationId] ?? null;
+  };
+
+  const isStopLocation = (locationId?: string): boolean => {
+    return getLocationTypeForCode(locationId) === "STOP";
+  };
 
   // Port data
   const ports = ref<Port[]>([
@@ -311,7 +332,7 @@ export const useFerryStore = defineStore("ferry", () => {
       const endExclusive = addDaysJst(parseYmdAsJstMidnight(endYmd), 1); // 終了日の翌日0:00(JST)
       const currentDate = parseYmdAsJstMidnight(dateStr);
 
-      return currentDate >= startDate && currentDate < endExclusive;
+      return currentDate >= startDate && currentDate < endExclusive && isTripActiveOnDate(trip, selectedDate.value, dateStr);
     });
 
     // 出発地でフィルタリング
@@ -467,10 +488,60 @@ export const useFerryStore = defineStore("ferry", () => {
     return resultTimetable;
   });
 
+  const loadBusTimetableSafely = async (): Promise<Trip[]> => {
+    const loaders: Array<{ label: string; load: () => Promise<BusTimetableData> }> = [
+      { label: "Ama bus", load: loadAmaBusTimetable },
+      { label: "Nishinoshima bus", load: loadNishinoshimaBusTimetable },
+    ];
+    const busTrips: Trip[] = [];
+    const nextBusStops: string[] = [];
+
+    for (const loader of loaders) {
+      try {
+        const busData = await loader.load();
+        nextBusStops.push(...busData.stopCodes);
+        locationLabels.value = {
+          ...locationLabels.value,
+          ...busData.locationLabels,
+        };
+        busTrips.push(...busData.trips);
+      } catch (busError) {
+        logger.warn(`${loader.label} timetable load failed`, {
+          error: toLoggableError(busError),
+        });
+      }
+    }
+
+    if (nextBusStops.length > 0) {
+      busStops.value = Array.from(new Set(nextBusStops));
+    }
+
+    return busTrips;
+  };
+
+  const ensureBusTimetableLoaded = async () => {
+    const hasAllBusStopFeeds =
+      busStops.value.some((stop) => isAmaBusStopCode(stop)) &&
+      busStops.value.some((stop) => isNishinoshimaBusStopCode(stop));
+
+    if (hasAllBusStopFeeds && timetableData.value.some((trip) => trip.mode === "BUS")) {
+      return;
+    }
+
+    const busTrips = await loadBusTimetableSafely();
+    if (busTrips.length === 0) return;
+
+    timetableData.value = [
+      ...timetableData.value.filter((trip) => trip.mode !== "BUS"),
+      ...busTrips,
+    ];
+  };
+
   // Actions
   const fetchTimetable = async (force = false) => {
     const nativeAtEntry = process.client && isNativeClientPlatform();
     if (!force && !isDataStale.value && timetableData.value.length > 0) {
+      await ensureBusTimetableLoaded();
       return; // キャッシュが有効な場合はスキップ
     }
 
@@ -504,7 +575,7 @@ export const useFerryStore = defineStore("ferry", () => {
       };
 
       const fetchFromFunctions = () => {
-        return $fetch<any[]>(functionsUrl);
+        return $fetch(functionsUrl) as Promise<any[]>;
       };
 
       if (isNativeClient) {
@@ -551,24 +622,31 @@ export const useFerryStore = defineStore("ferry", () => {
       }
 
       if (!Array.isArray(data) || data.length === 0) {
-        timetableData.value = [];
-        error.value = "LOAD_TIMETABLE_ERROR";
+        const busTrips = await loadBusTimetableSafely();
+        timetableData.value = busTrips;
+        error.value = busTrips.length > 0 ? null : "LOAD_TIMETABLE_ERROR";
         return;
       }
 
       // Map API response fields to expected format
-      timetableData.value = data.map((trip) => ({
+      const ferryTrips = data.map((trip) => ({
         tripId: parseInt(trip.trip_id), // Convert string IDs to numbers
         startDate: trip.start_date,
         endDate: trip.end_date,
         name: trip.name,
+        mode: trip.mode || "FERRY",
         departure: trip.departure,
+        departureType: trip.departure_type,
         departureTime: trip.departure_time, // Keep as string
         arrival: trip.arrival,
+        arrivalType: trip.arrival_type,
         arrivalTime: trip.arrival_time, // Keep as string
         nextId: trip.next_id ? parseInt(trip.next_id) : undefined,
         status: parseInt(trip.status) || 0,
       }));
+
+      const busTrips = await loadBusTimetableSafely();
+      timetableData.value = [...ferryTrips, ...busTrips];
 
       lastFetchTime.value = new Date();
 
@@ -593,28 +671,43 @@ export const useFerryStore = defineStore("ferry", () => {
       error.value = "LOAD_TIMETABLE_ERROR";
 
       // オフラインの場合はキャッシュから読み込み
+      let loadedFallbackTimetable = false;
       if (process.client) {
         try {
           const cached = localStorage.getItem(TIMETABLE_CACHE_KEY);
           if (cached) {
-            const data = JSON.parse(cached);
+            const data = JSON.parse(cached) as any[];
             // Map cached data to expected format
-            timetableData.value = data.map((trip) => ({
+            const ferryTrips = data.map((trip) => ({
               tripId: parseInt(trip.trip_id), // Convert string IDs to numbers
               startDate: trip.start_date,
               endDate: trip.end_date,
               name: trip.name,
+              mode: trip.mode || "FERRY",
               departure: trip.departure,
+              departureType: trip.departure_type,
               departureTime: trip.departure_time, // Keep as string
               arrival: trip.arrival,
+              arrivalType: trip.arrival_type,
               arrivalTime: trip.arrival_time, // Keep as string
               nextId: trip.next_id ? parseInt(trip.next_id) : undefined,
               status: parseInt(trip.status) || 0,
             }));
+            const busTrips = await loadBusTimetableSafely();
+            timetableData.value = [...ferryTrips, ...busTrips];
             error.value = "OFFLINE_TIMETABLE_ERROR";
+            loadedFallbackTimetable = true;
           }
         } catch (e) {
           // ローカルキャッシュの読み込みが失敗した場合は既存データを保持
+        }
+      }
+
+      if (!loadedFallbackTimetable) {
+        const busTrips = await loadBusTimetableSafely();
+        if (busTrips.length > 0) {
+          timetableData.value = busTrips;
+          error.value = null;
         }
       }
     } finally {
@@ -712,9 +805,13 @@ export const useFerryStore = defineStore("ferry", () => {
     const dateStr = formatDateLocal(selectedDate.value);
 
     // 既存の臨時便を削除
-    timetableData.value = timetableData.value.filter(
-      (trip) => trip.tripId < 1000
-    );
+    timetableData.value = timetableData.value.filter((trip) => {
+      const isExtraShip =
+        trip.tripId >= 1000 &&
+        trip.tripId < 3000 &&
+        (trip.name === "ISOKAZE" || trip.name === "FERRY_DOZEN");
+      return !isExtraShip;
+    });
 
     // いそかぜの臨時便
     if (shipStatus.value.isokaze?.extraShips) {
@@ -815,6 +912,8 @@ export const useFerryStore = defineStore("ferry", () => {
       if (savedTime) {
         lastFetchTime.value = new Date(savedTime);
       }
+
+      await ensureBusTimetableLoaded();
     } catch (e) {
       // ローカルストレージ読み込みに失敗した場合は既存状態を維持
     }
@@ -838,6 +937,11 @@ export const useFerryStore = defineStore("ferry", () => {
     dozenPorts,
     dogoPorts,
     allPorts,
+    allLocations,
+    busStops,
+    locationLabels,
+    getLocationLabel,
+    isStopLocation,
     // portMaps: removed (was legacy Google Maps iframe embeds)
 
     // Getters

@@ -75,6 +75,84 @@ describe('PortSelector', () => {
     expect(dogoButtons).toHaveLength(store.dogoPorts.length)
   })
 
+  it('shows only port sections when allowedLocationType is PORT', async () => {
+    const store = useFerryStore()
+    store.busStops = ['BUS_AMA_100_01']
+
+    const wrapper = mount(PortSelector, {
+      props: {
+        ...defaultProps,
+        allowedLocationType: 'PORT'
+      },
+      global: {
+        mocks: {
+          $t: (key: string) => key
+        },
+        stubs: {
+          Teleport: true
+        }
+      }
+    })
+
+    await wrapper.find('[data-testid="port-selector-button"]').trigger('click')
+
+    expect(wrapper.find('[data-testid="port-section-busStops"]').exists()).toBe(false)
+    expect(wrapper.find('[data-testid="port-section-mainland"]').exists()).toBe(true)
+    expect(wrapper.find('[data-testid="port-section-dozen"]').exists()).toBe(true)
+    expect(wrapper.find('[data-testid="port-section-dogo"]').exists()).toBe(true)
+  })
+
+  it('shows bus stop section grouped by town tabs when allowedLocationType is STOP', async () => {
+    const store = useFerryStore()
+    store.busStops = ['BUS_AMA_100_01', 'BUS_AMA_100_02', 'BUS_NISHINOSHIMA_nishinoshima_001']
+    store.locationLabels = {
+      BUS_AMA_100_01: '豊田',
+      BUS_AMA_100_02: '隠岐神社前',
+      BUS_NISHINOSHIMA_nishinoshima_001: '宇賀'
+    }
+
+    const wrapper = mount(PortSelector, {
+      props: {
+        ...defaultProps,
+        allowedLocationType: 'STOP'
+      },
+      global: {
+        mocks: {
+          $t: (key: string) => key
+        },
+        stubs: {
+          Teleport: true
+        }
+      }
+    })
+
+    await wrapper.find('[data-testid="port-selector-button"]').trigger('click')
+
+    expect(wrapper.find('[data-testid="port-section-busStops"]').exists()).toBe(true)
+    expect(wrapper.find('[data-testid="port-section-mainland"]').exists()).toBe(false)
+    expect(wrapper.find('[data-testid="port-section-dozen"]').exists()).toBe(false)
+    expect(wrapper.find('[data-testid="port-section-dogo"]').exists()).toBe(false)
+
+    const tabs = wrapper.findAll('[data-testid="bus-stop-town-tab"]')
+    expect(tabs).toHaveLength(2)
+    expect(tabs.map(tab => tab.text())).toEqual(['海士町', '西ノ島町'])
+    expect(tabs[0].attributes('aria-selected')).toBe('true')
+
+    expect(wrapper.text()).toContain('豊田')
+    expect(wrapper.text()).toContain('海士町')
+    expect(wrapper.text()).toContain('隠岐神社前')
+    expect(wrapper.text()).not.toContain('宇賀')
+
+    await tabs[1].trigger('click')
+
+    const updatedTabs = wrapper.findAll('[data-testid="bus-stop-town-tab"]')
+    expect(updatedTabs[1].attributes('aria-selected')).toBe('true')
+    expect(wrapper.text()).toContain('宇賀')
+    expect(wrapper.text()).toContain('西ノ島町')
+    expect(wrapper.text()).not.toContain('豊田')
+    expect(wrapper.text()).not.toContain('隠岐神社前')
+  })
+
   it('emits update:modelValue when selecting a port in the modal', async () => {
     const wrapper = mount(PortSelector, {
       props: defaultProps,

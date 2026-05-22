@@ -20,9 +20,18 @@ function readCsv(filePath) {
     skipEmptyLines: true
   })
   return {
-    rows: parsed.data,
+    rows: parsed.data.map(trimRow),
     errors: parsed.errors
   }
+}
+
+function trimRow(row) {
+  return Object.fromEntries(
+    Object.entries(row).map(([key, value]) => [
+      key,
+      typeof value === 'string' ? value.trim() : value
+    ])
+  )
 }
 
 function readOptionalCsv(dir, name) {

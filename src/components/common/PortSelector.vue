@@ -11,7 +11,7 @@
       :aria-expanded="isOpen ? 'true' : 'false'" @click="open">
       <span class="min-w-0">
         <span v-if="modelValue" class="text-app-fg flex items-center gap-2 min-w-0">
-          <LocationTypeIcon v-if="showLocationTypeBadge" :type="defaultLocationType" />
+          <LocationTypeIcon v-if="showLocationTypeBadge" :type="getLocationType(modelValue)" />
           <span class="truncate">{{ getPortLabelParts(modelValue).name }}</span>
           <PortBadges :badges="getPortLabelParts(modelValue).badges" class="flex flex-1 items-center gap-1" />
         </span>
@@ -82,6 +82,20 @@
                   <h4 class="text-sm font-semibold text-app-fg">
                     {{ $t(section.labelKey) }}
                   </h4>
+                  <div v-if="section.key === 'busStops' && busStopTownTabs.length > 1"
+                    class="grid grid-cols-2 gap-2" role="tablist" :aria-label="$t('BUS_STOPS')"
+                    data-testid="bus-stop-town-tabs">
+                    <button v-for="tab in busStopTownTabs" :key="tab.key" type="button" role="tab"
+                      data-testid="bus-stop-town-tab" :aria-selected="tab.key === currentBusStopTownKey ? 'true' : 'false'"
+                      class="px-3 py-2 rounded-md border text-sm font-semibold transition-colors focus:outline-none focus:ring-2 focus:ring-app-primary-2"
+                      :class="[
+                        tab.key === currentBusStopTownKey
+                          ? 'bg-app-primary text-white border-app-primary'
+                          : 'bg-app-surface text-app-fg border-app-border hover:bg-app-surface-2'
+                      ]" @click="selectBusStopTown(tab.key)">
+                      {{ getTownBadgeLabel(tab.labelKey) }}
+                    </button>
+                  </div>
                   <div class="grid grid-cols-1 gap-2">
                     <button v-for="port in section.ports" :key="port" type="button"
                       class="w-full px-3 py-3 rounded-md border border-app-border text-left transition-colors focus:outline-none focus:ring-2 focus:ring-app-primary-2"
@@ -91,7 +105,7 @@
                           : 'bg-app-surface text-app-fg hover:bg-app-surface-2'
                       ]" :disabled="isPortDisabled(port)" @click="selectPort(port)">
                       <span class="flex items-center gap-3">
-                        <LocationTypeIcon v-if="showLocationTypeBadge" :type="defaultLocationType" />
+                        <LocationTypeIcon v-if="showLocationTypeBadge" :type="getLocationType(port)" />
                         <span class="min-w-0 truncate">{{ getPortLabelParts(port).name }}</span>
                         <PortBadges :badges="getPortLabelParts(port).badges"
                           class="ml-auto flex items-center gap-1.5" />
@@ -115,6 +129,7 @@ import PortBadges from '@/components/common/PortBadges.vue'
 import LocationTypeIcon from '@/components/common/LocationTypeIcon.vue'
 import type { LocationType } from '@/types'
 import type { FavoriteRoute } from '@/types/favorite'
+import { getBusStopTownLabelKey, getLocationTypeForCode } from '@/utils/gtfsBusTimetable'
 
 interface Props {
   modelValue: string
@@ -126,12 +141,14 @@ interface Props {
   hondoPorts?: string[]
   dozenPorts?: string[]
   dogoPorts?: string[]
+  allowedLocationType?: LocationType | 'ALL'
   showLocationTypeBadge?: boolean
   margin?: 'normal' | 'tight' | 'none'
 }
 
 const props = withDefaults(defineProps<Props>(), {
   disabled: false,
+  allowedLocationType: 'ALL',
   showLocationTypeBadge: true,
   margin: 'normal'
 })
@@ -145,7 +162,6 @@ const emit = defineEmits<{
 const ferryStore = process.client ? useFerryStore() : null
 const favoriteStore = process.client ? useFavoriteStore() : null
 const { t } = useI18n()
-const defaultLocationType: LocationType = 'PORT'
 
 const containerClass = computed(() => {
   if (props.margin === 'none') return ''
@@ -156,6 +172,9 @@ const containerClass = computed(() => {
 const hondoPorts = computed(() => (Array.isArray(props.hondoPorts) ? props.hondoPorts : (ferryStore?.hondoPorts || [])))
 const dozenPorts = computed(() => (Array.isArray(props.dozenPorts) ? props.dozenPorts : (ferryStore?.dozenPorts || [])))
 const dogoPorts = computed(() => (Array.isArray(props.dogoPorts) ? props.dogoPorts : (ferryStore?.dogoPorts || [])))
+const busStops = computed(() => ferryStore?.busStops || [])
+const showPorts = computed(() => props.allowedLocationType === 'ALL' || props.allowedLocationType === 'PORT')
+const showStops = computed(() => props.allowedLocationType === 'ALL' || props.allowedLocationType === 'STOP')
 
 // Unique ID for accessibility
 const buttonId = `port-selector-${Math.random().toString(36).substr(2, 9)}`
@@ -164,11 +183,14 @@ const canUseDom = computed(() => process.client && typeof document !== 'undefine
 const isOpen = ref(false)
 
 const availablePortsSet = computed(() => {
-  return new Set<string>([
-    ...hondoPorts.value,
-    ...dozenPorts.value,
-    ...dogoPorts.value
-  ])
+  const locations: string[] = []
+  if (showPorts.value) {
+    locations.push(...hondoPorts.value, ...dozenPorts.value, ...dogoPorts.value)
+  }
+  if (showStops.value) {
+    locations.push(...busStops.value)
+  }
+  return new Set<string>(locations)
 })
 
 const favoritePortCodes = computed(() => {
@@ -182,7 +204,58 @@ const favoriteRoutes = computed(() => {
   return raw.filter(route => availablePortsSet.value.has(route.departure) && availablePortsSet.value.has(route.arrival))
 })
 
-type Section = { key: 'favorites' | 'mainland' | 'dozen' | 'dogo'; labelKey: string; ports: string[] }
+type Section = { key: 'favorites' | 'mainland' | 'dozen' | 'dogo' | 'busStops'; labelKey: string; ports: string[] }
+type BusStopTownTab = { key: string; labelKey: string; ports: string[] }
+
+const busStopTownOrder = ['AMA_CHO', 'NISHINOSHIMA_CHO', 'BUS_STOPS']
+const activeBusStopTownKey = ref<string | null>(null)
+
+const busStopTownTabs = computed<BusStopTownTab[]>(() => {
+  const groupedStops = new Map<string, string[]>()
+
+  for (const stop of busStops.value) {
+    const townKey = getBusStopTownLabelKey(stop) || 'BUS_STOPS'
+    groupedStops.set(townKey, [...(groupedStops.get(townKey) || []), stop])
+  }
+
+  return Array.from(groupedStops.entries())
+    .sort(([leftKey], [rightKey]) => {
+      const leftIndex = busStopTownOrder.indexOf(leftKey)
+      const rightIndex = busStopTownOrder.indexOf(rightKey)
+      const normalizedLeft = leftIndex === -1 ? busStopTownOrder.length : leftIndex
+      const normalizedRight = rightIndex === -1 ? busStopTownOrder.length : rightIndex
+      return normalizedLeft - normalizedRight
+    })
+    .map(([labelKey, ports]) => ({
+      key: labelKey,
+      labelKey,
+      ports
+    }))
+})
+
+const getPreferredBusStopTownKey = () => {
+  const selectedTownKey = getLocationType(props.modelValue) === 'STOP'
+    ? getBusStopTownLabelKey(props.modelValue)
+    : null
+
+  if (selectedTownKey && busStopTownTabs.value.some(tab => tab.key === selectedTownKey)) {
+    return selectedTownKey
+  }
+
+  return busStopTownTabs.value[0]?.key || null
+}
+
+const currentBusStopTownKey = computed(() => {
+  if (activeBusStopTownKey.value && busStopTownTabs.value.some(tab => tab.key === activeBusStopTownKey.value)) {
+    return activeBusStopTownKey.value
+  }
+
+  return getPreferredBusStopTownKey()
+})
+
+const activeBusStopPorts = computed(() => {
+  return busStopTownTabs.value.find(tab => tab.key === currentBusStopTownKey.value)?.ports || []
+})
 
 const sections = computed<Section[]>(() => {
   const result: Section[] = []
@@ -195,11 +268,17 @@ const sections = computed<Section[]>(() => {
     })
   }
 
-  result.push(
-    { key: 'dozen', labelKey: 'DOZEN', ports: dozenPorts.value },
-    { key: 'dogo', labelKey: 'DOGO', ports: dogoPorts.value },
-    { key: 'mainland', labelKey: 'MAINLAND', ports: hondoPorts.value }
-  )
+  if (showStops.value && busStops.value.length > 0) {
+    result.push({ key: 'busStops', labelKey: 'BUS_STOPS', ports: activeBusStopPorts.value })
+  }
+
+  if (showPorts.value) {
+    result.push(
+      { key: 'dozen', labelKey: 'DOZEN', ports: dozenPorts.value },
+      { key: 'dogo', labelKey: 'DOGO', ports: dogoPorts.value },
+      { key: 'mainland', labelKey: 'MAINLAND', ports: hondoPorts.value }
+    )
+  }
 
   return result
 })
@@ -208,10 +287,23 @@ const isPortDisabled = (port: string) => {
   return Boolean(props.disabled) || (Array.isArray(props.disabledPorts) && props.disabledPorts.includes(port))
 }
 
+const getLocationType = (port?: string): LocationType => {
+  return getLocationTypeForCode(port)
+}
+
+const getTownBadgeLabel = (labelKey: string): string => {
+  const translated = String(t(labelKey))
+  if (translated !== labelKey) return translated
+  if (labelKey === 'AMA_CHO') return '海士町'
+  if (labelKey === 'NISHINOSHIMA_CHO') return '西ノ島町'
+  return translated
+}
+
 const getPortLabelParts = (port: string) => {
-  const label = String(t(port))
+  const label = ferryStore?.getLocationLabel(port) || String(t(port))
   const parenRegex = /[（(]([^）)]+)[）)]/g
-  const badges: string[] = []
+  const townLabelKey = getLocationType(port) === 'STOP' ? getBusStopTownLabelKey(port) : null
+  const badges: string[] = townLabelKey ? [getTownBadgeLabel(townLabelKey)] : []
 
   let match = parenRegex.exec(label)
   while (match) {
@@ -248,6 +340,10 @@ const close = () => {
   isOpen.value = false
 }
 
+const selectBusStopTown = (townKey: string) => {
+  activeBusStopTownKey.value = townKey
+}
+
 const selectPort = (port: string) => {
   if (isPortDisabled(port)) return
   emit('update:modelValue', port)
@@ -280,9 +376,16 @@ onMounted(() => {
 watch(isOpen, (newValue) => {
   if (!canUseDom.value) return
   if (newValue) {
+    activeBusStopTownKey.value = getPreferredBusStopTownKey()
     document.body.style.overflow = 'hidden'
   } else {
     document.body.style.overflow = ''
+  }
+})
+
+watch(busStopTownTabs, (tabs) => {
+  if (!tabs.some(tab => tab.key === activeBusStopTownKey.value)) {
+    activeBusStopTownKey.value = getPreferredBusStopTownKey()
   }
 })
 

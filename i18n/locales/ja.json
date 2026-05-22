@@ -56,8 +56,12 @@
   "TO_": "へ",
   "VIA": "経由",
   "SHIP": "船名",
+  "TRANSPORT_NAME": "交通機関",
+  "BUS_STOPS": "バス停",
+  "AMA_TOWN_BUS": "海士町路線バス",
+  "NISHINOSHIMA_TOWN_BUS": "西ノ島町営バス",
   "TRANSPORT_MODES": {
-    "FERRY": "フェリー",
+    "FERRY": "船",
     "BUS": "バス",
     "AIR": "飛行機",
     "ALL": "すべて"

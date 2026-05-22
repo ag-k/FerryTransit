@@ -61,8 +61,12 @@
   "TO_": "",
   "VIA": "via",
   "SHIP": "Ship",
+  "TRANSPORT_NAME": "Transport",
+  "BUS_STOPS": "Bus stops",
+  "AMA_TOWN_BUS": "Ama Town Route Bus",
+  "NISHINOSHIMA_TOWN_BUS": "Nishinoshima Town Bus",
   "TRANSPORT_MODES": {
-    "FERRY": "Ferry",
+    "FERRY": "Ship",
     "BUS": "Bus",
     "AIR": "Air",
     "ALL": "All"

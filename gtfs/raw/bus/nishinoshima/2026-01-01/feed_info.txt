@@ -1,0 +1,2 @@
+feed_publisher_name,feed_publisher_url,feed_lang,feed_start_date,feed_end_date,feed_version
+西ノ島町,https://www.town.nishinoshima.shimane.jp/bunya/b_kurashi/b_kotsu/47,ja,20260301,20261231,20260220140915710489010da_20260301-20261231

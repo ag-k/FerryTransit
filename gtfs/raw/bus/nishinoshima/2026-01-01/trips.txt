@@ -1,0 +1,38 @@
+route_id,service_id,trip_id,trip_headsign,direction_id,block_id,trip_short_name,shape_id,jp_trip_desc,jp_pattern_id
+NISHINOSHIMA_UGA,star_weekday_plus_summer,T01_UGA_0707,宇賀,0,,宇賀線,,三度・珍崎・国賀・浦郷から別府・島前病院・大山・宇賀方面行き,T01_UGA_0707
+NISHINOSHIMA_MAIN,daily,T02_MAIN_0653,島前病院,0,,1便,,三度・珍崎・国賀・浦郷から別府・島前病院・大山・宇賀方面行き,T02_MAIN_0653
+NISHINOSHIMA_CHINZAKI_SANDO,star_weekday_plus_summer,T03_CHINZAKI_SANDO_0725,浦郷,0,,珍崎線・三度線,,三度・珍崎から浦郷方面行き,T03_CHINZAKI_SANDO_0725
+NISHINOSHIMA_MAIN,daily,T04_MAIN_0741,島前病院,0,,2便,,浦郷から別府・島前病院方面行き,T04_MAIN_0741
+NISHINOSHIMA_MAIN,daily,T05_MAIN_0930,島前病院,0,,3便,,赤ノ江から別府・島前病院方面行き,T05_MAIN_0930
+NISHINOSHIMA_UGA,daily,T06_UGA_1010,宇賀,0,,4便,,浦郷から宇賀方面行き,T06_UGA_1010
+NISHINOSHIMA_KUNIGA,kuniga_spring_fall,T07_KUNIGA_1127,大山,0,,5便,,国賀から大山方面行き,T07_KUNIGA_1127
+NISHINOSHIMA_CHINZAKI_SANDO,star_weekday_plus_summer,T08_CHINZAKI_SANDO_1245,浦郷,0,,珍崎線・三度線,,三度・珍崎から浦郷方面行き,T08_CHINZAKI_SANDO_1245
+NISHINOSHIMA_KUNIGA,kuniga_summer,T09_KUNIGA_1258,島前病院,0,,6便,,国賀から島前病院方面行き,T09_KUNIGA_1258
+NISHINOSHIMA_KUNIGA,kuniga_spring_fall,T10_KUNIGA_1441,大山,0,,7便,,国賀から大山方面行き,T10_KUNIGA_1441
+NISHINOSHIMA_CHINZAKI_SANDO,star_weekday_plus_summer,T11_CHINZAKI_SANDO_1621,浦郷,0,,珍崎線・三度線,,三度・珍崎から浦郷方面行き,T11_CHINZAKI_SANDO_1621
+NISHINOSHIMA_KUNIGA,kuniga_summer,T12_KUNIGA_1627,隠岐汽船（別府港）,0,,8便,,国賀から別府方面行き,T12_KUNIGA_1627
+NISHINOSHIMA_UGA,daily,T13_UGA_1709,宇賀,0,,9便,,浦郷から宇賀方面行き,T13_UGA_1709
+NISHINOSHIMA_MAIN,daily,T14_MAIN_1829,隠岐汽船（別府港）,0,,10便,,浦郷から別府方面行き,T14_MAIN_1829
+NISHINOSHIMA_MAIN,range_0808_0816,T15_SPECIAL_1531,隠岐汽船（別府港）,0,,8/8-8/16,,8/8-8/16運行の浦郷から別府方面行き,T15_SPECIAL_1531
+NISHINOSHIMA_UGA,star_weekday_plus_summer,B01_UGA_0717,別府交通センター,1,,宇賀線,,宇賀・大山・島前病院・別府から浦郷・国賀・珍崎・三度方面行き,B01_UGA_0717
+NISHINOSHIMA_MAIN,daily,B02_MAIN_0736,由良車庫,1,,1便,,大山・島前病院・別府から浦郷方面行き,B02_MAIN_0736
+NISHINOSHIMA_CHINZAKI_SANDO,star_weekday_plus_summer,B03_CHINZAKI_SANDO_0707,三度,1,,珍崎線・三度線,,浦郷から三度方面行き,B03_CHINZAKI_SANDO_0707
+NISHINOSHIMA_MAIN,daily,B04_MAIN_0837,赤ノ江,1,,2便,,島前病院・別府から赤ノ江方面行き,B04_MAIN_0837
+NISHINOSHIMA_KUNIGA,kuniga_spring_fall,B05_KUNIGA_1017,国賀,1,,3便,,島前病院・別府から国賀方面行き,B05_KUNIGA_1017
+NISHINOSHIMA_UGA,daily,B06_UGA_1100,由良車庫,1,,4便,,宇賀から浦郷方面行き,B06_UGA_1100
+NISHINOSHIMA_KUNIGA,kuniga_summer,B07_KUNIGA_1212,国賀,1,,5便,,大山・島前病院・別府から国賀方面行き,B07_KUNIGA_1212
+NISHINOSHIMA_CHINZAKI_SANDO,star_weekday_plus_summer,B08_CHINZAKI_SANDO_1227,三度,1,,珍崎線・三度線,,浦郷から三度方面行き,B08_CHINZAKI_SANDO_1227
+NISHINOSHIMA_KUNIGA,kuniga_spring_fall,B09_KUNIGA_1358,国賀,1,,6便,,島前病院・別府から国賀方面行き,B09_KUNIGA_1358
+NISHINOSHIMA_KUNIGA,kuniga_summer,B10_KUNIGA_1528,国賀,1,,7便,,大山・島前病院・別府から国賀方面行き,B10_KUNIGA_1528
+NISHINOSHIMA_CHINZAKI_SANDO,star_weekday_plus_summer,B11_CHINZAKI_SANDO_1603,三度,1,,珍崎線・三度線,,浦郷から三度方面行き,B11_CHINZAKI_SANDO_1603
+NISHINOSHIMA_MAIN,daily,B12_MAIN_1725,由良車庫,1,,8便,,隠岐汽船・別府から浦郷方面行き,B12_MAIN_1725
+NISHINOSHIMA_UGA,daily,B13_UGA_1815,由良車庫,1,,9便,,宇賀から浦郷方面行き,B13_UGA_1815
+NISHINOSHIMA_MAIN,daily,B14_MAIN_1908,由良車庫,1,,10便,,別府から浦郷方面行き,B14_MAIN_1908
+NISHINOSHIMA_KUNIGA,range_0501_0506_0808_0816,B15_SPECIAL_KUNIGA_1420,国賀,1,,5/1-5/6・8/8-8/16,,期間運行の別府から国賀方面行き,B15_SPECIAL_KUNIGA_1420
+NISHINOSHIMA_MAIN,range_0808_0816,B16_SPECIAL_1615,由良車庫,1,,8/8-8/16,,期間運行の別府から浦郷方面行き,B16_SPECIAL_1615
+NISHINOSHIMA_HATO,star_weekday_plus_summer,H01_HATO_0735,由良車庫,0,,波止線 1便,,波止線 1便,H01_HATO_0735
+NISHINOSHIMA_HATO,star_weekday_plus_summer,H02_HATO_1130,島前病院,0,,波止線 2便,,波止線 2便（直行平日混乗）,H02_HATO_1130
+NISHINOSHIMA_HATO,star_weekday_plus_summer,H03_HATO_1533,由良車庫,0,,波止線 3便,,波止線 3便,H03_HATO_1533
+NISHINOSHIMA_DIRECT,holiday_direct_except_summer,D01_DIRECT_HOLIDAY_1130,隠岐汽船（別府港）,0,,直行便 土日祝ダイヤ,,直行便 土日祝ダイヤ（7/18-8/17運休）,D01_DIRECT_HOLIDAY_1130
+NISHINOSHIMA_DIRECT,star_weekday_plus_summer,D02_DIRECT_WEEKDAY_1210,由良車庫,1,,直行便 平日ダイヤ,,直行便 平日ダイヤ,D02_DIRECT_WEEKDAY_1210
+NISHINOSHIMA_DIRECT,holiday_direct_except_summer,D03_DIRECT_HOLIDAY_1215,由良車庫,1,,直行便 土日祝ダイヤ,,直行便 土日祝ダイヤ（7/18-8/17運休）,D03_DIRECT_HOLIDAY_1215

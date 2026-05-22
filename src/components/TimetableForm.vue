@@ -9,6 +9,7 @@
         :hondo-ports="hondoPorts"
         :dozen-ports="dozenPorts"
         :dogo-ports="dogoPorts"
+        :allowed-location-type="allowedLocationType"
         @update:departure="$emit('update:departure', $event)"
         @update:arrival="$emit('update:arrival', $event)"
         @reverse="$emit('reverse')"
@@ -21,6 +22,7 @@
 
 <script setup lang="ts">
 import RouteEndpointsSelector from '@/components/common/RouteEndpointsSelector.vue'
+import type { LocationType } from '@/types'
 
 defineProps<{
   departure: string
@@ -28,6 +30,7 @@ defineProps<{
   hondoPorts: string[]
   dozenPorts: string[]
   dogoPorts: string[]
+  allowedLocationType?: LocationType | 'ALL'
 }>()
 
 defineEmits<{

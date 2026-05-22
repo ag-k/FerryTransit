@@ -15,6 +15,7 @@ import {
   isVehicleSearchShip,
   normalizeVehicleLengthMeters,
 } from "@/utils/vehicleFare";
+import { isTripActiveOnDate } from "@/utils/gtfsBusTimetable";
 
 export const useRouteSearch = () => {
   const ferryStore = process.client ? useFerryStore() : null;
@@ -160,12 +161,7 @@ export const useRouteSearch = () => {
     const searchDateStr = `${year}-${month}-${day}`;
 
     const dayTimetable = (ferryStore?.timetableData || []).filter((trip) => {
-      // Parse start and end dates
-      const startDate = trip.startDate.replace(/\//g, "-");
-      const endDate = trip.endDate.replace(/\//g, "-");
-
-      // Check if search date is within the trip's valid period
-      return searchDateStr >= startDate && searchDateStr <= endDate;
+      return isTripActiveOnDate(trip, searchDate, searchDateStr);
     });
     const searchableTimetable = withCar
       ? dayTimetable.filter((trip) => isVehicleSearchShip(trip.name))
@@ -917,6 +913,10 @@ export const useRouteSearch = () => {
     arrival: string,
     date?: Date
   ): Promise<number> => {
+    if (ship === "AMA_TOWN_BUS") {
+      return 200;
+    }
+
     // Ensure fare data is loaded
     if (!fareStore) {
       logger.warn(`FareStore is not available (server-side rendering?)`);

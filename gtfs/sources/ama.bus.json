@@ -6,10 +6,10 @@
   "sourceUrl": "http://www.town.ama.shimane.jp/access/chonai.html",
   "license": "未確認",
   "updatePolicy": "自治体公開データを確認し、更新があれば raw に日付付きで保存して current に反映する",
-  "currentRawDate": "2024-03-23",
+  "currentRawDate": "2025-12-22",
   "currentPath": "gtfs/current/bus/ama",
   "notes": [
-    "2024-03-23 時点の手元 GTFS を raw/bus/ama/2024-03-23 に保管",
-    "feed_info.txt の feed_end_date は 2024-12-31 のため、現在は期限切れ"
+    "R8 PDF 原本は gtfs/pdf/bus/ama/r8 に保管",
+    "scripts/gtfs/convert-ama-r8-pdf.mjs で raw/bus/ama/2025-12-22 と current/bus/ama を生成"
   ]
 }

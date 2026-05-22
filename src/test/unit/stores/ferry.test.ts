@@ -727,13 +727,20 @@ describe("Ferry Store", () => {
       };
       (localStorage.getItem as any).mockReturnValue(JSON.stringify(cachedData));
       store.lastFetchTime = new Date();
-      store.timetableData = mockTrips;
+      const cachedBusTrip = {
+        ...mockTrips[0],
+        tripId: 3000000,
+        name: "AMA_TOWN_BUS",
+        mode: "BUS",
+      } as Trip;
+      store.busStops = ["BUS_AMA_100_01", "BUS_NISHINOSHIMA_nishinoshima_001"];
+      store.timetableData = [...mockTrips, cachedBusTrip];
 
       await store.fetchTimetable(false);
 
       // Should not have called fetch
       expect(global.fetch).not.toHaveBeenCalled();
-      expect(store.timetableData).toEqual(mockTrips);
+      expect(store.timetableData).toEqual([...mockTrips, cachedBusTrip]);
     });
   });
 });

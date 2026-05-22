@@ -10,8 +10,8 @@
       <TransportModeFilter v-if="transportModeOptions.length > 1" v-model="selectedTransportMode"
         :options="transportModeOptions" class="mb-3" />
       <TimetableForm :departure="departure" :arrival="arrival" :hondo-ports="hondoPorts" :dozen-ports="dozenPorts"
-        :dogo-ports="dogoPorts" @update:departure="handleDepartureChange" @update:arrival="handleArrivalChange"
-        @reverse="reverseRoute" />
+        :dogo-ports="dogoPorts" :allowed-location-type="selectedLocationType"
+        @update:departure="handleDepartureChange" @update:arrival="handleArrivalChange" @reverse="reverseRoute" />
       <template #fallback>
         <!-- SSR時のフォールバック -->
         <div class="mb-4">
@@ -88,7 +88,7 @@
 
     <!-- 車両乗船オプション -->
     <ClientOnly>
-      <div class="mb-4 rounded-md border border-app-border bg-app-surface px-4 py-3">
+      <div v-if="selectedTransportMode !== 'BUS'" class="mb-4 rounded-md border border-app-border bg-app-surface px-4 py-3">
         <ToggleSwitch
           data-test="with-car-toggle"
           :checked="withCar"
@@ -130,10 +130,10 @@
             </h3>
           </div>
           <p data-test="timetable-summary" class="text-xs text-blue-100/90 leading-tight mt-0.5 truncate"
-            :title="`${$t('DATE')}: ${selectedDateString} / ${$t('_FROM')}: ${departure ? $t(departure) : '-'} / ${$t('_TO')}: ${arrival ? $t(arrival) : '-'}`">
-            <span>{{ departure ? $t(departure) : '-' }}</span>
+            :title="`${$t('DATE')}: ${selectedDateString} / ${$t('_FROM')}: ${getLocationDisplayName(departure)} / ${$t('_TO')}: ${getLocationDisplayName(arrival)}`">
+            <span>{{ getLocationDisplayName(departure) }}</span>
             <span class="mx-1">→</span>
-            <span>{{ arrival ? $t(arrival) : '-' }}</span>
+            <span>{{ getLocationDisplayName(arrival) }}</span>
           </p>
         </div>
         <FavoriteButton v-if="departure && arrival" :type="'route'" :route="{ departure, arrival }"
@@ -169,14 +169,14 @@
             <table class="w-full text-base sm:text-sm min-w-[360px] border-separate border-spacing-0">
               <thead class="bg-app-surface-2/70 border-b border-app-border/70">
                 <tr>
-                  <th class="px-3 sm:px-4 py-3 text-left font-medium text-app-muted">{{ $t('SHIP') }}
+                  <th class="px-3 sm:px-4 py-3 text-left font-medium text-app-muted">{{ $t('TRANSPORT_NAME') }}
                   </th>
                   <th class="px-3 sm:px-4 py-3 text-right font-medium text-app-muted align-middle">
                     <a href="#"
                       class="text-app-primary dark:text-white font-semibold inline-flex flex-col items-center justify-center gap-1 -my-1 -mx-2 touch-manipulation text-center min-h-[40px] w-fit ml-auto group"
                       @click.prevent="showPortInfo(departure)">
                       <span class="leading-tight group-hover:underline inline-flex items-center gap-2">
-                        <LocationTypeIcon v-if="departure" :type="resolveLocationType()" />
+                        <LocationTypeIcon v-if="departure" :type="resolveLocationType(departure)" />
                         <span class="shrink-0">{{ departureLabelParts.name }}</span>
                       </span>
                       <PortBadges :badges="departureLabelParts.badges"
@@ -188,7 +188,7 @@
                       class="text-app-primary dark:text-white font-semibold inline-flex flex-col items-center justify-center gap-1 -my-1 -mx-2 touch-manipulation text-center min-h-[40px] w-fit ml-auto group"
                       @click.prevent="showPortInfo(arrival)">
                       <span class="leading-tight group-hover:underline inline-flex items-center gap-2">
-                        <LocationTypeIcon v-if="arrival" :type="resolveLocationType()" />
+                        <LocationTypeIcon v-if="arrival" :type="resolveLocationType(arrival)" />
                         <span class="shrink-0">{{ arrivalLabelParts.name }}</span>
                       </span>
                       <PortBadges :badges="arrivalLabelParts.badges" class="flex flex-1 flex-wrap justify-end gap-1" />
@@ -245,11 +245,14 @@
                             d="M8.982 1.566a1.13 1.13 0 0 0-1.96 0L.165 13.233c-.457.778.091 1.767.98 1.767h13.713c.889 0 1.438-.99.98-1.767L8.982 1.566zM8 5c.535 0 .954.462.9.995l-.35 3.507a.552.552 0 0 1-1.1 0L7.1 5.995A.905.905 0 0 1 8 5zm.002 6a1 1 0 1 1 0 2 1 1 0 0 1 0-2z" />
                         </svg>
                       </button>
-                      <a href="#"
+                      <a v-if="normalizeTransportMode(trip.mode) === 'FERRY'" href="#"
                         class="text-app-primary dark:text-white hover:underline font-medium inline-block py-1 -my-1 px-2 -mx-2 touch-manipulation"
                         @click.prevent="showShipInfo(trip.name)">
-                        {{ $t(trip.name) }}
+                        {{ getTripTransportLabel(trip) }}
                       </a>
+                      <span v-else class="font-medium inline-block py-1 -my-1 px-2 -mx-2">
+                        {{ getTripTransportLabel(trip) }}
+                      </span>
                     </div>
                     <p v-if="formatTripMeta(trip)" class="text-xs text-app-muted mt-1">
                       {{ formatTripMeta(trip) }}
@@ -336,6 +339,7 @@ import ToggleSwitch from '@/components/common/ToggleSwitch.vue'
 import LocationTypeIcon from '@/components/common/LocationTypeIcon.vue'
 import { formatDateYmdJst, getJstDateParts, getTodayJstMidnight } from '@/utils/jstDate'
 import { getPortMapZoom } from '@/utils/portMapZoom'
+import { getLocationTypeForCode } from '@/utils/gtfsBusTimetable'
 import type { LocationType, TransportMode, Trip } from '@/types'
 import {
   DEFAULT_VEHICLE_LENGTH_METERS,
@@ -354,7 +358,6 @@ const historyStore = useHistoryStore()
 const settingsStore = useSettingsStore()
 const {
   filteredTimetable,
-  timetableData,
   getTripStatus,
   selectedDate,
   departure,
@@ -406,7 +409,7 @@ const headerDateLabel = computed(() => {
 })
 
 const getPortLabelParts = (port?: string) => {
-  const label = port ? String(t(port)) : '-'
+  const label = port ? (ferryStore.getLocationLabel(port) || String(t(port))) : '-'
   const parenRegex = /[（(]([^）)]+)[）)]/g
   const badges: string[] = []
 
@@ -425,7 +428,11 @@ const getPortLabelParts = (port?: string) => {
   }
 }
 
-const resolveLocationType = (value?: LocationType) => value ?? 'PORT'
+const getLocationDisplayName = (locationId?: string) => {
+  return getPortLabelParts(locationId).name
+}
+
+const resolveLocationType = (value?: string): LocationType => getLocationTypeForCode(value)
 
 const departureLabelParts = computed(() => getPortLabelParts(departure.value))
 const arrivalLabelParts = computed(() => getPortLabelParts(arrival.value))
@@ -435,7 +442,6 @@ const todayString = computed(() => {
   return formatDateYmdJst(new Date())
 })
 
-const transportModeOrder: TransportMode[] = ['FERRY', 'BUS', 'AIR']
 type TransportModeFilterValue = TransportMode | 'ALL'
 
 const normalizeTransportMode = (mode?: TransportMode | string): TransportMode => {
@@ -443,29 +449,35 @@ const normalizeTransportMode = (mode?: TransportMode | string): TransportMode =>
   return 'FERRY'
 }
 
-const availableTransportModes = computed(() => {
-  const modes = new Set<TransportMode>()
-  for (const trip of timetableData.value) {
-    modes.add(normalizeTransportMode(trip.mode))
-  }
-  return transportModeOrder.filter(mode => modes.has(mode))
-})
+const transportModeOptions = computed<TransportMode[]>(() => ['FERRY', 'BUS'])
 
-const transportModeOptions = computed(() => {
-  if (availableTransportModes.value.length <= 1) return []
-  return ['ALL', ...availableTransportModes.value]
-})
-
-const selectedTransportMode = ref<TransportModeFilterValue>('ALL')
+const selectedTransportMode = ref<TransportModeFilterValue>('FERRY')
 
 watch(transportModeOptions, (options) => {
   if (!options.length) {
     selectedTransportMode.value = 'ALL'
     return
   }
-  if (!options.includes(selectedTransportMode.value)) {
-    selectedTransportMode.value = 'ALL'
+  if (!options.includes(selectedTransportMode.value as TransportMode)) {
+    selectedTransportMode.value = options[0] ?? 'ALL'
   }
+})
+
+const preferredTransportModeForRoute = computed<TransportMode>(() => {
+  const hasStop = [departure.value, arrival.value].some(locationId => {
+    return getLocationTypeForCode(locationId) === 'STOP'
+  })
+  return hasStop ? 'BUS' : 'FERRY'
+})
+
+watch([preferredTransportModeForRoute, transportModeOptions], ([preferredMode, options]) => {
+  if (options.includes(preferredMode)) {
+    selectedTransportMode.value = preferredMode
+  }
+}, { immediate: true })
+
+const selectedLocationType = computed<LocationType>(() => {
+  return selectedTransportMode.value === 'BUS' ? 'STOP' : 'PORT'
 })
 
 const filteredTimetableByMode = computed(() => {
@@ -509,6 +521,24 @@ const formatTripMeta = (trip: Trip) => {
     trip.gate ? `${t('SEGMENT.GATE')}: ${trip.gate}` : ''
   ].filter(Boolean)
   return parts.join(' / ')
+}
+
+const getTripTransportLabel = (trip: Trip) => {
+  if (normalizeTransportMode(trip.mode) === 'BUS') {
+    const routeName = trip.via || t(trip.name)
+    const busName = getBusTransportName(trip.name)
+    if (!trip.via) return busName
+    return `${busName}（${routeName}）`
+  }
+  return t(trip.name)
+}
+
+const getBusTransportName = (name: string) => {
+  const translated = String(t(name))
+  if (translated !== name) return translated
+  if (name === 'AMA_TOWN_BUS') return '海士町路線バス'
+  if (name === 'NISHINOSHIMA_TOWN_BUS') return '西ノ島町営バス'
+  return translated
 }
 
 const formatVehicleLengthOptionLabel = (length: number) => {
@@ -585,6 +615,20 @@ const handleWithCarChange = (value: boolean) => {
 watch(withCar, async (enabled) => {
   if (enabled) {
     await fareStore.loadFareMaster()
+  }
+})
+
+watch(selectedTransportMode, (mode) => {
+  if (mode === 'BUS' && withCar.value) {
+    withCar.value = false
+  }
+
+  const allowedType = mode === 'BUS' ? 'STOP' : 'PORT'
+  if (departure.value && getLocationTypeForCode(departure.value) !== allowedType) {
+    ferryStore.setDeparture('')
+  }
+  if (arrival.value && getLocationTypeForCode(arrival.value) !== allowedType) {
+    ferryStore.setArrival('')
   }
 })
 

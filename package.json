@@ -61,7 +61,9 @@
     "build-app-dev": "cp .env.development .env && CAPACITOR_BUILD=true npm run generate && npx cap copy",
     "functions:deploy:script": "bash scripts/deploy-functions.sh",
     "gtfs:validate": "node scripts/gtfs/validate.mjs",
-    "gtfs:build": "node scripts/gtfs/build-public-data.mjs"
+    "gtfs:build": "node scripts/gtfs/build-public-data.mjs",
+    "gtfs:convert:ama:r8": "node scripts/gtfs/convert-ama-r8-pdf.mjs",
+    "gtfs:convert:nishinoshima:2026": "node scripts/gtfs/convert-nishinoshima-2026-pdf.mjs"
   },
   "portless": {
     "name": "ferry-transit",

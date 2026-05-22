@@ -21,6 +21,7 @@
           :hondo-ports="hondoPorts"
           :dozen-ports="dozenPorts"
           :dogo-ports="dogoPorts"
+          :allowed-location-type="allowedLocationType"
           margin="none"
           @selectRoute="handleSelectRoute"
         />
@@ -95,6 +96,7 @@
           :hondo-ports="hondoPorts"
           :dozen-ports="dozenPorts"
           :dogo-ports="dogoPorts"
+          :allowed-location-type="allowedLocationType"
           margin="none"
           @selectRoute="handleSelectRoute"
         />
@@ -122,6 +124,7 @@
 
 <script setup lang="ts">
 import PortSelector from '@/components/common/PortSelector.vue'
+import type { LocationType } from '@/types'
 import type { FavoriteRoute } from '@/types/favorite'
 
 type Props = {
@@ -132,12 +135,14 @@ type Props = {
   hondoPorts?: string[]
   dozenPorts?: string[]
   dogoPorts?: string[]
+  allowedLocationType?: LocationType | 'ALL'
 }
 
 const props = withDefaults(defineProps<Props>(), {
   // 経由は未実装のためデフォルトでは非表示（必要になったら呼び出し側で showVia を明示的に true にする）
   showVia: false,
-  disabled: false
+  disabled: false,
+  allowedLocationType: 'ALL'
 })
 
 const emit = defineEmits<{
