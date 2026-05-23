@@ -74,7 +74,7 @@
   {
     "stopId": "kori_school",
     "code": "kori_school",
-    "name": "郡学校前",
+    "name": "学校前",
     "description": "郡 学校前",
     "lat": 36.01349392,
     "lon": 133.04180702,
@@ -86,8 +86,8 @@
   {
     "stopId": "kori_community",
     "code": "kori_community",
-    "name": "郡コミュニティ",
-    "description": "郡 コミュニティ",
+    "name": "コミュニティセンター",
+    "description": "郡 コミュニティセンター",
     "lat": 36.01349392,
     "lon": 133.04180702,
     "zoneId": "",
@@ -98,7 +98,7 @@
   {
     "stopId": "kuri_ferry",
     "code": "kuri_ferry",
-    "name": "来居フェリー",
+    "name": "フェリーターミナル",
     "description": "来居港フェリーターミナル",
     "lat": 36.0249446,
     "lon": 133.03939755,
