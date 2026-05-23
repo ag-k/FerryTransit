@@ -1,0 +1,16 @@
+{
+  "id": "chibu",
+  "mode": "bus",
+  "name": "知夫村営バス",
+  "agencyName": "知夫村",
+  "sourceUrl": "https://chibu.jp/access.html",
+  "license": "未確認",
+  "updatePolicy": "知夫里島観光協会サイトのアクセスページに掲載される知夫村営バス時刻表画像を確認し、更新があれば raw に日付付きで保存して current に反映する",
+  "currentRawDate": "2023-02-01",
+  "currentPath": "gtfs/current/bus/chibu",
+  "notes": [
+    "令和5年2月1日からの時刻表画像は gtfs/pdf/bus/chibu/20230201_chibu_bus_timetable.jpg に保管",
+    "scripts/gtfs/convert-chibu-2023-image.mjs で raw/bus/chibu/2023-02-01 と current/bus/chibu を生成",
+    "原本上で時刻未記載の降車専用停留所は stops.txt には登録し、stop_times.txt には含めない"
+  ]
+}

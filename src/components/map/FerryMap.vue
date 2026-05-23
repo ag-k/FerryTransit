@@ -52,7 +52,7 @@
 import { computed, nextTick, onMounted, onUnmounted, ref, watch } from 'vue'
 import { PORTS_DATA } from '~/data/ports'
 import CommonShipModal from '~/components/common/ShipModal.vue'
-import type { Port } from '~/types'
+import type { LocationType, Port, TransportMode } from '~/types'
 import type { RouteData, RoutePoint, RoutesDataFile } from '~/types/route'
 import { getJSONData } from '~/composables/useDataPublish'
 import { createLogger } from '~/utils/logger'
@@ -60,6 +60,7 @@ import { getPortMapZoom } from '@/utils/portMapZoom'
 import { useSettingsStore } from '@/stores/settings'
 import { ensureLeafletLoaded } from '@/utils/leafletLoader'
 import { installLeafletTwoFingerTouchGuard } from '@/utils/leafletTouchGuard'
+import type { BusStopLocation } from '@/utils/gtfsBusTimetable'
 import {
   buildPortLabelA11yLabel,
   expandMainlandPortId,
@@ -71,18 +72,30 @@ import {
 } from '@/utils/ferryMap'
 
 type RouteSegment = { from: string; to: string; ship?: string }
+type MapMode = Extract<TransportMode, 'FERRY' | 'BUS'>
+type MapLocationPoint = {
+  id: string
+  type: LocationType
+  titleJa: string
+  titleEn: string
+  location: RoutePoint
+  port?: Port
+  townLabelKey?: string | null
+}
 
 interface Props {
   selectedPort?: string
   selectedRoute?: { from: string; to: string }
   selectedRouteSegments?: RouteSegment[]
+  transportMode?: MapMode
+  busStops?: BusStopLocation[]
   showPortDetails?: boolean
   height?: string
 }
 
-type PortMarkerRecord = {
+type LocationMarkerRecord = {
   marker: any
-  port: Port
+  location: MapLocationPoint
   labelVisible: boolean
 }
 
@@ -92,6 +105,8 @@ type RouteLayerRecord = {
 
 const props = withDefaults(defineProps<Props>(), {
   height: '400px',
+  transportMode: 'FERRY',
+  busStops: () => [],
   showPortDetails: true,
   selectedPort: undefined,
   selectedRoute: undefined,
@@ -100,6 +115,7 @@ const props = withDefaults(defineProps<Props>(), {
 
 const emit = defineEmits<{
   portClick: [port: Port]
+  locationClick: [location: { id: string; type: LocationType }]
   routeSelect: [route: { from: string; to: string }]
 }>()
 
@@ -125,12 +141,41 @@ const modalPortTitle = computed(() => {
 let L: any = null
 let map: any | null = null
 let teardownTouchGuard: (() => void) | null = null
-let touchHintTimer: ReturnType<typeof window.setTimeout> | null = null
-const markers = ref<Map<string, PortMarkerRecord>>(new Map())
+let touchHintTimer: number | null = null
+const markers = ref<Map<string, LocationMarkerRecord>>(new Map())
 const routeLayers = ref<RouteLayerRecord[]>([])
 
-const getPortTitle = (port: Port) => {
-  return currentLocale.value === 'ja' ? port.name : port.nameEn
+const portLocations = computed<MapLocationPoint[]>(() => {
+  return Object.values(PORTS_DATA).map(port => ({
+    id: port.id,
+    type: 'PORT',
+    titleJa: port.name,
+    titleEn: port.nameEn,
+    location: { ...port.location },
+    port
+  }))
+})
+
+const busStopLocations = computed<MapLocationPoint[]>(() => {
+  return props.busStops.map(stop => ({
+    id: stop.id,
+    type: 'STOP',
+    titleJa: stop.name,
+    titleEn: stop.name,
+    location: {
+      lat: stop.lat,
+      lng: stop.lng
+    },
+    townLabelKey: stop.townLabelKey
+  }))
+})
+
+const mapLocations = computed<MapLocationPoint[]>(() => {
+  return props.transportMode === 'BUS' ? busStopLocations.value : portLocations.value
+})
+
+const getLocationTitle = (location: MapLocationPoint) => {
+  return currentLocale.value === 'ja' ? location.titleJa : location.titleEn
 }
 
 const getPortBadgeLabel = (portId: string) => {
@@ -140,8 +185,13 @@ const getPortBadgeLabel = (portId: string) => {
   return match?.[1]?.trim() || ''
 }
 
-const getPortLabelClassName = (portId: string) => {
-  return `ferry-map-port-label ferry-map-port-label--${getPortLabelVariant(getPortBadgeLabel(portId))}`
+const getLocationLabelClassName = (location: MapLocationPoint) => {
+  if (location.type === 'STOP') {
+    const townLabel = location.townLabelKey ? String($i18n.t(location.townLabelKey)) : ''
+    return `ferry-map-port-label ferry-map-port-label--bus-stop ferry-map-port-label--${getPortLabelVariant(townLabel)}`
+  }
+
+  return `ferry-map-port-label ferry-map-port-label--${getPortLabelVariant(getPortBadgeLabel(location.id))}`
 }
 
 const enableMap = () => {
@@ -153,12 +203,20 @@ const closePortModal = () => {
   modalPortId.value = ''
 }
 
-const openPortDetails = (port: Port) => {
-  if (props.showPortDetails) {
-    modalPortId.value = port.id
-    showPortModal.value = true
+const openLocationDetails = (location: MapLocationPoint) => {
+  if (location.type === 'PORT' && location.port) {
+    if (props.showPortDetails) {
+      modalPortId.value = location.port.id
+      showPortModal.value = true
+    }
+    emit('portClick', location.port)
+    return
   }
-  emit('portClick', port)
+
+  emit('locationClick', {
+    id: location.id,
+    type: location.type
+  })
 }
 
 const clearTouchHintTimer = () => {
@@ -226,18 +284,18 @@ const setMarkerLabelVisibility = (portId: string, visible: boolean) => {
   const button = document.createElement('button')
   button.type = 'button'
   button.className = 'ferry-map-port-label__button'
-  button.textContent = getPortTitle(record.port)
-  button.title = getPortTitle(record.port)
+  button.textContent = getLocationTitle(record.location)
+  button.title = getLocationTitle(record.location)
   button.setAttribute('aria-label', buildPortLabelA11yLabel(
-    getPortTitle(record.port),
-    String($i18n.t('map.portDetails'))
+    getLocationTitle(record.location),
+    record.location.type === 'STOP' ? String($i18n.t('LOCATION_TYPES.STOP')) : String($i18n.t('map.portDetails'))
   ))
 
   L.DomEvent.disableClickPropagation(button)
   L.DomEvent.disableScrollPropagation(button)
   L.DomEvent.on(button, 'click', (event: Event) => {
     L.DomEvent.stop(event)
-    openPortDetails(record.port)
+    openLocationDetails(record.location)
   })
 
   record.marker.bindTooltip(button, {
@@ -246,43 +304,66 @@ const setMarkerLabelVisibility = (portId: string, visible: boolean) => {
     direction: 'right',
     offset: [12, 0],
     opacity: 1,
-    className: getPortLabelClassName(portId)
+    className: getLocationLabelClassName(record.location)
   })
   record.marker.openTooltip?.()
   record.labelVisible = true
 }
 
-const getActivePortIds = (): Set<string> => {
+const expandSelectedLocationId = (id: string): string[] => {
+  return props.transportMode === 'FERRY' ? expandMainlandPortId(id) : [id]
+}
+
+const getMapLocationById = (id: string): MapLocationPoint | undefined => {
+  return mapLocations.value.find(location => location.id === id)
+}
+
+const getActiveLocationIds = (): Set<string> => {
   const active = new Set<string>()
   if (props.selectedRouteSegments && props.selectedRouteSegments.length > 0) {
     props.selectedRouteSegments.forEach(segment => {
-      expandMainlandPortId(segment.from).forEach(id => active.add(id))
-      expandMainlandPortId(segment.to).forEach(id => active.add(id))
+      expandSelectedLocationId(segment.from).forEach(id => active.add(id))
+      expandSelectedLocationId(segment.to).forEach(id => active.add(id))
     })
   } else if (props.selectedRoute) {
-    expandMainlandPortId(props.selectedRoute.from).forEach(id => active.add(id))
-    expandMainlandPortId(props.selectedRoute.to).forEach(id => active.add(id))
+    expandSelectedLocationId(props.selectedRoute.from).forEach(id => active.add(id))
+    expandSelectedLocationId(props.selectedRoute.to).forEach(id => active.add(id))
   } else if (props.selectedPort) {
-    expandMainlandPortId(props.selectedPort).forEach(id => active.add(id))
+    expandSelectedLocationId(props.selectedPort).forEach(id => active.add(id))
   }
   return active
+}
+
+const getMarkerStyle = (location: MapLocationPoint, isActive: boolean) => {
+  if (location.type === 'STOP') {
+    return {
+      radius: isActive ? 8 : 5,
+      fillColor: isActive ? '#4F46E5' : '#A5B4FC',
+      color: isActive ? '#3730A3' : '#6366F1',
+      weight: isActive ? 2 : 1,
+      fillOpacity: isActive ? 1 : 0.9,
+      opacity: 1
+    }
+  }
+
+  return {
+    radius: isActive ? 8 : 6,
+    fillColor: isActive ? '#2563EB' : '#9CA3AF',
+    color: isActive ? '#1D4ED8' : '#6B7280',
+    weight: isActive ? 2 : 1,
+    fillOpacity: 1,
+    opacity: 1
+  }
 }
 
 const updateAllMarkerStyles = () => {
   if (!map || markers.value.size === 0) return
 
-  const activeIds = getActivePortIds()
+  const activeIds = getActiveLocationIds()
 
   markers.value.forEach((record, id) => {
     const isActive = activeIds.has(id)
-    record.marker.setStyle({
-      radius: isActive ? 8 : 6,
-      fillColor: isActive ? '#2563EB' : '#9CA3AF',
-      color: isActive ? '#1D4ED8' : '#6B7280',
-      weight: isActive ? 2 : 1,
-      fillOpacity: 1,
-      opacity: 1
-    })
+    record.marker.setStyle(getMarkerStyle(record.location, isActive))
     if (isActive) {
       record.marker.bringToFront?.()
     }
@@ -290,29 +371,44 @@ const updateAllMarkerStyles = () => {
   })
 }
 
-const addPortMarkers = () => {
+const syncLocationMarkers = () => {
   if (!map || !L) return
 
-  Object.values(PORTS_DATA).forEach(port => {
-    const marker = L.circleMarker([port.location.lat, port.location.lng], {
-      radius: 6,
-      fillColor: '#9CA3AF',
-      color: '#6B7280',
-      weight: 1,
-      fillOpacity: 1,
-      opacity: 1
-    }).addTo(map)
+  const nextIds = new Set(mapLocations.value.map(location => location.id))
+  markers.value.forEach(({ marker }, id) => {
+    if (nextIds.has(id)) return
+    try {
+      marker.remove?.()
+    } catch {
+      // noop
+    }
+    markers.value.delete(id)
+  })
+
+  mapLocations.value.forEach(location => {
+    if (markers.value.has(location.id)) return
+
+    const marker = L.circleMarker(
+      [location.location.lat, location.location.lng],
+      getMarkerStyle(location, false)
+    ).addTo(map)
 
     marker.on('click', () => {
-      openPortDetails(port)
+      openLocationDetails(location)
     })
 
-    markers.value.set(port.id, {
+    if (location.type === 'STOP') {
+      marker.bindPopup(getLocationTitle(location))
+    }
+
+    markers.value.set(location.id, {
       marker,
-      port,
+      location,
       labelVisible: false
     })
   })
+
+  updateAllMarkerStyles()
 }
 
 const loadRoutesFromStorage = async () => {
@@ -403,12 +499,12 @@ const addRouteLayer = (
 }
 
 const buildFallbackPath = (fromId: string, toId: string): RoutePoint[] => {
-  const fromPort = PORTS_DATA[fromId]
-  const toPort = PORTS_DATA[toId]
-  if (!fromPort || !toPort) return []
+  const fromLocation = getMapLocationById(fromId)
+  const toLocation = getMapLocationById(toId)
+  if (!fromLocation || !toLocation) return []
   return [
-    { ...fromPort.location },
-    { ...toPort.location }
+    { ...fromLocation.location },
+    { ...toLocation.location }
   ]
 }
 
@@ -427,17 +523,17 @@ const drawRouteSegments = (segments: RouteSegment[]) => {
       return
     }
 
-    const fromCandidates = expandMainlandPortId(segment.from)
-    const toCandidates = expandMainlandPortId(segment.to)
+    const fromCandidates = expandSelectedLocationId(segment.from)
+    const toCandidates = expandSelectedLocationId(segment.to)
     fromCandidates.forEach((fromId) => {
       toCandidates.forEach((toId) => {
         const fallbackPath = buildFallbackPath(fromId, toId)
         if (fallbackPath.length === 0) return
         addRouteLayer(fallbackPath, undefined, undefined, {
-          color: '#64748B',
-          opacity: 0.55,
-          weight: 3,
-          dashArray: '7 7'
+          color: props.transportMode === 'BUS' ? '#4F46E5' : '#64748B',
+          opacity: props.transportMode === 'BUS' ? 0.72 : 0.55,
+          weight: props.transportMode === 'BUS' ? 4 : 3,
+          dashArray: props.transportMode === 'BUS' ? '8 6' : '7 7'
         })
         bounds.extend(toLatLngBounds(fallbackPath))
         drewAny = true
@@ -454,6 +550,20 @@ const drawSelectedRoutes = (selectedRoute: { from: string; to: string }) => {
   if (!map || !L) return
 
   const bounds = L.latLngBounds([])
+  if (props.transportMode === 'BUS') {
+    const fallbackPath = buildFallbackPath(selectedRoute.from, selectedRoute.to)
+    if (fallbackPath.length === 0) return
+    addRouteLayer(fallbackPath, undefined, undefined, {
+      color: '#4F46E5',
+      opacity: 0.72,
+      weight: 4,
+      dashArray: '8 6'
+    })
+    bounds.extend(toLatLngBounds(fallbackPath))
+    fitBoundsWithUiPadding(bounds)
+    return
+  }
+
   const selectedRoutes = findRoutesForSelection(routesFromStorage.value, selectedRoute)
 
   if (selectedRoutes.length > 0) {
@@ -465,8 +575,8 @@ const drawSelectedRoutes = (selectedRoute: { from: string; to: string }) => {
     return
   }
 
-  const fromCandidates = expandMainlandPortId(selectedRoute.from)
-  const toCandidates = expandMainlandPortId(selectedRoute.to)
+  const fromCandidates = expandSelectedLocationId(selectedRoute.from)
+  const toCandidates = expandSelectedLocationId(selectedRoute.to)
   let drewAny = false
 
   fromCandidates.forEach((fromId) => {
@@ -498,45 +608,45 @@ const renderActiveRoute = () => {
     drawRouteSegments(props.selectedRouteSegments)
   } else if (props.selectedRoute) {
     if (props.selectedRoute.from === props.selectedRoute.to) {
-      focusPort(props.selectedRoute.from)
+      focusLocation(props.selectedRoute.from)
     } else {
       drawSelectedRoutes(props.selectedRoute)
     }
   } else {
-    focusAllPorts()
+    focusAllLocations()
   }
 
   updateAllMarkerStyles()
   invalidateMapSize()
 }
 
-const focusPort = (portId: string) => {
+const focusLocation = (locationId: string) => {
   if (!map || !L) return
 
-  const portIds = expandMainlandPortId(portId)
-  const points = portIds
-    .map(id => PORTS_DATA[id])
-    .filter((port): port is Port => !!port)
+  const locationIds = expandSelectedLocationId(locationId)
+  const points = locationIds
+    .map(id => getMapLocationById(id))
+    .filter((location): location is MapLocationPoint => !!location)
 
   if (points.length === 0) return
 
   if (points.length === 1) {
     const point = points[0]
     if (!point) return
-    map.setView([point.location.lat, point.location.lng], 12, { animate: false })
+    map.setView([point.location.lat, point.location.lng], props.transportMode === 'BUS' ? 14 : 12, { animate: false })
   } else {
-    const bounds = L.latLngBounds(points.map(port => [port.location.lat, port.location.lng]))
+    const bounds = L.latLngBounds(points.map(location => [location.location.lat, location.location.lng]))
     fitBoundsWithUiPadding(bounds)
   }
 }
 
-const focusAllPorts = () => {
+const focusAllLocations = () => {
   if (!map || !L) return
 
-  const points = Object.values(PORTS_DATA)
+  const points = mapLocations.value
   if (points.length === 0) return
 
-  const bounds = L.latLngBounds(points.map(port => [port.location.lat, port.location.lng]))
+  const bounds = L.latLngBounds(points.map(location => [location.location.lat, location.location.lng]))
   fitBoundsWithUiPadding(bounds)
 }
 
@@ -569,7 +679,7 @@ const initializeMap = async () => {
       onSingleTouchMove: revealTouchHint
     })
 
-    addPortMarkers()
+    syncLocationMarkers()
     await loadRoutesFromStorage()
     renderActiveRoute()
     updateAllMarkerStyles()
@@ -586,7 +696,7 @@ const initializeMap = async () => {
 
 watch(() => props.selectedPort, (portId) => {
   if (portId) {
-    focusPort(portId)
+    focusLocation(portId)
   }
   updateAllMarkerStyles()
 })
@@ -596,6 +706,12 @@ watch(() => props.selectedRoute, () => {
 })
 
 watch(() => props.selectedRouteSegments, () => {
+  renderActiveRoute()
+}, { deep: true })
+
+watch([() => props.transportMode, () => props.busStops], () => {
+  if (!map) return
+  syncLocationMarkers()
   renderActiveRoute()
 }, { deep: true })
 
@@ -786,6 +902,12 @@ onUnmounted(() => {
   background: #eff6ff;
   color: #0369a1;
   border-color: #bae6fd;
+}
+
+.map-container :deep(.ferry-map-port-label--bus-stop) {
+  background: #eef2ff;
+  color: #3730a3;
+  border-color: #c7d2fe;
 }
 
 .map-container :deep(.ferry-map-port-label--chibu) {

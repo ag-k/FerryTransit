@@ -115,8 +115,17 @@
 
     <!-- 地図表示 -->
     <ClientOnly>
-      <TimetableMap :selected-port="selectedMapPort" :selected-route="selectedMapRoute" :show-port-details="true"
-        height="300px" @port-click="handleMapPortClick" @route-select="handleMapRouteSelect" />
+      <TimetableMap
+        :selected-port="selectedMapPort"
+        :selected-route="selectedMapRoute"
+        :transport-mode="selectedMapTransportMode"
+        :bus-stops="mapBusStops"
+        :show-port-details="true"
+        height="300px"
+        @port-click="handleMapPortClick"
+        @location-click="handleMapLocationClick"
+        @route-select="handleMapRouteSelect"
+      />
     </ClientOnly>
 
     <!-- 時刻表 -->
@@ -341,6 +350,7 @@ import { formatDateYmdJst, getJstDateParts, getTodayJstMidnight } from '@/utils/
 import { getPortMapZoom } from '@/utils/portMapZoom'
 import { getLocationTypeForCode } from '@/utils/gtfsBusTimetable'
 import type { LocationType, TransportMode, Trip } from '@/types'
+import type { BusStopLocation } from '@/utils/gtfsBusTimetable'
 import {
   DEFAULT_VEHICLE_LENGTH_METERS,
   VEHICLE_LENGTH_OPTIONS,
@@ -480,6 +490,14 @@ const selectedLocationType = computed<LocationType>(() => {
   return selectedTransportMode.value === 'BUS' ? 'STOP' : 'PORT'
 })
 
+const selectedMapTransportMode = computed<Extract<TransportMode, 'FERRY' | 'BUS'>>(() => {
+  return selectedTransportMode.value === 'BUS' ? 'BUS' : 'FERRY'
+})
+
+const mapBusStops = computed<BusStopLocation[]>(() => {
+  return Object.values(ferryStore.busStopLocations ?? {})
+})
+
 const filteredTimetableByMode = computed(() => {
   let trips = filteredTimetable.value
 
@@ -538,6 +556,7 @@ const getBusTransportName = (name: string) => {
   if (translated !== name) return translated
   if (name === 'AMA_TOWN_BUS') return '海士町路線バス'
   if (name === 'NISHINOSHIMA_TOWN_BUS') return '西ノ島町営バス'
+  if (name === 'CHIBU_VILLAGE_BUS') return '知夫村営バス'
   return translated
 }
 
@@ -857,6 +876,17 @@ const handleMapPortClick = (port: any) => {
     handleDepartureChange(port.id)
   } else if (!arrival.value && port.id !== departure.value) {
     handleArrivalChange(port.id)
+  }
+}
+
+const handleMapLocationClick = (location: { id: string; type: LocationType }) => {
+  if (location.type !== 'STOP') return
+
+  // 地図上のバス停がクリックされたら、その停留所を出発地または到着地に設定
+  if (!departure.value) {
+    handleDepartureChange(location.id)
+  } else if (!arrival.value && location.id !== departure.value) {
+    handleArrivalChange(location.id)
   }
 }
 

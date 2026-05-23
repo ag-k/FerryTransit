@@ -11,12 +11,15 @@ import {
 } from "@/utils/jstDate";
 import { buildStorageObjectDownloadUrl } from "@/utils/firebaseStorageUrl";
 import {
+  type BusStopLocation,
   type BusTimetableData,
   getLocationTypeForCode,
   isAmaBusStopCode,
+  isChibuBusStopCode,
   isNishinoshimaBusStopCode,
   isTripActiveOnDate,
   loadAmaBusTimetable,
+  loadChibuBusTimetable,
   loadNishinoshimaBusTimetable,
 } from "@/utils/gtfsBusTimetable";
 
@@ -152,6 +155,7 @@ export const useFerryStore = defineStore("ferry", () => {
   const error = ref<string | null>(null);
   const lastFetchTime = ref<Date | null>(null);
   const busStops = ref<string[]>([]);
+  const busStopLocations = ref<Record<string, BusStopLocation>>({});
   const locationLabels = ref<Record<string, string>>({});
 
   // Port definitions
@@ -492,6 +496,7 @@ export const useFerryStore = defineStore("ferry", () => {
     const loaders: Array<{ label: string; load: () => Promise<BusTimetableData> }> = [
       { label: "Ama bus", load: loadAmaBusTimetable },
       { label: "Nishinoshima bus", load: loadNishinoshimaBusTimetable },
+      { label: "Chibu bus", load: loadChibuBusTimetable },
     ];
     const busTrips: Trip[] = [];
     const nextBusStops: string[] = [];
@@ -503,6 +508,10 @@ export const useFerryStore = defineStore("ferry", () => {
         locationLabels.value = {
           ...locationLabels.value,
           ...busData.locationLabels,
+        };
+        busStopLocations.value = {
+          ...busStopLocations.value,
+          ...busData.stopLocations,
         };
         busTrips.push(...busData.trips);
       } catch (busError) {
@@ -522,7 +531,8 @@ export const useFerryStore = defineStore("ferry", () => {
   const ensureBusTimetableLoaded = async () => {
     const hasAllBusStopFeeds =
       busStops.value.some((stop) => isAmaBusStopCode(stop)) &&
-      busStops.value.some((stop) => isNishinoshimaBusStopCode(stop));
+      busStops.value.some((stop) => isNishinoshimaBusStopCode(stop)) &&
+      busStops.value.some((stop) => isChibuBusStopCode(stop));
 
     if (hasAllBusStopFeeds && timetableData.value.some((trip) => trip.mode === "BUS")) {
       return;
@@ -939,6 +949,7 @@ export const useFerryStore = defineStore("ferry", () => {
     allPorts,
     allLocations,
     busStops,
+    busStopLocations,
     locationLabels,
     getLocationLabel,
     isStopLocation,

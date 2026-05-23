@@ -60,6 +60,7 @@
   "BUS_STOPS": "バス停",
   "AMA_TOWN_BUS": "海士町路線バス",
   "NISHINOSHIMA_TOWN_BUS": "西ノ島町営バス",
+  "CHIBU_VILLAGE_BUS": "知夫村営バス",
   "TRANSPORT_MODES": {
     "FERRY": "船",
     "BUS": "バス",

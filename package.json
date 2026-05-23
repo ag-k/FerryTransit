@@ -63,7 +63,8 @@
     "gtfs:validate": "node scripts/gtfs/validate.mjs",
     "gtfs:build": "node scripts/gtfs/build-public-data.mjs",
     "gtfs:convert:ama:r8": "node scripts/gtfs/convert-ama-r8-pdf.mjs",
-    "gtfs:convert:nishinoshima:2026": "node scripts/gtfs/convert-nishinoshima-2026-pdf.mjs"
+    "gtfs:convert:nishinoshima:2026": "node scripts/gtfs/convert-nishinoshima-2026-pdf.mjs",
+    "gtfs:convert:chibu:2023": "node scripts/gtfs/convert-chibu-2023-image.mjs"
   },
   "portless": {
     "name": "ferry-transit",

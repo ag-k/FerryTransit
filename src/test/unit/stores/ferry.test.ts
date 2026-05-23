@@ -733,7 +733,7 @@ describe("Ferry Store", () => {
         name: "AMA_TOWN_BUS",
         mode: "BUS",
       } as Trip;
-      store.busStops = ["BUS_AMA_100_01", "BUS_NISHINOSHIMA_nishinoshima_001"];
+      store.busStops = ["BUS_AMA_100_01", "BUS_NISHINOSHIMA_nishinoshima_001", "BUS_CHIBU_kuri_naikosen"];
       store.timetableData = [...mockTrips, cachedBusTrip];
 
       await store.fetchTimetable(false);

@@ -65,6 +65,7 @@
   "BUS_STOPS": "Bus stops",
   "AMA_TOWN_BUS": "Ama Town Route Bus",
   "NISHINOSHIMA_TOWN_BUS": "Nishinoshima Town Bus",
+  "CHIBU_VILLAGE_BUS": "Chibu Village Bus",
   "TRANSPORT_MODES": {
     "FERRY": "Ship",
     "BUS": "Bus",

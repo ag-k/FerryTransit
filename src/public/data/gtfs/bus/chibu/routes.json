@@ -1,0 +1,12 @@
+[
+  {
+    "routeId": "CHIBU_VILLAGE_BUS",
+    "agencyId": "CHIBU_VILLAGE",
+    "shortName": "村営バス",
+    "longName": "知夫村営バス",
+    "description": "知夫村内を結ぶ村営バス",
+    "type": 3,
+    "color": "047857",
+    "textColor": "FFFFFF"
+  }
+]

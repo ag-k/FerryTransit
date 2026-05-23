@@ -207,7 +207,7 @@ const favoriteRoutes = computed(() => {
 type Section = { key: 'favorites' | 'mainland' | 'dozen' | 'dogo' | 'busStops'; labelKey: string; ports: string[] }
 type BusStopTownTab = { key: string; labelKey: string; ports: string[] }
 
-const busStopTownOrder = ['AMA_CHO', 'NISHINOSHIMA_CHO', 'BUS_STOPS']
+const busStopTownOrder = ['AMA_CHO', 'NISHINOSHIMA_CHO', 'CHIBU_MURA', 'BUS_STOPS']
 const activeBusStopTownKey = ref<string | null>(null)
 
 const busStopTownTabs = computed<BusStopTownTab[]>(() => {
@@ -296,6 +296,7 @@ const getTownBadgeLabel = (labelKey: string): string => {
   if (translated !== labelKey) return translated
   if (labelKey === 'AMA_CHO') return '海士町'
   if (labelKey === 'NISHINOSHIMA_CHO') return '西ノ島町'
+  if (labelKey === 'CHIBU_MURA') return '知夫村'
   return translated
 }
 

@@ -916,6 +916,12 @@ export const useRouteSearch = () => {
     if (ship === "AMA_TOWN_BUS") {
       return 200;
     }
+    if (ship === "NISHINOSHIMA_TOWN_BUS") {
+      return 200;
+    }
+    if (ship === "CHIBU_VILLAGE_BUS") {
+      return 100;
+    }
 
     // Ensure fare data is loaded
     if (!fareStore) {

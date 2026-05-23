@@ -33,6 +33,7 @@ const mockFerryStore = {
     mockFerryStore.selectedDate.value = value;
   }),
   getLocationLabel: vi.fn(() => null),
+  busStopLocations: {},
 };
 
 const mockHistoryStore = {
@@ -127,7 +128,8 @@ const mountIndexPage = () =>
           template: '<button data-test="favorite-button">Favorite</button>',
         },
         FerryMap: {
-          template: '<div data-test="ferry-map">FerryMap</div>',
+          template: '<div data-test="ferry-map" :data-transport-mode="transportMode" :data-bus-stop-count="busStops.length">FerryMap</div>',
+          props: ["selectedPort", "selectedRoute", "transportMode", "busStops"],
         },
         StatusAlerts: {
           template: '<div data-test="status-alerts">StatusAlerts</div>',
@@ -171,6 +173,7 @@ describe("IndexPage (時刻表ページ)", () => {
     mockUseFerryData.filteredTimetable.value = [];
     mockUseFerryData.isLoading.value = false;
     mockUseFerryData.error.value = null;
+    mockFerryStore.busStopLocations = {};
     mockRouter.push.mockReset();
     vi.clearAllMocks();
     vi.unstubAllGlobals();
@@ -545,6 +548,18 @@ describe("IndexPage (時刻表ページ)", () => {
           via: "宇賀線",
           status: 0,
         },
+        {
+          tripId: 5000000,
+          startDate: "2024-01-01",
+          endDate: "2024-12-31",
+          name: "CHIBU_VILLAGE_BUS",
+          mode: "BUS",
+          departure: "BUS_CHIBU_kuri_naikosen",
+          departureTime: "07:15",
+          arrival: "BUS_CHIBU_nibu_bus",
+          arrivalTime: "07:24",
+          status: 0,
+        },
       ] as any;
       mockUseFerryData.filteredTimetable.value = mockUseFerryData.timetableData.value as any;
 
@@ -564,10 +579,36 @@ describe("IndexPage (時刻表ページ)", () => {
 
       expect(wrapper.text()).toContain("海士町路線バス（豊田線）");
       expect(wrapper.text()).toContain("西ノ島町営バス（宇賀線）");
+      expect(wrapper.text()).toContain("知夫村営バス");
       expect(wrapper.text()).not.toContain("FERRY_OKI");
       expect(wrapper.text()).not.toContain("AMA_TOWN_BUS");
       expect(wrapper.text()).not.toContain("NISHINOSHIMA_TOWN_BUS");
+      expect(wrapper.text()).not.toContain("CHIBU_VILLAGE_BUS");
       expect(wrapper.find('[data-test="with-car-toggle"]').exists()).toBe(false);
+    });
+
+    it("バス選択時は地図へバス停座標を渡す", async () => {
+      mockFerryStore.busStopLocations = {
+        BUS_AMA_100_01: {
+          id: "BUS_AMA_100_01",
+          name: "豊田",
+          lat: 36.105471,
+          lng: 133.125968,
+          operatorId: "AMA_TOWN",
+          townLabelKey: "AMA_CHO",
+        },
+      };
+
+      const wrapper = mountIndexPage();
+      await flushPromises();
+
+      const tabs = wrapper.findAll('[role="tab"]');
+      await tabs[1]!.trigger("click");
+      await flushPromises();
+
+      const map = wrapper.find('[data-test="ferry-map"]');
+      expect(map.attributes("data-transport-mode")).toBe("BUS");
+      expect(map.attributes("data-bus-stop-count")).toBe("1");
     });
 
     it("選択中のタブに応じて出発地・目的地の種別を切り替える", async () => {

@@ -4,13 +4,17 @@ import {
   getBusStopTownLabelKey,
   getLocationTypeForCode,
   isAmaBusStopCode,
+  isChibuBusStopCode,
   isNishinoshimaBusStopCode,
   isTripActiveOnDate,
   loadAmaBusTimetable,
+  loadChibuBusTimetable,
   loadNishinoshimaBusTimetable,
   normalizeAmaBusRouteName,
+  normalizeChibuBusRouteName,
   normalizeNishinoshimaBusRouteName,
   toAmaBusStopCode,
+  toChibuBusStopCode,
   toNishinoshimaBusStopCode
 } from '@/utils/gtfsBusTimetable'
 import type { Trip } from '@/types'
@@ -43,6 +47,17 @@ describe('gtfsBusTimetable', () => {
     expect(getBusStopTownLabelKey(stopCode)).toBe('NISHINOSHIMA_CHO')
   })
 
+  it('知夫村営バス停コードを停留所として扱う', () => {
+    const stopCode = toChibuBusStopCode('kuri_naikosen')
+
+    expect(stopCode).toBe('BUS_CHIBU_kuri_naikosen')
+    expect(isChibuBusStopCode(stopCode)).toBe(true)
+    expect(isChibuBusStopCode('BUS_NISHINOSHIMA_nishinoshima_001')).toBe(false)
+    expect(getLocationTypeForCode(stopCode)).toBe('STOP')
+    expect(getBusStopTownLabelKey(stopCode)).toBe('CHIBU_MURA')
+    expect(getBusStopPortBadgeLabel(stopCode)).toBe('来居港')
+  })
+
   it('海士島線の枝番を表示用にまとめる', () => {
     expect(normalizeAmaBusRouteName('海士島線1')).toBe('海士島線')
     expect(normalizeAmaBusRouteName('海士島線9')).toBe('海士島線')
@@ -54,6 +69,12 @@ describe('gtfsBusTimetable', () => {
     expect(normalizeNishinoshimaBusRouteName('西ノ島町営バス 宇賀線')).toBe('宇賀線')
     expect(normalizeNishinoshimaBusRouteName('町営バス')).toBe('')
     expect(normalizeNishinoshimaBusRouteName('波止線')).toBe('波止線')
+  })
+
+  it('知夫村営バスの路線名を表示用に整える', () => {
+    expect(normalizeChibuBusRouteName('知夫村営バス')).toBe('')
+    expect(normalizeChibuBusRouteName('村営バス')).toBe('')
+    expect(normalizeChibuBusRouteName('来居方面')).toBe('来居方面')
   })
 
   it('GTFSカレンダー由来の曜日と例外日で運行日を判定する', () => {
@@ -105,9 +126,9 @@ describe('gtfsBusTimetable', () => {
         { routeId: 'R8_AMA', longName: '海士島線1' }
       ],
       'stops.json': [
-        { stopId: '100-01', name: '菱浦港' },
-        { stopId: '100-02', name: '隠岐神社' },
-        { stopId: '100-03', name: '海士町役場' }
+        { stopId: '100-01', name: '菱浦港', lat: 36.105471, lon: 133.125968 },
+        { stopId: '100-02', name: '隠岐神社', lat: 36.097104, lon: 133.098744 },
+        { stopId: '100-03', name: '海士町役場', lat: 36.096178, lon: 133.097043 }
       ],
       'trips.json': [
         { routeId: 'R8_AMA', serviceId: 'svc_weekday', tripId: 'trip_1', headsign: '海士町役場' }
@@ -151,6 +172,14 @@ describe('gtfsBusTimetable', () => {
     expect(fetchMock).toHaveBeenCalledWith('/data/gtfs/bus/ama/routes.json', { cache: 'no-store' })
     expect(result.stopCodes).toEqual(['BUS_AMA_100_01', 'BUS_AMA_100_02', 'BUS_AMA_100_03'])
     expect(result.locationLabels.BUS_AMA_100_02).toBe('隠岐神社')
+    expect(result.stopLocations.BUS_AMA_100_02).toMatchObject({
+      id: 'BUS_AMA_100_02',
+      name: '隠岐神社',
+      lat: 36.097104,
+      lng: 133.098744,
+      operatorId: 'AMA_TOWN',
+      townLabelKey: 'AMA_CHO'
+    })
     expect(result.trips).toHaveLength(3)
     expect(result.trips[0]).toMatchObject({
       startDate: '2026-01-01',
@@ -178,8 +207,8 @@ describe('gtfsBusTimetable', () => {
         { routeId: 'NISHINOSHIMA_UGA', shortName: '宇賀線', longName: '西ノ島町営バス 宇賀線' }
       ],
       'stops.json': [
-        { stopId: 'nishinoshima_001', name: '宇賀' },
-        { stopId: 'nishinoshima_007', name: '別府交通センター' }
+        { stopId: 'nishinoshima_001', name: '宇賀', lat: 36.119464, lon: 133.076013 },
+        { stopId: 'nishinoshima_007', name: '別府交通センター', lat: 36.108989, lon: 133.040918 }
       ],
       'trips.json': [
         { routeId: 'NISHINOSHIMA_UGA', serviceId: 'svc_daily', tripId: 'trip_1', headsign: '宇賀', shortName: '宇賀線' }
@@ -223,6 +252,14 @@ describe('gtfsBusTimetable', () => {
       'BUS_NISHINOSHIMA_nishinoshima_007'
     ])
     expect(result.locationLabels.BUS_NISHINOSHIMA_nishinoshima_007).toBe('別府交通センター')
+    expect(result.stopLocations.BUS_NISHINOSHIMA_nishinoshima_001).toMatchObject({
+      id: 'BUS_NISHINOSHIMA_nishinoshima_001',
+      name: '宇賀',
+      lat: 36.119464,
+      lng: 133.076013,
+      operatorId: 'NISHINOSHIMA_TOWN',
+      townLabelKey: 'NISHINOSHIMA_CHO'
+    })
     expect(result.trips).toHaveLength(1)
     expect(result.trips[0]).toMatchObject({
       startDate: '2026-03-01',
@@ -237,6 +274,77 @@ describe('gtfsBusTimetable', () => {
       price: 200,
       via: '宇賀線'
     })
+  })
+
+  it('知夫村営バスGTFS JSONからバス時刻表を生成する', async () => {
+    const fixtures: Record<string, unknown> = {
+      'routes.json': [
+        { routeId: 'CHIBU_VILLAGE_BUS', shortName: '村営バス', longName: '知夫村営バス' }
+      ],
+      'stops.json': [
+        { stopId: 'kuri_naikosen', name: '来居内航船', lat: 36.0243794, lon: 133.0401959 },
+        { stopId: 'nibu_bus', name: '仁夫', lat: 36.00669672, lon: 133.03282616 }
+      ],
+      'trips.json': [
+        { routeId: 'CHIBU_VILLAGE_BUS', serviceId: 'weekday_except_holidays', tripId: 'trip_1', headsign: '仁夫', shortName: '1便' }
+      ],
+      'stopTimes.json': [
+        { tripId: 'trip_1', arrivalTime: '07:15:00', departureTime: '07:15:00', stopId: 'kuri_naikosen', stopSequence: 1 },
+        { tripId: 'trip_1', arrivalTime: '07:24:00', departureTime: '07:24:00', stopId: 'nibu_bus', stopSequence: 2 }
+      ],
+      'calendar.json': [
+        {
+          service_id: 'weekday_except_holidays',
+          monday: '1',
+          tuesday: '1',
+          wednesday: '1',
+          thursday: '1',
+          friday: '1',
+          saturday: '0',
+          sunday: '0',
+          start_date: '20260101',
+          end_date: '20261231'
+        }
+      ],
+      'calendarDates.json': [
+        { service_id: 'weekday_except_holidays', date: '20260101', exception_type: '2' }
+      ]
+    }
+
+    const fetchMock = vi.fn((input: string | URL | Request) => {
+      const fileName = String(input).split('/').pop() ?? ''
+      return Promise.resolve({
+        ok: true,
+        status: 200,
+        json: () => Promise.resolve(fixtures[fileName])
+      } as Response)
+    })
+    vi.stubGlobal('fetch', fetchMock)
+
+    const result = await loadChibuBusTimetable()
+
+    expect(fetchMock).toHaveBeenCalledWith('/data/gtfs/bus/chibu/routes.json', { cache: 'no-store' })
+    expect(result.stopCodes).toEqual(['BUS_CHIBU_kuri_naikosen', 'BUS_CHIBU_nibu_bus'])
+    expect(result.stopLocations.BUS_CHIBU_kuri_naikosen).toMatchObject({
+      id: 'BUS_CHIBU_kuri_naikosen',
+      name: '来居内航船',
+      operatorId: 'CHIBU_VILLAGE',
+      townLabelKey: 'CHIBU_MURA'
+    })
+    expect(result.trips).toHaveLength(1)
+    expect(result.trips[0]).toMatchObject({
+      startDate: '2026-01-01',
+      endDate: '2026-12-31',
+      name: 'CHIBU_VILLAGE_BUS',
+      mode: 'BUS',
+      operatorId: 'CHIBU_VILLAGE',
+      departure: 'BUS_CHIBU_kuri_naikosen',
+      arrival: 'BUS_CHIBU_nibu_bus',
+      departureTime: '07:15',
+      arrivalTime: '07:24',
+      price: 100
+    })
+    expect(result.trips[0]?.via).toBeUndefined()
   })
 
   it('同一trip内の同一停留所時刻ペアは重複表示用Tripにしない', async () => {

@@ -1,0 +1,2 @@
+fare_id,price,currency_type,payment_method,transfers,agency_id
+CHIBU_FLAT_ADULT,100,JPY,0,0,CHIBU_VILLAGE

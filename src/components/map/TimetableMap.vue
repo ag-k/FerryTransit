@@ -32,9 +32,12 @@
           :selected-port="selectedPort"
           :selected-route="selectedRoute"
           :selected-route-segments="selectedRouteSegments"
+          :transport-mode="transportMode"
+          :bus-stops="busStops"
           :show-port-details="showPortDetails"
           :height="height"
           @port-click="emit('portClick', $event)"
+          @location-click="emit('locationClick', $event)"
           @route-select="emit('routeSelect', $event)"
         />
       </div>
@@ -44,17 +47,21 @@
 
 <script setup lang="ts">
 import { computed } from 'vue'
-import type { Port } from '~/types'
+import type { LocationType, Port, TransportMode } from '~/types'
 import FerryMap from '~/components/map/FerryMap.vue'
 import SecondaryButton from '~/components/common/SecondaryButton.vue'
 import { useSettingsStore } from '@/stores/settings'
+import type { BusStopLocation } from '@/utils/gtfsBusTimetable'
 
 type RouteSegment = { from: string; to: string; ship?: string }
+type MapLocationClick = { id: string; type: LocationType }
 
 interface Props {
   selectedPort?: string
   selectedRoute?: { from: string; to: string }
   selectedRouteSegments?: RouteSegment[]
+  transportMode?: Extract<TransportMode, 'FERRY' | 'BUS'>
+  busStops?: BusStopLocation[]
   showPortDetails?: boolean
   height?: string
   showHideButton?: boolean
@@ -63,13 +70,19 @@ interface Props {
 
 const props = withDefaults(defineProps<Props>(), {
   height: '300px',
+  transportMode: 'FERRY',
+  busStops: () => [],
   showPortDetails: true,
   showHideButton: true,
-  forceVisible: false
+  forceVisible: false,
+  selectedPort: undefined,
+  selectedRoute: undefined,
+  selectedRouteSegments: undefined
 })
 
 const emit = defineEmits<{
   portClick: [port: Port]
+  locationClick: [location: MapLocationClick]
   routeSelect: [route: { from: string; to: string }]
 }>()
 

@@ -1,0 +1,25 @@
+{
+  "convertedAt": "2026-05-22T22:13:25.467Z",
+  "sourceImage": "/Users/ag/works/FerryTransit/gtfs/pdf/bus/chibu/20230201_chibu_bus_timetable.jpg",
+  "sourceUrl": "https://chibu.jp/access.html",
+  "outputDir": "/Users/ag/works/FerryTransit/gtfs/raw/bus/chibu/2023-02-01",
+  "currentUpdated": true,
+  "feedStartDate": "20260101",
+  "feedEndDate": "20261231",
+  "feedVersion": "20230201_20260101-20261231",
+  "counts": {
+    "routes": 1,
+    "stops": 12,
+    "services": 1,
+    "calendarDates": 22,
+    "trips": 4,
+    "stopTimes": 29
+  },
+  "notes": [
+    "公式ページ掲載の時刻表画像を原本として、時刻が明記された停留所のみ stop_times に転記",
+    "土・日・祝日・お盆期間・年末年始は運休として calendar/calendar_dates に反映",
+    "1便の★印古海は予約制注記を jp_trip_desc に保持",
+    "2便・3便の☆印送迎注記を jp_trip_desc に保持",
+    "5便および各便の降車専用のみの停留所は時刻未記載のため stop_times には含めていない"
+  ]
+}

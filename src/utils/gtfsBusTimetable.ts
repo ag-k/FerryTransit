@@ -14,6 +14,13 @@ const NISHINOSHIMA_BUS_NAME = 'NISHINOSHIMA_TOWN_BUS'
 const NISHINOSHIMA_BUS_TRIP_ID_BASE = 4_000_000
 const NISHINOSHIMA_BUS_FARE = 200
 
+const CHIBU_BUS_BASE_PATH = '/data/gtfs/bus/chibu'
+const CHIBU_BUS_STOP_PREFIX = 'BUS_CHIBU_'
+const CHIBU_BUS_OPERATOR_ID = 'CHIBU_VILLAGE'
+const CHIBU_BUS_NAME = 'CHIBU_VILLAGE_BUS'
+const CHIBU_BUS_TRIP_ID_BASE = 5_000_000
+const CHIBU_BUS_FARE = 100
+
 type GtfsRoute = {
   routeId: string
   shortName?: string
@@ -23,6 +30,8 @@ type GtfsRoute = {
 type GtfsStop = {
   stopId: string
   name: string
+  lat?: number
+  lon?: number
 }
 
 type GtfsTrip = {
@@ -80,10 +89,20 @@ type BusFeedConfig = {
   formatRouteName: (route: GtfsRoute | undefined, trip: GtfsTrip) => string
 }
 
+export type BusStopLocation = {
+  id: string
+  name: string
+  lat: number
+  lng: number
+  operatorId: string
+  townLabelKey: string | null
+}
+
 export type BusTimetableData = {
   trips: Trip[]
   stopCodes: string[]
   locationLabels: Record<string, string>
+  stopLocations: Record<string, BusStopLocation>
 }
 
 export type AmaBusTimetableData = BusTimetableData
@@ -112,6 +131,19 @@ const NISHINOSHIMA_BUS_CONFIG: BusFeedConfig = {
   )
 }
 
+const CHIBU_BUS_CONFIG: BusFeedConfig = {
+  id: 'chibu',
+  basePath: CHIBU_BUS_BASE_PATH,
+  stopPrefix: CHIBU_BUS_STOP_PREFIX,
+  operatorId: CHIBU_BUS_OPERATOR_ID,
+  tripName: CHIBU_BUS_NAME,
+  tripIdBase: CHIBU_BUS_TRIP_ID_BASE,
+  fare: CHIBU_BUS_FARE,
+  formatRouteName: (route, trip) => normalizeChibuBusRouteName(
+    route?.shortName || route?.longName || trip.shortName || trip.headsign
+  )
+}
+
 export const isAmaBusStopCode = (value?: string): boolean => {
   return typeof value === 'string' && value.startsWith(AMA_BUS_STOP_PREFIX)
 }
@@ -120,8 +152,12 @@ export const isNishinoshimaBusStopCode = (value?: string): boolean => {
   return typeof value === 'string' && value.startsWith(NISHINOSHIMA_BUS_STOP_PREFIX)
 }
 
+export const isChibuBusStopCode = (value?: string): boolean => {
+  return typeof value === 'string' && value.startsWith(CHIBU_BUS_STOP_PREFIX)
+}
+
 export const isBusStopCode = (value?: string): boolean => {
-  return isAmaBusStopCode(value) || isNishinoshimaBusStopCode(value)
+  return isAmaBusStopCode(value) || isNishinoshimaBusStopCode(value) || isChibuBusStopCode(value)
 }
 
 export const toAmaBusStopCode = (stopId: string): string => {
@@ -132,14 +168,24 @@ export const toNishinoshimaBusStopCode = (stopId: string): string => {
   return `${NISHINOSHIMA_BUS_STOP_PREFIX}${stopId.replace(/[^a-zA-Z0-9]/g, '_')}`
 }
 
+export const toChibuBusStopCode = (stopId: string): string => {
+  return `${CHIBU_BUS_STOP_PREFIX}${stopId.replace(/[^a-zA-Z0-9]/g, '_')}`
+}
+
 export const getBusStopTownLabelKey = (value?: string): string | null => {
   if (isAmaBusStopCode(value)) return 'AMA_CHO'
   if (isNishinoshimaBusStopCode(value)) return 'NISHINOSHIMA_CHO'
+  if (isChibuBusStopCode(value)) return 'CHIBU_MURA'
   return null
 }
 
 export const getBusStopPortBadgeLabel = (value?: string): string | null => {
   if (value === toAmaBusStopCode('126_01')) return '菱浦港'
+  if ([
+    toChibuBusStopCode('kuri_naikosen'),
+    toChibuBusStopCode('kuri_ferry'),
+    toChibuBusStopCode('kuri_office')
+  ].includes(String(value))) return '来居港'
   return null
 }
 
@@ -157,6 +203,12 @@ export const normalizeAmaBusRouteName = (routeName?: string): string => {
 export const normalizeNishinoshimaBusRouteName = (routeName?: string): string => {
   const value = String(routeName ?? '').trim().replace(/^西ノ島町営バス\s*/, '')
   if (!value || value === '町営バス' || value === '西ノ島町営バス') return ''
+  return value
+}
+
+export const normalizeChibuBusRouteName = (routeName?: string): string => {
+  const value = String(routeName ?? '').trim().replace(/^知夫村営バス\s*/, '')
+  if (!value || value === '村営バス' || value === '知夫村営バス') return ''
   return value
 }
 
@@ -190,6 +242,10 @@ export const loadNishinoshimaBusTimetable = (): Promise<BusTimetableData> => {
   return loadGtfsBusTimetable(NISHINOSHIMA_BUS_CONFIG)
 }
 
+export const loadChibuBusTimetable = (): Promise<BusTimetableData> => {
+  return loadGtfsBusTimetable(CHIBU_BUS_CONFIG)
+}
+
 const loadGtfsBusTimetable = async (config: BusFeedConfig): Promise<BusTimetableData> => {
   const [
     routes,
@@ -212,6 +268,24 @@ const loadGtfsBusTimetable = async (config: BusFeedConfig): Promise<BusTimetable
   const stopTimesByTripId = groupStopTimes(stopTimes)
   const locationLabels = Object.fromEntries(
     stops.map(stop => [toBusStopCode(config, stop.stopId), stop.name])
+  )
+  const stopLocations = Object.fromEntries(
+    stops
+      .map(stop => {
+        const code = toBusStopCode(config, stop.stopId)
+        const lat = Number(stop.lat)
+        const lng = Number(stop.lon)
+        if (!Number.isFinite(lat) || !Number.isFinite(lng)) return null
+        return [code, {
+          id: code,
+          name: stop.name,
+          lat,
+          lng,
+          operatorId: config.operatorId,
+          townLabelKey: getBusStopTownLabelKey(code)
+        }] as const
+      })
+      .filter((entry): entry is readonly [string, BusStopLocation] => entry !== null)
   )
 
   const busTrips: Trip[] = []
@@ -272,7 +346,8 @@ const loadGtfsBusTimetable = async (config: BusFeedConfig): Promise<BusTimetable
   return {
     trips: busTrips,
     stopCodes: stops.map(stop => toBusStopCode(config, stop.stopId)),
-    locationLabels
+    locationLabels,
+    stopLocations
   }
 }
 
