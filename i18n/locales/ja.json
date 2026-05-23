@@ -61,6 +61,8 @@
   "AMA_TOWN_BUS": "海士町路線バス",
   "NISHINOSHIMA_TOWN_BUS": "西ノ島町営バス",
   "CHIBU_VILLAGE_BUS": "知夫村営バス",
+  "OKI_ICHIBATA_BUS": "隠岐一畑交通",
+  "OKINOSHIMA_TOWN_BUS": "隠岐の島町営バス",
   "TRANSPORT_MODES": {
     "FERRY": "船",
     "BUS": "バス",

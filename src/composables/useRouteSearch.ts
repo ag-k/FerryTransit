@@ -922,6 +922,12 @@ export const useRouteSearch = () => {
     if (ship === "CHIBU_VILLAGE_BUS") {
       return 100;
     }
+    if (ship === "OKI_ICHIBATA_BUS") {
+      return 500;
+    }
+    if (ship === "OKINOSHIMA_TOWN_BUS") {
+      return 300;
+    }
 
     // Ensure fare data is loaded
     if (!fareStore) {

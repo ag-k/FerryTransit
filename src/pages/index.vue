@@ -557,6 +557,8 @@ const getBusTransportName = (name: string) => {
   if (name === 'AMA_TOWN_BUS') return '海士町路線バス'
   if (name === 'NISHINOSHIMA_TOWN_BUS') return '西ノ島町営バス'
   if (name === 'CHIBU_VILLAGE_BUS') return '知夫村営バス'
+  if (name === 'OKI_ICHIBATA_BUS') return '隠岐一畑交通'
+  if (name === 'OKINOSHIMA_TOWN_BUS') return '隠岐の島町営バス'
   return translated
 }
 

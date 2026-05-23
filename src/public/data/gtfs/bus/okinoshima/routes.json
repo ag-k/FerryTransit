@@ -1,0 +1,132 @@
+[
+  {
+    "routeId": "OKI_ICHIBATA_TSUMA",
+    "agencyId": "OKI_ICHIBATA",
+    "shortName": "都万線",
+    "longName": "隠岐一畑交通 都万線",
+    "description": "都万・向山方面の路線バス",
+    "type": 3,
+    "color": "2563EB",
+    "textColor": "FFFFFF"
+  },
+  {
+    "routeId": "OKI_ICHIBATA_GOKA",
+    "agencyId": "OKI_ICHIBATA",
+    "shortName": "五箇線",
+    "longName": "隠岐一畑交通 五箇線",
+    "description": "五箇・福浦方面の路線バス",
+    "type": 3,
+    "color": "0F766E",
+    "textColor": "FFFFFF"
+  },
+  {
+    "routeId": "OKI_ICHIBATA_NAKAMURA",
+    "agencyId": "OKI_ICHIBATA",
+    "shortName": "中村線",
+    "longName": "隠岐一畑交通 中村線",
+    "description": "中村・伊後方面の路線バス",
+    "type": 3,
+    "color": "7C3AED",
+    "textColor": "FFFFFF"
+  },
+  {
+    "routeId": "OKI_ICHIBATA_FUSE",
+    "agencyId": "OKI_ICHIBATA",
+    "shortName": "布施線",
+    "longName": "隠岐一畑交通 布施線",
+    "description": "布施・飯美方面の路線バス",
+    "type": 3,
+    "color": "DC2626",
+    "textColor": "FFFFFF"
+  },
+  {
+    "routeId": "OKI_ICHIBATA_LOOP_RIGHT",
+    "agencyId": "OKI_ICHIBATA",
+    "shortName": "循環線 右回り",
+    "longName": "隠岐一畑交通 循環線 右回り",
+    "description": "西郷市街地の右回り循環線",
+    "type": 3,
+    "color": "0891B2",
+    "textColor": "FFFFFF"
+  },
+  {
+    "routeId": "OKI_ICHIBATA_LOOP_LEFT",
+    "agencyId": "OKI_ICHIBATA",
+    "shortName": "循環線 左回り",
+    "longName": "隠岐一畑交通 循環線 左回り",
+    "description": "西郷市街地の左回り循環線",
+    "type": 3,
+    "color": "0EA5E9",
+    "textColor": "FFFFFF"
+  },
+  {
+    "routeId": "OKI_ICHIBATA_SUISAN",
+    "agencyId": "OKI_ICHIBATA",
+    "shortName": "水産高校線",
+    "longName": "隠岐一畑交通 水産高校線",
+    "description": "水産高校方面の路線バス",
+    "type": 3,
+    "color": "D97706",
+    "textColor": "FFFFFF"
+  },
+  {
+    "routeId": "OKI_ICHIBATA_OKI_HIGH",
+    "agencyId": "OKI_ICHIBATA",
+    "shortName": "隠岐高校線",
+    "longName": "隠岐一畑交通 隠岐高校線",
+    "description": "隠岐高校方面の路線バス",
+    "type": 3,
+    "color": "BE123C",
+    "textColor": "FFFFFF"
+  },
+  {
+    "routeId": "OKINOSHIMA_TOWN_GOKA",
+    "agencyId": "OKINOSHIMA_TOWN",
+    "shortName": "五箇循環線",
+    "longName": "隠岐の島町営バス 五箇循環線",
+    "description": "五箇地域の町営バス",
+    "type": 3,
+    "color": "16A34A",
+    "textColor": "FFFFFF"
+  },
+  {
+    "routeId": "OKINOSHIMA_TOWN_TSUDO",
+    "agencyId": "OKINOSHIMA_TOWN",
+    "shortName": "津戸線",
+    "longName": "隠岐の島町営バス 津戸線",
+    "description": "都万診療所循環線 津戸線",
+    "type": 3,
+    "color": "84CC16",
+    "textColor": "FFFFFF"
+  },
+  {
+    "routeId": "OKINOSHIMA_TOWN_TAKUGI",
+    "agencyId": "OKINOSHIMA_TOWN",
+    "shortName": "蛸木線",
+    "longName": "隠岐の島町営バス 蛸木線",
+    "description": "都万診療所循環線 蛸木線",
+    "type": 3,
+    "color": "65A30D",
+    "textColor": "FFFFFF"
+  },
+  {
+    "routeId": "OKINOSHIMA_TOWN_UTAKI",
+    "agencyId": "OKINOSHIMA_TOWN",
+    "shortName": "歌木線",
+    "longName": "隠岐の島町営バス 歌木線",
+    "description": "都万診療所循環線 歌木線",
+    "type": 3,
+    "color": "CA8A04",
+    "textColor": "FFFFFF"
+  },
+  {
+    "routeId": "OKINOSHIMA_TOWN_SEIBU",
+    "agencyId": "OKINOSHIMA_TOWN",
+    "shortName": "都万西部線",
+    "longName": "隠岐の島町営バス 都万西部線",
+    "description": "都万西部地域の町営バス",
+    "type": 3,
+    "color": "EA580C",
+    "textColor": "FFFFFF"
+  }
+]

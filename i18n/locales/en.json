@@ -66,6 +66,8 @@
   "AMA_TOWN_BUS": "Ama Town Route Bus",
   "NISHINOSHIMA_TOWN_BUS": "Nishinoshima Town Bus",
   "CHIBU_VILLAGE_BUS": "Chibu Village Bus",
+  "OKI_ICHIBATA_BUS": "Oki Ichibata Bus",
+  "OKINOSHIMA_TOWN_BUS": "Okinoshima Town Bus",
   "TRANSPORT_MODES": {
     "FERRY": "Ship",
     "BUS": "Bus",

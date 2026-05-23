@@ -34,6 +34,16 @@ gtfs/
   - 事業者: 西ノ島町
   - 元データ日付: `2026-01-01`
   - GTFS フィード期間: `2026-03-01` から `2026-12-31`
+- 種別: `bus`
+  - ID: `chibu`
+  - 事業者: 知夫村
+  - 元データ日付: `2023-02-01`
+  - GTFS フィード期間: `2026-01-01` から `2026-12-31`
+- 種別: `bus`
+  - ID: `okinoshima`
+  - 事業者: 隠岐一畑交通 / 隠岐の島町
+  - 元データ日付: `2026-03-02`
+  - GTFS フィード期間: `2026-01-01` から `2026-12-31`
 
 ## R8 PDF からの変換
 
@@ -58,3 +68,15 @@ npm run gtfs:build -- bus nishinoshima
 ```
 
 変換処理は PDF の主要時刻表欄を `trips.txt` / `stop_times.txt` に転記し、PDF 注記の `★`、`※`、`◎`、`●`、期間便を `calendar.txt` / `calendar_dates.txt` に反映します。
+
+## 隠岐の島町内バス PDF からの変換
+
+`gtfs/pdf/bus/okinoshima/` の総合時刻表、路線バス、町営バス PDF から GTFS を生成します。
+
+```bash
+npm run gtfs:convert:okinoshima:2026 -- --current
+npm run gtfs:validate -- bus okinoshima
+npm run gtfs:build -- bus okinoshima
+```
+
+変換処理は隠岐一畑交通の固定時刻路線と隠岐の島町営バスを `trips.txt` / `stop_times.txt` に転記します。航空便連動の隠岐空港線と予約型のデマンドタクシーは固定時刻のバス GTFS から除外します。

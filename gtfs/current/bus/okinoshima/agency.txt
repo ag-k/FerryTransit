@@ -1,0 +1,3 @@
+agency_id,agency_name,agency_url,agency_timezone,agency_lang,agency_phone
+OKI_ICHIBATA,隠岐一畑交通,https://oki.ichibata.co.jp/,Asia/Tokyo,ja,08512-2-1281
+OKINOSHIMA_TOWN,隠岐の島町,https://www.town.okinoshima.shimane.jp/,Asia/Tokyo,ja,08512-2-8570

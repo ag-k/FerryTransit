@@ -1,0 +1,14 @@
+route_id,agency_id,route_short_name,route_long_name,route_desc,route_type,route_url,route_color,route_text_color
+OKI_ICHIBATA_TSUMA,OKI_ICHIBATA,都万線,隠岐一畑交通 都万線,都万・向山方面の路線バス,3,https://oki.ichibata.co.jp/route-time.html,2563EB,FFFFFF
+OKI_ICHIBATA_GOKA,OKI_ICHIBATA,五箇線,隠岐一畑交通 五箇線,五箇・福浦方面の路線バス,3,https://oki.ichibata.co.jp/route-time.html,0F766E,FFFFFF
+OKI_ICHIBATA_NAKAMURA,OKI_ICHIBATA,中村線,隠岐一畑交通 中村線,中村・伊後方面の路線バス,3,https://oki.ichibata.co.jp/route-time.html,7C3AED,FFFFFF
+OKI_ICHIBATA_FUSE,OKI_ICHIBATA,布施線,隠岐一畑交通 布施線,布施・飯美方面の路線バス,3,https://oki.ichibata.co.jp/route-time.html,DC2626,FFFFFF
+OKI_ICHIBATA_LOOP_RIGHT,OKI_ICHIBATA,循環線 右回り,隠岐一畑交通 循環線 右回り,西郷市街地の右回り循環線,3,https://oki.ichibata.co.jp/route-time.html,0891B2,FFFFFF
+OKI_ICHIBATA_LOOP_LEFT,OKI_ICHIBATA,循環線 左回り,隠岐一畑交通 循環線 左回り,西郷市街地の左回り循環線,3,https://oki.ichibata.co.jp/route-time.html,0EA5E9,FFFFFF
+OKI_ICHIBATA_SUISAN,OKI_ICHIBATA,水産高校線,隠岐一畑交通 水産高校線,水産高校方面の路線バス,3,https://oki.ichibata.co.jp/route-time.html,D97706,FFFFFF
+OKI_ICHIBATA_OKI_HIGH,OKI_ICHIBATA,隠岐高校線,隠岐一畑交通 隠岐高校線,隠岐高校方面の路線バス,3,https://oki.ichibata.co.jp/route-time.html,BE123C,FFFFFF
+OKINOSHIMA_TOWN_GOKA,OKINOSHIMA_TOWN,五箇循環線,隠岐の島町営バス 五箇循環線,五箇地域の町営バス,3,https://www.town.okinoshima.shimane.jp/kanko/tounaikoutuujouhou/7990.html,16A34A,FFFFFF
+OKINOSHIMA_TOWN_TSUDO,OKINOSHIMA_TOWN,津戸線,隠岐の島町営バス 津戸線,都万診療所循環線 津戸線,3,https://www.town.okinoshima.shimane.jp/kanko/tounaikoutuujouhou/7990.html,84CC16,FFFFFF
+OKINOSHIMA_TOWN_TAKUGI,OKINOSHIMA_TOWN,蛸木線,隠岐の島町営バス 蛸木線,都万診療所循環線 蛸木線,3,https://www.town.okinoshima.shimane.jp/kanko/tounaikoutuujouhou/7990.html,65A30D,FFFFFF
+OKINOSHIMA_TOWN_UTAKI,OKINOSHIMA_TOWN,歌木線,隠岐の島町営バス 歌木線,都万診療所循環線 歌木線,3,https://www.town.okinoshima.shimane.jp/kanko/tounaikoutuujouhou/7990.html,CA8A04,FFFFFF
+OKINOSHIMA_TOWN_SEIBU,OKINOSHIMA_TOWN,都万西部線,隠岐の島町営バス 都万西部線,都万西部地域の町営バス,3,https://www.town.okinoshima.shimane.jp/kanko/tounaikoutuujouhou/7990.html,EA580C,FFFFFF

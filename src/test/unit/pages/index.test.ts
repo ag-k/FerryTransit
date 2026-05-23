@@ -560,6 +560,19 @@ describe("IndexPage (時刻表ページ)", () => {
           arrivalTime: "07:24",
           status: 0,
         },
+        {
+          tripId: 6000000,
+          startDate: "2024-01-01",
+          endDate: "2024-12-31",
+          name: "OKI_ICHIBATA_BUS",
+          mode: "BUS",
+          departure: "BUS_OKINOSHIMA_port_mae",
+          departureTime: "08:29",
+          arrival: "BUS_OKINOSHIMA_goka_branch",
+          arrivalTime: "09:14",
+          via: "五箇線",
+          status: 0,
+        },
       ] as any;
       mockUseFerryData.filteredTimetable.value = mockUseFerryData.timetableData.value as any;
 
@@ -580,10 +593,12 @@ describe("IndexPage (時刻表ページ)", () => {
       expect(wrapper.text()).toContain("海士町路線バス（豊田線）");
       expect(wrapper.text()).toContain("西ノ島町営バス（宇賀線）");
       expect(wrapper.text()).toContain("知夫村営バス");
+      expect(wrapper.text()).toContain("隠岐一畑交通（五箇線）");
       expect(wrapper.text()).not.toContain("FERRY_OKI");
       expect(wrapper.text()).not.toContain("AMA_TOWN_BUS");
       expect(wrapper.text()).not.toContain("NISHINOSHIMA_TOWN_BUS");
       expect(wrapper.text()).not.toContain("CHIBU_VILLAGE_BUS");
+      expect(wrapper.text()).not.toContain("OKI_ICHIBATA_BUS");
       expect(wrapper.find('[data-test="with-car-toggle"]').exists()).toBe(false);
     });
 

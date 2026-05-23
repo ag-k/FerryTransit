@@ -17,10 +17,12 @@ import {
   isAmaBusStopCode,
   isChibuBusStopCode,
   isNishinoshimaBusStopCode,
+  isOkinoshimaBusStopCode,
   isTripActiveOnDate,
   loadAmaBusTimetable,
   loadChibuBusTimetable,
   loadNishinoshimaBusTimetable,
+  loadOkinoshimaBusTimetable,
 } from "@/utils/gtfsBusTimetable";
 
 // Port and Ship interfaces
@@ -497,6 +499,7 @@ export const useFerryStore = defineStore("ferry", () => {
       { label: "Ama bus", load: loadAmaBusTimetable },
       { label: "Nishinoshima bus", load: loadNishinoshimaBusTimetable },
       { label: "Chibu bus", load: loadChibuBusTimetable },
+      { label: "Okinoshima bus", load: loadOkinoshimaBusTimetable },
     ];
     const busTrips: Trip[] = [];
     const nextBusStops: string[] = [];
@@ -532,7 +535,8 @@ export const useFerryStore = defineStore("ferry", () => {
     const hasAllBusStopFeeds =
       busStops.value.some((stop) => isAmaBusStopCode(stop)) &&
       busStops.value.some((stop) => isNishinoshimaBusStopCode(stop)) &&
-      busStops.value.some((stop) => isChibuBusStopCode(stop));
+      busStops.value.some((stop) => isChibuBusStopCode(stop)) &&
+      busStops.value.some((stop) => isOkinoshimaBusStopCode(stop));
 
     if (hasAllBusStopFeeds && timetableData.value.some((trip) => trip.mode === "BUS")) {
       return;

@@ -6,16 +6,20 @@ import {
   isAmaBusStopCode,
   isChibuBusStopCode,
   isNishinoshimaBusStopCode,
+  isOkinoshimaBusStopCode,
   isTripActiveOnDate,
   loadAmaBusTimetable,
   loadChibuBusTimetable,
   loadNishinoshimaBusTimetable,
+  loadOkinoshimaBusTimetable,
   normalizeAmaBusRouteName,
   normalizeChibuBusRouteName,
   normalizeNishinoshimaBusRouteName,
+  normalizeOkinoshimaBusRouteName,
   toAmaBusStopCode,
   toChibuBusStopCode,
-  toNishinoshimaBusStopCode
+  toNishinoshimaBusStopCode,
+  toOkinoshimaBusStopCode
 } from '@/utils/gtfsBusTimetable'
 import type { Trip } from '@/types'
 
@@ -58,6 +62,17 @@ describe('gtfsBusTimetable', () => {
     expect(getBusStopPortBadgeLabel(stopCode)).toBe('来居港')
   })
 
+  it('隠岐の島町バス停コードを停留所として扱う', () => {
+    const stopCode = toOkinoshimaBusStopCode('port_mae')
+
+    expect(stopCode).toBe('BUS_OKINOSHIMA_port_mae')
+    expect(isOkinoshimaBusStopCode(stopCode)).toBe(true)
+    expect(isOkinoshimaBusStopCode('BUS_CHIBU_kuri_naikosen')).toBe(false)
+    expect(getLocationTypeForCode(stopCode)).toBe('STOP')
+    expect(getBusStopTownLabelKey(stopCode)).toBe('OKINOSHIMA_CHO')
+    expect(getBusStopPortBadgeLabel(stopCode)).toBe('西郷港')
+  })
+
   it('海士島線の枝番を表示用にまとめる', () => {
     expect(normalizeAmaBusRouteName('海士島線1')).toBe('海士島線')
     expect(normalizeAmaBusRouteName('海士島線9')).toBe('海士島線')
@@ -75,6 +90,12 @@ describe('gtfsBusTimetable', () => {
     expect(normalizeChibuBusRouteName('知夫村営バス')).toBe('')
     expect(normalizeChibuBusRouteName('村営バス')).toBe('')
     expect(normalizeChibuBusRouteName('来居方面')).toBe('来居方面')
+  })
+
+  it('隠岐の島町のバス路線名を表示用に整える', () => {
+    expect(normalizeOkinoshimaBusRouteName('隠岐一畑交通 五箇線')).toBe('五箇線')
+    expect(normalizeOkinoshimaBusRouteName('隠岐の島町営バス 都万西部線')).toBe('都万西部線')
+    expect(normalizeOkinoshimaBusRouteName('町営バス')).toBe('')
   })
 
   it('GTFSカレンダー由来の曜日と例外日で運行日を判定する', () => {
@@ -345,6 +366,85 @@ describe('gtfsBusTimetable', () => {
       price: 100
     })
     expect(result.trips[0]?.via).toBeUndefined()
+  })
+
+  it('隠岐の島町GTFS JSONから事業者別のバス時刻表を生成する', async () => {
+    const fixtures: Record<string, unknown> = {
+      'routes.json': [
+        { routeId: 'OKI_ICHIBATA_GOKA', agencyId: 'OKI_ICHIBATA', shortName: '五箇線', longName: '隠岐一畑交通 五箇線' },
+        { routeId: 'OKINOSHIMA_TOWN_GOKA', agencyId: 'OKINOSHIMA_TOWN', shortName: '五箇循環線', longName: '隠岐の島町営バス 五箇循環線' }
+      ],
+      'stops.json': [
+        { stopId: 'port_mae', name: 'ポート前', lat: 36.2012, lon: 133.3364 },
+        { stopId: 'goka_branch', name: '五箇支所', lat: 36.2669, lon: 133.2387 },
+        { stopId: 'kumi', name: '久見', lat: 36.307, lon: 133.211 }
+      ],
+      'trips.json': [
+        { routeId: 'OKI_ICHIBATA_GOKA', serviceId: 'daily', tripId: 'ichibata_1', headsign: '五箇支所', shortName: '五箇線' },
+        { routeId: 'OKINOSHIMA_TOWN_GOKA', serviceId: 'daily', tripId: 'town_1', headsign: '久見', shortName: '五箇循環線' }
+      ],
+      'stopTimes.json': [
+        { tripId: 'ichibata_1', arrivalTime: '08:29:00', departureTime: '08:29:00', stopId: 'port_mae', stopSequence: 1 },
+        { tripId: 'ichibata_1', arrivalTime: '09:14:00', departureTime: '09:14:00', stopId: 'goka_branch', stopSequence: 2 },
+        { tripId: 'town_1', arrivalTime: '06:51:00', departureTime: '06:51:00', stopId: 'goka_branch', stopSequence: 1 },
+        { tripId: 'town_1', arrivalTime: '07:02:00', departureTime: '07:02:00', stopId: 'kumi', stopSequence: 2 }
+      ],
+      'calendar.json': [
+        {
+          service_id: 'daily',
+          monday: '1',
+          tuesday: '1',
+          wednesday: '1',
+          thursday: '1',
+          friday: '1',
+          saturday: '1',
+          sunday: '1',
+          start_date: '20260101',
+          end_date: '20261231'
+        }
+      ],
+      'calendarDates.json': []
+    }
+
+    vi.stubGlobal('fetch', vi.fn((input: string | URL | Request) => {
+      const fileName = String(input).split('/').pop() ?? ''
+      return Promise.resolve({
+        ok: true,
+        status: 200,
+        json: () => Promise.resolve(fixtures[fileName])
+      } as Response)
+    }))
+
+    const result = await loadOkinoshimaBusTimetable()
+
+    expect(result.stopCodes).toEqual([
+      'BUS_OKINOSHIMA_port_mae',
+      'BUS_OKINOSHIMA_goka_branch',
+      'BUS_OKINOSHIMA_kumi'
+    ])
+    expect(result.stopLocations.BUS_OKINOSHIMA_port_mae).toMatchObject({
+      id: 'BUS_OKINOSHIMA_port_mae',
+      name: 'ポート前',
+      operatorId: 'OKINOSHIMA',
+      townLabelKey: 'OKINOSHIMA_CHO'
+    })
+    expect(result.trips).toHaveLength(2)
+    expect(result.trips[0]).toMatchObject({
+      name: 'OKI_ICHIBATA_BUS',
+      operatorId: 'OKI_ICHIBATA',
+      departure: 'BUS_OKINOSHIMA_port_mae',
+      arrival: 'BUS_OKINOSHIMA_goka_branch',
+      price: 500,
+      via: '五箇線'
+    })
+    expect(result.trips[1]).toMatchObject({
+      name: 'OKINOSHIMA_TOWN_BUS',
+      operatorId: 'OKINOSHIMA_TOWN',
+      departure: 'BUS_OKINOSHIMA_goka_branch',
+      arrival: 'BUS_OKINOSHIMA_kumi',
+      price: 300,
+      via: '五箇循環線'
+    })
   })
 
   it('同一trip内の同一停留所時刻ペアは重複表示用Tripにしない', async () => {

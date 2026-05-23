@@ -21,8 +21,16 @@ const CHIBU_BUS_NAME = 'CHIBU_VILLAGE_BUS'
 const CHIBU_BUS_TRIP_ID_BASE = 5_000_000
 const CHIBU_BUS_FARE = 100
 
+const OKINOSHIMA_BUS_BASE_PATH = '/data/gtfs/bus/okinoshima'
+const OKINOSHIMA_BUS_STOP_PREFIX = 'BUS_OKINOSHIMA_'
+const OKINOSHIMA_BUS_OPERATOR_ID = 'OKINOSHIMA'
+const OKINOSHIMA_BUS_NAME = 'OKINOSHIMA_BUS'
+const OKINOSHIMA_BUS_TRIP_ID_BASE = 6_000_000
+const OKINOSHIMA_BUS_FARE = 500
+
 type GtfsRoute = {
   routeId: string
+  agencyId?: string
   shortName?: string
   longName: string
 }
@@ -87,6 +95,9 @@ type BusFeedConfig = {
   tripIdBase: number
   fare: number
   formatRouteName: (route: GtfsRoute | undefined, trip: GtfsTrip) => string
+  resolveOperatorId?: (route: GtfsRoute | undefined, trip: GtfsTrip) => string
+  resolveTripName?: (route: GtfsRoute | undefined, trip: GtfsTrip) => string
+  resolveFare?: (route: GtfsRoute | undefined, trip: GtfsTrip) => number
 }
 
 export type BusStopLocation = {
@@ -144,6 +155,22 @@ const CHIBU_BUS_CONFIG: BusFeedConfig = {
   )
 }
 
+const OKINOSHIMA_BUS_CONFIG: BusFeedConfig = {
+  id: 'okinoshima',
+  basePath: OKINOSHIMA_BUS_BASE_PATH,
+  stopPrefix: OKINOSHIMA_BUS_STOP_PREFIX,
+  operatorId: OKINOSHIMA_BUS_OPERATOR_ID,
+  tripName: OKINOSHIMA_BUS_NAME,
+  tripIdBase: OKINOSHIMA_BUS_TRIP_ID_BASE,
+  fare: OKINOSHIMA_BUS_FARE,
+  formatRouteName: (route, trip) => normalizeOkinoshimaBusRouteName(
+    route?.shortName || route?.longName || trip.shortName || trip.headsign
+  ),
+  resolveOperatorId: route => route?.agencyId === 'OKINOSHIMA_TOWN' ? 'OKINOSHIMA_TOWN' : 'OKI_ICHIBATA',
+  resolveTripName: route => route?.agencyId === 'OKINOSHIMA_TOWN' ? 'OKINOSHIMA_TOWN_BUS' : 'OKI_ICHIBATA_BUS',
+  resolveFare: route => route?.agencyId === 'OKINOSHIMA_TOWN' ? 300 : 500
+}
+
 export const isAmaBusStopCode = (value?: string): boolean => {
   return typeof value === 'string' && value.startsWith(AMA_BUS_STOP_PREFIX)
 }
@@ -156,8 +183,15 @@ export const isChibuBusStopCode = (value?: string): boolean => {
   return typeof value === 'string' && value.startsWith(CHIBU_BUS_STOP_PREFIX)
 }
 
+export const isOkinoshimaBusStopCode = (value?: string): boolean => {
+  return typeof value === 'string' && value.startsWith(OKINOSHIMA_BUS_STOP_PREFIX)
+}
+
 export const isBusStopCode = (value?: string): boolean => {
-  return isAmaBusStopCode(value) || isNishinoshimaBusStopCode(value) || isChibuBusStopCode(value)
+  return isAmaBusStopCode(value) ||
+    isNishinoshimaBusStopCode(value) ||
+    isChibuBusStopCode(value) ||
+    isOkinoshimaBusStopCode(value)
 }
 
 export const toAmaBusStopCode = (stopId: string): string => {
@@ -172,10 +206,15 @@ export const toChibuBusStopCode = (stopId: string): string => {
   return `${CHIBU_BUS_STOP_PREFIX}${stopId.replace(/[^a-zA-Z0-9]/g, '_')}`
 }
 
+export const toOkinoshimaBusStopCode = (stopId: string): string => {
+  return `${OKINOSHIMA_BUS_STOP_PREFIX}${stopId.replace(/[^a-zA-Z0-9]/g, '_')}`
+}
+
 export const getBusStopTownLabelKey = (value?: string): string | null => {
   if (isAmaBusStopCode(value)) return 'AMA_CHO'
   if (isNishinoshimaBusStopCode(value)) return 'NISHINOSHIMA_CHO'
   if (isChibuBusStopCode(value)) return 'CHIBU_MURA'
+  if (isOkinoshimaBusStopCode(value)) return 'OKINOSHIMA_CHO'
   return null
 }
 
@@ -186,6 +225,11 @@ export const getBusStopPortBadgeLabel = (value?: string): string | null => {
     toChibuBusStopCode('kuri_ferry'),
     toChibuBusStopCode('kuri_office')
   ].includes(String(value))) return '来居港'
+  if ([
+    toOkinoshimaBusStopCode('port_plaza'),
+    toOkinoshimaBusStopCode('port_mae'),
+    toOkinoshimaBusStopCode('nakamachi')
+  ].includes(String(value))) return '西郷港'
   return null
 }
 
@@ -209,6 +253,15 @@ export const normalizeNishinoshimaBusRouteName = (routeName?: string): string =>
 export const normalizeChibuBusRouteName = (routeName?: string): string => {
   const value = String(routeName ?? '').trim().replace(/^知夫村営バス\s*/, '')
   if (!value || value === '村営バス' || value === '知夫村営バス') return ''
+  return value
+}
+
+export const normalizeOkinoshimaBusRouteName = (routeName?: string): string => {
+  const value = String(routeName ?? '')
+    .trim()
+    .replace(/^隠岐一畑交通\s*/, '')
+    .replace(/^隠岐の島町営バス\s*/, '')
+  if (!value || value === '町営バス' || value === '隠岐の島町営バス') return ''
   return value
 }
 
@@ -244,6 +297,10 @@ export const loadNishinoshimaBusTimetable = (): Promise<BusTimetableData> => {
 
 export const loadChibuBusTimetable = (): Promise<BusTimetableData> => {
   return loadGtfsBusTimetable(CHIBU_BUS_CONFIG)
+}
+
+export const loadOkinoshimaBusTimetable = (): Promise<BusTimetableData> => {
+  return loadGtfsBusTimetable(OKINOSHIMA_BUS_CONFIG)
 }
 
 const loadGtfsBusTimetable = async (config: BusFeedConfig): Promise<BusTimetableData> => {
@@ -298,6 +355,9 @@ const loadGtfsBusTimetable = async (config: BusFeedConfig): Promise<BusTimetable
 
     const route = routesById.get(gtfsTrip.routeId)
     const routeName = config.formatRouteName(route, gtfsTrip)
+    const operatorId = config.resolveOperatorId?.(route, gtfsTrip) ?? config.operatorId
+    const tripName = config.resolveTripName?.(route, gtfsTrip) ?? config.tripName
+    const fare = config.resolveFare?.(route, gtfsTrip) ?? config.fare
     const seenStopPairs = new Set<string>()
 
     for (let originIndex = 0; originIndex < tripStopTimes.length - 1; originIndex++) {
@@ -324,9 +384,9 @@ const loadGtfsBusTimetable = async (config: BusFeedConfig): Promise<BusTimetable
           activeDays: service.activeDays,
           addedDates: service.addedDates,
           removedDates: service.removedDates,
-          name: config.tripName,
+          name: tripName,
           mode: 'BUS',
-          operatorId: config.operatorId,
+          operatorId,
           serviceId: gtfsTrip.serviceId,
           vehicleId: gtfsTrip.routeId,
           departure: toBusStopCode(config, origin.stopId),
@@ -336,7 +396,7 @@ const loadGtfsBusTimetable = async (config: BusFeedConfig): Promise<BusTimetable
           arrivalType: 'STOP',
           arrivalTime: trimSeconds(destination.arrivalTime),
           status: 0,
-          price: config.fare,
+          price: fare,
           ...(routeName ? { via: routeName } : {})
         })
       }

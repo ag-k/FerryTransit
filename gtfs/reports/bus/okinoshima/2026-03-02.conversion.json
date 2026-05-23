@@ -1,0 +1,28 @@
+{
+  "convertedAt": "2026-05-23T11:33:14.901Z",
+  "sourceDir": "/Users/ag/works/FerryTransit/gtfs/pdf/bus/okinoshima",
+  "sourceUrls": {
+    "town": "https://www.town.okinoshima.shimane.jp/kanko/tounaikoutuujouhou/7990.html",
+    "ichibata": "https://oki.ichibata.co.jp/route-time.html"
+  },
+  "outputDir": "/Users/ag/works/FerryTransit/gtfs/raw/bus/okinoshima/2026-03-02",
+  "currentUpdated": true,
+  "feedStartDate": "20260101",
+  "feedEndDate": "20261231",
+  "feedVersion": "20260302_20260101-20261231",
+  "counts": {
+    "agencies": 2,
+    "routes": 13,
+    "stops": 69,
+    "services": 5,
+    "calendarDates": 72,
+    "trips": 64,
+    "stopTimes": 626
+  },
+  "notes": [
+    "隠岐一畑交通の固定時刻表と隠岐の島町営バス3資料を GTFS に転記",
+    "隠岐空港線は航空便連動の相対時刻のため固定時刻GTFSから除外",
+    "町営バス都万診療所循環線は曜日別運行と祝祭日・年末年始運休を calendar/calendar_dates に反映",
+    "隠岐一畑交通の運賃は区間制のため、アプリ表示用には最大運賃500円を fare_attributes に保持"
+  ]
+}
