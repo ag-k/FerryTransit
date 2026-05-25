@@ -12,17 +12,9 @@ import {
 import { buildStorageObjectDownloadUrl } from "@/utils/firebaseStorageUrl";
 import {
   type BusStopLocation,
-  type BusTimetableData,
   getLocationTypeForCode,
-  isAmaBusStopCode,
-  isChibuBusStopCode,
-  isNishinoshimaBusStopCode,
-  isOkinoshimaBusStopCode,
   isTripActiveOnDate,
-  loadAmaBusTimetable,
-  loadChibuBusTimetable,
-  loadNishinoshimaBusTimetable,
-  loadOkinoshimaBusTimetable,
+  loadBusStopsIndex,
 } from "@/utils/gtfsBusTimetable";
 
 // Port and Ship interfaces
@@ -494,68 +486,31 @@ export const useFerryStore = defineStore("ferry", () => {
     return resultTimetable;
   });
 
-  const loadBusTimetableSafely = async (): Promise<Trip[]> => {
-    const loaders: Array<{ label: string; load: () => Promise<BusTimetableData> }> = [
-      { label: "Ama bus", load: loadAmaBusTimetable },
-      { label: "Nishinoshima bus", load: loadNishinoshimaBusTimetable },
-      { label: "Chibu bus", load: loadChibuBusTimetable },
-      { label: "Okinoshima bus", load: loadOkinoshimaBusTimetable },
-    ];
-    const busTrips: Trip[] = [];
-    const nextBusStops: string[] = [];
+  const ensureBusStopsLoaded = async () => {
+    if (busStops.value.length > 0) return;
 
-    for (const loader of loaders) {
-      try {
-        const busData = await loader.load();
-        nextBusStops.push(...busData.stopCodes);
-        locationLabels.value = {
-          ...locationLabels.value,
-          ...busData.locationLabels,
-        };
-        busStopLocations.value = {
-          ...busStopLocations.value,
-          ...busData.stopLocations,
-        };
-        busTrips.push(...busData.trips);
-      } catch (busError) {
-        logger.warn(`${loader.label} timetable load failed`, {
-          error: toLoggableError(busError),
-        });
-      }
+    try {
+      const busIndex = await loadBusStopsIndex();
+      busStops.value = Array.from(new Set(busIndex.stopCodes));
+      locationLabels.value = {
+        ...locationLabels.value,
+        ...busIndex.locationLabels,
+      };
+      busStopLocations.value = {
+        ...busStopLocations.value,
+        ...busIndex.stopLocations,
+      };
+    } catch (busError) {
+      logger.warn("Bus stop index load failed", {
+        error: toLoggableError(busError),
+      });
     }
-
-    if (nextBusStops.length > 0) {
-      busStops.value = Array.from(new Set(nextBusStops));
-    }
-
-    return busTrips;
-  };
-
-  const ensureBusTimetableLoaded = async () => {
-    const hasAllBusStopFeeds =
-      busStops.value.some((stop) => isAmaBusStopCode(stop)) &&
-      busStops.value.some((stop) => isNishinoshimaBusStopCode(stop)) &&
-      busStops.value.some((stop) => isChibuBusStopCode(stop)) &&
-      busStops.value.some((stop) => isOkinoshimaBusStopCode(stop));
-
-    if (hasAllBusStopFeeds && timetableData.value.some((trip) => trip.mode === "BUS")) {
-      return;
-    }
-
-    const busTrips = await loadBusTimetableSafely();
-    if (busTrips.length === 0) return;
-
-    timetableData.value = [
-      ...timetableData.value.filter((trip) => trip.mode !== "BUS"),
-      ...busTrips,
-    ];
   };
 
   // Actions
   const fetchTimetable = async (force = false) => {
     const nativeAtEntry = process.client && isNativeClientPlatform();
     if (!force && !isDataStale.value && timetableData.value.length > 0) {
-      await ensureBusTimetableLoaded();
       return; // キャッシュが有効な場合はスキップ
     }
 
@@ -636,9 +591,7 @@ export const useFerryStore = defineStore("ferry", () => {
       }
 
       if (!Array.isArray(data) || data.length === 0) {
-        const busTrips = await loadBusTimetableSafely();
-        timetableData.value = busTrips;
-        error.value = busTrips.length > 0 ? null : "LOAD_TIMETABLE_ERROR";
+        error.value = "LOAD_TIMETABLE_ERROR";
         return;
       }
 
@@ -659,8 +612,7 @@ export const useFerryStore = defineStore("ferry", () => {
         status: parseInt(trip.status) || 0,
       }));
 
-      const busTrips = await loadBusTimetableSafely();
-      timetableData.value = [...ferryTrips, ...busTrips];
+      timetableData.value = ferryTrips;
 
       lastFetchTime.value = new Date();
 
@@ -707,8 +659,7 @@ export const useFerryStore = defineStore("ferry", () => {
               nextId: trip.next_id ? parseInt(trip.next_id) : undefined,
               status: parseInt(trip.status) || 0,
             }));
-            const busTrips = await loadBusTimetableSafely();
-            timetableData.value = [...ferryTrips, ...busTrips];
+            timetableData.value = ferryTrips;
             error.value = "OFFLINE_TIMETABLE_ERROR";
             loadedFallbackTimetable = true;
           }
@@ -718,11 +669,7 @@ export const useFerryStore = defineStore("ferry", () => {
       }
 
       if (!loadedFallbackTimetable) {
-        const busTrips = await loadBusTimetableSafely();
-        if (busTrips.length > 0) {
-          timetableData.value = busTrips;
-          error.value = null;
-        }
+        timetableData.value = [];
       }
     } finally {
       isLoading.value = false;
@@ -927,7 +874,7 @@ export const useFerryStore = defineStore("ferry", () => {
         lastFetchTime.value = new Date(savedTime);
       }
 
-      await ensureBusTimetableLoaded();
+      await ensureBusStopsLoaded();
     } catch (e) {
       // ローカルストレージ読み込みに失敗した場合は既存状態を維持
     }
@@ -967,6 +914,7 @@ export const useFerryStore = defineStore("ferry", () => {
     // Actions
     fetchTimetable,
     fetchShipStatus,
+    ensureBusStopsLoaded,
     setDeparture,
     setArrival,
     reverseRoute,

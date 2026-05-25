@@ -1,10 +1,42 @@
 #!/usr/bin/env node
 
-import { existsSync, mkdirSync, readFileSync, writeFileSync } from 'fs'
+import { existsSync, mkdirSync, readdirSync, readFileSync, statSync, writeFileSync } from 'fs'
 import { join } from 'path'
 import Papa from 'papaparse'
 
 const ROOT = process.cwd()
+const BUS_SEARCH_TARGET_DIR = join(ROOT, 'src', 'public', 'data', 'bus-search')
+
+const BUS_FEED_CONFIGS = {
+  ama: {
+    stopPrefix: 'BUS_AMA_',
+    operatorId: 'AMA_TOWN',
+    townLabelKey: 'AMA_CHO',
+    tripName: 'AMA_TOWN_BUS',
+    fare: 200
+  },
+  nishinoshima: {
+    stopPrefix: 'BUS_NISHINOSHIMA_',
+    operatorId: 'NISHINOSHIMA_TOWN',
+    townLabelKey: 'NISHINOSHIMA_CHO',
+    tripName: 'NISHINOSHIMA_TOWN_BUS',
+    fare: 200
+  },
+  chibu: {
+    stopPrefix: 'BUS_CHIBU_',
+    operatorId: 'CHIBU_VILLAGE',
+    townLabelKey: 'CHIBU_MURA',
+    tripName: 'CHIBU_VILLAGE_BUS',
+    fare: 100
+  },
+  okinoshima: {
+    stopPrefix: 'BUS_OKINOSHIMA_',
+    operatorId: 'OKINOSHIMA',
+    townLabelKey: 'OKINOSHIMA_CHO',
+    tripName: 'OKINOSHIMA_BUS',
+    fare: 500
+  }
+}
 
 function readCsv(filePath) {
   if (!existsSync(filePath)) return []
@@ -34,15 +66,82 @@ function writeJson(filePath, data) {
   writeFileSync(filePath, `${JSON.stringify(data, null, 2)}\n`, 'utf-8')
 }
 
+function writeCompactJson(filePath, data) {
+  mkdirSync(join(filePath, '..'), { recursive: true })
+  writeFileSync(filePath, `${JSON.stringify(data)}\n`, 'utf-8')
+}
+
 function numberOrNull(value) {
   if (value === undefined || value === null || value === '') return null
   const n = Number(value)
   return Number.isFinite(n) ? n : null
 }
 
-function main() {
-  const mode = process.argv[2] || 'bus'
-  const id = process.argv[3] || 'ama'
+function toBusStopCode(config, stopId) {
+  return `${config.stopPrefix}${stopId.replace(/[^a-zA-Z0-9]/g, '_')}`
+}
+
+function formatGtfsDate(value) {
+  return `${value.slice(0, 4)}-${value.slice(4, 6)}-${value.slice(6, 8)}`
+}
+
+function trimSeconds(value) {
+  return String(value || '').slice(0, 5)
+}
+
+function activeDaysFromCalendar(row) {
+  const activeDays = []
+  if (row.sunday === '1') activeDays.push(0)
+  if (row.monday === '1') activeDays.push(1)
+  if (row.tuesday === '1') activeDays.push(2)
+  if (row.wednesday === '1') activeDays.push(3)
+  if (row.thursday === '1') activeDays.push(4)
+  if (row.friday === '1') activeDays.push(5)
+  if (row.saturday === '1') activeDays.push(6)
+  return activeDays
+}
+
+function buildCompactServices(calendar, calendarDates) {
+  const services = {}
+
+  for (const row of calendar) {
+    services[row.service_id] = {
+      startDate: formatGtfsDate(row.start_date),
+      endDate: formatGtfsDate(row.end_date),
+      activeDays: activeDaysFromCalendar(row),
+      addedDates: [],
+      removedDates: []
+    }
+  }
+
+  for (const row of calendarDates) {
+    const date = formatGtfsDate(row.date)
+    let service = services[row.service_id]
+    if (!service) {
+      service = {
+        startDate: date,
+        endDate: date,
+        activeDays: [],
+        addedDates: [],
+        removedDates: []
+      }
+      services[row.service_id] = service
+    } else {
+      if (date < service.startDate) service.startDate = date
+      if (date > service.endDate) service.endDate = date
+    }
+
+    if (row.exception_type === '1') {
+      service.addedDates.push(date)
+    } else if (row.exception_type === '2') {
+      service.removedDates.push(date)
+    }
+  }
+
+  return services
+}
+
+function buildPublicData(mode, id) {
   const gtfsDir = join(ROOT, 'gtfs', 'current', mode, id)
   const targetDir = join(ROOT, 'src', 'public', 'data', 'gtfs', mode, id)
 
@@ -136,6 +235,145 @@ function main() {
   writeJson(join(targetDir, 'calendarDates.json'), calendarDates)
 
   console.log(`GTFS public data を生成しました: ${targetDir}`)
+
+  if (mode !== 'bus') return null
+
+  return buildBusSearchFeed({
+    id,
+    routes,
+    stops,
+    trips,
+    stopTimes,
+    calendar,
+    calendarDates,
+    metadata
+  })
+}
+
+function buildBusSearchFeed({ id, routes, stops, trips, stopTimes, calendar, calendarDates, metadata }) {
+  const config = BUS_FEED_CONFIGS[id]
+  if (!config) {
+    throw new Error(`bus-search 未対応のフィードIDです: ${id}`)
+  }
+
+  const routesById = Object.fromEntries(
+    routes.map(route => [
+      route.routeId,
+      {
+        agencyId: route.agencyId || '',
+        shortName: route.shortName || '',
+        longName: route.longName || ''
+      }
+    ])
+  )
+  const stopRows = stops.map(stop => [
+    toBusStopCode(config, stop.stopId),
+    stop.name || '',
+    stop.lat,
+    stop.lon
+  ])
+  const stopCodeById = new Map(stops.map(stop => [stop.stopId, toBusStopCode(config, stop.stopId)]))
+  const stopTimesByTripId = new Map()
+  for (const stopTime of stopTimes) {
+    const list = stopTimesByTripId.get(stopTime.tripId) || []
+    list.push(stopTime)
+    stopTimesByTripId.set(stopTime.tripId, list)
+  }
+  for (const list of stopTimesByTripId.values()) {
+    list.sort((a, b) => Number(a.stopSequence) - Number(b.stopSequence))
+  }
+
+  const compactTrips = []
+  const departuresByStop = {}
+  for (const trip of trips) {
+    const compactStopTimes = (stopTimesByTripId.get(trip.tripId) || [])
+      .map(stopTime => [
+        stopCodeById.get(stopTime.stopId),
+        trimSeconds(stopTime.arrivalTime),
+        trimSeconds(stopTime.departureTime)
+      ])
+      .filter(([stopCode]) => Boolean(stopCode))
+
+    if (compactStopTimes.length < 2) continue
+
+    const tripIndex = compactTrips.length
+    compactTrips.push({
+      tripId: trip.tripId,
+      routeId: trip.routeId,
+      serviceId: trip.serviceId,
+      headsign: trip.headsign || '',
+      shortName: trip.shortName || '',
+      stops: compactStopTimes
+    })
+
+    compactStopTimes.forEach(([stopCode], stopIndex) => {
+      departuresByStop[stopCode] ||= []
+      departuresByStop[stopCode].push([tripIndex, stopIndex])
+    })
+  }
+
+  const feed = {
+    version: 1,
+    feedId: id,
+    generatedAt: metadata.generatedAt,
+    operatorId: config.operatorId,
+    townLabelKey: config.townLabelKey,
+    tripName: config.tripName,
+    fare: config.fare,
+    routes: routesById,
+    stops: stopRows,
+    services: buildCompactServices(calendar, calendarDates),
+    trips: compactTrips,
+    departuresByStop
+  }
+
+  writeCompactJson(join(BUS_SEARCH_TARGET_DIR, `${id}.json`), feed)
+  console.log(`bus-search data を生成しました: ${join(BUS_SEARCH_TARGET_DIR, `${id}.json`)}`)
+
+  return {
+    id,
+    operatorId: config.operatorId,
+    townLabelKey: config.townLabelKey,
+    stops: stopRows.map(([code, name, lat, lng]) => [code, name, lat, lng, config.operatorId, config.townLabelKey])
+  }
+}
+
+function writeBusStopsIndex(feeds) {
+  const stops = feeds.flatMap(feed => feed?.stops || [])
+  writeCompactJson(join(BUS_SEARCH_TARGET_DIR, 'stops.json'), {
+    version: 1,
+    generatedAt: new Date().toISOString(),
+    feeds: feeds.filter(Boolean).map(feed => ({
+      id: feed.id,
+      operatorId: feed.operatorId,
+      townLabelKey: feed.townLabelKey
+    })),
+    stops
+  })
+  console.log(`bus-search stop index を生成しました: ${join(BUS_SEARCH_TARGET_DIR, 'stops.json')}`)
+}
+
+function listBusFeedIds() {
+  const busRoot = join(ROOT, 'gtfs', 'current', 'bus')
+  return readdirSync(busRoot)
+    .filter(entry => statSync(join(busRoot, entry)).isDirectory())
+    .sort()
+}
+
+function main() {
+  const mode = process.argv[2] || 'bus'
+  const id = process.argv[3]
+
+  if (mode === 'bus' && !id) {
+    const feeds = listBusFeedIds().map(feedId => buildPublicData('bus', feedId))
+    writeBusStopsIndex(feeds)
+    return
+  }
+
+  const feed = buildPublicData(mode, id || 'ama')
+  if (mode === 'bus') {
+    writeBusStopsIndex([feed])
+  }
 }
 
 main()

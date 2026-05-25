@@ -1,5 +1,6 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest'
 import {
+  clearBusSearchFeedCacheForTests,
   getBusStopPortBadgeLabel,
   getBusStopTownLabelKey,
   getLocationTypeForCode,
@@ -8,6 +9,8 @@ import {
   isNishinoshimaBusStopCode,
   isOkinoshimaBusStopCode,
   isTripActiveOnDate,
+  loadBusStopsIndex,
+  loadBusTripsForRoute,
   loadAmaBusTimetable,
   loadChibuBusTimetable,
   loadNishinoshimaBusTimetable,
@@ -26,6 +29,7 @@ import type { Trip } from '@/types'
 describe('gtfsBusTimetable', () => {
   beforeEach(() => {
     vi.restoreAllMocks()
+    clearBusSearchFeedCacheForTests()
   })
 
   it('海士町バス停コードを停留所として扱う', () => {
@@ -190,7 +194,7 @@ describe('gtfsBusTimetable', () => {
 
     const result = await loadAmaBusTimetable()
 
-    expect(fetchMock).toHaveBeenCalledWith('/data/gtfs/bus/ama/routes.json', { cache: 'no-store' })
+    expect(fetchMock).toHaveBeenCalledWith('/data/gtfs/bus/ama/routes.json')
     expect(result.stopCodes).toEqual(['BUS_AMA_100_01', 'BUS_AMA_100_02', 'BUS_AMA_100_03'])
     expect(result.locationLabels.BUS_AMA_100_02).toBe('隠岐神社')
     expect(result.stopLocations.BUS_AMA_100_02).toMatchObject({
@@ -267,7 +271,7 @@ describe('gtfsBusTimetable', () => {
 
     const result = await loadNishinoshimaBusTimetable()
 
-    expect(fetchMock).toHaveBeenCalledWith('/data/gtfs/bus/nishinoshima/routes.json', { cache: 'no-store' })
+    expect(fetchMock).toHaveBeenCalledWith('/data/gtfs/bus/nishinoshima/routes.json')
     expect(result.stopCodes).toEqual([
       'BUS_NISHINOSHIMA_nishinoshima_001',
       'BUS_NISHINOSHIMA_nishinoshima_007'
@@ -344,7 +348,7 @@ describe('gtfsBusTimetable', () => {
 
     const result = await loadChibuBusTimetable()
 
-    expect(fetchMock).toHaveBeenCalledWith('/data/gtfs/bus/chibu/routes.json', { cache: 'no-store' })
+    expect(fetchMock).toHaveBeenCalledWith('/data/gtfs/bus/chibu/routes.json')
     expect(result.stopCodes).toEqual(['BUS_CHIBU_kuri_naikosen', 'BUS_CHIBU_nibu_bus'])
     expect(result.stopLocations.BUS_CHIBU_kuri_naikosen).toMatchObject({
       id: 'BUS_CHIBU_kuri_naikosen',
@@ -554,5 +558,119 @@ describe('gtfsBusTimetable', () => {
       arrivalTime: '14:55',
       via: '国賀線'
     })
+  })
+
+  it('bus-search停留所インデックスから停留所一覧だけを読み込む', async () => {
+    const fetchMock = vi.fn(() => Promise.resolve({
+      ok: true,
+      status: 200,
+      json: () => Promise.resolve({
+        version: 1,
+        generatedAt: '2026-05-25T00:00:00.000Z',
+        stops: [
+          ['BUS_AMA_100_01', '豊田', 36.105471, 133.125968, 'AMA_TOWN', 'AMA_CHO'],
+          ['BUS_CHIBU_nibu_bus', '仁夫', 36.00669672, 133.03282616, 'CHIBU_VILLAGE', 'CHIBU_MURA']
+        ]
+      })
+    } as Response))
+    vi.stubGlobal('fetch', fetchMock)
+
+    const result = await loadBusStopsIndex()
+
+    expect(fetchMock).toHaveBeenCalledWith('/data/bus-search/stops.json')
+    expect(result.stopCodes).toEqual(['BUS_AMA_100_01', 'BUS_CHIBU_nibu_bus'])
+    expect(result.locationLabels.BUS_AMA_100_01).toBe('豊田')
+    expect(result.stopLocations.BUS_CHIBU_nibu_bus).toMatchObject({
+      id: 'BUS_CHIBU_nibu_bus',
+      name: '仁夫',
+      operatorId: 'CHIBU_VILLAGE',
+      townLabelKey: 'CHIBU_MURA'
+    })
+  })
+
+  it('bus-searchデータから指定区間の候補だけを生成する', async () => {
+    const fetchMock = vi.fn(() => Promise.resolve({
+      ok: true,
+      status: 200,
+      json: () => Promise.resolve({
+        version: 1,
+        feedId: 'ama',
+        generatedAt: '2026-05-25T00:00:00.000Z',
+        operatorId: 'AMA_TOWN',
+        townLabelKey: 'AMA_CHO',
+        tripName: 'AMA_TOWN_BUS',
+        fare: 200,
+        routes: {
+          R8_AMA: {
+            agencyId: '',
+            shortName: '',
+            longName: '海士島線1'
+          }
+        },
+        stops: [
+          ['BUS_AMA_100_01', '豊田', 36.105471, 133.125968],
+          ['BUS_AMA_100_02', '隠岐神社前', 36.097104, 133.098744],
+          ['BUS_AMA_126_01', '隠岐汽船乗り場', 36.105058, 133.076744]
+        ],
+        services: {
+          svc_weekday: {
+            startDate: '2026-01-01',
+            endDate: '2026-01-31',
+            activeDays: [1],
+            addedDates: [],
+            removedDates: ['2026-01-05']
+          }
+        },
+        trips: [
+          {
+            tripId: 'trip_1',
+            routeId: 'R8_AMA',
+            serviceId: 'svc_weekday',
+            headsign: '隠岐汽船乗り場',
+            shortName: '',
+            stops: [
+              ['BUS_AMA_100_01', '08:00', '08:00'],
+              ['BUS_AMA_100_02', '08:10', '08:10'],
+              ['BUS_AMA_126_01', '08:20', '08:20']
+            ]
+          }
+        ],
+        departuresByStop: {
+          BUS_AMA_100_01: [[0, 0]],
+          BUS_AMA_100_02: [[0, 1]]
+        }
+      })
+    } as Response))
+    vi.stubGlobal('fetch', fetchMock)
+
+    const result = await loadBusTripsForRoute(
+      'BUS_AMA_100_01',
+      'BUS_AMA_126_01',
+      '2026-01-12'
+    )
+
+    expect(fetchMock).toHaveBeenCalledWith('/data/bus-search/ama.json')
+    expect(result).toHaveLength(1)
+    expect(result[0]).toMatchObject({
+      startDate: '2026-01-01',
+      endDate: '2026-01-31',
+      activeDays: [1],
+      removedDates: ['2026-01-05'],
+      name: 'AMA_TOWN_BUS',
+      mode: 'BUS',
+      departure: 'BUS_AMA_100_01',
+      arrival: 'BUS_AMA_126_01',
+      departureTime: '08:00',
+      arrivalTime: '08:20',
+      price: 200,
+      via: '海士島線'
+    })
+
+    const removedDateResult = await loadBusTripsForRoute(
+      'BUS_AMA_100_01',
+      'BUS_AMA_126_01',
+      '2026-01-05'
+    )
+    expect(removedDateResult).toEqual([])
   })
 })

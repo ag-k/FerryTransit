@@ -15,7 +15,7 @@ import {
   isVehicleSearchShip,
   normalizeVehicleLengthMeters,
 } from "@/utils/vehicleFare";
-import { isTripActiveOnDate } from "@/utils/gtfsBusTimetable";
+import { isTripActiveOnDate, loadBusTripsForRoute } from "@/utils/gtfsBusTimetable";
 
 export const useRouteSearch = () => {
   const ferryStore = process.client ? useFerryStore() : null;
@@ -163,12 +163,21 @@ export const useRouteSearch = () => {
     const dayTimetable = (ferryStore?.timetableData || []).filter((trip) => {
       return isTripActiveOnDate(trip, searchDate, searchDateStr);
     });
+    let busDirectTrips: Trip[] = [];
+    if (!withCar) {
+      try {
+        busDirectTrips = await loadBusTripsForRoute(departure, arrival, searchDateStr);
+      } catch (error) {
+        logger.warn("Failed to load bus search data", error);
+      }
+    }
     const searchableTimetable = withCar
       ? dayTimetable.filter((trip) => isVehicleSearchShip(trip.name))
-      : dayTimetable;
+      : [...dayTimetable, ...busDirectTrips];
 
     logger.debug("Filtered timetable for date range", {
       count: dayTimetable.length,
+      busDirectCount: busDirectTrips.length,
       searchableCount: searchableTimetable.length,
       searchDate: searchDateStr,
     });
@@ -353,9 +362,13 @@ export const useRouteSearch = () => {
     const routes: TransitRoute[] = [];
     const processedRoutes = new Set<string>();
     const tripMap = new Map<string, Trip>();
+    const tripsByDeparture = new Map<string, Trip[]>();
 
     for (const trip of timetable) {
       tripMap.set(String(trip.tripId), trip);
+      const departures = tripsByDeparture.get(trip.departure) ?? [];
+      departures.push(trip);
+      tripsByDeparture.set(trip.departure, departures);
     }
 
     // Handle special HONDO port mapping
@@ -477,9 +490,7 @@ export const useRouteSearch = () => {
 
       if (arrivalPorts.includes(firstTrip.arrival)) continue;
 
-      for (const secondTrip of timetable) {
-        if (secondTrip.departure !== firstTrip.arrival) continue;
-
+      for (const secondTrip of tripsByDeparture.get(firstTrip.arrival) ?? []) {
         // 本土の港が途中経由地（出発地/目的地以外）にある便を除外
         if (secondTrip.via && isMainlandPort(secondTrip.via)) {
           // 出発地または目的地が本土の港の場合は除外しない

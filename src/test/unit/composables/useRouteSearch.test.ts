@@ -3,6 +3,7 @@ import { setActivePinia, createPinia } from "pinia";
 import { useRouteSearch } from "@/composables/useRouteSearch";
 import { useFerryStore } from "@/stores/ferry";
 import { mockTrips } from "@/test/mocks/mockData";
+import { clearBusSearchFeedCacheForTests } from "@/utils/gtfsBusTimetable";
 
 // Mock useFerryData
 const mockGetTripStatus = vi.fn(() => 0);
@@ -193,6 +194,7 @@ describe("useRouteSearch", () => {
   beforeEach(() => {
     setActivePinia(createPinia());
     vi.clearAllMocks();
+    clearBusSearchFeedCacheForTests();
   });
 
   describe("getPortDisplayName", () => {
@@ -228,6 +230,93 @@ describe("useRouteSearch", () => {
       expect(results[0].segments[0].departure).toBe("HONDO_SHICHIRUI");
       expect(results[0].segments[0].arrival).toBe("SAIGO");
       expect(results[0].transferCount).toBe(0);
+    });
+
+    it("should load only the selected bus feed and create direct bus candidates on demand", async () => {
+      const store = useFerryStore();
+      store.timetableData = mockTrips;
+      store.locationLabels = {
+        BUS_AMA_100_01: "豊田",
+        BUS_AMA_126_01: "隠岐汽船乗り場",
+      };
+
+      const fetchMock = vi.fn(() =>
+        Promise.resolve({
+          ok: true,
+          status: 200,
+          json: () =>
+            Promise.resolve({
+              version: 1,
+              feedId: "ama",
+              generatedAt: "2026-05-25T00:00:00.000Z",
+              operatorId: "AMA_TOWN",
+              townLabelKey: "AMA_CHO",
+              tripName: "AMA_TOWN_BUS",
+              fare: 200,
+              routes: {
+                R8_AMA: {
+                  agencyId: "",
+                  shortName: "",
+                  longName: "海士島線1",
+                },
+              },
+              stops: [
+                ["BUS_AMA_100_01", "豊田", 36.105471, 133.125968],
+                ["BUS_AMA_100_02", "隠岐神社前", 36.097104, 133.098744],
+                ["BUS_AMA_126_01", "隠岐汽船乗り場", 36.105058, 133.076744],
+              ],
+              services: {
+                svc_daily: {
+                  startDate: "2026-01-01",
+                  endDate: "2026-12-31",
+                  activeDays: [0, 1, 2, 3, 4, 5, 6],
+                  addedDates: [],
+                  removedDates: [],
+                },
+              },
+              trips: [
+                {
+                  tripId: "trip_1",
+                  routeId: "R8_AMA",
+                  serviceId: "svc_daily",
+                  headsign: "隠岐汽船乗り場",
+                  shortName: "",
+                  stops: [
+                    ["BUS_AMA_100_01", "15:00", "15:00"],
+                    ["BUS_AMA_100_02", "15:12", "15:12"],
+                    ["BUS_AMA_126_01", "15:28", "15:28"],
+                  ],
+                },
+              ],
+              departuresByStop: {
+                BUS_AMA_100_01: [[0, 0]],
+                BUS_AMA_100_02: [[0, 1]],
+              },
+            }),
+        } as Response)
+      );
+      vi.stubGlobal("fetch", fetchMock);
+
+      const { searchRoutes } = useRouteSearch();
+      const results = await searchRoutes(
+        "BUS_AMA_100_01",
+        "BUS_AMA_126_01",
+        new Date("2026-05-25"),
+        "14:00",
+        false
+      );
+
+      expect(fetchMock).toHaveBeenCalledTimes(1);
+      expect(fetchMock).toHaveBeenCalledWith("/data/bus-search/ama.json");
+      expect(store.timetableData.some((trip) => trip.mode === "BUS")).toBe(false);
+      expect(results).toHaveLength(1);
+      expect(results[0]?.segments[0]).toMatchObject({
+        ship: "AMA_TOWN_BUS",
+        mode: "BUS",
+        departure: "BUS_AMA_100_01",
+        arrival: "BUS_AMA_126_01",
+        fare: 200,
+      });
     });
 
     it("should apply live cancellation status only when the search date is today (JST)", async () => {

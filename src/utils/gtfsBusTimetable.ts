@@ -27,6 +27,7 @@ const OKINOSHIMA_BUS_OPERATOR_ID = 'OKINOSHIMA'
 const OKINOSHIMA_BUS_NAME = 'OKINOSHIMA_BUS'
 const OKINOSHIMA_BUS_TRIP_ID_BASE = 6_000_000
 const OKINOSHIMA_BUS_FARE = 500
+const BUS_SEARCH_BASE_PATH = '/data/bus-search'
 
 type GtfsRoute = {
   routeId: string
@@ -117,6 +118,63 @@ export type BusTimetableData = {
 }
 
 export type AmaBusTimetableData = BusTimetableData
+export type BusFeedId = 'ama' | 'nishinoshima' | 'chibu' | 'okinoshima'
+
+export type BusStopsIndexData = Omit<BusTimetableData, 'trips'>
+
+type BusSearchRoute = {
+  agencyId?: string
+  shortName?: string
+  longName?: string
+}
+
+type BusSearchService = {
+  startDate: string
+  endDate: string
+  activeDays: number[]
+  addedDates?: string[]
+  removedDates?: string[]
+}
+
+type BusSearchTripStop = [stopCode: string, arrivalTime: string, departureTime: string]
+type BusSearchDepartureIndex = [tripIndex: number, stopIndex: number]
+
+type BusSearchTrip = {
+  tripId: string
+  routeId: string
+  serviceId: string
+  headsign: string
+  shortName?: string
+  stops: BusSearchTripStop[]
+}
+
+export type BusSearchFeed = {
+  version: 1
+  feedId: BusFeedId
+  generatedAt: string
+  operatorId: string
+  townLabelKey: string | null
+  tripName: string
+  fare: number
+  routes: Record<string, BusSearchRoute>
+  stops: Array<[code: string, name: string, lat: number | null, lng: number | null]>
+  services: Record<string, BusSearchService>
+  trips: BusSearchTrip[]
+  departuresByStop: Record<string, BusSearchDepartureIndex[]>
+}
+
+type BusStopsIndex = {
+  version: 1
+  generatedAt: string
+  stops: Array<[
+    code: string,
+    name: string,
+    lat: number | null,
+    lng: number | null,
+    operatorId: string,
+    townLabelKey: string | null
+  ]>
+}
 
 const AMA_BUS_CONFIG: BusFeedConfig = {
   id: 'ama',
@@ -170,6 +228,15 @@ const OKINOSHIMA_BUS_CONFIG: BusFeedConfig = {
   resolveTripName: route => route?.agencyId === 'OKINOSHIMA_TOWN' ? 'OKINOSHIMA_TOWN_BUS' : 'OKI_ICHIBATA_BUS',
   resolveFare: route => route?.agencyId === 'OKINOSHIMA_TOWN' ? 300 : 500
 }
+
+const BUS_FEED_CONFIGS: Record<BusFeedId, BusFeedConfig> = {
+  ama: AMA_BUS_CONFIG,
+  nishinoshima: NISHINOSHIMA_BUS_CONFIG,
+  chibu: CHIBU_BUS_CONFIG,
+  okinoshima: OKINOSHIMA_BUS_CONFIG
+}
+
+const busSearchFeedPromises = new Map<BusFeedId, Promise<BusSearchFeed>>()
 
 export const isAmaBusStopCode = (value?: string): boolean => {
   return typeof value === 'string' && value.startsWith(AMA_BUS_STOP_PREFIX)
@@ -303,6 +370,157 @@ export const loadOkinoshimaBusTimetable = (): Promise<BusTimetableData> => {
   return loadGtfsBusTimetable(OKINOSHIMA_BUS_CONFIG)
 }
 
+export const clearBusSearchFeedCacheForTests = () => {
+  busSearchFeedPromises.clear()
+}
+
+export const getBusFeedIdForStopCode = (value?: string): BusFeedId | null => {
+  if (isAmaBusStopCode(value)) return 'ama'
+  if (isNishinoshimaBusStopCode(value)) return 'nishinoshima'
+  if (isChibuBusStopCode(value)) return 'chibu'
+  if (isOkinoshimaBusStopCode(value)) return 'okinoshima'
+  return null
+}
+
+export const loadBusStopsIndex = async (): Promise<BusStopsIndexData> => {
+  const index = await fetchJsonFromPath<BusStopsIndex>(`${BUS_SEARCH_BASE_PATH}/stops.json`)
+  const stopCodes: string[] = []
+  const locationLabels: Record<string, string> = {}
+  const stopLocations: Record<string, BusStopLocation> = {}
+
+  for (const [code, name, latValue, lngValue, operatorId, townLabelKey] of index.stops || []) {
+    if (!code) continue
+    stopCodes.push(code)
+    locationLabels[code] = name || code
+
+    const lat = Number(latValue)
+    const lng = Number(lngValue)
+    if (Number.isFinite(lat) && Number.isFinite(lng)) {
+      stopLocations[code] = {
+        id: code,
+        name: name || code,
+        lat,
+        lng,
+        operatorId,
+        townLabelKey
+      }
+    }
+  }
+
+  return {
+    stopCodes,
+    locationLabels,
+    stopLocations
+  }
+}
+
+export const loadBusSearchFeed = (feedId: BusFeedId): Promise<BusSearchFeed> => {
+  const cached = busSearchFeedPromises.get(feedId)
+  if (cached) return cached
+
+  const promise = fetchJsonFromPath<BusSearchFeed>(`${BUS_SEARCH_BASE_PATH}/${feedId}.json`)
+  busSearchFeedPromises.set(feedId, promise)
+  return promise
+}
+
+export const loadBusTripsForRoute = async (
+  departure: string,
+  arrival: string,
+  dateYmd: string
+): Promise<Trip[]> => {
+  const departureFeedId = getBusFeedIdForStopCode(departure)
+  const arrivalFeedId = getBusFeedIdForStopCode(arrival)
+  if (!departureFeedId || !arrivalFeedId || departureFeedId !== arrivalFeedId) {
+    return []
+  }
+
+  const feed = await loadBusSearchFeed(departureFeedId)
+  return buildBusTripsForRoute(feed, departure, arrival, dateYmd)
+}
+
+export const buildBusTripsForRoute = (
+  feed: BusSearchFeed,
+  departure: string,
+  arrival: string,
+  dateYmd: string
+): Trip[] => {
+  const config = BUS_FEED_CONFIGS[feed.feedId]
+  const departures = feed.departuresByStop?.[departure] || []
+  const busTrips: Trip[] = []
+
+  for (const [tripIndex, originIndex] of departures) {
+    const busTrip = feed.trips[tripIndex]
+    if (!busTrip) continue
+
+    const service = feed.services[busTrip.serviceId]
+    if (!service || !isBusServiceActiveOnDate(service, dateYmd)) continue
+
+    const origin = busTrip.stops[originIndex]
+    if (!origin || origin[0] !== departure) continue
+
+    const seenStopPairs = new Set<string>()
+    for (let destinationIndex = originIndex + 1; destinationIndex < busTrip.stops.length; destinationIndex++) {
+      const destination = busTrip.stops[destinationIndex]
+      if (!destination || destination[0] !== arrival) continue
+
+      const stopPairKey = [
+        origin[0],
+        origin[2],
+        destination[0],
+        destination[1]
+      ].join('|')
+      if (seenStopPairs.has(stopPairKey)) continue
+      seenStopPairs.add(stopPairKey)
+
+      const route = feed.routes[busTrip.routeId]
+      const routeForConfig: GtfsRoute | undefined = route
+        ? {
+            routeId: busTrip.routeId,
+            agencyId: route.agencyId,
+            shortName: route.shortName,
+            longName: route.longName || route.shortName || busTrip.headsign
+          }
+        : undefined
+      const gtfsTrip: GtfsTrip = {
+        routeId: busTrip.routeId,
+        serviceId: busTrip.serviceId,
+        tripId: busTrip.tripId,
+        headsign: busTrip.headsign,
+        shortName: busTrip.shortName
+      }
+      const routeName = config.formatRouteName(routeForConfig, gtfsTrip)
+      const operatorId = config.resolveOperatorId?.(routeForConfig, gtfsTrip) ?? config.operatorId
+      const tripName = config.resolveTripName?.(routeForConfig, gtfsTrip) ?? config.tripName
+      const fare = config.resolveFare?.(routeForConfig, gtfsTrip) ?? config.fare
+
+      busTrips.push({
+        tripId: config.tripIdBase + tripIndex * 1000 + originIndex * 100 + destinationIndex,
+        startDate: service.startDate,
+        endDate: service.endDate,
+        activeDays: service.activeDays,
+        addedDates: service.addedDates ?? [],
+        removedDates: service.removedDates ?? [],
+        name: tripName,
+        mode: 'BUS',
+        operatorId,
+        serviceId: busTrip.serviceId,
+        vehicleId: busTrip.routeId,
+        departure,
+        departureType: 'STOP',
+        departureTime: origin[2],
+        arrival,
+        arrivalType: 'STOP',
+        arrivalTime: destination[1],
+        status: 0,
+        price: fare,
+        ...(routeName ? { via: routeName } : {})
+      })
+    }
+  }
+
+  return busTrips
+}
+
 const loadGtfsBusTimetable = async (config: BusFeedConfig): Promise<BusTimetableData> => {
   const [
     routes,
@@ -416,11 +634,37 @@ const toBusStopCode = (config: BusFeedConfig, stopId: string): string => {
 }
 
 const fetchJson = async <T>(config: BusFeedConfig, fileName: string): Promise<T> => {
-  const response = await fetch(`${config.basePath}/${fileName}`, { cache: 'no-store' })
+  const response = await fetch(`${config.basePath}/${fileName}`)
   if (!response.ok) {
     throw new Error(`Failed to load ${config.id} bus GTFS data: ${fileName} (${response.status})`)
   }
   return await response.json() as T
+}
+
+const fetchJsonFromPath = async <T>(path: string): Promise<T> => {
+  const response = await fetch(path)
+  if (!response.ok) {
+    throw new Error(`Failed to load bus search data: ${path} (${response.status})`)
+  }
+  return await response.json() as T
+}
+
+const isBusServiceActiveOnDate = (service: BusSearchService, dateYmd: string): boolean => {
+  if (dateYmd < service.startDate || dateYmd > service.endDate) return false
+
+  const removedDates = service.removedDates ?? []
+  if (removedDates.includes(dateYmd)) return false
+
+  const addedDates = service.addedDates ?? []
+  if (addedDates.includes(dateYmd)) return true
+
+  if (!service.activeDays) return true
+  if (service.activeDays.length === 0) return false
+
+  const year = Number(dateYmd.slice(0, 4))
+  const month = Number(dateYmd.slice(5, 7)) - 1
+  const day = Number(dateYmd.slice(8, 10))
+  return service.activeDays.includes(new Date(Date.UTC(year, month, day)).getUTCDay())
 }
 
 const buildServices = (calendar: GtfsCalendar[], calendarDates: GtfsCalendarDate[]): Map<string, ServiceWindow> => {
