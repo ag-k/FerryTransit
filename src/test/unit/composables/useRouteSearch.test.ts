@@ -195,6 +195,19 @@ describe("useRouteSearch", () => {
     vi.clearAllMocks();
   });
 
+  describe("getPortDisplayName", () => {
+    it("should resolve bus stop codes from ferry store location labels", () => {
+      const store = useFerryStore();
+      store.locationLabels = {
+        BUS_AMA_100_01: "豊田",
+      };
+
+      const { getPortDisplayName } = useRouteSearch();
+
+      expect(getPortDisplayName("BUS_AMA_100_01")).toBe("豊田");
+    });
+  });
+
   describe("searchRoutes", () => {
     it("should find direct routes", async () => {
       const store = useFerryStore();

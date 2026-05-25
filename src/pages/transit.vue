@@ -299,9 +299,14 @@ href="#" class="text-app-primary dark:text-white group inline-flex items-center 
                         <div class="flex flex-col">
                           <div class="flex items-center gap-2 flex-wrap">
                             <a
-href="#" class="text-app-primary dark:text-white hover:underline"
+href="#" class="inline-flex items-center gap-1.5 text-app-primary dark:text-white hover:underline"
                               @click.prevent="showShipInfo(segment.ship)">
-                              🚢 {{ $t(segment.ship) }}
+                              <Icon
+                                :name="getSegmentTransportIcon(segment)"
+                                class="h-4 w-4 shrink-0"
+                                aria-hidden="true"
+                              />
+                              <span>{{ $t(segment.ship) }}</span>
                             </a>
                             <a
                               v-if="segment.ship === 'RAINBOWJET'"
@@ -437,7 +442,14 @@ v-else-if="hasSearched && !isSearching"
                 </div>
                 <div class="md:col-span-1 text-center">
                   <div class="mt-2 dark:text-gray-300">→</div>
-                  <small class="text-gray-500 dark:text-gray-300">🚢 {{ $t(segment.ship) }}</small>
+                  <small class="inline-flex items-center justify-center gap-1.5 text-gray-500 dark:text-gray-300">
+                    <Icon
+                      :name="getSegmentTransportIcon(segment)"
+                      class="h-4 w-4 shrink-0"
+                      aria-hidden="true"
+                    />
+                    <span>{{ $t(segment.ship) }}</span>
+                  </small>
                   <small v-if="formatSegmentMeta(segment)" class="text-gray-500 dark:text-gray-300 block mt-1">
                     {{ formatSegmentMeta(segment) }}
                   </small>
@@ -614,7 +626,8 @@ const getPortLabelParts = (portId?: string) => {
   if (!portId) {
     return { name: '-', badges: [] as string[] }
   }
-  const translated = String(t(portId))
+  const storeLabel = ferryStore?.getLocationLabel(portId)
+  const translated = storeLabel || String(t(portId))
   const label = translated && translated !== portId ? translated : getPortDisplayName(portId) || portId
   const parenRegex = /[（(]([^）)]+)[）)]/g
   const badges: string[] = []
@@ -756,6 +769,13 @@ const canSearch = computed(() => {
 const normalizeTransportMode = (mode?: TransportMode | string): TransportMode => {
   if (mode === 'BUS' || mode === 'AIR' || mode === 'FERRY') return mode
   return 'FERRY'
+}
+
+const getSegmentTransportIcon = (segment: TransitSegment) => {
+  const mode = normalizeTransportMode(segment.mode)
+  if (mode === 'BUS') return 'mdi:bus'
+  if (mode === 'AIR') return 'mdi:airplane'
+  return 'mdi:ferry'
 }
 
 const availableTransportModes = computed(() => {

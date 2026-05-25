@@ -1049,6 +1049,11 @@ export const useRouteSearch = () => {
 
     // Get port from ferryStore
     if (ferryStore) {
+      const locationLabel = ferryStore.getLocationLabel(port);
+      if (locationLabel) {
+        return locationLabel;
+      }
+
       const portData = ferryStore.ports.find((p) => p.PORT_ID === port);
       if (portData) {
         return i18n.locale.value === "ja"
