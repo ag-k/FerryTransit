@@ -150,6 +150,32 @@ describe('useFavorites', () => {
       
       expect(getPortDisplayName(port)).toBe('Main Port (SAIGO)')
     })
+
+    it('should resolve bus stop labels from ferry store location labels', () => {
+      const ferryStore = useFerryStore()
+      ferryStore.locationLabels = {
+        BUS_AMA_100_01: '豊田',
+        BUS_AMA_126_01: '隠岐汽船乗り場'
+      }
+
+      const { getRouteDisplayName, getPortDisplayName } = useFavorites()
+      const route = {
+        id: '1',
+        departure: 'BUS_AMA_100_01',
+        arrival: 'BUS_AMA_126_01',
+        createdAt: new Date(),
+        sortOrder: 0
+      }
+      const port = {
+        id: '2',
+        portCode: 'BUS_AMA_100_01',
+        createdAt: new Date(),
+        sortOrder: 1
+      }
+
+      expect(getRouteDisplayName(route)).toBe('豊田 → 隠岐汽船乗り場')
+      expect(getPortDisplayName(port)).toBe('豊田')
+    })
   })
 
   describe('searchFavoriteRoute', () => {

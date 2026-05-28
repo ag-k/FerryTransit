@@ -14,6 +14,8 @@ const PortSelectorStub = defineComponent({
     'dozenPorts',
     'dogoPorts',
     'allowedLocationType',
+    'showTransportTabs',
+    'preferredBusStopTownSource',
     'margin'
   ],
   emits: ['update:modelValue', 'selectRoute'],
@@ -124,6 +126,25 @@ describe('RouteEndpointsSelector', () => {
 
     expect(stubs[0].props('allowedLocationType')).toBe('STOP')
     expect(stubs[1].props('allowedLocationType')).toBe('STOP')
+  })
+
+  it('passes transport tabs setting to both selectors', () => {
+    const wrapper = mountComponent({ showTransportTabs: true } as any)
+    const stubs = wrapper.findAllComponents(PortSelectorStub)
+
+    expect(stubs[0].props('showTransportTabs')).toBe(true)
+    expect(stubs[1].props('showTransportTabs')).toBe(true)
+  })
+
+  it('passes the opposite endpoint as preferred bus stop town source', () => {
+    const wrapper = mountComponent({
+      departure: 'BUS_NISHINOSHIMA_nishinoshima_001',
+      arrival: 'BUS_AMA_126_01'
+    })
+    const stubs = wrapper.findAllComponents(PortSelectorStub)
+
+    expect(stubs[0].props('preferredBusStopTownSource')).toBe('BUS_AMA_126_01')
+    expect(stubs[1].props('preferredBusStopTownSource')).toBe('BUS_NISHINOSHIMA_nishinoshima_001')
   })
 
   it('hides +via button by default', () => {

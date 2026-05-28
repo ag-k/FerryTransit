@@ -26,7 +26,10 @@ vi.mock('vue-i18n', async () => {
 
 vi.mock('~/stores/ferry', () => ({
   useFerryStore: () => ({
-    ports: []
+    ports: [],
+    getLocationLabel: (locationId: string) => ({
+      BUS_AMA_100_01: '豊田'
+    }[locationId] ?? null)
   })
 }))
 
@@ -106,5 +109,28 @@ describe('FavoritePortCard', () => {
     })
 
     expect(wrapper.text()).toContain('七類(松江市)または境港(境港市)')
+  })
+
+  it('バス停コードは停留所名で表示する', () => {
+    const wrapper = mount(FavoritePortCard, {
+      props: {
+        portId: 'BUS_AMA_100_01',
+        portCode: 'BUS_AMA_100_01'
+      },
+      global: {
+        stubs: {
+          FavoriteButton: { template: '<button />' },
+          ConfirmDialog: { template: '<div />', props: ['isOpen'] }
+        },
+        config: {
+          globalProperties: {
+            $t: (key: string) => key
+          }
+        }
+      }
+    })
+
+    expect(wrapper.text()).toContain('豊田')
+    expect(wrapper.text()).not.toContain('BUS_AMA_100_01')
   })
 })

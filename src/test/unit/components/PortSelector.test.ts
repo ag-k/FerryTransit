@@ -181,6 +181,136 @@ describe('PortSelector', () => {
     expect(wrapper.text()).not.toContain('来居内航船')
   })
 
+  it('defaults the bus stop town tab from the preferred source stop', async () => {
+    const store = useFerryStore()
+    store.busStops = [
+      'BUS_AMA_100_01',
+      'BUS_NISHINOSHIMA_nishinoshima_001',
+      'BUS_NISHINOSHIMA_nishinoshima_006'
+    ]
+    store.locationLabels = {
+      BUS_AMA_100_01: '豊田',
+      BUS_NISHINOSHIMA_nishinoshima_001: '宇賀',
+      BUS_NISHINOSHIMA_nishinoshima_006: '隠岐汽船（別府港）'
+    }
+
+    const wrapper = mount(PortSelector, {
+      props: {
+        ...defaultProps,
+        allowedLocationType: 'STOP',
+        preferredBusStopTownSource: 'BUS_NISHINOSHIMA_nishinoshima_001'
+      },
+      global: {
+        mocks: {
+          $t: (key: string) => key
+        },
+        stubs: {
+          Teleport: true
+        }
+      }
+    })
+
+    await wrapper.find('[data-testid="port-selector-button"]').trigger('click')
+
+    const tabs = wrapper.findAll('[data-testid="bus-stop-town-tab"]')
+    expect(tabs.map(tab => tab.text())).toEqual(['海士町', '西ノ島町'])
+    expect(tabs[1].attributes('aria-selected')).toBe('true')
+    expect(wrapper.text()).toContain('宇賀')
+    expect(wrapper.text()).toContain('隠岐汽船')
+    expect(wrapper.text()).not.toContain('豊田')
+  })
+
+  it('separates ship ports and bus stops by transport tabs when enabled', async () => {
+    const store = useFerryStore()
+    store.busStops = ['BUS_AMA_100_01', 'BUS_NISHINOSHIMA_nishinoshima_006']
+    store.locationLabels = {
+      BUS_AMA_100_01: '豊田',
+      BUS_NISHINOSHIMA_nishinoshima_006: '隠岐汽船（別府港）'
+    }
+
+    const wrapper = mount(PortSelector, {
+      props: {
+        ...defaultProps,
+        allowedLocationType: 'ALL',
+        showTransportTabs: true
+      },
+      global: {
+        mocks: {
+          $t: (key: string) => {
+            if (key === 'TRANSPORT_MODES.FERRY') return '船'
+            if (key === 'TRANSPORT_MODES.BUS') return 'バス'
+            return key
+          }
+        },
+        stubs: {
+          Teleport: true,
+          Icon: true
+        }
+      }
+    })
+
+    await wrapper.find('[data-testid="port-selector-button"]').trigger('click')
+
+    const tabs = wrapper.findAll('[data-testid="port-selector-transport-tab"]')
+    expect(tabs).toHaveLength(2)
+    expect(tabs.map(tab => tab.text())).toEqual(['船', 'バス'])
+    expect(tabs[0].attributes('aria-selected')).toBe('true')
+    expect(wrapper.find('[data-testid="port-section-mainland"]').exists()).toBe(true)
+    expect(wrapper.find('[data-testid="port-section-dozen"]').exists()).toBe(true)
+    expect(wrapper.find('[data-testid="port-section-dogo"]').exists()).toBe(true)
+    expect(wrapper.find('[data-testid="port-section-busStops"]').exists()).toBe(false)
+    expect(wrapper.text()).not.toContain('豊田')
+
+    await tabs[1].trigger('click')
+
+    const updatedTabs = wrapper.findAll('[data-testid="port-selector-transport-tab"]')
+    expect(updatedTabs[1].attributes('aria-selected')).toBe('true')
+    expect(wrapper.find('[data-testid="port-section-busStops"]').exists()).toBe(true)
+    expect(wrapper.find('[data-testid="port-section-mainland"]').exists()).toBe(false)
+    expect(wrapper.find('[data-testid="port-section-dozen"]').exists()).toBe(false)
+    expect(wrapper.find('[data-testid="port-section-dogo"]').exists()).toBe(false)
+    expect(wrapper.text()).toContain('豊田')
+  })
+
+  it('defaults to the bus tab when the preferred source is a bus stop', async () => {
+    const store = useFerryStore()
+    store.busStops = ['BUS_NISHINOSHIMA_nishinoshima_001']
+    store.locationLabels = {
+      BUS_NISHINOSHIMA_nishinoshima_001: '宇賀'
+    }
+
+    const wrapper = mount(PortSelector, {
+      props: {
+        ...defaultProps,
+        allowedLocationType: 'ALL',
+        showTransportTabs: true,
+        preferredBusStopTownSource: 'BUS_NISHINOSHIMA_nishinoshima_001'
+      },
+      global: {
+        mocks: {
+          $t: (key: string) => {
+            if (key === 'TRANSPORT_MODES.FERRY') return '船'
+            if (key === 'TRANSPORT_MODES.BUS') return 'バス'
+            return key
+          }
+        },
+        stubs: {
+          Teleport: true,
+          Icon: true
+        }
+      }
+    })
+
+    await wrapper.find('[data-testid="port-selector-button"]').trigger('click')
+
+    const tabs = wrapper.findAll('[data-testid="port-selector-transport-tab"]')
+    expect(tabs[0].attributes('aria-selected')).toBe('false')
+    expect(tabs[1].attributes('aria-selected')).toBe('true')
+    expect(wrapper.find('[data-testid="port-section-busStops"]').exists()).toBe(true)
+    expect(wrapper.find('[data-testid="port-section-dozen"]').exists()).toBe(false)
+    expect(wrapper.text()).toContain('宇賀')
+  })
+
   it('emits update:modelValue when selecting a port in the modal', async () => {
     const wrapper = mount(PortSelector, {
       props: defaultProps,

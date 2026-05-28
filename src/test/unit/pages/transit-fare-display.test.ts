@@ -302,6 +302,63 @@ describe('Transit Page - Fare Display', () => {
       expect(totalFareText).toContain('TOTAL: ¥410')
     })
 
+    it('should display town badges for bus stops in transit results', async () => {
+      const ferryStore = useFerryStore()
+      ferryStore.locationLabels = {
+        BUS_NISHINOSHIMA_nishinoshima_001: '宇賀',
+        BUS_NISHINOSHIMA_nishinoshima_006: '隠岐汽船'
+      }
+
+      const wrapper = mountWithI18n(Transit, {
+        global: {
+          plugins: [router],
+          stubs: {
+            PortSelector: true,
+            DatePicker: true,
+            CommonShipModal: true,
+            StatusAlerts: true,
+            FavoriteButton: true,
+            RouteMapModal: true
+          }
+        }
+      })
+
+      wrapper.vm.departure = 'BUS_NISHINOSHIMA_nishinoshima_001'
+      wrapper.vm.arrival = 'BUS_NISHINOSHIMA_nishinoshima_006'
+      wrapper.vm.hasSearched = true
+      wrapper.vm.searchResults = [
+        {
+          segments: [
+            {
+              tripId: 'bus-1',
+              ship: 'NISHINOSHIMA_TOWN_BUS',
+              mode: 'BUS',
+              departure: 'BUS_NISHINOSHIMA_nishinoshima_001',
+              departureType: 'STOP',
+              arrival: 'BUS_NISHINOSHIMA_nishinoshima_006',
+              arrivalType: 'STOP',
+              departureTime: new Date('2024-01-15T08:00:00'),
+              arrivalTime: new Date('2024-01-15T08:20:00'),
+              status: 0,
+              fare: 200
+            }
+          ],
+          departureTime: new Date('2024-01-15T08:00:00'),
+          arrivalTime: new Date('2024-01-15T08:20:00'),
+          totalFare: 200,
+          transferCount: 0
+        }
+      ]
+
+      await wrapper.vm.$nextTick()
+
+      const pageText = wrapper.text()
+      expect(pageText).toContain('宇賀')
+      expect(pageText).toContain('隠岐汽船')
+      expect(pageText).toContain('西ノ島町')
+      expect(pageText).toContain('別府港')
+    })
+
     it('should display multiple routes with different fares correctly', async () => {
       const wrapper = mountWithI18n(Transit, {
         global: {

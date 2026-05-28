@@ -163,6 +163,12 @@ export type BusSearchFeed = {
   departuresByStop: Record<string, BusSearchDepartureIndex[]>
 }
 
+export type BusRouteLabel = {
+  operatorId: string
+  tripName: string
+  routeName: string
+}
+
 type BusStopsIndex = {
   version: 1
   generatedAt: string
@@ -277,6 +283,17 @@ export const toOkinoshimaBusStopCode = (stopId: string): string => {
   return `${OKINOSHIMA_BUS_STOP_PREFIX}${stopId.replace(/[^a-zA-Z0-9]/g, '_')}`
 }
 
+const BUS_STOP_PORT_CONNECTIONS: Record<string, { portId: string; portLabel: string }> = {
+  [toAmaBusStopCode('126_01')]: { portId: 'HISHIURA', portLabel: '菱浦港' },
+  [toNishinoshimaBusStopCode('nishinoshima_006')]: { portId: 'BEPPU', portLabel: '別府港' },
+  [toChibuBusStopCode('kuri_naikosen')]: { portId: 'KURI', portLabel: '来居港' },
+  [toChibuBusStopCode('kuri_ferry')]: { portId: 'KURI', portLabel: '来居港' },
+  [toChibuBusStopCode('kuri_office')]: { portId: 'KURI', portLabel: '来居港' },
+  [toOkinoshimaBusStopCode('port_plaza')]: { portId: 'SAIGO', portLabel: '西郷港' },
+  [toOkinoshimaBusStopCode('port_mae')]: { portId: 'SAIGO', portLabel: '西郷港' },
+  [toOkinoshimaBusStopCode('nakamachi')]: { portId: 'SAIGO', portLabel: '西郷港' }
+}
+
 export const getBusStopTownLabelKey = (value?: string): string | null => {
   if (isAmaBusStopCode(value)) return 'AMA_CHO'
   if (isNishinoshimaBusStopCode(value)) return 'NISHINOSHIMA_CHO'
@@ -286,18 +303,21 @@ export const getBusStopTownLabelKey = (value?: string): string | null => {
 }
 
 export const getBusStopPortBadgeLabel = (value?: string): string | null => {
-  if (value === toAmaBusStopCode('126_01')) return '菱浦港'
-  if ([
-    toChibuBusStopCode('kuri_naikosen'),
-    toChibuBusStopCode('kuri_ferry'),
-    toChibuBusStopCode('kuri_office')
-  ].includes(String(value))) return '来居港'
-  if ([
-    toOkinoshimaBusStopCode('port_plaza'),
-    toOkinoshimaBusStopCode('port_mae'),
-    toOkinoshimaBusStopCode('nakamachi')
-  ].includes(String(value))) return '西郷港'
-  return null
+  return BUS_STOP_PORT_CONNECTIONS[String(value)]?.portLabel ?? null
+}
+
+export const getBusStopConnectedPortId = (value?: string): string | null => {
+  return BUS_STOP_PORT_CONNECTIONS[String(value)]?.portId ?? null
+}
+
+export const getConnectedBusStopsForPort = (portId?: string): string[] => {
+  return Object.entries(BUS_STOP_PORT_CONNECTIONS)
+    .filter(([, connection]) => connection.portId === portId)
+    .map(([stopCode]) => stopCode)
+}
+
+export const getAllPortConnectedBusStopCodes = (): string[] => {
+  return Object.keys(BUS_STOP_PORT_CONNECTIONS)
 }
 
 export const getLocationTypeForCode = (value?: string, fallback: LocationType = 'PORT'): LocationType => {
@@ -436,6 +456,75 @@ export const loadBusTripsForRoute = async (
 
   const feed = await loadBusSearchFeed(departureFeedId)
   return buildBusTripsForRoute(feed, departure, arrival, dateYmd)
+}
+
+export const loadBusRouteLabelsForStops = async (
+  departure: string,
+  arrival: string
+): Promise<BusRouteLabel[]> => {
+  const departureFeedId = getBusFeedIdForStopCode(departure)
+  const arrivalFeedId = getBusFeedIdForStopCode(arrival)
+  if (!departureFeedId || !arrivalFeedId || departureFeedId !== arrivalFeedId) {
+    return []
+  }
+
+  const feed = await loadBusSearchFeed(departureFeedId)
+  return buildBusRouteLabelsForStops(feed, departure, arrival)
+}
+
+export const buildBusRouteLabelsForStops = (
+  feed: BusSearchFeed,
+  departure: string,
+  arrival: string
+): BusRouteLabel[] => {
+  const config = BUS_FEED_CONFIGS[feed.feedId]
+  const departures = feed.departuresByStop?.[departure] || []
+  const labels: BusRouteLabel[] = []
+  const seen = new Set<string>()
+
+  for (const [tripIndex, originIndex] of departures) {
+    const busTrip = feed.trips[tripIndex]
+    if (!busTrip) continue
+
+    const origin = busTrip.stops[originIndex]
+    if (!origin || origin[0] !== departure) continue
+
+    const hasArrivalAfterOrigin = busTrip.stops
+      .slice(originIndex + 1)
+      .some(stop => stop?.[0] === arrival)
+    if (!hasArrivalAfterOrigin) continue
+
+    const route = feed.routes[busTrip.routeId]
+    const routeForConfig: GtfsRoute | undefined = route
+      ? {
+          routeId: busTrip.routeId,
+          agencyId: route.agencyId,
+          shortName: route.shortName,
+          longName: route.longName || route.shortName || busTrip.headsign
+        }
+      : undefined
+    const gtfsTrip: GtfsTrip = {
+      routeId: busTrip.routeId,
+      serviceId: busTrip.serviceId,
+      tripId: busTrip.tripId,
+      headsign: busTrip.headsign,
+      shortName: busTrip.shortName
+    }
+    const routeName = config.formatRouteName(routeForConfig, gtfsTrip)
+    const operatorId = config.resolveOperatorId?.(routeForConfig, gtfsTrip) ?? config.operatorId
+    const tripName = config.resolveTripName?.(routeForConfig, gtfsTrip) ?? config.tripName
+    const key = `${operatorId}|${tripName}|${routeName}`
+
+    if (seen.has(key)) continue
+    seen.add(key)
+    labels.push({
+      operatorId,
+      tripName,
+      routeName
+    })
+  }
+
+  return labels
 }
 
 export const buildBusTripsForRoute = (

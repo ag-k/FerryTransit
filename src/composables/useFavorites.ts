@@ -106,10 +106,14 @@ export const useFavorites = () => {
     return favoriteStore.isPortFavorited(portCode)
   }
 
+  const getLocationDisplayName = (locationId: string): string => {
+    return ferryStore.getLocationLabel(locationId) || $i18n.t(locationId)
+  }
+
   // ルートの表示名を取得（港名付き）
   const getRouteDisplayName = (route: FavoriteRoute): string => {
-    const departurePort = $i18n.t(route.departure)
-    const arrivalPort = $i18n.t(route.arrival)
+    const departurePort = getLocationDisplayName(route.departure)
+    const arrivalPort = getLocationDisplayName(route.arrival)
     
     if (route.nickname) {
       return `${route.nickname} (${departurePort} → ${arrivalPort})`
@@ -119,7 +123,7 @@ export const useFavorites = () => {
 
   // 港の表示名を取得（i18n対応）
   const getPortDisplayName = (port: FavoritePort): string => {
-    const portName = $i18n.t(port.portCode)
+    const portName = getLocationDisplayName(port.portCode)
     
     if (port.nickname) {
       return `${port.nickname} (${portName})`

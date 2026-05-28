@@ -319,6 +319,109 @@ describe("useRouteSearch", () => {
       });
     });
 
+    it("should connect a port-badged bus stop to ferries via a walking segment", async () => {
+      const store = useFerryStore();
+      store.timetableData = [
+        {
+          tripId: 2001,
+          startDate: "2026-01-01",
+          endDate: "2026-12-31",
+          name: "FERRY_DOZEN",
+          departure: "HISHIURA",
+          departureTime: "08:30:00" as any,
+          arrival: "SAIGO",
+          arrivalTime: "09:30:00" as any,
+          status: 0,
+        },
+      ];
+      store.locationLabels = {
+        BUS_AMA_100_01: "豊田",
+        BUS_AMA_126_01: "隠岐汽船乗り場",
+        HISHIURA: "菱浦",
+        SAIGO: "西郷",
+      };
+
+      const fetchMock = vi.fn(() =>
+        Promise.resolve({
+          ok: true,
+          status: 200,
+          json: () =>
+            Promise.resolve({
+              version: 1,
+              feedId: "ama",
+              generatedAt: "2026-05-25T00:00:00.000Z",
+              operatorId: "AMA_TOWN",
+              townLabelKey: "AMA_CHO",
+              tripName: "AMA_TOWN_BUS",
+              fare: 200,
+              routes: {
+                R8_AMA: {
+                  agencyId: "",
+                  shortName: "",
+                  longName: "海士島線1",
+                },
+              },
+              stops: [
+                ["BUS_AMA_100_01", "豊田", 36.105471, 133.125968],
+                ["BUS_AMA_126_01", "隠岐汽船乗り場", 36.105058, 133.076744],
+              ],
+              services: {
+                svc_daily: {
+                  startDate: "2026-01-01",
+                  endDate: "2026-12-31",
+                  activeDays: [0, 1, 2, 3, 4, 5, 6],
+                  addedDates: [],
+                  removedDates: [],
+                },
+              },
+              trips: [
+                {
+                  tripId: "trip_1",
+                  routeId: "R8_AMA",
+                  serviceId: "svc_daily",
+                  headsign: "隠岐汽船乗り場",
+                  shortName: "",
+                  stops: [
+                    ["BUS_AMA_100_01", "08:00", "08:00"],
+                    ["BUS_AMA_126_01", "08:20", "08:20"],
+                  ],
+                },
+              ],
+              departuresByStop: {
+                BUS_AMA_100_01: [[0, 0]],
+              },
+            }),
+        } as Response)
+      );
+      vi.stubGlobal("fetch", fetchMock);
+
+      const { searchRoutes } = useRouteSearch();
+      const results = await searchRoutes(
+        "BUS_AMA_100_01",
+        "SAIGO",
+        new Date("2026-05-25"),
+        "07:50",
+        false
+      );
+
+      const intermodalRoute = results.find(route =>
+        route.segments.map(segment => segment.mode).join(">") === "BUS>WALK>FERRY"
+      );
+      expect(intermodalRoute).toBeDefined();
+      expect(intermodalRoute?.segments.map(segment => [segment.departure, segment.arrival])).toEqual([
+        ["BUS_AMA_100_01", "BUS_AMA_126_01"],
+        ["BUS_AMA_126_01", "HISHIURA"],
+        ["HISHIURA", "SAIGO"],
+      ]);
+      expect(intermodalRoute?.segments[1]).toMatchObject({
+        ship: "WALK",
+        mode: "WALK",
+        fare: 0,
+        passengerFare: 0,
+      });
+      expect(intermodalRoute?.totalFare).toBe(500);
+    });
+
     it("should apply live cancellation status only when the search date is today (JST)", async () => {
       vi.useFakeTimers();
       // 2024-01-15 12:00 JST

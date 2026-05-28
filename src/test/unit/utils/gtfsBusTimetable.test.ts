@@ -1,7 +1,10 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest'
 import {
   clearBusSearchFeedCacheForTests,
+  getAllPortConnectedBusStopCodes,
   getBusStopPortBadgeLabel,
+  getBusStopConnectedPortId,
+  getConnectedBusStopsForPort,
   getBusStopTownLabelKey,
   getLocationTypeForCode,
   isAmaBusStopCode,
@@ -9,6 +12,7 @@ import {
   isNishinoshimaBusStopCode,
   isOkinoshimaBusStopCode,
   isTripActiveOnDate,
+  loadBusRouteLabelsForStops,
   loadBusStopsIndex,
   loadBusTripsForRoute,
   loadAmaBusTimetable,
@@ -42,6 +46,7 @@ describe('gtfsBusTimetable', () => {
     expect(getLocationTypeForCode('BEPPU')).toBe('PORT')
     expect(getBusStopTownLabelKey(stopCode)).toBe('AMA_CHO')
     expect(getBusStopPortBadgeLabel(toAmaBusStopCode('126_01'))).toBe('菱浦港')
+    expect(getBusStopConnectedPortId(toAmaBusStopCode('126_01'))).toBe('HISHIURA')
     expect(getBusStopPortBadgeLabel(stopCode)).toBeNull()
   })
 
@@ -53,6 +58,8 @@ describe('gtfsBusTimetable', () => {
     expect(isNishinoshimaBusStopCode('BUS_AMA_100_01')).toBe(false)
     expect(getLocationTypeForCode(stopCode)).toBe('STOP')
     expect(getBusStopTownLabelKey(stopCode)).toBe('NISHINOSHIMA_CHO')
+    expect(getBusStopPortBadgeLabel(toNishinoshimaBusStopCode('nishinoshima_006'))).toBe('別府港')
+    expect(getBusStopConnectedPortId(toNishinoshimaBusStopCode('nishinoshima_006'))).toBe('BEPPU')
   })
 
   it('知夫村営バス停コードを停留所として扱う', () => {
@@ -64,6 +71,12 @@ describe('gtfsBusTimetable', () => {
     expect(getLocationTypeForCode(stopCode)).toBe('STOP')
     expect(getBusStopTownLabelKey(stopCode)).toBe('CHIBU_MURA')
     expect(getBusStopPortBadgeLabel(stopCode)).toBe('来居港')
+    expect(getBusStopConnectedPortId(stopCode)).toBe('KURI')
+    expect(getConnectedBusStopsForPort('KURI')).toEqual([
+      'BUS_CHIBU_kuri_naikosen',
+      'BUS_CHIBU_kuri_ferry',
+      'BUS_CHIBU_kuri_office'
+    ])
   })
 
   it('隠岐の島町バス停コードを停留所として扱う', () => {
@@ -75,6 +88,8 @@ describe('gtfsBusTimetable', () => {
     expect(getLocationTypeForCode(stopCode)).toBe('STOP')
     expect(getBusStopTownLabelKey(stopCode)).toBe('OKINOSHIMA_CHO')
     expect(getBusStopPortBadgeLabel(stopCode)).toBe('西郷港')
+    expect(getBusStopConnectedPortId(stopCode)).toBe('SAIGO')
+    expect(getAllPortConnectedBusStopCodes()).toContain('BUS_OKINOSHIMA_port_mae')
   })
 
   it('海士島線の枝番を表示用にまとめる', () => {
@@ -672,5 +687,72 @@ describe('gtfsBusTimetable', () => {
       '2026-01-05'
     )
     expect(removedDateResult).toEqual([])
+  })
+
+  it('bus-searchデータから指定区間の路線表示を取得する', async () => {
+    const fetchMock = vi.fn(() => Promise.resolve({
+      ok: true,
+      status: 200,
+      json: () => Promise.resolve({
+        version: 1,
+        feedId: 'ama',
+        generatedAt: '2026-05-25T00:00:00.000Z',
+        operatorId: 'AMA_TOWN',
+        townLabelKey: 'AMA_CHO',
+        tripName: 'AMA_TOWN_BUS',
+        fare: 200,
+        routes: {
+          TOYODA: {
+            agencyId: '',
+            shortName: '',
+            longName: '豊田線'
+          }
+        },
+        stops: [
+          ['BUS_AMA_100_01', '豊田', 36.105471, 133.125968],
+          ['BUS_AMA_126_01', '隠岐汽船乗り場', 36.105058, 133.076744]
+        ],
+        services: {},
+        trips: [
+          {
+            tripId: 'trip_1',
+            routeId: 'TOYODA',
+            serviceId: 'svc_weekday',
+            headsign: '隠岐汽船乗り場',
+            shortName: '',
+            stops: [
+              ['BUS_AMA_100_01', '08:00', '08:00'],
+              ['BUS_AMA_126_01', '08:20', '08:20']
+            ]
+          },
+          {
+            tripId: 'trip_2',
+            routeId: 'TOYODA',
+            serviceId: 'svc_weekday',
+            headsign: '隠岐汽船乗り場',
+            shortName: '',
+            stops: [
+              ['BUS_AMA_100_01', '09:00', '09:00'],
+              ['BUS_AMA_126_01', '09:20', '09:20']
+            ]
+          }
+        ],
+        departuresByStop: {
+          BUS_AMA_100_01: [[0, 0], [1, 0]]
+        }
+      })
+    } as Response))
+    vi.stubGlobal('fetch', fetchMock)
+
+    const result = await loadBusRouteLabelsForStops('BUS_AMA_100_01', 'BUS_AMA_126_01')
+
+    expect(fetchMock).toHaveBeenCalledWith('/data/bus-search/ama.json')
+    expect(result).toEqual([
+      {
+        operatorId: 'AMA_TOWN',
+        tripName: 'AMA_TOWN_BUS',
+        routeName: '豊田線'
+      }
+    ])
   })
 })

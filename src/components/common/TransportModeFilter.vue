@@ -54,6 +54,7 @@ const getOptionLabel = (option: string) => {
 const optionIcons: Record<string, string> = {
   FERRY: 'mdi:ferry',
   BUS: 'mdi:bus',
+  WALK: 'mdi:walk',
   AIR: 'mdi:airplane',
   ALL: 'mdi:apps'
 }

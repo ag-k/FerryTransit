@@ -22,6 +22,8 @@
           :dozen-ports="dozenPorts"
           :dogo-ports="dogoPorts"
           :allowed-location-type="allowedLocationType"
+          :show-transport-tabs="showTransportTabs"
+          :preferred-bus-stop-town-source="arrivalProxy"
           margin="none"
           @selectRoute="handleSelectRoute"
         />
@@ -97,6 +99,8 @@
           :dozen-ports="dozenPorts"
           :dogo-ports="dogoPorts"
           :allowed-location-type="allowedLocationType"
+          :show-transport-tabs="showTransportTabs"
+          :preferred-bus-stop-town-source="departureProxy"
           margin="none"
           @selectRoute="handleSelectRoute"
         />
@@ -136,13 +140,15 @@ type Props = {
   dozenPorts?: string[]
   dogoPorts?: string[]
   allowedLocationType?: LocationType | 'ALL'
+  showTransportTabs?: boolean
 }
 
 const props = withDefaults(defineProps<Props>(), {
   // 経由は未実装のためデフォルトでは非表示（必要になったら呼び出し側で showVia を明示的に true にする）
   showVia: false,
   disabled: false,
-  allowedLocationType: 'ALL'
+  allowedLocationType: 'ALL',
+  showTransportTabs: false
 })
 
 const emit = defineEmits<{

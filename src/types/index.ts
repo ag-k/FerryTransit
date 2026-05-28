@@ -77,7 +77,7 @@ export enum TripStatus {
   Extra = 4,
 }
 
-export type TransportMode = 'FERRY' | 'BUS' | 'AIR'
+export type TransportMode = 'FERRY' | 'BUS' | 'AIR' | 'WALK'
 export type LocationType = 'PORT' | 'STOP' | 'AIRPORT'
 
 // Trip interface

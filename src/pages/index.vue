@@ -348,7 +348,7 @@ import ToggleSwitch from '@/components/common/ToggleSwitch.vue'
 import LocationTypeIcon from '@/components/common/LocationTypeIcon.vue'
 import { formatDateYmdJst, getJstDateParts, getTodayJstMidnight } from '@/utils/jstDate'
 import { getPortMapZoom } from '@/utils/portMapZoom'
-import { getLocationTypeForCode } from '@/utils/gtfsBusTimetable'
+import { getLocationTypeForCode, loadBusTripsForRoute } from '@/utils/gtfsBusTimetable'
 import type { LocationType, TransportMode, Trip } from '@/types'
 import type { BusStopLocation } from '@/utils/gtfsBusTimetable'
 import {
@@ -396,6 +396,8 @@ const withCar = ref(false)
 const vehicleLengthMeters = ref(DEFAULT_VEHICLE_LENGTH_METERS)
 const vehicleLengthSelectId = 'timetable-vehicle-length-select'
 const vehicleLengthOptions = VEHICLE_LENGTH_OPTIONS
+const directBusTimetable = ref<Trip[]>([])
+let directBusTimetableRequestId = 0
 
 const today = getTodayJstMidnight()
 
@@ -498,8 +500,38 @@ const mapBusStops = computed<BusStopLocation[]>(() => {
   return Object.values(ferryStore.busStopLocations ?? {})
 })
 
+const getTimetableTripDedupKey = (trip: Trip): string => {
+  return [
+    normalizeTransportMode(trip.mode),
+    trip.name,
+    trip.serviceId ?? '',
+    trip.vehicleId ?? '',
+    trip.departure,
+    trip.departureTime,
+    trip.arrival,
+    trip.arrivalTime,
+    trip.via ?? ''
+  ].join('|')
+}
+
+const timetableWithDirectBus = computed<Trip[]>(() => {
+  if (directBusTimetable.value.length === 0) {
+    return filteredTimetable.value
+  }
+
+  const seen = new Set(filteredTimetable.value.map(getTimetableTripDedupKey))
+  const additions = directBusTimetable.value.filter((trip) => {
+    const key = getTimetableTripDedupKey(trip)
+    if (seen.has(key)) return false
+    seen.add(key)
+    return true
+  })
+
+  return [...filteredTimetable.value, ...additions]
+})
+
 const filteredTimetableByMode = computed(() => {
-  let trips = filteredTimetable.value
+  let trips = timetableWithDirectBus.value
 
   if (selectedTransportMode.value !== 'ALL' && transportModeOptions.value.length > 0) {
     trips = trips.filter((trip) => normalizeTransportMode(trip.mode) === selectedTransportMode.value)
@@ -511,6 +543,32 @@ const filteredTimetableByMode = computed(() => {
 
   return trips
 })
+
+watch([departure, arrival, selectedDateString, withCar], async ([from, to, dateString, vehicleEnabled]) => {
+  const requestId = ++directBusTimetableRequestId
+  directBusTimetable.value = []
+
+  if (
+    vehicleEnabled ||
+    !from ||
+    !to ||
+    getLocationTypeForCode(from) !== 'STOP' ||
+    getLocationTypeForCode(to) !== 'STOP'
+  ) {
+    return
+  }
+
+  try {
+    const trips = await loadBusTripsForRoute(from, to, dateString)
+    if (requestId === directBusTimetableRequestId) {
+      directBusTimetable.value = trips
+    }
+  } catch {
+    if (requestId === directBusTimetableRequestId) {
+      directBusTimetable.value = []
+    }
+  }
+}, { immediate: true })
 
 const sortedTimetable = computed(() => {
   return [...filteredTimetableByMode.value].sort((a, b) => {

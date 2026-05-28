@@ -63,9 +63,11 @@
   "CHIBU_VILLAGE_BUS": "知夫村営バス",
   "OKI_ICHIBATA_BUS": "隠岐一畑交通",
   "OKINOSHIMA_TOWN_BUS": "隠岐の島町営バス",
+  "WALK": "徒歩",
   "TRANSPORT_MODES": {
     "FERRY": "船",
     "BUS": "バス",
+    "WALK": "徒歩",
     "AIR": "飛行機",
     "ALL": "すべて"
   },
@@ -378,9 +380,9 @@
   "PRIVACY_POLICY": "プライバシーポリシー",
   "favorites": {
     "title": "お気に入り",
-    "route": "航路",
+    "route": "ルート",
     "port": "港",
-    "favoriteRoutes": "お気に入りの航路",
+    "favoriteRoutes": "お気に入りのルート",
     "favoritePorts": "お気に入りの港",
     "addToFavorites": "お気に入りに追加",
     "removeFromFavorites": "お気に入りから削除",
@@ -392,7 +394,7 @@
     "edit": "編集",
     "done": "完了",
     "noFavorites": "お気に入りがありません",
-    "addFavoritesHint": "航路や港をお気に入りに追加すると、ここに表示されます",
+    "addFavoritesHint": "ルートや港をお気に入りに追加すると、ここに表示されます",
     "hint": "ヒント: 編集モードでドラッグして並び替えることができます",
     "deleteConfirmTitle": "お気に入りの削除",
     "deleteRouteConfirmMessage": "このルートをお気に入りから削除してもよろしいですか？",

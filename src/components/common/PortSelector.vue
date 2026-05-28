@@ -59,6 +59,33 @@
             <!-- Body -->
             <div class="p-4 max-h-[calc(90vh-4.5rem)] overflow-y-auto">
               <div class="space-y-5">
+                <div
+                  v-if="showTransportTabsControl"
+                  class="grid grid-cols-2 gap-2"
+                  role="tablist"
+                  :aria-label="$t('UI.TRANSPORT_FILTER')"
+                  data-testid="port-selector-transport-tabs"
+                >
+                  <button
+                    v-for="tab in transportTabs"
+                    :key="tab.key"
+                    type="button"
+                    role="tab"
+                    data-testid="port-selector-transport-tab"
+                    :aria-selected="selectedTransportTab === tab.key ? 'true' : 'false'"
+                    class="inline-flex items-center justify-center gap-2 rounded-md border px-3 py-2 text-sm font-semibold transition-colors focus:outline-none focus:ring-2 focus:ring-app-primary-2"
+                    :class="[
+                      selectedTransportTab === tab.key
+                        ? 'bg-app-primary text-white border-app-primary'
+                        : 'bg-app-surface text-app-fg border-app-border hover:bg-app-surface-2'
+                    ]"
+                    @click="selectedTransportTab = tab.key"
+                  >
+                    <Icon :name="tab.icon" class="h-5 w-5" aria-hidden="true" />
+                    <span>{{ $t(`TRANSPORT_MODES.${tab.key}`) }}</span>
+                  </button>
+                </div>
+
                 <section v-if="favoriteRoutes.length > 0" class="space-y-2" data-testid="port-section-favorite-routes">
                   <h4 class="text-sm font-semibold text-app-fg">
                     {{ $t('favorites.favoriteRoutes') }}
@@ -142,14 +169,18 @@ interface Props {
   dozenPorts?: string[]
   dogoPorts?: string[]
   allowedLocationType?: LocationType | 'ALL'
+  showTransportTabs?: boolean
   showLocationTypeBadge?: boolean
+  preferredBusStopTownSource?: string
   margin?: 'normal' | 'tight' | 'none'
 }
 
 const props = withDefaults(defineProps<Props>(), {
   disabled: false,
   allowedLocationType: 'ALL',
+  showTransportTabs: false,
   showLocationTypeBadge: true,
+  preferredBusStopTownSource: '',
   margin: 'normal'
 })
 
@@ -175,6 +206,29 @@ const dogoPorts = computed(() => (Array.isArray(props.dogoPorts) ? props.dogoPor
 const busStops = computed(() => ferryStore?.busStops || [])
 const showPorts = computed(() => props.allowedLocationType === 'ALL' || props.allowedLocationType === 'PORT')
 const showStops = computed(() => props.allowedLocationType === 'ALL' || props.allowedLocationType === 'STOP')
+type TransportTabKey = 'FERRY' | 'BUS'
+
+const transportTabs: Array<{ key: TransportTabKey; icon: string }> = [
+  { key: 'FERRY', icon: 'mdi:ferry' },
+  { key: 'BUS', icon: 'mdi:bus' }
+]
+
+const selectedTransportTab = ref<TransportTabKey>('FERRY')
+const showTransportTabsControl = computed(() => {
+  return props.showTransportTabs &&
+    props.allowedLocationType === 'ALL' &&
+    showPorts.value &&
+    showStops.value &&
+    busStops.value.length > 0
+})
+
+const showPortsInCurrentView = computed(() => {
+  return showPorts.value && (!showTransportTabsControl.value || selectedTransportTab.value === 'FERRY')
+})
+
+const showStopsInCurrentView = computed(() => {
+  return showStops.value && (!showTransportTabsControl.value || selectedTransportTab.value === 'BUS')
+})
 
 // Unique ID for accessibility
 const buttonId = `port-selector-${Math.random().toString(36).substr(2, 9)}`
@@ -184,10 +238,10 @@ const isOpen = ref(false)
 
 const availablePortsSet = computed(() => {
   const locations: string[] = []
-  if (showPorts.value) {
+  if (showPortsInCurrentView.value) {
     locations.push(...hondoPorts.value, ...dozenPorts.value, ...dogoPorts.value)
   }
-  if (showStops.value) {
+  if (showStopsInCurrentView.value) {
     locations.push(...busStops.value)
   }
   return new Set<string>(locations)
@@ -242,6 +296,14 @@ const getPreferredBusStopTownKey = () => {
     return selectedTownKey
   }
 
+  const sourceTownKey = getLocationType(props.preferredBusStopTownSource) === 'STOP'
+    ? getBusStopTownLabelKey(props.preferredBusStopTownSource)
+    : null
+
+  if (sourceTownKey && busStopTownTabs.value.some(tab => tab.key === sourceTownKey)) {
+    return sourceTownKey
+  }
+
   return busStopTownTabs.value[0]?.key || null
 }
 
@@ -268,11 +330,11 @@ const sections = computed<Section[]>(() => {
     })
   }
 
-  if (showStops.value && busStops.value.length > 0) {
+  if (showStopsInCurrentView.value && busStops.value.length > 0) {
     result.push({ key: 'busStops', labelKey: 'BUS_STOPS', ports: activeBusStopPorts.value })
   }
 
-  if (showPorts.value) {
+  if (showPortsInCurrentView.value) {
     result.push(
       { key: 'dozen', labelKey: 'DOZEN', ports: dozenPorts.value },
       { key: 'dogo', labelKey: 'DOGO', ports: dogoPorts.value },
@@ -335,8 +397,16 @@ const getRouteDisplayName = (route: FavoriteRoute) => {
   return getRouteLabel(route)
 }
 
+const getPreferredTransportTab = (): TransportTabKey => {
+  return getLocationType(props.modelValue) === 'STOP' ||
+    getLocationType(props.preferredBusStopTownSource) === 'STOP'
+    ? 'BUS'
+    : 'FERRY'
+}
+
 const open = () => {
   if (props.disabled) return
+  selectedTransportTab.value = getPreferredTransportTab()
   isOpen.value = true
 }
 
@@ -380,6 +450,7 @@ onMounted(() => {
 watch(isOpen, (newValue) => {
   if (!canUseDom.value) return
   if (newValue) {
+    selectedTransportTab.value = getPreferredTransportTab()
     activeBusStopTownKey.value = getPreferredBusStopTownKey()
     document.body.style.overflow = 'hidden'
   } else {

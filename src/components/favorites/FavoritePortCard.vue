@@ -67,8 +67,8 @@
         {{ $t('favorites.viewTimetable') }}
       </PrimaryButton>
       <button
-        @click="showDeleteConfirm"
         class="px-3 py-2 bg-gray-100 dark:bg-gray-600 text-gray-700 dark:text-gray-100 rounded-md hover:bg-gray-200 dark:hover:bg-gray-500 transition-colors duration-200 text-sm"
+        @click="showDeleteConfirm"
       >
         {{ $t('favorites.remove') }}
       </button>
@@ -91,12 +91,12 @@
 
 <script setup lang="ts">
 import { computed, ref } from 'vue'
+import { useI18n } from 'vue-i18n'
 import { useRouter } from 'vue-router'
+import FavoriteButton from './FavoriteButton.vue'
 import { useFerryStore } from '~/stores/ferry'
 import { useFavoriteStore } from '~/stores/favorite'
-import { useI18n } from 'vue-i18n'
 import PrimaryButton from '~/components/common/PrimaryButton.vue'
-import FavoriteButton from './FavoriteButton.vue'
 import ConfirmDialog from '~/components/ui/ConfirmDialog.vue'
 import { createLogger } from '~/utils/logger'
 
@@ -124,6 +124,9 @@ const isMounted = ref(false)
 
 onMounted(() => {
   isMounted.value = true
+  if (ferryStore?.ensureBusStopsLoaded) {
+    ferryStore.ensureBusStopsLoaded().catch(error => logger.warn('Failed to load bus stop labels', error))
+  }
 })
 
 // Use a simple value instead of computed for portCode
@@ -141,6 +144,8 @@ const portInfo = computed(() => {
 
 const getPortName = (portId: string) => {
   if (!portId) return ''
+  const locationLabel = ferryStore?.getLocationLabel?.(portId)
+  if (locationLabel) return locationLabel
 
   // i18n キーがある場合（例: HONDO/SAIGO/...）はそれを優先して表示できるようにする
   // NOTE: i18n にキーが無い場合はデフォルトでキー文字列が返ることが多い
@@ -178,7 +183,7 @@ const showDeleteConfirm = () => {
   isConfirmOpen.value = true
 }
 
-const handleDelete = async () => {
+const handleDelete = () => {
   if (!favoriteStore) return
   
   // お気に入り港を検索

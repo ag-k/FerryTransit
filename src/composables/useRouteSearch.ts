@@ -15,7 +15,18 @@ import {
   isVehicleSearchShip,
   normalizeVehicleLengthMeters,
 } from "@/utils/vehicleFare";
-import { isTripActiveOnDate, loadBusTripsForRoute } from "@/utils/gtfsBusTimetable";
+import {
+  getAllPortConnectedBusStopCodes,
+  getBusStopConnectedPortId,
+  getConnectedBusStopsForPort,
+  isBusStopCode,
+  isTripActiveOnDate,
+  loadBusTripsForRoute,
+} from "@/utils/gtfsBusTimetable";
+
+const WALK_TRANSFER_MINUTES = 3;
+const WALK_SEGMENT_SHIP = "WALK";
+const MAX_INTERMODAL_SEGMENTS = 5;
 
 export const useRouteSearch = () => {
   const ferryStore = process.client ? useFerryStore() : null;
@@ -196,6 +207,20 @@ export const useRouteSearch = () => {
 
     routes.push(...directRoutes);
 
+    if (!withCar && (isBusStopCode(departure) || isBusStopCode(arrival))) {
+      const intermodalRoutes = await findIntermodalRoutes(
+        dayTimetable,
+        departure,
+        arrival,
+        searchDateTime,
+        isArrivalMode,
+        applyLiveStatus,
+        normalizedVehicleLengthMeters,
+        searchDateStr
+      );
+      routes.push(...intermodalRoutes);
+    }
+
     // Find transfer routes if direct routes are limited
     if (directRoutes.length < 5) {
       const transferRoutes = await findTransferRoutes(
@@ -346,6 +371,294 @@ export const useRouteSearch = () => {
     }
 
     return routes;
+  };
+
+  const getLocationTypeForSearch = (locationId: string): "PORT" | "STOP" => {
+    return isBusStopCode(locationId) ? "STOP" : "PORT";
+  };
+
+  const expandHondoPort = (portId: string): string[] => {
+    return portId === "HONDO"
+      ? ["HONDO_SHICHIRUI", "HONDO_SAKAIMINATO"]
+      : [portId];
+  };
+
+  const matchesLocation = (actual: string, expected: string): boolean => {
+    return expandHondoPort(expected).includes(actual);
+  };
+
+  const createDateForTripTime = (timeValue: string | Date, baseDate: Date): Date => {
+    const [hours, minutes] = parseTimeParts(timeValue);
+    const result = new Date(baseDate);
+    result.setHours(hours, minutes, 0, 0);
+    return result;
+  };
+
+  const shouldSkipMainlandVia = (trip: Trip): boolean => {
+    if (!trip.via || !isMainlandPort(trip.via)) return false;
+    return !isMainlandPort(trip.departure) && !isMainlandPort(trip.arrival);
+  };
+
+  const createScheduledSegment = async (
+    trip: Trip,
+    currentTime: Date,
+    applyLiveStatus: boolean,
+    vehicleLengthMeters: number
+  ): Promise<TransitSegment | null> => {
+    const departureTime = createDateForTripTime(trip.departureTime, currentTime);
+    if (departureTime < currentTime) return null;
+
+    const arrivalTime = createDateForTripTime(trip.arrivalTime, departureTime);
+    if (arrivalTime < departureTime) {
+      arrivalTime.setDate(arrivalTime.getDate() + 1);
+    }
+
+    const fareFields = await calculateSegmentFareFields(
+      trip.name,
+      trip.departure,
+      trip.arrival,
+      departureTime,
+      false,
+      vehicleLengthMeters
+    );
+
+    return {
+      tripId: String(trip.tripId),
+      ship: trip.name,
+      mode: trip.mode ?? "FERRY",
+      operatorId: trip.operatorId,
+      serviceId: trip.serviceId,
+      vehicleId: trip.vehicleId,
+      departure: trip.departure,
+      departureType: trip.departureType,
+      arrival: trip.arrival,
+      arrivalType: trip.arrivalType,
+      departureTime,
+      arrivalTime,
+      platform: trip.platform,
+      terminal: trip.terminal,
+      gate: trip.gate,
+      status: getStatusForSearchDate(trip, applyLiveStatus),
+      ...fareFields,
+    };
+  };
+
+  const createWalkSegment = (
+    departure: string,
+    arrival: string,
+    departureTime: Date
+  ): TransitSegment => {
+    const arrivalTime = new Date(
+      departureTime.getTime() + WALK_TRANSFER_MINUTES * 60 * 1000
+    );
+
+    return {
+      tripId: `${WALK_SEGMENT_SHIP}_${departure}_${arrival}_${departureTime.getTime()}`,
+      ship: WALK_SEGMENT_SHIP,
+      mode: "WALK",
+      departure,
+      departureType: getLocationTypeForSearch(departure),
+      arrival,
+      arrivalType: getLocationTypeForSearch(arrival),
+      departureTime,
+      arrivalTime,
+      status: 0,
+      fare: 0,
+      passengerFare: 0,
+    };
+  };
+
+  const isFerrySearchTrip = (trip: Trip): boolean => {
+    return (trip.mode ?? "FERRY") !== "BUS" && (trip.mode ?? "FERRY") !== "WALK";
+  };
+
+  const findIntermodalRoutes = async (
+    ferryTimetable: Trip[],
+    departure: string,
+    arrival: string,
+    searchTime: Date,
+    isArrivalMode: boolean,
+    applyLiveStatus: boolean,
+    vehicleLengthMeters: number,
+    searchDateStr: string
+  ): Promise<TransitRoute[]> => {
+    const connectedStops = getAllPortConnectedBusStopCodes();
+    const connectedPorts = Array.from(
+      new Set(
+        connectedStops
+          .map(stop => getBusStopConnectedPortId(stop))
+          .filter((portId): portId is string => Boolean(portId))
+      )
+    );
+    const busTripCache = new Map<string, Promise<Trip[]>>();
+    const routeResults: TransitRoute[] = [];
+    const routeKeys = new Set<string>();
+    const startTime = new Date(searchTime);
+
+    if (isArrivalMode) {
+      startTime.setHours(0, 0, 0, 0);
+    }
+
+    const getBusTrips = (from: string, to: string): Promise<Trip[]> => {
+      const key = `${from}->${to}`;
+      const cached = busTripCache.get(key);
+      if (cached) return cached;
+
+      const promise = loadBusTripsForRoute(from, to, searchDateStr)
+        .catch((error) => {
+          logger.warn("Failed to load bus trips for intermodal route", {
+            from,
+            to,
+            error,
+          });
+          return [];
+        });
+      busTripCache.set(key, promise);
+      return promise;
+    };
+
+    const getWalkSegments = (node: string, currentTime: Date): TransitSegment[] => {
+      const connectedPort = getBusStopConnectedPortId(node);
+      if (connectedPort) {
+        return [createWalkSegment(node, connectedPort, currentTime)];
+      }
+
+      return getConnectedBusStopsForPort(node)
+        .map(stop => createWalkSegment(node, stop, currentTime));
+    };
+
+    const getBusSegments = async (
+      node: string,
+      currentTime: Date
+    ): Promise<TransitSegment[]> => {
+      if (!isBusStopCode(node)) return [];
+
+      const targets = new Set<string>();
+      if (isBusStopCode(arrival)) targets.add(arrival);
+      for (const stop of connectedStops) targets.add(stop);
+      targets.delete(node);
+
+      const segments: TransitSegment[] = [];
+      for (const target of targets) {
+        const trips = await getBusTrips(node, target);
+        for (const trip of trips) {
+          const segment = await createScheduledSegment(
+            trip,
+            currentTime,
+            applyLiveStatus,
+            vehicleLengthMeters
+          );
+          if (!segment) continue;
+          if (isArrivalMode && segment.arrivalTime > searchTime) continue;
+          segments.push(segment);
+        }
+      }
+
+      return segments.sort((a, b) => a.departureTime.getTime() - b.departureTime.getTime());
+    };
+
+    const getFerrySegments = async (
+      node: string,
+      currentTime: Date
+    ): Promise<TransitSegment[]> => {
+      if (isBusStopCode(node)) return [];
+
+      const targetPorts = new Set<string>(connectedPorts);
+      if (!isBusStopCode(arrival)) {
+        for (const port of expandHondoPort(arrival)) targetPorts.add(port);
+      }
+      for (const port of expandHondoPort(node)) targetPorts.delete(port);
+
+      const departurePorts = expandHondoPort(node);
+      const segments: TransitSegment[] = [];
+
+      for (const trip of ferryTimetable) {
+        if (!isFerrySearchTrip(trip)) continue;
+        if (!departurePorts.includes(trip.departure)) continue;
+        if (!targetPorts.has(trip.arrival)) continue;
+        if (shouldSkipMainlandVia(trip)) continue;
+
+        const segment = await createScheduledSegment(
+          trip,
+          currentTime,
+          applyLiveStatus,
+          vehicleLengthMeters
+        );
+        if (!segment) continue;
+        if (isArrivalMode && segment.arrivalTime > searchTime) continue;
+        segments.push(segment);
+      }
+
+      return segments.sort((a, b) => a.departureTime.getTime() - b.departureTime.getTime());
+    };
+
+    type IntermodalState = {
+      node: string;
+      time: Date;
+      segments: TransitSegment[];
+      visited: Set<string>;
+    };
+
+    let states: IntermodalState[] = [{
+      node: departure,
+      time: startTime,
+      segments: [],
+      visited: new Set([departure]),
+    }];
+
+    for (let depth = 0; depth < MAX_INTERMODAL_SEGMENTS; depth++) {
+      const nextStates: IntermodalState[] = [];
+
+      for (const state of states) {
+        if (
+          state.segments.length > 0 &&
+          state.segments.some(segment => segment.mode === "WALK") &&
+          matchesLocation(state.node, arrival)
+        ) {
+          const routeKey = state.segments
+            .map(segment => `${segment.tripId}:${segment.departure}->${segment.arrival}`)
+            .join("|");
+          if (!routeKeys.has(routeKey)) {
+            routeKeys.add(routeKey);
+            routeResults.push({
+              segments: state.segments,
+              departureTime: state.segments[0]!.departureTime,
+              arrivalTime: state.time,
+              totalFare: state.segments.reduce((sum, segment) => sum + segment.fare, 0),
+              transferCount: Math.max(0, state.segments.length - 1),
+            });
+          }
+          continue;
+        }
+
+        const candidates = [
+          ...getWalkSegments(state.node, state.time),
+          ...(await getBusSegments(state.node, state.time)),
+          ...(await getFerrySegments(state.node, state.time)),
+        ];
+
+        for (const segment of candidates) {
+          if (segment.arrival === state.node) continue;
+          if (state.visited.has(segment.arrival)) {
+            continue;
+          }
+
+          const nextVisited = new Set(state.visited);
+          nextVisited.add(segment.arrival);
+          nextStates.push({
+            node: segment.arrival,
+            time: segment.arrivalTime,
+            segments: [...state.segments, segment],
+            visited: nextVisited,
+          });
+        }
+      }
+
+      states = nextStates;
+      if (states.length === 0) break;
+    }
+
+    return routeResults;
   };
 
   // Find transfer routes

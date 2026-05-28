@@ -4,6 +4,18 @@ import { setActivePinia, createPinia } from "pinia";
 import { ref } from "vue";
 import IndexPage from "@/pages/index.vue";
 
+const mockGtfsBusTimetable = vi.hoisted(() => ({
+  getLocationTypeForCode: vi.fn((value?: string) =>
+    typeof value === "string" && value.startsWith("BUS_") ? "STOP" : "PORT"
+  ),
+  loadBusTripsForRoute: vi.fn(),
+}));
+
+vi.mock("@/utils/gtfsBusTimetable", () => ({
+  getLocationTypeForCode: mockGtfsBusTimetable.getLocationTypeForCode,
+  loadBusTripsForRoute: mockGtfsBusTimetable.loadBusTripsForRoute,
+}));
+
 // index.vue は Nuxt の auto-import を明示 import（#imports）で参照するため、テスト側でも #imports をモックする
 vi.mock("#imports", () => ({
   useHead: vi.fn(),
@@ -176,6 +188,10 @@ describe("IndexPage (時刻表ページ)", () => {
     mockFerryStore.busStopLocations = {};
     mockRouter.push.mockReset();
     vi.clearAllMocks();
+    mockGtfsBusTimetable.getLocationTypeForCode.mockImplementation((value?: string) =>
+      typeof value === "string" && value.startsWith("BUS_") ? "STOP" : "PORT"
+    );
+    mockGtfsBusTimetable.loadBusTripsForRoute.mockResolvedValue([]);
     vi.unstubAllGlobals();
     vi.stubGlobal("useHead", vi.fn());
     vi.stubGlobal("useNuxtApp", () => ({
@@ -600,6 +616,43 @@ describe("IndexPage (時刻表ページ)", () => {
       expect(wrapper.text()).not.toContain("CHIBU_VILLAGE_BUS");
       expect(wrapper.text()).not.toContain("OKI_ICHIBATA_BUS");
       expect(wrapper.find('[data-test="with-car-toggle"]').exists()).toBe(false);
+    });
+
+    it("停留所間の時刻表ではbus-searchの直行バス便を表示する", async () => {
+      mockUseFerryData.selectedDate.value = new Date("2026-05-26T00:00:00+09:00");
+      mockUseFerryData.departure.value = "BUS_AMA_115_01";
+      mockUseFerryData.arrival.value = "BUS_AMA_102_01";
+      mockUseFerryData.filteredTimetable.value = [];
+      mockGtfsBusTimetable.loadBusTripsForRoute.mockResolvedValue([
+        {
+          tripId: 3016920,
+          startDate: "2026-03-09",
+          endDate: "2026-05-31",
+          activeDays: [1, 2, 3, 4, 5],
+          name: "AMA_TOWN_BUS",
+          mode: "BUS",
+          departure: "BUS_AMA_115_01",
+          departureTime: "08:20",
+          arrival: "BUS_AMA_102_01",
+          arrivalTime: "08:30",
+          status: 0,
+          price: 200,
+          via: "豊田線",
+        },
+      ]);
+
+      const wrapper = mountIndexPage();
+      await flushPromises();
+      await flushPromises();
+
+      expect(mockGtfsBusTimetable.loadBusTripsForRoute).toHaveBeenCalledWith(
+        "BUS_AMA_115_01",
+        "BUS_AMA_102_01",
+        "2026-05-26"
+      );
+      expect(wrapper.text()).toContain("海士町路線バス（豊田線）");
+      expect(wrapper.text()).toContain("08:20");
+      expect(wrapper.text()).not.toContain("NO_MATCHING_TRIPS");
     });
 
     it("バス選択時は地図へバス停座標を渡す", async () => {

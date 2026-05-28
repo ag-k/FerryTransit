@@ -97,11 +97,11 @@
     "firebase-admin": "^13.10.0",
     "firebase-functions": "^7.2.5",
     "marked": "^16.4.2",
-    "nuxt": "^4.4.5",
+    "nuxt": "^4.4.6",
     "papaparse": "^5.5.3",
     "pinia": "^3.0.3",
     "vue": "^3.5.34",
-    "vue-router": "^4.5.1",
+    "vue-router": "^4.6.4",
     "vuedraggable": "^4.1.0"
   },
   "devDependencies": {

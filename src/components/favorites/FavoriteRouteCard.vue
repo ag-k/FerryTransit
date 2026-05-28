@@ -67,6 +67,13 @@
             </div>
           </div>
         </div>
+        <p
+          v-if="routeDetailText"
+          data-testid="favorite-route-detail"
+          class="mt-1 text-xs leading-snug text-gray-500 dark:text-gray-400"
+        >
+          {{ routeDetailText }}
+        </p>
       </div>
     </div>
 
@@ -130,9 +137,9 @@
         <span>{{ $t('TRANSIT') }}</span>
       </PrimaryButton>
       <button
-        @click="showDeleteConfirm"
         class="px-3 py-2 bg-gray-100 dark:bg-gray-600 text-gray-700 dark:text-gray-100 rounded-md hover:bg-gray-200 dark:hover:bg-gray-500 transition-colors duration-200 text-sm flex items-center justify-center"
         :aria-label="$t('favorites.remove')"
+        @click="showDeleteConfirm"
       >
         <svg
           class="w-4 h-4"
@@ -168,15 +175,15 @@
 </template>
 
 <script setup lang="ts">
-import { ref } from 'vue'
-import { useRouter } from 'vue-router'
+import { computed, ref, watch } from 'vue'
+import { useI18n } from 'vue-i18n'
 import { useFerryStore } from '~/stores/ferry'
 import { useFavoriteStore } from '~/stores/favorite'
-import { useI18n } from 'vue-i18n'
 import PrimaryButton from '~/components/common/PrimaryButton.vue'
 import ConfirmDialog from '~/components/ui/ConfirmDialog.vue'
 import { createLogger } from '~/utils/logger'
 import PortBadges from '@/components/common/PortBadges.vue'
+import { loadBusRouteLabelsForStops, type BusRouteLabel } from '@/utils/gtfsBusTimetable'
 
 interface Props {
   departure: string
@@ -189,7 +196,6 @@ const emit = defineEmits<{
   remove: []
 }>()
 
-const router = useRouter()
 const ferryStore = process.client ? useFerryStore() : null
 const favoriteStore = process.client ? useFavoriteStore() : null
 const { locale, t } = useI18n()
@@ -200,10 +206,23 @@ const logger = createLogger('FavoriteRouteCard')
 const isConfirmOpen = ref(false)
 const isDeleted = ref(false)
 const isMounted = ref(false)
+const routeLabels = ref<BusRouteLabel[]>([])
 
-onMounted(() => {
+onMounted(async () => {
   isMounted.value = true
+  if (ferryStore?.ensureBusStopsLoaded) {
+    await ferryStore.ensureBusStopsLoaded().catch(error => logger.warn('Failed to load bus stop labels', error))
+  }
+  await loadRouteLabels()
 })
+
+watch(
+  () => [props.departure, props.arrival] as const,
+  () => {
+    if (!isMounted.value) return
+    loadRouteLabels().catch(error => logger.warn('Failed to refresh favorite route labels', error))
+  }
+)
 
 type PortLabelLine = {
   name: string
@@ -212,6 +231,9 @@ type PortLabelLine = {
 
 const getPortLabel = (portId: string) => {
   if (!portId) return ''
+  const locationLabel = ferryStore?.getLocationLabel?.(portId)
+  if (locationLabel) return locationLabel
+
   const translated = String(t(portId))
   const hasTranslation = translated && translated !== portId
   if (hasTranslation) return translated
@@ -246,6 +268,41 @@ const getPortLabelLines = (portId: string) => {
   return lines.length > 0 ? lines : [{ name: label || portId }]
 }
 
+const getBusTransportName = (name: string) => {
+  const translated = String(t(name))
+  if (translated !== name) return translated
+  if (name === 'AMA_TOWN_BUS') return '海士町路線バス'
+  if (name === 'NISHINOSHIMA_TOWN_BUS') return '西ノ島町営バス'
+  if (name === 'CHIBU_VILLAGE_BUS') return '知夫村営バス'
+  if (name === 'OKI_ICHIBATA_BUS') return '隠岐一畑交通'
+  if (name === 'OKINOSHIMA_TOWN_BUS') return '隠岐の島町営バス'
+  return translated
+}
+
+const formatRouteLabel = (label: BusRouteLabel) => {
+  const transportName = getBusTransportName(label.tripName)
+  return label.routeName ? `${transportName}（${label.routeName}）` : transportName
+}
+
+const routeDetailText = computed(() => routeLabels.value
+  .map(formatRouteLabel)
+  .filter(Boolean)
+  .join(' / '))
+
+const loadRouteLabels = async () => {
+  if (!ferryStore?.isStopLocation?.(props.departure) || !ferryStore?.isStopLocation?.(props.arrival)) {
+    routeLabels.value = []
+    return
+  }
+
+  try {
+    routeLabels.value = await loadBusRouteLabelsForStops(props.departure, props.arrival)
+  } catch (error) {
+    routeLabels.value = []
+    logger.warn('Failed to load favorite route labels', error)
+  }
+}
+
 const formatDate = (dateString: string) => {
   const date = new Date(dateString)
   return new Intl.DateTimeFormat(locale.value, {
@@ -260,7 +317,7 @@ const showDeleteConfirm = () => {
   isConfirmOpen.value = true
 }
 
-const handleDelete = async () => {
+const handleDelete = () => {
   if (!favoriteStore) return
   
   // お気に入りルートを検索

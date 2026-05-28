@@ -1,8 +1,12 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest'
-import { mount } from '@vue/test-utils'
+import { flushPromises, mount } from '@vue/test-utils'
 import { defineComponent, ref } from 'vue'
 
 import FavoriteRouteCard from '@/components/favorites/FavoriteRouteCard.vue'
+
+const { mockLoadBusRouteLabelsForStops } = vi.hoisted(() => ({
+  mockLoadBusRouteLabelsForStops: vi.fn()
+}))
 
 const mockRouter = {
   push: vi.fn()
@@ -20,6 +24,7 @@ vi.mock('vue-i18n', async () => {
       t: (key: string) => {
         if (key === 'HONDO') return '七類(松江市)または境港(境港市)'
         if (key === 'SAIGO') return '西郷(隠岐の島町)'
+        if (key === 'AMA_TOWN_BUS') return '海士町路線バス'
         return key
       }
     })
@@ -28,8 +33,18 @@ vi.mock('vue-i18n', async () => {
 
 vi.mock('~/stores/ferry', () => ({
   useFerryStore: () => ({
-    ports: []
+    ports: [],
+    getLocationLabel: (locationId: string) => ({
+      BUS_AMA_100_01: '豊田',
+      BUS_AMA_126_01: '隠岐汽船乗り場'
+    }[locationId] ?? null),
+    ensureBusStopsLoaded: vi.fn(() => Promise.resolve()),
+    isStopLocation: (locationId: string) => locationId.startsWith('BUS_')
   })
+}))
+
+vi.mock('@/utils/gtfsBusTimetable', () => ({
+  loadBusRouteLabelsForStops: mockLoadBusRouteLabelsForStops
 }))
 
 vi.mock('~/stores/favorite', () => ({
@@ -59,6 +74,8 @@ const NuxtLinkStub = defineComponent({
 describe('FavoriteRouteCard', () => {
   beforeEach(() => {
     mockRouter.push.mockReset()
+    mockLoadBusRouteLabelsForStops.mockReset()
+    mockLoadBusRouteLabelsForStops.mockResolvedValue([])
     // setup.ts でも設定されているが、明示的に固定
     // @ts-expect-error global useLocalePath
     global.useLocalePath = vi.fn(() => (path: string) => path)
@@ -121,5 +138,67 @@ describe('FavoriteRouteCard', () => {
     expect(wrapper.text()).toContain('境港市')
     expect(wrapper.text()).toContain('西郷')
     expect(wrapper.text()).toContain('隠岐の島町')
+  })
+
+  it('バス停コードは停留所名で表示する', () => {
+    const wrapper = mount(FavoriteRouteCard, {
+      props: {
+        departure: 'BUS_AMA_100_01',
+        arrival: 'BUS_AMA_126_01'
+      },
+      global: {
+        stubs: {
+          NuxtLink: NuxtLinkStub,
+          FavoriteButton: { template: '<button />' },
+          ConfirmDialog: { template: '<div />', props: ['isOpen'] }
+        },
+        config: {
+          globalProperties: {
+            $t: (key: string) => key
+          }
+        }
+      }
+    })
+
+    expect(wrapper.text()).toContain('豊田')
+    expect(wrapper.text()).toContain('隠岐汽船乗り場')
+    expect(wrapper.text()).not.toContain('BUS_AMA_100_01')
+    expect(wrapper.text()).not.toContain('BUS_AMA_126_01')
+  })
+
+  it('バス停のお気に入りルートには小さく路線名を表示する', async () => {
+    mockLoadBusRouteLabelsForStops.mockResolvedValue([
+      {
+        operatorId: 'AMA_TOWN',
+        tripName: 'AMA_TOWN_BUS',
+        routeName: '豊田線'
+      }
+    ])
+
+    const wrapper = mount(FavoriteRouteCard, {
+      props: {
+        departure: 'BUS_AMA_100_01',
+        arrival: 'BUS_AMA_126_01'
+      },
+      global: {
+        stubs: {
+          NuxtLink: NuxtLinkStub,
+          FavoriteButton: { template: '<button />' },
+          ConfirmDialog: { template: '<div />', props: ['isOpen'] }
+        },
+        config: {
+          globalProperties: {
+            $t: (key: string) => key
+          }
+        }
+      }
+    })
+
+    await flushPromises()
+
+    expect(mockLoadBusRouteLabelsForStops).toHaveBeenCalledWith('BUS_AMA_100_01', 'BUS_AMA_126_01')
+    const detail = wrapper.get('[data-testid="favorite-route-detail"]')
+    expect(detail.text()).toBe('海士町路線バス（豊田線）')
+    expect(detail.classes()).toContain('text-xs')
   })
 })

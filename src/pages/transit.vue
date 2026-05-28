@@ -20,6 +20,7 @@
           <RouteEndpointsSelector
             :departure="departure"
             :arrival="arrival"
+            show-transport-tabs
             @update:departure="departure = $event"
             @update:arrival="arrival = $event"
             @reverse="reverseRoute"
@@ -161,6 +162,7 @@ v-for="option in sortOptions" :key="option.value" type="button" role="tab"
                 <span class="text-sm text-app-fg truncate" data-testid="transit-header-summary">
                   {{ calculateDuration(route.departureTime, route.arrivalTime) }} /
                   <span v-if="route.totalFare > 0">¥{{ route.totalFare.toLocaleString() }}</span>
+                  <span v-else-if="isWalkOnlyRoute(route)" class="text-app-muted">-</span>
                   <span v-else class="text-yellow-700 dark:text-yellow-300">{{ $t('FARE_UNAVAILABLE') }}</span>
                 </span>
               </div>
@@ -299,6 +301,7 @@ href="#" class="text-app-primary dark:text-white group inline-flex items-center 
                         <div class="flex flex-col">
                           <div class="flex items-center gap-2 flex-wrap">
                             <a
+v-if="normalizeTransportMode(segment.mode) !== 'WALK'"
 href="#" class="inline-flex items-center gap-1.5 text-app-primary dark:text-white hover:underline"
                               @click.prevent="showShipInfo(segment.ship)">
                               <Icon
@@ -308,6 +311,14 @@ href="#" class="inline-flex items-center gap-1.5 text-app-primary dark:text-whit
                               />
                               <span>{{ $t(segment.ship) }}</span>
                             </a>
+                            <span v-else class="inline-flex items-center gap-1.5 text-app-muted">
+                              <Icon
+                                :name="getSegmentTransportIcon(segment)"
+                                class="h-4 w-4 shrink-0"
+                                aria-hidden="true"
+                              />
+                              <span>{{ $t(segment.ship) }}</span>
+                            </span>
                             <a
                               v-if="segment.ship === 'RAINBOWJET'"
                               :href="rainbowJetSeatAvailabilityUrl"
@@ -330,6 +341,7 @@ href="#" class="inline-flex items-center gap-1.5 text-app-primary dark:text-whit
                       <span v-if="withCar" class="block text-xs text-app-muted">{{ $t('VEHICLE_FARE_WITH_DRIVER') }}</span>
                       ¥{{ segment.fare.toLocaleString() }}
                     </span>
+                    <span v-else-if="normalizeTransportMode(segment.mode) === 'WALK'" class="text-app-muted">-</span>
                     <span v-else class="text-app-muted">{{ $t('FARE_UNAVAILABLE') }}</span>
                   </td>
                   </tr>
@@ -378,6 +390,7 @@ href="#" class="text-app-primary dark:text-white group inline-flex items-center 
                       <span v-if="withCar" class="block text-xs font-normal text-app-muted">{{ $t('VEHICLE_FARE_WITH_DRIVER') }}</span>
                       {{ $t('TOTAL') }}: ¥{{ route.totalFare.toLocaleString() }}
                     </span>
+                    <span v-else-if="isWalkOnlyRoute(route)" class="text-app-muted">-</span>
                     <span v-else class="text-app-muted">{{ $t('FARE_UNAVAILABLE') }}</span>
                   </td>
                 </tr>
@@ -472,6 +485,7 @@ v-else-if="hasSearched && !isSearching"
                     <span v-if="withCar">{{ $t('VEHICLE_FARE_WITH_DRIVER') }}: </span>
                     ¥{{ segment.fare.toLocaleString() }}
                   </span>
+                  <span v-else-if="normalizeTransportMode(segment.mode) === 'WALK'" class="text-gray-500">-</span>
                   <span v-else class="text-gray-500">{{ $t('FARE_UNAVAILABLE') }}</span>
                 </small>
               </div>
@@ -491,6 +505,7 @@ v-else-if="hasSearched && !isSearching"
                 <span v-if="withCar">{{ $t('VEHICLE_FARE_WITH_DRIVER') }}: </span>
                 ¥{{ selectedRoute.totalFare.toLocaleString() }}
               </span>
+              <span v-else-if="isWalkOnlyRoute(selectedRoute)" class="text-gray-500">-</span>
               <span v-else class="text-gray-500">{{ $t('FARE_UNAVAILABLE') }}</span>
             </div>
           </div>
@@ -548,6 +563,11 @@ import {
   getVehicleLengthLabelKey,
   normalizeVehicleLengthMeters
 } from '@/utils/vehicleFare'
+import {
+  getBusStopPortBadgeLabel,
+  getBusStopTownLabelKey,
+  getLocationTypeForCode
+} from '@/utils/gtfsBusTimetable'
 
 // Stores
 const ferryStore = process.client ? useFerryStore() : null
@@ -613,7 +633,7 @@ const sortOptions: Array<{ value: SortKey; labelKey: string }> = [
 ]
 
 const sortOption = ref<SortKey>('recommended')
-const transportModeOrder: TransportMode[] = ['FERRY', 'BUS', 'AIR']
+const transportModeOrder: TransportMode[] = ['FERRY', 'BUS', 'WALK', 'AIR']
 type TransportModeFilterValue = TransportMode | 'ALL'
 const selectedTransportMode = ref<TransportModeFilterValue>('ALL')
 
@@ -621,6 +641,16 @@ const selectedTransportMode = ref<TransportModeFilterValue>('ALL')
 const { searchRoutes, formatTime, calculateDuration, getPortDisplayName } = useRouteSearch()
 const { trackSearch } = useAnalytics()
 const { t } = useI18n()
+
+const getTownBadgeLabel = (labelKey: string): string => {
+  const translated = String(t(labelKey))
+  if (translated !== labelKey) return translated
+  if (labelKey === 'AMA_CHO') return '海士町'
+  if (labelKey === 'NISHINOSHIMA_CHO') return '西ノ島町'
+  if (labelKey === 'CHIBU_MURA') return '知夫村'
+  if (labelKey === 'OKINOSHIMA_CHO') return '隠岐の島町'
+  return translated
+}
 
 const getPortLabelParts = (portId?: string) => {
   if (!portId) {
@@ -630,12 +660,15 @@ const getPortLabelParts = (portId?: string) => {
   const translated = storeLabel || String(t(portId))
   const label = translated && translated !== portId ? translated : getPortDisplayName(portId) || portId
   const parenRegex = /[（(]([^）)]+)[）)]/g
-  const badges: string[] = []
+  const townLabelKey = getLocationTypeForCode(portId) === 'STOP' ? getBusStopTownLabelKey(portId) : null
+  const badges: string[] = townLabelKey ? [getTownBadgeLabel(townLabelKey)] : []
+  const portBadgeLabel = getBusStopPortBadgeLabel(portId)
+  if (portBadgeLabel) badges.push(portBadgeLabel)
 
   let match = parenRegex.exec(label)
   while (match) {
     const value = match[1]?.trim()
-    if (value) badges.push(value)
+    if (value && !badges.includes(value)) badges.push(value)
     match = parenRegex.exec(label)
   }
 
@@ -767,15 +800,21 @@ const canSearch = computed(() => {
 })
 
 const normalizeTransportMode = (mode?: TransportMode | string): TransportMode => {
-  if (mode === 'BUS' || mode === 'AIR' || mode === 'FERRY') return mode
+  if (mode === 'BUS' || mode === 'AIR' || mode === 'FERRY' || mode === 'WALK') return mode
   return 'FERRY'
 }
 
 const getSegmentTransportIcon = (segment: TransitSegment) => {
   const mode = normalizeTransportMode(segment.mode)
   if (mode === 'BUS') return 'mdi:bus'
+  if (mode === 'WALK') return 'mdi:walk'
   if (mode === 'AIR') return 'mdi:airplane'
   return 'mdi:ferry'
+}
+
+const isWalkOnlyRoute = (route: TransitRoute): boolean => {
+  return route.segments.length > 0 &&
+    route.segments.every(segment => normalizeTransportMode(segment.mode) === 'WALK')
 }
 
 const availableTransportModes = computed(() => {
@@ -1000,7 +1039,8 @@ function getShipBorderStyle(ship: string): string {
     'FERRY_KUNIGA': 'border-left: double 10px #DA6272',
     'FERRY_DOZEN': 'border-left: double 10px #F3C759',
     'ISOKAZE': 'border-left: double 10px #45A1CF',
-    'RAINBOWJET': 'border-left: double 10px #40BFB0'
+    'RAINBOWJET': 'border-left: double 10px #40BFB0',
+    'WALK': 'border-left: double 10px #6B7280'
   }
   return borderStyles[ship] || 'border-left: double 10px #888888'
 }
@@ -1103,6 +1143,7 @@ function showOperationStatus(shipName: string) {
 }
 
 function showShipInfo(shipName: string) {
+  if (shipName === 'WALK') return
   modalShipId.value = shipName
   showShipModal.value = true
 }
