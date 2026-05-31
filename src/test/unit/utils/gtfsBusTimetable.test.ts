@@ -689,6 +689,135 @@ describe('gtfsBusTimetable', () => {
     expect(removedDateResult).toEqual([])
   })
 
+  it('海士町バスの福井小学校前経由便は平日と土日祝で出し分ける', async () => {
+    const fetchMock = vi.fn(() => Promise.resolve({
+      ok: true,
+      status: 200,
+      json: () => Promise.resolve({
+        version: 1,
+        feedId: 'ama',
+        generatedAt: '2026-05-25T00:00:00.000Z',
+        operatorId: 'AMA_TOWN',
+        townLabelKey: 'AMA_CHO',
+        tripName: 'AMA_TOWN_BUS',
+        fare: 200,
+        routes: {
+          '21': {
+            agencyId: '',
+            shortName: '',
+            longName: '海士島線1'
+          },
+          '22': {
+            agencyId: '',
+            shortName: '',
+            longName: '海士島線2'
+          },
+          '23': {
+            agencyId: '',
+            shortName: '',
+            longName: '海士島線3'
+          }
+        },
+        stops: [
+          ['BUS_AMA_111_01', '役場前', 36.096178, 133.097043],
+          ['BUS_AMA_118_01', '西入口', 36.086348, 133.079677],
+          ['BUS_AMA_119_01', '福井', 36.089481, 133.079881],
+          ['BUS_AMA_120_01', '福井分かれ', 36.092452, 133.083025],
+          ['BUS_AMA_121_01', '福井小学校前', 36.098056, 133.085833],
+          ['BUS_AMA_126_01', '隠岐汽船乗り場', 36.105058, 133.076744]
+        ],
+        services: {
+          weekday: {
+            startDate: '2026-03-09',
+            endDate: '2026-05-31',
+            activeDays: [1, 2, 3, 4, 5],
+            addedDates: [],
+            removedDates: []
+          },
+          holiday: {
+            startDate: '2026-03-09',
+            endDate: '2026-05-31',
+            activeDays: [0, 6],
+            addedDates: [],
+            removedDates: []
+          }
+        },
+        trips: [
+          {
+            tripId: 'weekday_fukui_school_to_port',
+            routeId: '21',
+            serviceId: 'weekday',
+            headsign: '隠岐汽船乗り場',
+            shortName: '',
+            stops: [
+              ['BUS_AMA_111_01', '07:25', '07:25'],
+              ['BUS_AMA_118_01', '07:51', '07:51'],
+              ['BUS_AMA_119_01', '07:52', '07:52'],
+              ['BUS_AMA_120_01', '07:53', '07:53'],
+              ['BUS_AMA_121_01', '07:55', '07:55'],
+              ['BUS_AMA_126_01', '08:03', '08:03']
+            ]
+          },
+          {
+            tripId: 'holiday_fukui_branch_to_port',
+            routeId: '23',
+            serviceId: 'holiday',
+            headsign: '隠岐汽船乗り場',
+            shortName: '',
+            stops: [
+              ['BUS_AMA_111_01', '08:10', '08:10'],
+              ['BUS_AMA_118_01', '09:01', '09:01'],
+              ['BUS_AMA_119_01', '09:02', '09:02'],
+              ['BUS_AMA_120_01', '09:03', '09:03'],
+              ['BUS_AMA_126_01', '09:10', '09:10']
+            ]
+          }
+        ],
+        departuresByStop: {
+          BUS_AMA_121_01: [[0, 4]],
+          BUS_AMA_120_01: [[0, 3], [1, 3]]
+        }
+      })
+    } as Response))
+    vi.stubGlobal('fetch', fetchMock)
+
+    const weekdayResult = await loadBusTripsForRoute(
+      'BUS_AMA_121_01',
+      'BUS_AMA_126_01',
+      '2026-05-29'
+    )
+    const saturdayResult = await loadBusTripsForRoute(
+      'BUS_AMA_121_01',
+      'BUS_AMA_126_01',
+      '2026-05-30'
+    )
+    const saturdayBranchResult = await loadBusTripsForRoute(
+      'BUS_AMA_120_01',
+      'BUS_AMA_126_01',
+      '2026-05-30'
+    )
+
+    expect(weekdayResult).toHaveLength(1)
+    expect(weekdayResult[0]).toMatchObject({
+      serviceId: 'weekday',
+      departure: 'BUS_AMA_121_01',
+      departureTime: '07:55',
+      arrival: 'BUS_AMA_126_01',
+      arrivalTime: '08:03',
+      via: '海士島線'
+    })
+    expect(saturdayResult).toEqual([])
+    expect(saturdayBranchResult).toHaveLength(1)
+    expect(saturdayBranchResult[0]).toMatchObject({
+      serviceId: 'holiday',
+      departure: 'BUS_AMA_120_01',
+      departureTime: '09:03',
+      arrival: 'BUS_AMA_126_01',
+      arrivalTime: '09:10',
+      via: '海士島線'
+    })
+  })
+
   it('bus-searchデータから指定区間の路線表示を取得する', async () => {
     const fetchMock = vi.fn(() => Promise.resolve({
       ok: true,

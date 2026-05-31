@@ -70,6 +70,22 @@ describe("ShipModal", () => {
     );
   });
 
+  it("uses the resolved stop title for bus stop port modals", () => {
+    const wrapper = mount(ShipModal, {
+      props: {
+        ...defaultProps,
+        title: "郡バス待合所",
+        type: "port",
+        portId: "BUS_OKINOSHIMA_goka_gun_waiting",
+      },
+      global: { stubs }
+    });
+
+    expect(wrapper.find("h3").text()).toBe("郡バス待合所");
+    expect(wrapper.find("h3").text()).not.toContain("BUS_OKINOSHIMA");
+    expect(wrapper.find("h3").text()).not.toContain("港");
+  });
+
   it("renders slot content for custom type", () => {
     const wrapper = mount(ShipModal, {
       props: {

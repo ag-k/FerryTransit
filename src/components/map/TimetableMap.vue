@@ -38,6 +38,10 @@
           :height="height"
           @port-click="emit('portClick', $event)"
           @location-click="emit('locationClick', $event)"
+          @location-set-departure="emit('locationSetDeparture', $event)"
+          @location-set-arrival="emit('locationSetArrival', $event)"
+          @port-set-departure="emit('portSetDeparture', $event)"
+          @port-set-arrival="emit('portSetArrival', $event)"
           @route-select="emit('routeSelect', $event)"
         />
       </div>
@@ -83,6 +87,10 @@ const props = withDefaults(defineProps<Props>(), {
 const emit = defineEmits<{
   portClick: [port: Port]
   locationClick: [location: MapLocationClick]
+  locationSetDeparture: [location: MapLocationClick]
+  locationSetArrival: [location: MapLocationClick]
+  portSetDeparture: [portId: string]
+  portSetArrival: [portId: string]
   routeSelect: [route: { from: string; to: string }]
 }>()
 

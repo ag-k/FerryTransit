@@ -518,7 +518,7 @@ v-else-if="hasSearched && !isSearching"
 
     <!-- Port Info Modal -->
     <CommonShipModal
-v-model:visible="showPortModal" :title="getPortDisplayName(modalPortId)" type="port"
+v-model:visible="showPortModal" :title="getPortLabelParts(modalPortId).name" type="port"
       :port-id="modalPortId" :port-zoom="modalPortZoom" />
 
     <!-- Route Map Modal -->

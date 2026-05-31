@@ -42,7 +42,10 @@
         type="port"
         :port-id="modalPortId"
         :port-zoom="modalPortZoom"
+        :show-route-set-actions="true"
         @close="closePortModal"
+        @set-departure="handlePortModalSetDeparture"
+        @set-arrival="handlePortModalSetArrival"
       />
     </ClientOnly>
   </div>
@@ -60,7 +63,11 @@ import { getPortMapZoom } from '@/utils/portMapZoom'
 import { useSettingsStore } from '@/stores/settings'
 import { ensureLeafletLoaded } from '@/utils/leafletLoader'
 import { installLeafletTwoFingerTouchGuard } from '@/utils/leafletTouchGuard'
-import type { BusStopLocation } from '@/utils/gtfsBusTimetable'
+import {
+  getBusStopConnectedPortId,
+  getBusStopPortBadgeLabel,
+  type BusStopLocation
+} from '@/utils/gtfsBusTimetable'
 import {
   buildPortLabelA11yLabel,
   expandMainlandPortId,
@@ -80,6 +87,7 @@ type MapLocationPoint = {
   titleEn: string
   location: RoutePoint
   port?: Port
+  operatorId?: string
   townLabelKey?: string | null
 }
 
@@ -116,6 +124,10 @@ const props = withDefaults(defineProps<Props>(), {
 const emit = defineEmits<{
   portClick: [port: Port]
   locationClick: [location: { id: string; type: LocationType }]
+  locationSetDeparture: [location: { id: string; type: LocationType }]
+  locationSetArrival: [location: { id: string; type: LocationType }]
+  portSetDeparture: [portId: string]
+  portSetArrival: [portId: string]
   routeSelect: [route: { from: string; to: string }]
 }>()
 
@@ -166,6 +178,7 @@ const busStopLocations = computed<MapLocationPoint[]>(() => {
       lat: stop.lat,
       lng: stop.lng
     },
+    operatorId: stop.operatorId,
     townLabelKey: stop.townLabelKey
   }))
 })
@@ -176,6 +189,61 @@ const mapLocations = computed<MapLocationPoint[]>(() => {
 
 const getLocationTitle = (location: MapLocationPoint) => {
   return currentLocale.value === 'ja' ? location.titleJa : location.titleEn
+}
+
+const escapeHtml = (value: string) => {
+  return value
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;')
+    .replace(/'/g, '&#39;')
+}
+
+const getBusOperatorLabelKey = (operatorId?: string) => {
+  if (operatorId === 'AMA_TOWN') return 'AMA_TOWN_BUS'
+  if (operatorId === 'NISHINOSHIMA_TOWN') return 'NISHINOSHIMA_TOWN_BUS'
+  if (operatorId === 'CHIBU_VILLAGE') return 'CHIBU_VILLAGE_BUS'
+  if (operatorId === 'OKINOSHIMA_TOWN') return 'OKINOSHIMA_TOWN_BUS'
+  if (operatorId === 'OKINOSHIMA' || operatorId === 'OKI_ICHIBATA') return 'OKI_ICHIBATA_BUS'
+  return ''
+}
+
+const createBusStopPopupHtml = (location: MapLocationPoint) => {
+  const title = escapeHtml(getLocationTitle(location))
+  const town = location.townLabelKey ? String($i18n.t(location.townLabelKey)) : ''
+  const operatorLabelKey = getBusOperatorLabelKey(location.operatorId)
+  const operatorLabel = operatorLabelKey ? String($i18n.t(operatorLabelKey)) : ''
+  const portBadgeLabel = getBusStopPortBadgeLabel(location.id)
+  const connectedPortId = getBusStopConnectedPortId(location.id)
+  const connectedPortLabel = connectedPortId ? String($i18n.t(connectedPortId)) : portBadgeLabel
+  const rows = [
+    [String($i18n.t('LOCATION_TYPES.STOP')), town],
+    [String($i18n.t('TRANSPORT_NAME')), operatorLabel],
+    [String($i18n.t('map.connectedPort')), connectedPortLabel || '']
+  ].filter(([, value]) => value)
+
+  return `
+    <div class="ferry-map-stop-popup" data-location-id="${escapeHtml(location.id)}">
+      <div class="ferry-map-stop-popup__title">${title}</div>
+      <dl class="ferry-map-stop-popup__list">
+        ${rows.map(([label, value]) => `
+          <div class="ferry-map-stop-popup__row">
+            <dt>${escapeHtml(label)}</dt>
+            <dd>${escapeHtml(value)}</dd>
+          </div>
+        `).join('')}
+      </dl>
+      <div class="ferry-map-stop-popup__actions">
+        <button type="button" class="ferry-map-stop-popup__button" data-map-action="set-departure">
+          ${escapeHtml(String($i18n.t('map.setAsDeparture')))}
+        </button>
+        <button type="button" class="ferry-map-stop-popup__button ferry-map-stop-popup__button--primary" data-map-action="set-arrival">
+          ${escapeHtml(String($i18n.t('map.setAsArrival')))}
+        </button>
+      </div>
+    </div>
+  `
 }
 
 const getPortBadgeLabel = (portId: string) => {
@@ -203,6 +271,16 @@ const closePortModal = () => {
   modalPortId.value = ''
 }
 
+const handlePortModalSetDeparture = (portId: string) => {
+  emit('portSetDeparture', portId)
+  closePortModal()
+}
+
+const handlePortModalSetArrival = (portId: string) => {
+  emit('portSetArrival', portId)
+  closePortModal()
+}
+
 const openLocationDetails = (location: MapLocationPoint) => {
   if (location.type === 'PORT' && location.port) {
     if (props.showPortDetails) {
@@ -216,6 +294,33 @@ const openLocationDetails = (location: MapLocationPoint) => {
   emit('locationClick', {
     id: location.id,
     type: location.type
+  })
+}
+
+const bindStopPopupActions = (marker: any, location: MapLocationPoint) => {
+  marker.on('popupopen', (event: any) => {
+    const popupElement = event.popup?.getElement?.() as HTMLElement | null
+    if (!popupElement || !L) return
+
+    const departureButton = popupElement.querySelector<HTMLButtonElement>('[data-map-action="set-departure"]')
+    const arrivalButton = popupElement.querySelector<HTMLButtonElement>('[data-map-action="set-arrival"]')
+
+    const bindButton = (
+      button: HTMLButtonElement | null,
+      eventName: 'locationSetDeparture' | 'locationSetArrival'
+    ) => {
+      if (!button) return
+      L.DomEvent.disableClickPropagation(button)
+      L.DomEvent.disableScrollPropagation(button)
+      L.DomEvent.on(button, 'click', (clickEvent: Event) => {
+        L.DomEvent.stop(clickEvent)
+        emit(eventName, { id: location.id, type: location.type })
+        marker.closePopup?.()
+      })
+    }
+
+    bindButton(departureButton, 'locationSetDeparture')
+    bindButton(arrivalButton, 'locationSetArrival')
   })
 }
 
@@ -398,7 +503,8 @@ const syncLocationMarkers = () => {
     })
 
     if (location.type === 'STOP') {
-      marker.bindPopup(getLocationTitle(location))
+      marker.bindPopup(createBusStopPopupHtml(location))
+      bindStopPopupActions(marker, location)
     }
 
     markers.value.set(location.id, {
@@ -821,6 +927,79 @@ onUnmounted(() => {
 .map-container :deep(.leaflet-control-attribution) {
   font-size: 10px;
   background: rgba(255, 255, 255, 0.92);
+}
+
+.map-container :deep(.ferry-map-stop-popup) {
+  min-width: 180px;
+  color: #0f172a;
+}
+
+.map-container :deep(.ferry-map-stop-popup__title) {
+  margin-bottom: 8px;
+  font-size: 14px;
+  font-weight: 700;
+  line-height: 1.35;
+}
+
+.map-container :deep(.ferry-map-stop-popup__list) {
+  display: grid;
+  gap: 5px;
+  margin: 0;
+}
+
+.map-container :deep(.ferry-map-stop-popup__row) {
+  display: grid;
+  grid-template-columns: 64px minmax(0, 1fr);
+  gap: 8px;
+  align-items: baseline;
+  font-size: 12px;
+  line-height: 1.35;
+}
+
+.map-container :deep(.ferry-map-stop-popup__row dt) {
+  color: #64748b;
+  font-weight: 600;
+}
+
+.map-container :deep(.ferry-map-stop-popup__row dd) {
+  margin: 0;
+  color: #0f172a;
+  overflow-wrap: anywhere;
+}
+
+.map-container :deep(.ferry-map-stop-popup__actions) {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 6px;
+  margin-top: 10px;
+}
+
+.map-container :deep(.ferry-map-stop-popup__button) {
+  min-height: 30px;
+  padding: 5px 8px;
+  border: 1px solid #cbd5e1;
+  border-radius: 6px;
+  background: #ffffff;
+  color: #0f172a;
+  font: inherit;
+  font-size: 12px;
+  font-weight: 700;
+  line-height: 1.2;
+  cursor: pointer;
+}
+
+.map-container :deep(.ferry-map-stop-popup__button:hover) {
+  background: #f8fafc;
+}
+
+.map-container :deep(.ferry-map-stop-popup__button--primary) {
+  border-color: #0f5bb8;
+  background: #0f5bb8;
+  color: #ffffff;
+}
+
+.map-container :deep(.ferry-map-stop-popup__button--primary:hover) {
+  background: #0b4fa3;
 }
 
 .map-container :deep(.ferry-map-route-tooltip) {

@@ -124,6 +124,10 @@
         height="300px"
         @port-click="handleMapPortClick"
         @location-click="handleMapLocationClick"
+        @location-set-departure="handleMapLocationSetDeparture"
+        @location-set-arrival="handleMapLocationSetArrival"
+        @port-set-departure="handleMapPortSetDeparture"
+        @port-set-arrival="handleMapPortSetArrival"
         @route-select="handleMapRouteSelect"
       />
     </ClientOnly>
@@ -319,7 +323,9 @@
     <!-- モーダル -->
     <ClientOnly>
       <CommonShipModal v-model:visible="modalVisible" :title="modalTitle" :type="modalType" :ship-id="modalShipId"
-        :port-id="modalPortId" :port-zoom="modalPortZoom" :content="modalContent" />
+        :port-id="modalPortId" :port-zoom="modalPortZoom" :content="modalContent"
+        :show-route-set-actions="modalType === 'port'" @set-departure="handleModalPortSetDeparture"
+        @set-arrival="handleModalPortSetArrival" />
       <OperationStatusModal v-model:visible="operationStatusModalVisible" :ship-name="operationStatusShipName" />
     </ClientOnly>
   </div>
@@ -919,7 +925,7 @@ const showShipInfo = (shipName: string) => {
 }
 
 const showPortInfo = (portName: string) => {
-  modalTitle.value = t(portName)
+  modalTitle.value = getLocationDisplayName(portName)
   modalType.value = 'port'
   modalShipId.value = ''
   modalPortId.value = portName
@@ -939,15 +945,34 @@ const handleMapPortClick = (port: any) => {
   }
 }
 
-const handleMapLocationClick = (location: { id: string; type: LocationType }) => {
-  if (location.type !== 'STOP') return
+const handleMapLocationClick = (_location: { id: string; type: LocationType }) => {}
 
-  // 地図上のバス停がクリックされたら、その停留所を出発地または到着地に設定
-  if (!departure.value) {
-    handleDepartureChange(location.id)
-  } else if (!arrival.value && location.id !== departure.value) {
-    handleArrivalChange(location.id)
-  }
+const handleMapLocationSetDeparture = (location: { id: string; type: LocationType }) => {
+  if (location.type !== 'STOP') return
+  handleDepartureChange(location.id)
+}
+
+const handleMapLocationSetArrival = (location: { id: string; type: LocationType }) => {
+  if (location.type !== 'STOP') return
+  handleArrivalChange(location.id)
+}
+
+const handleMapPortSetDeparture = (portId: string) => {
+  handleDepartureChange(portId)
+}
+
+const handleMapPortSetArrival = (portId: string) => {
+  handleArrivalChange(portId)
+}
+
+const handleModalPortSetDeparture = (portId: string) => {
+  handleDepartureChange(portId)
+  modalVisible.value = false
+}
+
+const handleModalPortSetArrival = (portId: string) => {
+  handleArrivalChange(portId)
+  modalVisible.value = false
 }
 
 const handleMapRouteSelect = (route: { from: string; to: string }) => {

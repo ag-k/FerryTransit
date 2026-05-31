@@ -117,6 +117,22 @@
                       {{ t('port.modal.noMap') }}
                     </div>
                   </div>
+                  <div v-if="showRouteSetActions && currentPortId" class="mt-3 grid grid-cols-2 gap-2">
+                    <button
+                      type="button"
+                      class="min-h-10 rounded-md border border-app-border bg-app-surface px-3 py-2 text-sm font-semibold text-app-fg hover:bg-app-surface-2 focus:outline-none focus:ring-2 focus:ring-app-primary-2"
+                      @click="emit('setDeparture', currentPortId)"
+                    >
+                      {{ t('map.setAsDeparture') }}
+                    </button>
+                    <button
+                      type="button"
+                      class="min-h-10 rounded-md border border-app-primary bg-app-primary px-3 py-2 text-sm font-semibold text-white hover:bg-app-primary-2 focus:outline-none focus:ring-2 focus:ring-app-primary-2"
+                      @click="emit('setArrival', currentPortId)"
+                    >
+                      {{ t('map.setAsArrival') }}
+                    </button>
+                  </div>
                 </div>
 
                 <!-- Boarding info (PC: right side) -->
@@ -211,11 +227,13 @@ interface Props {
   portZoom?: number
   content?: string
   closeOnBackdrop?: boolean
+  showRouteSetActions?: boolean
 }
 
 const props = withDefaults(defineProps<Props>(), {
   type: 'custom',
-  closeOnBackdrop: true
+  closeOnBackdrop: true,
+  showRouteSetActions: false
 })
 
 const nuxtApp = useNuxtApp()
@@ -251,6 +269,8 @@ const currentPortId = computed(() => {
   return props.portId
 })
 
+const isBusStopModal = computed(() => typeof currentPortId.value === 'string' && currentPortId.value.startsWith('BUS_'))
+
 // Current port title
 const currentPortTitle = computed(() => {
   if (props.portId === 'HONDO') {
@@ -266,13 +286,14 @@ const headerTitle = computed(() => {
   if (props.type !== 'port') return props.title
   const id = currentPortId.value
   if (!id) return props.title
+  if (isBusStopModal.value) return props.title
 
   const isJa = currentLocale.value.startsWith('ja')
   if (!isJa) return currentPortTitle.value
 
   const raw = String((nuxtApp as any).$i18n?.t?.(id) ?? currentPortTitle.value)
   const m = raw.match(/^(.+?)\((.+)\)$/)
-  if (m) {
+  if (m?.[1] && m[2]) {
     const base = m[1].trim()
     const area = m[2].trim()
     const baseWithPort = base.endsWith('港') ? base : `${base}港`
@@ -356,6 +377,7 @@ const headerTitleParts = computed(() => {
   const id = currentPortId.value
   const isJa = currentLocale.value.startsWith('ja')
   if (!id) return { name: currentPortTitle.value, badges: [] }
+  if (isBusStopModal.value) return { name: props.title, badges: [] }
 
   const label = String(t(id))
   const parenRegex = /[（(]([^）)]+)[）)]/g
@@ -429,6 +451,8 @@ watch(
 const emit = defineEmits<{
   'update:visible': [value: boolean]
   'close': []
+  'setDeparture': [portId: string]
+  'setArrival': [portId: string]
 }>()
 
 // Handle close
