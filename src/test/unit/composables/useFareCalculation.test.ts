@@ -154,6 +154,12 @@ vi.mock('@/composables/useFerryData', () => ({
   })
 }))
 
+vi.mock('@/composables/useTimetableLoader', () => ({
+  useTimetableLoader: () => ({
+    ensureTimetableLoaded: vi.fn()
+  })
+}))
+
 // Mock useHolidayCalendar
 vi.mock('@/composables/useHolidayCalendar', () => ({
   useHolidayCalendar: () => ({})

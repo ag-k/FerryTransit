@@ -599,6 +599,31 @@ export const useRouteSearch = () => {
       visited: Set<string>;
     };
 
+    const pushRouteIfComplete = (state: IntermodalState): boolean => {
+      if (
+        state.segments.length > 0 &&
+        state.segments.some(segment => segment.mode === "WALK") &&
+        matchesLocation(state.node, arrival)
+      ) {
+        const routeKey = state.segments
+          .map(segment => `${segment.tripId}:${segment.departure}->${segment.arrival}`)
+          .join("|");
+        if (!routeKeys.has(routeKey)) {
+          routeKeys.add(routeKey);
+          routeResults.push({
+            segments: state.segments,
+            departureTime: state.segments[0]!.departureTime,
+            arrivalTime: state.time,
+            totalFare: state.segments.reduce((sum, segment) => sum + segment.fare, 0),
+            transferCount: Math.max(0, state.segments.length - 1),
+          });
+        }
+        return true;
+      }
+
+      return false;
+    };
+
     let states: IntermodalState[] = [{
       node: departure,
       time: startTime,
@@ -610,24 +635,7 @@ export const useRouteSearch = () => {
       const nextStates: IntermodalState[] = [];
 
       for (const state of states) {
-        if (
-          state.segments.length > 0 &&
-          state.segments.some(segment => segment.mode === "WALK") &&
-          matchesLocation(state.node, arrival)
-        ) {
-          const routeKey = state.segments
-            .map(segment => `${segment.tripId}:${segment.departure}->${segment.arrival}`)
-            .join("|");
-          if (!routeKeys.has(routeKey)) {
-            routeKeys.add(routeKey);
-            routeResults.push({
-              segments: state.segments,
-              departureTime: state.segments[0]!.departureTime,
-              arrivalTime: state.time,
-              totalFare: state.segments.reduce((sum, segment) => sum + segment.fare, 0),
-              transferCount: Math.max(0, state.segments.length - 1),
-            });
-          }
+        if (pushRouteIfComplete(state)) {
           continue;
         }
 
@@ -645,12 +653,14 @@ export const useRouteSearch = () => {
 
           const nextVisited = new Set(state.visited);
           nextVisited.add(segment.arrival);
-          nextStates.push({
+          const nextState = {
             node: segment.arrival,
             time: segment.arrivalTime,
             segments: [...state.segments, segment],
             visited: nextVisited,
-          });
+          };
+          if (pushRouteIfComplete(nextState)) continue;
+          nextStates.push(nextState);
         }
       }
 

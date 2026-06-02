@@ -11,7 +11,7 @@
           :class="{ 'is-active': selectedBusRouteTitle === '' }"
           @click="selectedBusRouteTitle = ''"
         >
-          {{ $t('ALL') }}
+          {{ $t('TRANSPORT_MODES.ALL') }}
         </button>
         <button
           v-for="routeTitle in routeFilterOptions"

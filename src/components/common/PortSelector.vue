@@ -86,6 +86,30 @@
                   </button>
                 </div>
 
+                <div class="relative">
+                  <Icon
+                    name="heroicons:magnifying-glass"
+                    class="pointer-events-none absolute left-3 top-1/2 h-5 w-5 -translate-y-1/2 text-app-muted"
+                    aria-hidden="true"
+                  />
+                  <input
+                    v-model="searchQuery"
+                    type="search"
+                    class="w-full rounded-md border border-app-border bg-app-surface py-2 pl-10 pr-10 text-base text-app-fg placeholder:text-app-muted focus:border-app-primary-2 focus:outline-none focus:ring-2 focus:ring-app-primary-2"
+                    :placeholder="$t('UI.SEARCH_LOCATION_PLACEHOLDER')"
+                    data-testid="port-selector-search-input"
+                  >
+                  <button
+                    v-if="searchQuery"
+                    type="button"
+                    class="absolute right-2 top-1/2 -translate-y-1/2 rounded-md p-2 text-app-muted hover:bg-app-surface-2 hover:text-app-fg"
+                    :aria-label="$t('CLEAR')"
+                    @click="searchQuery = ''"
+                  >
+                    <Icon name="heroicons:x-mark" class="h-4 w-4" aria-hidden="true" />
+                  </button>
+                </div>
+
                 <section v-if="favoriteRoutes.length > 0" class="space-y-2" data-testid="port-section-favorite-routes">
                   <h4 class="text-sm font-semibold text-app-fg">
                     {{ $t('favorites.favoriteRoutes') }}
@@ -109,7 +133,7 @@
                   <h4 class="text-sm font-semibold text-app-fg">
                     {{ $t(section.labelKey) }}
                   </h4>
-                  <div v-if="section.key === 'busStops' && busStopTownTabs.length > 1"
+                  <div v-if="section.key === 'busStops' && !normalizedSearchQuery && busStopTownTabs.length > 1"
                     class="grid grid-cols-2 gap-2" role="tablist" :aria-label="$t('BUS_STOPS')"
                     data-testid="bus-stop-town-tabs">
                     <button v-for="tab in busStopTownTabs" :key="tab.key" type="button" role="tab"
@@ -134,10 +158,13 @@
                       <span class="flex items-center gap-3">
                         <LocationTypeIcon v-if="showLocationTypeBadge" :type="getLocationType(port)" />
                         <span class="min-w-0 truncate">{{ getPortLabelParts(port).name }}</span>
-                        <PortBadges :badges="getPortLabelParts(port).badges"
+                      <PortBadges :badges="getPortLabelParts(port).badges"
                           class="ml-auto flex items-center gap-1.5" />
                       </span>
                     </button>
+                  </div>
+                  <div v-if="section.ports.length === 0" class="rounded-md border border-dashed border-app-border px-3 py-4 text-sm text-app-muted">
+                    {{ $t('NO_RESULTS') }}
                   </div>
                 </section>
               </div>
@@ -235,6 +262,8 @@ const buttonId = `port-selector-${Math.random().toString(36).substr(2, 9)}`
 
 const canUseDom = computed(() => process.client && typeof document !== 'undefined')
 const isOpen = ref(false)
+const searchQuery = ref('')
+const normalizedSearchQuery = computed(() => normalizeSearchText(searchQuery.value))
 
 const availablePortsSet = computed(() => {
   const locations: string[] = []
@@ -250,18 +279,23 @@ const availablePortsSet = computed(() => {
 const favoritePortCodes = computed(() => {
   const raw = favoriteStore?.orderedPorts?.map(p => p.portCode) || []
   const unique = Array.from(new Set(raw))
-  return unique.filter(code => availablePortsSet.value.has(code))
+  return unique.filter(code => availablePortsSet.value.has(code) && matchesLocationSearch(code))
 })
 
 const favoriteRoutes = computed(() => {
   const raw = favoriteStore?.orderedRoutes || []
-  return raw.filter(route => availablePortsSet.value.has(route.departure) && availablePortsSet.value.has(route.arrival))
+  return raw.filter(route => {
+    const isAvailable = availablePortsSet.value.has(route.departure) && availablePortsSet.value.has(route.arrival)
+    if (!isAvailable) return false
+    if (!normalizedSearchQuery.value) return true
+    return normalizeSearchText(`${getRouteDisplayName(route)} ${getRouteLabel(route)}`).includes(normalizedSearchQuery.value)
+  })
 })
 
 type Section = { key: 'favorites' | 'mainland' | 'dozen' | 'dogo' | 'busStops'; labelKey: string; ports: string[] }
 type BusStopTownTab = { key: string; labelKey: string; ports: string[] }
 
-const busStopTownOrder = ['AMA_CHO', 'NISHINOSHIMA_CHO', 'CHIBU_MURA', 'OKINOSHIMA_CHO', 'BUS_STOPS']
+const busStopTownOrder = ['OKINOSHIMA_CHO', 'NISHINOSHIMA_CHO', 'AMA_CHO', 'CHIBU_MURA', 'BUS_STOPS']
 const activeBusStopTownKey = ref<string | null>(null)
 
 const busStopTownTabs = computed<BusStopTownTab[]>(() => {
@@ -316,6 +350,7 @@ const currentBusStopTownKey = computed(() => {
 })
 
 const activeBusStopPorts = computed(() => {
+  if (normalizedSearchQuery.value) return busStops.value.filter(matchesLocationSearch)
   return busStopTownTabs.value.find(tab => tab.key === currentBusStopTownKey.value)?.ports || []
 })
 
@@ -336,9 +371,9 @@ const sections = computed<Section[]>(() => {
 
   if (showPortsInCurrentView.value) {
     result.push(
-      { key: 'dozen', labelKey: 'DOZEN', ports: dozenPorts.value },
-      { key: 'dogo', labelKey: 'DOGO', ports: dogoPorts.value },
-      { key: 'mainland', labelKey: 'MAINLAND', ports: hondoPorts.value }
+      { key: 'dozen', labelKey: 'DOZEN', ports: dozenPorts.value.filter(matchesLocationSearch) },
+      { key: 'dogo', labelKey: 'DOGO', ports: dogoPorts.value.filter(matchesLocationSearch) },
+      { key: 'mainland', labelKey: 'MAINLAND', ports: hondoPorts.value.filter(matchesLocationSearch) }
     )
   }
 
@@ -361,6 +396,27 @@ const getTownBadgeLabel = (labelKey: string): string => {
   if (labelKey === 'CHIBU_MURA') return '知夫村'
   if (labelKey === 'OKINOSHIMA_CHO') return '隠岐の島町'
   return translated
+}
+
+const normalizeSearchText = (value: string): string => {
+  return value
+    .toLocaleLowerCase()
+    .normalize('NFKC')
+    .replace(/\s+/g, '')
+}
+
+const matchesLocationSearch = (port: string): boolean => {
+  const query = normalizedSearchQuery.value
+  if (!query) return true
+
+  const labelParts = getPortLabelParts(port)
+  const haystack = normalizeSearchText([
+    port,
+    labelParts.name,
+    ...labelParts.badges
+  ].join(' '))
+
+  return haystack.includes(query)
 }
 
 const getPortLabelParts = (port: string) => {
@@ -412,6 +468,7 @@ const open = () => {
 
 const close = () => {
   isOpen.value = false
+  searchQuery.value = ''
 }
 
 const selectBusStopTown = (townKey: string) => {

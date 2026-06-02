@@ -422,6 +422,154 @@ describe("useRouteSearch", () => {
       expect(intermodalRoute?.totalFare).toBe(500);
     });
 
+    it("should complete intermodal routes that need a final bus leg after a ferry transfer", async () => {
+      const store = useFerryStore();
+      store.timetableData = [
+        {
+          tripId: 3001,
+          startDate: "2026-01-01",
+          endDate: "2026-12-31",
+          name: "FERRY_DOZEN",
+          departure: "BEPPU",
+          departureTime: "12:35:00" as any,
+          arrival: "HISHIURA",
+          arrivalTime: "12:47:00" as any,
+          status: 0,
+        },
+      ];
+      store.locationLabels = {
+        BUS_NISHINOSHIMA_nishinoshima_026: "波止",
+        BUS_NISHINOSHIMA_nishinoshima_006: "隠岐汽船（別府港）",
+        BUS_AMA_126_01: "隠岐汽船乗り場",
+        BUS_AMA_125_01: "高校下",
+        BEPPU: "別府",
+        HISHIURA: "菱浦",
+      };
+
+      const nishinoshimaFeed = {
+        version: 1,
+        feedId: "nishinoshima",
+        generatedAt: "2026-05-25T00:00:00.000Z",
+        operatorId: "NISHINOSHIMA_TOWN",
+        townLabelKey: "NISHINOSHIMA_CHO",
+        tripName: "NISHINOSHIMA_TOWN_BUS",
+        fare: 200,
+        routes: {
+          NISHINOSHIMA_HATO: {
+            agencyId: "NISHINOSHIMA_TOWN",
+            shortName: "波止線",
+            longName: "西ノ島町営バス 波止線",
+          },
+        },
+        stops: [
+          ["BUS_NISHINOSHIMA_nishinoshima_026", "波止", 36.07446789, 133.01485121],
+          ["BUS_NISHINOSHIMA_nishinoshima_006", "隠岐汽船（別府港）", 36.107525, 133.041615],
+        ],
+        services: {
+          svc_daily: {
+            startDate: "2026-01-01",
+            endDate: "2026-12-31",
+            activeDays: [0, 1, 2, 3, 4, 5, 6],
+            addedDates: [],
+            removedDates: [],
+          },
+        },
+        trips: [
+          {
+            tripId: "H02_HATO_1130",
+            routeId: "NISHINOSHIMA_HATO",
+            serviceId: "svc_daily",
+            headsign: "隠岐汽船",
+            shortName: "波止線",
+            stops: [
+              ["BUS_NISHINOSHIMA_nishinoshima_026", "11:46", "11:46"],
+              ["BUS_NISHINOSHIMA_nishinoshima_006", "12:03", "12:03"],
+            ],
+          },
+        ],
+        departuresByStop: {
+          BUS_NISHINOSHIMA_nishinoshima_026: [[0, 0]],
+        },
+      };
+
+      const amaFeed = {
+        version: 1,
+        feedId: "ama",
+        generatedAt: "2026-05-25T00:00:00.000Z",
+        operatorId: "AMA_TOWN",
+        townLabelKey: "AMA_CHO",
+        tripName: "AMA_TOWN_BUS",
+        fare: 200,
+        routes: {
+          "10": {
+            agencyId: "AMA_TOWN",
+            shortName: "",
+            longName: "豊田線",
+          },
+        },
+        stops: [
+          ["BUS_AMA_126_01", "隠岐汽船乗り場", 36.105058, 133.076744],
+          ["BUS_AMA_125_01", "高校下", 36.103221, 133.076587],
+        ],
+        services: {
+          svc_daily: {
+            startDate: "2026-01-01",
+            endDate: "2026-12-31",
+            activeDays: [0, 1, 2, 3, 4, 5, 6],
+            addedDates: [],
+            removedDates: [],
+          },
+        },
+        trips: [
+          {
+            tripId: "R8_10_R5_1325",
+            routeId: "10",
+            serviceId: "svc_daily",
+            headsign: "豊田",
+            shortName: "",
+            stops: [
+              ["BUS_AMA_126_01", "13:25", "13:25"],
+              ["BUS_AMA_125_01", "13:26", "13:26"],
+            ],
+          },
+        ],
+        departuresByStop: {
+          BUS_AMA_126_01: [[0, 0]],
+        },
+      };
+
+      const fetchMock = vi.fn((path: string) => {
+        const body = path.includes("nishinoshima") ? nishinoshimaFeed : amaFeed;
+        return Promise.resolve({
+          ok: true,
+          status: 200,
+          json: () => Promise.resolve(body),
+        } as Response);
+      });
+      vi.stubGlobal("fetch", fetchMock);
+
+      const { searchRoutes } = useRouteSearch();
+      const results = await searchRoutes(
+        "BUS_NISHINOSHIMA_nishinoshima_026",
+        "BUS_AMA_125_01",
+        new Date("2026-06-01"),
+        "01:15",
+        false
+      );
+
+      const route = results.find(result =>
+        result.segments.map(segment => segment.mode).join(">") === "BUS>WALK>FERRY>WALK>BUS"
+      );
+      expect(route).toBeDefined();
+      expect(route?.segments.map(segment => [segment.departure, segment.arrival])).toEqual([
+        ["BUS_NISHINOSHIMA_nishinoshima_026", "BUS_NISHINOSHIMA_nishinoshima_006"],
+        ["BUS_NISHINOSHIMA_nishinoshima_006", "BEPPU"],
+        ["BEPPU", "HISHIURA"],
+        ["HISHIURA", "BUS_AMA_126_01"],
+        ["BUS_AMA_126_01", "BUS_AMA_125_01"],
+      ]);
+    });
+
     it("should apply live cancellation status only when the search date is today (JST)", async () => {
       vi.useFakeTimers();
       // 2024-01-15 12:00 JST

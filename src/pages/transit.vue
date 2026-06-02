@@ -10,12 +10,6 @@
       <h3 class="sr-only">{{ $t('SEARCH_CONDITIONS') }}</h3>
       <!-- Port Selection -->
       <div class="mb-3">
-          <TransportModeFilter
-            v-if="transportModeOptions.length > 1"
-            v-model="selectedTransportMode"
-            :options="transportModeOptions"
-            class="mb-3"
-          />
           <!-- Mobile/PC: 添付デザインに合わせた独自UIに統一 -->
           <RouteEndpointsSelector
             :departure="departure"
@@ -550,7 +544,6 @@ import RouteMapModal from '@/components/map/RouteMapModal.vue'
 import Card from '@/components/common/Card.vue'
 import PrimaryButton from '@/components/common/PrimaryButton.vue'
 import Badge from '@/components/common/Badge.vue'
-import TransportModeFilter from '@/components/common/TransportModeFilter.vue'
 import ToggleSwitch from '@/components/common/ToggleSwitch.vue'
 import LocationTypeIcon from '@/components/common/LocationTypeIcon.vue'
 import type { LocationType, TransportMode, TransitRoute, TransitSegment } from '@/types'
@@ -633,9 +626,6 @@ const sortOptions: Array<{ value: SortKey; labelKey: string }> = [
 ]
 
 const sortOption = ref<SortKey>('recommended')
-const transportModeOrder: TransportMode[] = ['FERRY', 'BUS', 'WALK', 'AIR']
-type TransportModeFilterValue = TransportMode | 'ALL'
-const selectedTransportMode = ref<TransportModeFilterValue>('ALL')
 
 // Composables
 const { searchRoutes, formatTime, calculateDuration, getPortDisplayName } = useRouteSearch()
@@ -817,43 +807,7 @@ const isWalkOnlyRoute = (route: TransitRoute): boolean => {
     route.segments.every(segment => normalizeTransportMode(segment.mode) === 'WALK')
 }
 
-const availableTransportModes = computed(() => {
-  const modes = new Set<TransportMode>()
-  for (const route of searchResults.value) {
-    for (const segment of route.segments) {
-      modes.add(normalizeTransportMode(segment.mode))
-    }
-  }
-  return transportModeOrder.filter(mode => modes.has(mode))
-})
-
-const transportModeOptions = computed(() => {
-  if (availableTransportModes.value.length <= 1) return []
-  return ['ALL', ...availableTransportModes.value]
-})
-
-watch(transportModeOptions, (options) => {
-  if (!options.length) {
-    selectedTransportMode.value = 'ALL'
-    return
-  }
-  if (!options.includes(selectedTransportMode.value)) {
-    selectedTransportMode.value = 'ALL'
-  }
-})
-
-const filteredResults = computed(() => {
-  if (selectedTransportMode.value === 'ALL' || transportModeOptions.value.length === 0) {
-    return searchResults.value
-  }
-  return searchResults.value.filter(route =>
-    route.segments.some(segment => normalizeTransportMode(segment.mode) === selectedTransportMode.value)
-  )
-})
-
-watch(selectedTransportMode, () => {
-  displayLimit.value = 5
-})
+const filteredResults = computed(() => searchResults.value)
 
 const sortedResults = computed(() => {
   const routes = [...filteredResults.value]

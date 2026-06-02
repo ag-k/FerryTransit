@@ -85,6 +85,7 @@ describe('TimetablePage', () => {
     vi.stubGlobal('useNuxtApp', () => ({
       $toast: mockToast
     }))
+    vi.stubGlobal('confirm', vi.fn())
 
     mockGetCollection.mockResolvedValue([
       {
