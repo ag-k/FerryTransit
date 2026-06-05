@@ -20,9 +20,21 @@
       <!-- Tab navigation -->
       <div ref="tabBarRef"
         class="sticky top-0 z-20 mb-6 border-b border-gray-200 dark:border-gray-700 dark:bg-gray-900/90 backdrop-blur">
-        <nav class="-mb-px flex space-x-1 overflow-x-auto scrollbar-hide" aria-label="Tabs" role="tablist"
-          style="scrollbar-width: none; -ms-overflow-style: none;">
-          <button v-for="tab in tabs" :id="`fare-tab-${tab.id}`" :key="tab.id" type="button" role="tab"
+        <nav class="mb-3 grid grid-cols-2 gap-2" aria-label="Transport modes" role="tablist">
+          <button v-for="mode in transportTabs" :key="mode.id" type="button" role="tab"
+            :aria-selected="activeTransport === mode.id" :tabindex="activeTransport === mode.id ? 0 : -1" :class="[
+              'select-none rounded-lg px-4 py-2 text-sm font-medium transition-colors',
+              'focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 focus-visible:ring-offset-2 dark:focus-visible:ring-offset-gray-900',
+              activeTransport === mode.id
+                ? 'bg-app-primary text-white'
+                : 'bg-app-surface-2 text-app-muted hover:text-app-fg'
+            ]" @click="setActiveTransport(mode.id)">
+            {{ $t(mode.nameKey) }}
+          </button>
+        </nav>
+        <nav v-if="activeTransport === 'ship'" class="-mb-px flex space-x-1 overflow-x-auto scrollbar-hide"
+          aria-label="Ship fare tabs" role="tablist" style="scrollbar-width: none; -ms-overflow-style: none;">
+          <button v-for="tab in shipTabs" :id="`fare-tab-${tab.id}`" :key="tab.id" type="button" role="tab"
             :aria-controls="`fare-tabpanel-${tab.id}`" :aria-selected="activeTab === tab.id"
             :tabindex="activeTab === tab.id ? 0 : -1" :class="[
               'flex-shrink-0 select-none whitespace-nowrap rounded-t-lg px-4 py-2 text-sm font-medium transition-colors',
@@ -34,14 +46,75 @@
             {{ $t(tab.nameKey) }}
           </button>
         </nav>
+        <nav v-else class="-mb-px flex space-x-1 overflow-x-auto scrollbar-hide" aria-label="Bus fare tabs" role="tablist"
+          style="scrollbar-width: none; -ms-overflow-style: none;">
+          <button v-for="row in busFareRows" :id="`fare-tab-bus-${row.id}`" :key="row.id" type="button" role="tab"
+            aria-controls="fare-tabpanel-bus" :aria-selected="activeBusFareId === row.id"
+            :tabindex="activeBusFareId === row.id ? 0 : -1" :class="[
+              'flex-shrink-0 select-none whitespace-nowrap rounded-t-lg px-4 py-2 text-sm font-medium transition-colors',
+              'focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 focus-visible:ring-offset-2 dark:focus-visible:ring-offset-gray-900',
+              activeBusFareId === row.id
+                ? 'bg-app-surface-2 text-app-primary dark:text-white border-b-2 border-app-primary-2'
+                : 'text-app-muted hover:text-app-fg hover:bg-app-surface-2/60'
+            ]" @click="activeBusFareId = row.id">
+            {{ $t(row.operatorKey) }}
+          </button>
+        </nav>
       </div>
 
       <p v-if="activeVersionLabel" class="mb-4 text-sm text-gray-600 dark:text-gray-400">
         {{ activeVersionLabel }}
       </p>
 
+      <!-- Bus fares -->
+      <div v-show="activeTransport === 'bus'" id="fare-tabpanel-bus" role="tabpanel" tabindex="0"
+        :aria-labelledby="`fare-tab-bus-${activeBusFareId}`" class="mb-4">
+        <div class="mb-4">
+          <h3 class="text-xl font-medium dark:text-white">{{ $t('BUS_FARE') }}</h3>
+          <p class="text-sm text-gray-600 dark:text-gray-400 mt-2 sm:mt-1">
+            {{ $t('BUS_FARE_NOTE') }}
+          </p>
+        </div>
+
+        <div class="overflow-x-auto">
+          <table class="w-full text-base sm:text-sm border-collapse">
+            <thead>
+              <tr class="bg-gray-100 dark:bg-gray-800">
+                <th scope="col"
+                  class="border border-gray-300 dark:border-gray-600 px-4 py-3 text-left dark:text-gray-100">
+                  {{ $t('TRANSPORT_NAME') }}
+                </th>
+                <th scope="col"
+                  class="border border-gray-300 dark:border-gray-600 px-4 py-3 text-left dark:text-gray-100">
+                  {{ $t('BUS_FARE_TYPE') }}
+                </th>
+                <th scope="col"
+                  class="border border-gray-300 dark:border-gray-600 px-4 py-3 text-right dark:text-gray-100">
+                  {{ $t('FARE') }}
+                </th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr v-if="activeBusFare" class="hover:bg-gray-50 dark:hover:bg-gray-700/50">
+                <th scope="row"
+                  class="border border-gray-300 dark:border-gray-600 px-4 py-3 text-left font-medium dark:text-gray-100">
+                  {{ $t(activeBusFare.operatorKey) }}
+                </th>
+                <td class="border border-gray-300 dark:border-gray-600 px-4 py-3 dark:text-gray-100">
+                  {{ $t(activeBusFare.fareTypeKey) }}
+                </td>
+                <td
+                  class="border border-gray-300 dark:border-gray-600 px-4 py-3 text-right font-mono dark:text-gray-100">
+                  {{ formatCurrency(activeBusFare.fare) }}
+                </td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+
       <!-- Oki Kisen Ferry -->
-      <div v-show="activeTab === 'okiKisen'" id="fare-tabpanel-okiKisen" role="tabpanel" tabindex="0"
+      <div v-show="activeTransport === 'ship' && activeTab === 'okiKisen'" id="fare-tabpanel-okiKisen" role="tabpanel" tabindex="0"
         aria-labelledby="fare-tab-okiKisen" class="mb-4">
         <div class="mb-4">
           <div class="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
@@ -336,7 +409,7 @@
       </div>
 
       <!-- Naiko Sen (Ferry Dozen / Isokaze) -->
-      <div v-show="activeTab === 'naikoSen'" id="fare-tabpanel-naikoSen" role="tabpanel" tabindex="0"
+      <div v-show="activeTransport === 'ship' && activeTab === 'naikoSen'" id="fare-tabpanel-naikoSen" role="tabpanel" tabindex="0"
         aria-labelledby="fare-tab-naikoSen" class="mb-4">
         <div class="mb-4">
           <div class="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
@@ -506,7 +579,7 @@
       </div>
 
       <!-- Rainbow Jet -->
-      <div v-show="activeTab === 'rainbowJet'" id="fare-tabpanel-rainbowJet" role="tabpanel" tabindex="0"
+      <div v-show="activeTransport === 'ship' && activeTab === 'rainbowJet'" id="fare-tabpanel-rainbowJet" role="tabpanel" tabindex="0"
         aria-labelledby="fare-tab-rainbowJet" class="mb-4">
         <div class="mb-4">
           <div class="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
@@ -668,7 +741,9 @@ const fareStore = process.client ? useFareStore() : null
 const { t, te } = useI18n({ useScope: 'global' })
 
 // State
+const activeTransport = ref<'ship' | 'bus'>('ship')
 const activeTab = ref('okiKisen')
+const activeBusFareId = ref('ama')
 const tabBarRef = ref<HTMLElement | null>(null)
 const okiKisenFares = ref<any[]>([])
 const naikoSenFares = ref<any[]>([])
@@ -678,7 +753,7 @@ const innerIslandVehicleFare = ref<any>(null)
 const showVehicleNotes = ref(false)
 
 watch(
-  activeTab,
+  [activeTransport, activeTab, activeBusFareId],
   async () => {
     if (!process.client) return
     await nextTick()
@@ -790,11 +865,34 @@ const rainbowJetRouteGroups = [
 const PASSENGER_DISCOUNT_RATE = 0.5
 
 // Tab definitions
-const tabs = [
+const transportTabs = [
+  { id: 'ship', nameKey: 'TRANSPORT_MODES.FERRY' },
+  { id: 'bus', nameKey: 'TRANSPORT_MODES.BUS' }
+] as const
+
+const shipTabs = [
   { id: 'okiKisen', nameKey: 'OKI_KISEN_FERRY' },
   { id: 'rainbowJet', nameKey: 'RAINBOWJET' },
   { id: 'naikoSen', nameKey: 'NAIKO_SEN' }
+] as const
+
+type TransportTabId = typeof transportTabs[number]['id']
+
+const busFareRows = [
+  { id: 'ama', operatorKey: 'AMA_TOWN_BUS', fareTypeKey: 'BUS_FLAT_FARE', fare: 200 },
+  { id: 'nishinoshima', operatorKey: 'NISHINOSHIMA_TOWN_BUS', fareTypeKey: 'BUS_FLAT_FARE', fare: 200 },
+  { id: 'chibu', operatorKey: 'CHIBU_VILLAGE_BUS', fareTypeKey: 'BUS_FLAT_FARE', fare: 100 },
+  { id: 'okinoshima-ichibata', operatorKey: 'OKI_ICHIBATA_BUS', fareTypeKey: 'BUS_MAX_FARE', fare: 500 },
+  { id: 'okinoshima-town', operatorKey: 'OKINOSHIMA_TOWN_BUS', fareTypeKey: 'BUS_FLAT_FARE', fare: 300 }
 ]
+
+const activeBusFare = computed(() =>
+  busFareRows.find(row => row.id === activeBusFareId.value) ?? busFareRows[0]
+)
+
+const setActiveTransport = (mode: TransportTabId) => {
+  activeTransport.value = mode
+}
 
 // Vehicle sizes (for old format compatibility)
 // Vehicle size list for new format
@@ -836,6 +934,10 @@ const formatVersionLabel = (version: FareVersion | null): string => {
 }
 
 const activeVersionLabel = computed(() => {
+  if (activeTransport.value === 'bus') {
+    return ''
+  }
+
   switch (activeTab.value) {
     case 'rainbowJet':
       return formatVersionLabel(highspeedVersion.value)

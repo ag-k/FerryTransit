@@ -55,4 +55,20 @@ describe("FarePage Tab Navigation", () => {
     expect(cssContent).toContain("width: 0px !important");
     expect(cssContent).toContain("background: transparent !important");
   });
+
+  it("should include bus fare tab and bus fare rows", () => {
+    const fs = require("fs");
+    const filePath = "/Users/ag/works/FerryTransit/src/pages/fare.vue";
+    const fileContent = fs.readFileSync(filePath, "utf8");
+
+    expect(fileContent).toContain("{ id: 'bus', nameKey: 'TRANSPORT_MODES.BUS' }");
+    expect(fileContent).toContain("const shipTabs = [");
+    expect(fileContent).toContain("const activeBusFare = computed");
+    expect(fileContent).toContain('id="fare-tabpanel-bus"');
+    expect(fileContent).toContain("operatorKey: 'AMA_TOWN_BUS', fareTypeKey: 'BUS_FLAT_FARE', fare: 200");
+    expect(fileContent).toContain("operatorKey: 'NISHINOSHIMA_TOWN_BUS', fareTypeKey: 'BUS_FLAT_FARE', fare: 200");
+    expect(fileContent).toContain("operatorKey: 'CHIBU_VILLAGE_BUS', fareTypeKey: 'BUS_FLAT_FARE', fare: 100");
+    expect(fileContent).toContain("operatorKey: 'OKI_ICHIBATA_BUS', fareTypeKey: 'BUS_MAX_FARE', fare: 500");
+    expect(fileContent).toContain("operatorKey: 'OKINOSHIMA_TOWN_BUS', fareTypeKey: 'BUS_FLAT_FARE', fare: 300");
+  });
 });
