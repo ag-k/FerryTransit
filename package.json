@@ -129,7 +129,7 @@
     "unstorage": "^1.17.5",
     "vite": "^7.3.3",
     "vitest": "^4.1.7",
-    "vue-tsc": "^3.3.1"
+    "vue-tsc": "^3.3.2"
   },
   "optionalDependencies": {
     "@oxc-parser/binding-darwin-arm64": "0.102.0",
