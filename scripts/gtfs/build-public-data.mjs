@@ -35,6 +35,13 @@ const BUS_FEED_CONFIGS = {
     townLabelKey: 'OKINOSHIMA_CHO',
     tripName: 'OKINOSHIMA_BUS',
     fare: 500
+  },
+  ichibata_bus_connection: {
+    stopPrefix: 'BUS_ICHIBATA_CONNECTION_',
+    operatorId: 'ICHIBATA_BUS',
+    townLabelKey: null,
+    tripName: 'ICHIBATA_BUS_CONNECTION',
+    fare: 1200
   }
 }
 
@@ -353,6 +360,26 @@ function writeBusStopsIndex(feeds) {
   console.log(`bus-search stop index を生成しました: ${join(BUS_SEARCH_TARGET_DIR, 'stops.json')}`)
 }
 
+function readExistingBusSearchFeedForIndex(id) {
+  const filePath = join(BUS_SEARCH_TARGET_DIR, `${id}.json`)
+  if (!existsSync(filePath)) return null
+
+  const feed = JSON.parse(readFileSync(filePath, 'utf-8'))
+  return {
+    id: feed.feedId || id,
+    operatorId: feed.operatorId,
+    townLabelKey: feed.townLabelKey ?? null,
+    stops: (feed.stops || []).map(([code, name, lat, lng]) => [
+      code,
+      name,
+      lat,
+      lng,
+      feed.operatorId,
+      feed.townLabelKey ?? null
+    ])
+  }
+}
+
 function listBusFeedIds() {
   const busRoot = join(ROOT, 'gtfs', 'current', 'bus')
   return readdirSync(busRoot)
@@ -372,7 +399,10 @@ function main() {
 
   const feed = buildPublicData(mode, id || 'ama')
   if (mode === 'bus') {
-    writeBusStopsIndex([feed])
+    const feeds = listBusFeedIds()
+      .map(feedId => feedId === id ? feed : readExistingBusSearchFeedForIndex(feedId))
+      .filter(Boolean)
+    writeBusStopsIndex(feeds)
   }
 }
 

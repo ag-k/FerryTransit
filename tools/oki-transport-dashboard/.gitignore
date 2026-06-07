@@ -1,0 +1,10 @@
+data/snapshots/*.json
+data/downloads/**
+data/reviews.json
+data/document-types.json
+data/gtfs/**
+data/codex-app-server/**
+!data/snapshots/.gitkeep
+!data/downloads/.gitkeep
+!data/gtfs/.gitkeep
+!data/codex-app-server/.gitkeep

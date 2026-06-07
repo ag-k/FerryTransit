@@ -74,6 +74,8 @@
   "CHIBU_VILLAGE_BUS": "Chibu Village Bus",
   "OKI_ICHIBATA_BUS": "Oki Ichibata Bus",
   "OKINOSHIMA_TOWN_BUS": "Okinoshima Town Bus",
+  "ICHIBATA_BUS": "Ichibata Bus",
+  "ICHIBATA_BUS_CONNECTION": "Ichibata Bus Oki Kisen Connection",
   "WALK": "Walk",
   "TRANSPORT_MODES": {
     "FERRY": "Ship",

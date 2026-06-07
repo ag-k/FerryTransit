@@ -69,6 +69,8 @@
   "CHIBU_VILLAGE_BUS": "知夫村営バス",
   "OKI_ICHIBATA_BUS": "隠岐一畑交通",
   "OKINOSHIMA_TOWN_BUS": "隠岐の島町営バス",
+  "ICHIBATA_BUS": "一畑バス",
+  "ICHIBATA_BUS_CONNECTION": "一畑バス 隠岐汽船接続バス",
   "WALK": "徒歩",
   "TRANSPORT_MODES": {
     "FERRY": "船",

@@ -206,6 +206,7 @@ const getBusOperatorLabelKey = (operatorId?: string) => {
   if (operatorId === 'CHIBU_VILLAGE') return 'CHIBU_VILLAGE_BUS'
   if (operatorId === 'OKINOSHIMA_TOWN') return 'OKINOSHIMA_TOWN_BUS'
   if (operatorId === 'OKINOSHIMA' || operatorId === 'OKI_ICHIBATA') return 'OKI_ICHIBATA_BUS'
+  if (operatorId === 'ICHIBATA_BUS') return 'ICHIBATA_BUS'
   return ''
 }
 

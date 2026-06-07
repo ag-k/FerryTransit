@@ -1,0 +1,20 @@
+{
+  "ok": true,
+  "checkedAt": "2026-06-06T15:09:21.208Z",
+  "mode": "bus",
+  "id": "ichibata_bus_connection",
+  "gtfsDir": "/Users/ag/works/FerryTransit/gtfs/current/bus/ichibata_bus_connection",
+  "summary": {
+    "agencyCount": 1,
+    "routeCount": 1,
+    "stopCount": 5,
+    "tripCount": 95,
+    "stopTimeCount": 285,
+    "serviceCount": 27,
+    "feedStartDate": "20260401",
+    "feedEndDate": "20261231",
+    "feedVersion": "oki_2026_dia_20260401-20261231"
+  },
+  "issues": [],
+  "warnings": []
+}

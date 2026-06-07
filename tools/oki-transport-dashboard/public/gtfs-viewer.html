@@ -1,0 +1,89 @@
+<!doctype html>
+<html lang="ja">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>GTFSビューア</title>
+    <link rel="stylesheet" href="/styles.css">
+  </head>
+  <body class="gtfs-viewer-body">
+    <div class="gtfs-viewer-shell">
+      <header class="gtfs-viewer-topbar">
+        <a class="button" href="/">
+          <span class="icon" aria-hidden="true">←</span>
+          一覧へ戻る
+        </a>
+        <div class="gtfs-viewer-title">
+          <p id="viewerSubtitle">GTFS</p>
+          <h1 id="viewerTitle">読込中</h1>
+        </div>
+        <div class="gtfs-viewer-actions">
+          <a id="viewerDownloadLink" class="button hidden" href="#" download>
+            <span class="icon" aria-hidden="true">↓</span>
+            ZIP
+          </a>
+        </div>
+      </header>
+
+      <main class="gtfs-viewer-main">
+        <div id="viewerError" class="error-banner hidden" role="alert"></div>
+
+        <section class="summary-grid gtfs-viewer-summary" aria-label="GTFSサマリー">
+          <div class="metric">
+            <span class="metric-label">routes</span>
+            <strong id="metricRoutes">-</strong>
+            <small id="metricRouteSub">route候補</small>
+          </div>
+          <div class="metric">
+            <span class="metric-label">stops</span>
+            <strong id="metricStops">-</strong>
+            <small id="metricStopSub">停留所</small>
+          </div>
+          <div class="metric">
+            <span class="metric-label">trips</span>
+            <strong id="metricTrips">-</strong>
+            <small id="metricTripSub">便</small>
+          </div>
+          <div class="metric">
+            <span class="metric-label">feed</span>
+            <strong id="metricServices">-</strong>
+            <small id="metricFeedSub">期間</small>
+          </div>
+        </section>
+
+        <section class="toolbar gtfs-viewer-toolbar" aria-label="GTFS表示切替">
+          <label class="search">
+            <span aria-hidden="true">⌕</span>
+            <input id="viewerSearch" type="search" placeholder="route / stop / trip / service">
+          </label>
+          <div class="segmented" role="tablist" aria-label="GTFSビュー">
+            <button class="segment active" data-view-tab="routes" type="button">Routes</button>
+            <button class="segment" data-view-tab="stops" type="button">Stops</button>
+            <button class="segment" data-view-tab="trips" type="button">Trips</button>
+            <button class="segment" data-view-tab="tables" type="button">Tables</button>
+          </div>
+          <label class="field-inline raw-table-control">
+            <span>table</span>
+            <select id="rawTableSelect"></select>
+          </label>
+        </section>
+
+        <section id="routePreviewPanel" class="route-preview-panel hidden" aria-label="routeプレビュー"></section>
+
+        <section class="gtfs-viewer-panel">
+          <div class="section-header compact-header">
+            <h3 id="viewerSectionTitle">Routes</h3>
+            <span id="viewerSectionMeta"></span>
+          </div>
+          <div class="table-wrap">
+            <table id="viewerTable" class="gtfs-view-table">
+              <thead id="viewerTableHead"></thead>
+              <tbody id="viewerTableBody"></tbody>
+            </table>
+          </div>
+        </section>
+      </main>
+    </div>
+    <script src="/gtfs-viewer.js" type="module"></script>
+  </body>
+</html>
