@@ -9,11 +9,13 @@ import {
   getLocationTypeForCode,
   isAmaBusStopCode,
   isChibuBusStopCode,
+  isIchibataBusConnectionStopCode,
   isNishinoshimaBusStopCode,
   isOkinoshimaBusStopCode,
   isTripActiveOnDate,
   loadBusRouteLabelsForStops,
   loadBusStopsIndex,
+  loadIchibataBusConnectionTimetable,
   loadBusTripsForRoute,
   loadAmaBusTimetable,
   loadChibuBusTimetable,
@@ -21,10 +23,12 @@ import {
   loadOkinoshimaBusTimetable,
   normalizeAmaBusRouteName,
   normalizeChibuBusRouteName,
+  normalizeIchibataBusConnectionRouteName,
   normalizeNishinoshimaBusRouteName,
   normalizeOkinoshimaBusRouteName,
   toAmaBusStopCode,
   toChibuBusStopCode,
+  toIchibataBusConnectionStopCode,
   toNishinoshimaBusStopCode,
   toOkinoshimaBusStopCode
 } from '@/utils/gtfsBusTimetable'
@@ -92,6 +96,22 @@ describe('gtfsBusTimetable', () => {
     expect(getAllPortConnectedBusStopCodes()).toContain('BUS_OKINOSHIMA_port_mae')
   })
 
+  it('一畑バス接続便の本土停留所コードを停留所として扱う', () => {
+    const matsueStation = toIchibataBusConnectionStopCode('matsue_station')
+    const shichiruiPort = toIchibataBusConnectionStopCode('shichirui_port')
+    const sakaiminatoPort = toIchibataBusConnectionStopCode('sakaiminato_port')
+
+    expect(matsueStation).toBe('BUS_ICHIBATA_CONNECTION_matsue_station')
+    expect(isIchibataBusConnectionStopCode(matsueStation)).toBe(true)
+    expect(isIchibataBusConnectionStopCode('BUS_OKINOSHIMA_port_mae')).toBe(false)
+    expect(getLocationTypeForCode(matsueStation)).toBe('STOP')
+    expect(getBusStopTownLabelKey(matsueStation)).toBe('MAINLAND')
+    expect(getBusStopPortBadgeLabel(shichiruiPort)).toBe('七類港')
+    expect(getBusStopConnectedPortId(shichiruiPort)).toBe('HONDO_SHICHIRUI')
+    expect(getBusStopPortBadgeLabel(sakaiminatoPort)).toBe('境港')
+    expect(getBusStopConnectedPortId(sakaiminatoPort)).toBe('HONDO_SAKAIMINATO')
+  })
+
   it('海士島線の枝番を表示用にまとめる', () => {
     expect(normalizeAmaBusRouteName('海士島線1')).toBe('海士島線')
     expect(normalizeAmaBusRouteName('海士島線9')).toBe('海士島線')
@@ -115,6 +135,12 @@ describe('gtfsBusTimetable', () => {
     expect(normalizeOkinoshimaBusRouteName('隠岐一畑交通 五箇線')).toBe('五箇線')
     expect(normalizeOkinoshimaBusRouteName('隠岐の島町営バス 都万西部線')).toBe('都万西部線')
     expect(normalizeOkinoshimaBusRouteName('町営バス')).toBe('')
+  })
+
+  it('一畑バス接続便の路線名を表示用に整える', () => {
+    expect(normalizeIchibataBusConnectionRouteName('松江・七類・境港間時刻表')).toBe('')
+    expect(normalizeIchibataBusConnectionRouteName('松江⇔七類港')).toBe('松江⇔七類港')
+    expect(normalizeIchibataBusConnectionRouteName('松江⇔境港')).toBe('松江⇔境港')
   })
 
   it('GTFSカレンダー由来の曜日と例外日で運行日を判定する', () => {
@@ -466,6 +492,139 @@ describe('gtfsBusTimetable', () => {
     })
   })
 
+  it('一畑バス接続便GTFS JSONから本土側バス時刻表を生成する', async () => {
+    const fixtures: Record<string, unknown> = {
+      'routes.json': [
+        {
+          routeId: 'route_ichibata_bus_connection_https_bus_ichibata_8927b51c',
+          agencyId: 'agency_ichibata_bus_connection_a97e48aa',
+          shortName: '松江・七類・境港間時刻表',
+          longName: '一畑バス・隠岐汽船接続バス'
+        }
+      ],
+      'stops.json': [
+        { stopId: 'matsue_station', name: '松江駅', lat: 35.464361, lon: 133.06285 },
+        { stopId: 'shichirui_port', name: '七類港', lat: 35.571133, lon: 133.230021 },
+        { stopId: 'sakaiminato_port', name: '境港', lat: 35.545103, lon: 133.223383 }
+      ],
+      'trips.json': [
+        {
+          routeId: 'route_ichibata_bus_connection_https_bus_ichibata_8927b51c',
+          serviceId: 'service_shichirui_daily',
+          tripId: 'ICHIBATA_SHICHIRUI_0750',
+          headsign: '七類港',
+          shortName: '松江⇔七類港'
+        },
+        {
+          routeId: 'route_ichibata_bus_connection_https_bus_ichibata_8927b51c',
+          serviceId: 'service_sakaiminato_daily',
+          tripId: 'ICHIBATA_SAKAIMINATO_1315',
+          headsign: '境港',
+          shortName: '松江⇔境港'
+        }
+      ],
+      'stopTimes.json': [
+        {
+          tripId: 'ICHIBATA_SHICHIRUI_0750',
+          arrivalTime: '07:50:00',
+          departureTime: '07:50:00',
+          stopId: 'matsue_station',
+          stopSequence: 1
+        },
+        {
+          tripId: 'ICHIBATA_SHICHIRUI_0750',
+          arrivalTime: '08:30:00',
+          departureTime: '08:30:00',
+          stopId: 'shichirui_port',
+          stopSequence: 2
+        },
+        {
+          tripId: 'ICHIBATA_SAKAIMINATO_1315',
+          arrivalTime: '13:15:00',
+          departureTime: '13:15:00',
+          stopId: 'matsue_station',
+          stopSequence: 1
+        },
+        {
+          tripId: 'ICHIBATA_SAKAIMINATO_1315',
+          arrivalTime: '13:55:00',
+          departureTime: '13:55:00',
+          stopId: 'sakaiminato_port',
+          stopSequence: 2
+        }
+      ],
+      'calendar.json': [
+        {
+          service_id: 'service_shichirui_daily',
+          monday: '1',
+          tuesday: '1',
+          wednesday: '1',
+          thursday: '1',
+          friday: '1',
+          saturday: '1',
+          sunday: '1',
+          start_date: '20260401',
+          end_date: '20261231'
+        },
+        {
+          service_id: 'service_sakaiminato_daily',
+          monday: '1',
+          tuesday: '1',
+          wednesday: '1',
+          thursday: '1',
+          friday: '1',
+          saturday: '1',
+          sunday: '1',
+          start_date: '20260401',
+          end_date: '20261231'
+        }
+      ],
+      'calendarDates.json': []
+    }
+
+    vi.stubGlobal('fetch', vi.fn((input: string | URL | Request) => {
+      const fileName = String(input).split('/').pop() ?? ''
+      return Promise.resolve({
+        ok: true,
+        status: 200,
+        json: () => Promise.resolve(fixtures[fileName])
+      } as Response)
+    }))
+
+    const result = await loadIchibataBusConnectionTimetable()
+
+    expect(result.stopCodes).toEqual([
+      'BUS_ICHIBATA_CONNECTION_matsue_station',
+      'BUS_ICHIBATA_CONNECTION_shichirui_port',
+      'BUS_ICHIBATA_CONNECTION_sakaiminato_port'
+    ])
+    expect(result.stopLocations.BUS_ICHIBATA_CONNECTION_matsue_station).toMatchObject({
+      id: 'BUS_ICHIBATA_CONNECTION_matsue_station',
+      name: '松江駅',
+      operatorId: 'ICHIBATA_BUS',
+      townLabelKey: 'MAINLAND'
+    })
+    expect(result.trips).toHaveLength(2)
+    expect(result.trips[0]).toMatchObject({
+      startDate: '2026-04-01',
+      endDate: '2026-12-31',
+      name: 'ICHIBATA_BUS_CONNECTION',
+      mode: 'BUS',
+      operatorId: 'ICHIBATA_BUS',
+      departure: 'BUS_ICHIBATA_CONNECTION_matsue_station',
+      arrival: 'BUS_ICHIBATA_CONNECTION_shichirui_port',
+      departureTime: '07:50',
+      arrivalTime: '08:30',
+      price: 1200,
+      via: '松江⇔七類港'
+    })
+    expect(result.trips[1]).toMatchObject({
+      departure: 'BUS_ICHIBATA_CONNECTION_matsue_station',
+      arrival: 'BUS_ICHIBATA_CONNECTION_sakaiminato_port',
+      via: '松江⇔境港'
+    })
+  })
+
   it('同一trip内の同一停留所時刻ペアは重複表示用Tripにしない', async () => {
     const fixtures: Record<string, unknown> = {
       'routes.json': [
@@ -584,7 +743,8 @@ describe('gtfsBusTimetable', () => {
         generatedAt: '2026-05-25T00:00:00.000Z',
         stops: [
           ['BUS_AMA_100_01', '豊田', 36.105471, 133.125968, 'AMA_TOWN', 'AMA_CHO'],
-          ['BUS_CHIBU_nibu_bus', '仁夫', 36.00669672, 133.03282616, 'CHIBU_VILLAGE', 'CHIBU_MURA']
+          ['BUS_CHIBU_nibu_bus', '仁夫', 36.00669672, 133.03282616, 'CHIBU_VILLAGE', 'CHIBU_MURA'],
+          ['BUS_ICHIBATA_CONNECTION_matsue_station', '松江駅', 35.464361, 133.06285, 'ICHIBATA_BUS', null]
         ]
       })
     } as Response))
@@ -593,13 +753,23 @@ describe('gtfsBusTimetable', () => {
     const result = await loadBusStopsIndex()
 
     expect(fetchMock).toHaveBeenCalledWith('/data/bus-search/stops.json')
-    expect(result.stopCodes).toEqual(['BUS_AMA_100_01', 'BUS_CHIBU_nibu_bus'])
+    expect(result.stopCodes).toEqual([
+      'BUS_AMA_100_01',
+      'BUS_CHIBU_nibu_bus',
+      'BUS_ICHIBATA_CONNECTION_matsue_station'
+    ])
     expect(result.locationLabels.BUS_AMA_100_01).toBe('豊田')
     expect(result.stopLocations.BUS_CHIBU_nibu_bus).toMatchObject({
       id: 'BUS_CHIBU_nibu_bus',
       name: '仁夫',
       operatorId: 'CHIBU_VILLAGE',
       townLabelKey: 'CHIBU_MURA'
+    })
+    expect(result.stopLocations.BUS_ICHIBATA_CONNECTION_matsue_station).toMatchObject({
+      id: 'BUS_ICHIBATA_CONNECTION_matsue_station',
+      name: '松江駅',
+      operatorId: 'ICHIBATA_BUS',
+      townLabelKey: 'MAINLAND'
     })
   })
 
@@ -687,6 +857,81 @@ describe('gtfsBusTimetable', () => {
       '2026-01-05'
     )
     expect(removedDateResult).toEqual([])
+  })
+
+  it('bus-searchデータから一畑バス接続便の候補を生成する', async () => {
+    const fetchMock = vi.fn(() => Promise.resolve({
+      ok: true,
+      status: 200,
+      json: () => Promise.resolve({
+        version: 1,
+        feedId: 'ichibata_bus_connection',
+        generatedAt: '2026-06-06T00:00:00.000Z',
+        operatorId: 'ICHIBATA_BUS',
+        townLabelKey: 'MAINLAND',
+        tripName: 'ICHIBATA_BUS_CONNECTION',
+        fare: 1200,
+        routes: {
+          route_ichibata_bus_connection_https_bus_ichibata_8927b51c: {
+            agencyId: 'agency_ichibata_bus_connection_a97e48aa',
+            shortName: '松江・七類・境港間時刻表',
+            longName: '一畑バス・隠岐汽船接続バス'
+          }
+        },
+        stops: [
+          ['BUS_ICHIBATA_CONNECTION_matsue_station', '松江駅', 35.464361, 133.06285],
+          ['BUS_ICHIBATA_CONNECTION_shichirui_port', '七類港', 35.571133, 133.230021]
+        ],
+        services: {
+          service_shichirui_daily: {
+            startDate: '2026-04-01',
+            endDate: '2026-12-31',
+            activeDays: [0, 1, 2, 3, 4, 5, 6],
+            addedDates: [],
+            removedDates: []
+          }
+        },
+        trips: [
+          {
+            tripId: 'ICHIBATA_SHICHIRUI_0750',
+            routeId: 'route_ichibata_bus_connection_https_bus_ichibata_8927b51c',
+            serviceId: 'service_shichirui_daily',
+            headsign: '七類港',
+            shortName: '松江⇔七類港',
+            stops: [
+              ['BUS_ICHIBATA_CONNECTION_matsue_station', '07:50', '07:50'],
+              ['BUS_ICHIBATA_CONNECTION_shichirui_port', '08:30', '08:30']
+            ]
+          }
+        ],
+        departuresByStop: {
+          BUS_ICHIBATA_CONNECTION_matsue_station: [[0, 0]]
+        }
+      })
+    } as Response))
+    vi.stubGlobal('fetch', fetchMock)
+
+    const result = await loadBusTripsForRoute(
+      'BUS_ICHIBATA_CONNECTION_matsue_station',
+      'BUS_ICHIBATA_CONNECTION_shichirui_port',
+      '2026-06-01'
+    )
+
+    expect(fetchMock).toHaveBeenCalledWith('/data/bus-search/ichibata_bus_connection.json')
+    expect(result).toHaveLength(1)
+    expect(result[0]).toMatchObject({
+      startDate: '2026-04-01',
+      endDate: '2026-12-31',
+      name: 'ICHIBATA_BUS_CONNECTION',
+      mode: 'BUS',
+      operatorId: 'ICHIBATA_BUS',
+      departure: 'BUS_ICHIBATA_CONNECTION_matsue_station',
+      arrival: 'BUS_ICHIBATA_CONNECTION_shichirui_port',
+      departureTime: '07:50',
+      arrivalTime: '08:30',
+      price: 1200,
+      via: '松江⇔七類港'
+    })
   })
 
   it('海士町バスの福井小学校前経由便は平日と土日祝で出し分ける', async () => {

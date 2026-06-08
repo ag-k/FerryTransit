@@ -8,8 +8,8 @@
   },
   "scripts": {
     "build": "nuxt build",
-    "dev": "portless",
-    "dev:local": "npm run dev:setup && nuxt dev --dotenv .env.local",
+    "dev": "TMPDIR=/tmp PORTLESS_PORT=1355 PORTLESS_HTTPS=1 portless",
+    "dev:local": "TMPDIR=/tmp npm run dev:setup && TMPDIR=/tmp nuxt dev --dotenv .env.local",
     "ai:opencode:commit": "opencode --prompt \"変更点をコミットしてください\"",
     "dev:setup": "node scripts/dev-setup.mjs",
     "dev:full": "concurrently -k --kill-others-on-fail --kill-signal SIGINT --names \"emulators,portless\" \"npm run firebase:emulators:with-data\" \"npm run dev\"",

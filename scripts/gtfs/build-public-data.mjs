@@ -39,7 +39,7 @@ const BUS_FEED_CONFIGS = {
   ichibata_bus_connection: {
     stopPrefix: 'BUS_ICHIBATA_CONNECTION_',
     operatorId: 'ICHIBATA_BUS',
-    townLabelKey: null,
+    townLabelKey: 'MAINLAND',
     tripName: 'ICHIBATA_BUS_CONNECTION',
     fare: 1200
   }

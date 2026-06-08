@@ -54,6 +54,12 @@ vi.mock("@/stores/fare", () => ({
           },
         },
         {
+          id: "hondo-shichirui-beppu",
+          departure: "HONDO_SHICHIRUI",
+          arrival: "BEPPU",
+          fares: { adult: 6680, child: 3340 },
+        },
+        {
           id: "beppu-hishiura",
           departure: "BEPPU",
           arrival: "HISHIURA",
@@ -120,6 +126,12 @@ vi.mock("@/stores/fare", () => ({
           departure: "HONDO",
           arrival: "SAIGO",
           fares: { adult: 3520, child: 1760 },
+        },
+        {
+          id: "hondo-shichirui-beppu",
+          departure: "HONDO_SHICHIRUI",
+          arrival: "BEPPU",
+          fares: { adult: 6680, child: 3340 },
         },
         {
           id: "beppu-hishiura",
@@ -420,6 +432,242 @@ describe("useRouteSearch", () => {
         passengerFare: 0,
       });
       expect(intermodalRoute?.totalFare).toBe(500);
+    });
+
+    it("should connect mainland Ichibata bus stops to ferries via Shichirui port", async () => {
+      const store = useFerryStore();
+      store.timetableData = [
+        {
+          tripId: 4001,
+          startDate: "2026-04-01",
+          endDate: "2026-12-31",
+          name: "FERRY_OKI",
+          departure: "HONDO_SHICHIRUI",
+          departureTime: "09:00:00" as any,
+          arrival: "SAIGO",
+          arrivalTime: "11:25:00" as any,
+          status: 0,
+        },
+      ];
+      store.locationLabels = {
+        BUS_ICHIBATA_CONNECTION_matsue_station: "松江駅",
+        BUS_ICHIBATA_CONNECTION_shichirui_port: "七類港",
+        HONDO_SHICHIRUI: "七類港",
+        SAIGO: "西郷港",
+      };
+
+      const ichibataFeed = {
+        version: 1,
+        feedId: "ichibata_bus_connection",
+        generatedAt: "2026-06-06T00:00:00.000Z",
+        operatorId: "ICHIBATA_BUS",
+        townLabelKey: "MAINLAND",
+        tripName: "ICHIBATA_BUS_CONNECTION",
+        fare: 1200,
+        routes: {
+          route_ichibata_bus_connection_https_bus_ichibata_8927b51c: {
+            agencyId: "agency_ichibata_bus_connection_a97e48aa",
+            shortName: "松江・七類・境港間時刻表",
+            longName: "一畑バス・隠岐汽船接続バス",
+          },
+        },
+        stops: [
+          ["BUS_ICHIBATA_CONNECTION_matsue_station", "松江駅", 35.464361, 133.06285],
+          ["BUS_ICHIBATA_CONNECTION_shichirui_port", "七類港", 35.571133, 133.230021],
+        ],
+        services: {
+          service_shichirui_daily: {
+            startDate: "2026-04-01",
+            endDate: "2026-12-31",
+            activeDays: [0, 1, 2, 3, 4, 5, 6],
+            addedDates: [],
+            removedDates: [],
+          },
+        },
+        trips: [
+          {
+            tripId: "ICHIBATA_SHICHIRUI_0750",
+            routeId: "route_ichibata_bus_connection_https_bus_ichibata_8927b51c",
+            serviceId: "service_shichirui_daily",
+            headsign: "七類港",
+            shortName: "松江⇔七類港",
+            stops: [
+              ["BUS_ICHIBATA_CONNECTION_matsue_station", "07:50", "07:50"],
+              ["BUS_ICHIBATA_CONNECTION_shichirui_port", "08:30", "08:30"],
+            ],
+          },
+        ],
+        departuresByStop: {
+          BUS_ICHIBATA_CONNECTION_matsue_station: [[0, 0]],
+        },
+      };
+
+      const fetchMock = vi.fn(() =>
+        Promise.resolve({
+          ok: true,
+          status: 200,
+          json: () => Promise.resolve(ichibataFeed),
+        } as Response)
+      );
+      vi.stubGlobal("fetch", fetchMock);
+
+      const { searchRoutes } = useRouteSearch();
+      const results = await searchRoutes(
+        "BUS_ICHIBATA_CONNECTION_matsue_station",
+        "SAIGO",
+        new Date("2026-06-01"),
+        "07:40",
+        false
+      );
+
+      const intermodalRoute = results.find(route =>
+        route.segments.map(segment => segment.mode).join(">") === "BUS>WALK>FERRY"
+      );
+      expect(intermodalRoute).toBeDefined();
+      expect(intermodalRoute?.segments.map(segment => [segment.departure, segment.arrival])).toEqual([
+        ["BUS_ICHIBATA_CONNECTION_matsue_station", "BUS_ICHIBATA_CONNECTION_shichirui_port"],
+        ["BUS_ICHIBATA_CONNECTION_shichirui_port", "HONDO_SHICHIRUI"],
+        ["HONDO_SHICHIRUI", "SAIGO"],
+      ]);
+      expect(intermodalRoute?.segments[0]).toMatchObject({
+        ship: "ICHIBATA_BUS_CONNECTION",
+        mode: "BUS",
+        operatorId: "ICHIBATA_BUS",
+        fare: 1200,
+      });
+      expect(intermodalRoute?.totalFare).toBe(4720);
+    });
+
+    it("should keep through Rainbow Jet legs as one ferry segment in intermodal routes", async () => {
+      const store = useFerryStore();
+      store.timetableData = [
+        {
+          tripId: 9001,
+          nextId: 9002,
+          startDate: "2026-04-01",
+          endDate: "2026-12-31",
+          name: "RAINBOWJET",
+          departure: "HONDO_SHICHIRUI",
+          departureTime: "16:50:00" as any,
+          arrival: "SAIGO",
+          arrivalTime: "17:59:00" as any,
+          status: 0,
+        },
+        {
+          tripId: 9002,
+          nextId: 9003,
+          startDate: "2026-04-01",
+          endDate: "2026-12-31",
+          name: "RAINBOWJET",
+          departure: "SAIGO",
+          departureTime: "18:05:00" as any,
+          arrival: "HISHIURA",
+          arrivalTime: "18:36:00" as any,
+          status: 0,
+        },
+        {
+          tripId: 9003,
+          startDate: "2026-04-01",
+          endDate: "2026-12-31",
+          name: "RAINBOWJET",
+          departure: "HISHIURA",
+          departureTime: "18:39:00" as any,
+          arrival: "BEPPU",
+          arrivalTime: "18:49:00" as any,
+          status: 0,
+        },
+      ];
+      store.locationLabels = {
+        BUS_ICHIBATA_CONNECTION_matsue_station: "松江駅",
+        BUS_ICHIBATA_CONNECTION_shichirui_port: "七類港",
+        HONDO_SHICHIRUI: "七類港",
+        SAIGO: "西郷港",
+        HISHIURA: "菱浦港",
+        BEPPU: "別府港",
+      };
+
+      const ichibataFeed = {
+        version: 1,
+        feedId: "ichibata_bus_connection",
+        generatedAt: "2026-06-06T00:00:00.000Z",
+        operatorId: "ICHIBATA_BUS",
+        townLabelKey: "MAINLAND",
+        tripName: "ICHIBATA_BUS_CONNECTION",
+        fare: 1200,
+        routes: {
+          route_ichibata_bus_connection_https_bus_ichibata_8927b51c: {
+            agencyId: "agency_ichibata_bus_connection_a97e48aa",
+            shortName: "松江・七類・境港間時刻表",
+            longName: "一畑バス・隠岐汽船接続バス",
+          },
+        },
+        stops: [
+          ["BUS_ICHIBATA_CONNECTION_matsue_station", "松江駅", 35.464361, 133.06285],
+          ["BUS_ICHIBATA_CONNECTION_shichirui_port", "七類港", 35.571133, 133.230021],
+        ],
+        services: {
+          service_shichirui_daily: {
+            startDate: "2026-04-01",
+            endDate: "2026-12-31",
+            activeDays: [0, 1, 2, 3, 4, 5, 6],
+            addedDates: [],
+            removedDates: [],
+          },
+        },
+        trips: [
+          {
+            tripId: "ICHIBATA_SHICHIRUI_1540",
+            routeId: "route_ichibata_bus_connection_https_bus_ichibata_8927b51c",
+            serviceId: "service_shichirui_daily",
+            headsign: "七類港",
+            shortName: "松江⇔七類港",
+            stops: [
+              ["BUS_ICHIBATA_CONNECTION_matsue_station", "15:40", "15:40"],
+              ["BUS_ICHIBATA_CONNECTION_shichirui_port", "16:20", "16:20"],
+            ],
+          },
+        ],
+        departuresByStop: {
+          BUS_ICHIBATA_CONNECTION_matsue_station: [[0, 0]],
+        },
+      };
+
+      const fetchMock = vi.fn(() =>
+        Promise.resolve({
+          ok: true,
+          status: 200,
+          json: () => Promise.resolve(ichibataFeed),
+        } as Response)
+      );
+      vi.stubGlobal("fetch", fetchMock);
+
+      const { searchRoutes } = useRouteSearch();
+      const results = await searchRoutes(
+        "BUS_ICHIBATA_CONNECTION_matsue_station",
+        "BEPPU",
+        new Date("2026-05-11"),
+        "15:30",
+        false
+      );
+
+      const intermodalRoute = results.find(route =>
+        route.segments.map(segment => segment.mode).join(">") === "BUS>WALK>FERRY"
+      );
+      expect(intermodalRoute).toBeDefined();
+      expect(intermodalRoute?.segments.map(segment => [segment.departure, segment.arrival])).toEqual([
+        ["BUS_ICHIBATA_CONNECTION_matsue_station", "BUS_ICHIBATA_CONNECTION_shichirui_port"],
+        ["BUS_ICHIBATA_CONNECTION_shichirui_port", "HONDO_SHICHIRUI"],
+        ["HONDO_SHICHIRUI", "BEPPU"],
+      ]);
+      expect(intermodalRoute?.segments[2]).toMatchObject({
+        tripId: "9001-9002-9003",
+        ship: "RAINBOWJET",
+        departure: "HONDO_SHICHIRUI",
+        arrival: "BEPPU",
+        fare: 6680,
+      });
+      expect(intermodalRoute?.transferCount).toBe(2);
+      expect(intermodalRoute?.totalFare).toBe(7880);
     });
 
     it("should complete intermodal routes that need a final bus leg after a ferry transfer", async () => {

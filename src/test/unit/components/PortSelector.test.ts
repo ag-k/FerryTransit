@@ -222,6 +222,61 @@ describe('PortSelector', () => {
     expect(wrapper.text()).not.toContain('豊田')
   })
 
+  it('shows Ichibata connection stops under the mainland bus stop tab', async () => {
+    const store = useFerryStore()
+    store.busStops = [
+      'BUS_ICHIBATA_CONNECTION_matsue_station',
+      'BUS_ICHIBATA_CONNECTION_shichirui_port',
+      'BUS_ICHIBATA_CONNECTION_sakaiminato_port',
+      'BUS_AMA_100_01'
+    ]
+    store.locationLabels = {
+      BUS_ICHIBATA_CONNECTION_matsue_station: '松江駅',
+      BUS_ICHIBATA_CONNECTION_shichirui_port: '七類港',
+      BUS_ICHIBATA_CONNECTION_sakaiminato_port: '境港',
+      BUS_AMA_100_01: '豊田'
+    }
+
+    const wrapper = mount(PortSelector, {
+      props: {
+        ...defaultProps,
+        allowedLocationType: 'ALL',
+        showTransportTabs: true,
+        preferredBusStopTownSource: 'HONDO_SHICHIRUI'
+      },
+      global: {
+        mocks: {
+          $t: (key: string) => {
+            if (key === 'TRANSPORT_MODES.FERRY') return '船'
+            if (key === 'TRANSPORT_MODES.BUS') return 'バス'
+            if (key === 'MAINLAND') return '本土'
+            if (key === 'AMA_CHO') return '海士町'
+            return key
+          }
+        },
+        stubs: {
+          Teleport: true,
+          Icon: true
+        }
+      }
+    })
+
+    await wrapper.find('[data-testid="port-selector-button"]').trigger('click')
+
+    const transportTabs = wrapper.findAll('[data-testid="port-selector-transport-tab"]')
+    await transportTabs[1].trigger('click')
+
+    const townTabs = wrapper.findAll('[data-testid="bus-stop-town-tab"]')
+    expect(townTabs.map(tab => tab.text())).toEqual(['海士町', '本土'])
+    expect(townTabs[1].attributes('aria-selected')).toBe('true')
+    expect(townTabs[1].classes()).toContain('col-span-2')
+    expect(wrapper.text()).toContain('松江駅')
+    expect(wrapper.text()).toContain('七類港')
+    expect(wrapper.text()).toContain('境港')
+    expect(wrapper.text()).toContain('本土')
+    expect(wrapper.text()).not.toContain('豊田')
+  })
+
   it('filters bus stops by text across town tabs', async () => {
     const store = useFerryStore()
     store.busStops = [

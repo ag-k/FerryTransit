@@ -329,7 +329,7 @@ export const getBusStopTownLabelKey = (value?: string): string | null => {
   if (isNishinoshimaBusStopCode(value)) return 'NISHINOSHIMA_CHO'
   if (isChibuBusStopCode(value)) return 'CHIBU_MURA'
   if (isOkinoshimaBusStopCode(value)) return 'OKINOSHIMA_CHO'
-  if (isIchibataBusConnectionStopCode(value)) return 'BUS_STOPS'
+  if (isIchibataBusConnectionStopCode(value)) return 'MAINLAND'
   return null
 }
 
@@ -450,8 +450,9 @@ export const loadBusStopsIndex = async (): Promise<BusStopsIndexData> => {
   const locationLabels: Record<string, string> = {}
   const stopLocations: Record<string, BusStopLocation> = {}
 
-  for (const [code, name, latValue, lngValue, operatorId, townLabelKey] of index.stops || []) {
+  for (const [code, name, latValue, lngValue, operatorId, townLabelKeyValue] of index.stops || []) {
     if (!code) continue
+    const townLabelKey = townLabelKeyValue ?? getBusStopTownLabelKey(code)
     stopCodes.push(code)
     locationLabels[code] = name || code
 

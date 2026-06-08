@@ -136,10 +136,11 @@
                   <div v-if="section.key === 'busStops' && !normalizedSearchQuery && busStopTownTabs.length > 1"
                     class="grid grid-cols-2 gap-2" role="tablist" :aria-label="$t('BUS_STOPS')"
                     data-testid="bus-stop-town-tabs">
-                    <button v-for="tab in busStopTownTabs" :key="tab.key" type="button" role="tab"
+                    <button v-for="tab in visibleBusStopTownTabs" :key="tab.key" type="button" role="tab"
                       data-testid="bus-stop-town-tab" :aria-selected="tab.key === currentBusStopTownKey ? 'true' : 'false'"
                       class="px-3 py-2 rounded-md border text-sm font-semibold transition-colors focus:outline-none focus:ring-2 focus:ring-app-primary-2"
                       :class="[
+                        tab.key === 'MAINLAND' ? 'col-span-2' : '',
                         tab.key === currentBusStopTownKey
                           ? 'bg-app-primary text-white border-app-primary'
                           : 'bg-app-surface text-app-fg border-app-border hover:bg-app-surface-2'
@@ -295,7 +296,7 @@ const favoriteRoutes = computed(() => {
 type Section = { key: 'favorites' | 'mainland' | 'dozen' | 'dogo' | 'busStops'; labelKey: string; ports: string[] }
 type BusStopTownTab = { key: string; labelKey: string; ports: string[] }
 
-const busStopTownOrder = ['OKINOSHIMA_CHO', 'NISHINOSHIMA_CHO', 'AMA_CHO', 'CHIBU_MURA', 'BUS_STOPS']
+const busStopTownOrder = ['MAINLAND', 'OKINOSHIMA_CHO', 'NISHINOSHIMA_CHO', 'AMA_CHO', 'CHIBU_MURA', 'BUS_STOPS']
 const activeBusStopTownKey = ref<string | null>(null)
 
 const busStopTownTabs = computed<BusStopTownTab[]>(() => {
@@ -321,6 +322,12 @@ const busStopTownTabs = computed<BusStopTownTab[]>(() => {
     }))
 })
 
+const visibleBusStopTownTabs = computed<BusStopTownTab[]>(() => {
+  const mainlandTabs = busStopTownTabs.value.filter(tab => tab.key === 'MAINLAND')
+  const otherTabs = busStopTownTabs.value.filter(tab => tab.key !== 'MAINLAND')
+  return [...otherTabs, ...mainlandTabs]
+})
+
 const getPreferredBusStopTownKey = () => {
   const selectedTownKey = getLocationType(props.modelValue) === 'STOP'
     ? getBusStopTownLabelKey(props.modelValue)
@@ -336,6 +343,11 @@ const getPreferredBusStopTownKey = () => {
 
   if (sourceTownKey && busStopTownTabs.value.some(tab => tab.key === sourceTownKey)) {
     return sourceTownKey
+  }
+
+  const sourcePortTownKey = getPreferredBusStopTownKeyForPort(props.preferredBusStopTownSource)
+  if (sourcePortTownKey && busStopTownTabs.value.some(tab => tab.key === sourcePortTownKey)) {
+    return sourcePortTownKey
   }
 
   return busStopTownTabs.value[0]?.key || null
@@ -391,11 +403,21 @@ const getLocationType = (port?: string): LocationType => {
 const getTownBadgeLabel = (labelKey: string): string => {
   const translated = String(t(labelKey))
   if (translated !== labelKey) return translated
+  if (labelKey === 'MAINLAND') return '本土'
   if (labelKey === 'AMA_CHO') return '海士町'
   if (labelKey === 'NISHINOSHIMA_CHO') return '西ノ島町'
   if (labelKey === 'CHIBU_MURA') return '知夫村'
   if (labelKey === 'OKINOSHIMA_CHO') return '隠岐の島町'
   return translated
+}
+
+const getPreferredBusStopTownKeyForPort = (port?: string): string | null => {
+  if (port === 'HONDO' || port === 'HONDO_SHICHIRUI' || port === 'HONDO_SAKAIMINATO') return 'MAINLAND'
+  if (port === 'SAIGO') return 'OKINOSHIMA_CHO'
+  if (port === 'BEPPU') return 'NISHINOSHIMA_CHO'
+  if (port === 'HISHIURA') return 'AMA_CHO'
+  if (port === 'KURI') return 'CHIBU_MURA'
+  return null
 }
 
 const normalizeSearchText = (value: string): string => {

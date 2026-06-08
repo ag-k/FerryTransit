@@ -494,6 +494,11 @@ export const useRouteSearch = () => {
     const routeResults: TransitRoute[] = [];
     const routeKeys = new Set<string>();
     const startTime = new Date(searchTime);
+    const ferryTripById = new Map<string, Trip>();
+
+    for (const trip of ferryTimetable) {
+      ferryTripById.set(String(trip.tripId), trip);
+    }
 
     if (isArrivalMode) {
       startTime.setHours(0, 0, 0, 0);
@@ -599,23 +604,121 @@ export const useRouteSearch = () => {
       visited: Set<string>;
     };
 
-    const pushRouteIfComplete = (state: IntermodalState): boolean => {
+    const getSourceTripForSegment = (segment: TransitSegment): Trip | undefined => {
+      const tripIds = String(segment.tripId).split("-");
+
+      for (let i = tripIds.length - 1; i >= 0; i--) {
+        const tripId = tripIds[i];
+        if (!tripId) continue;
+        const trip = ferryTripById.get(tripId);
+        if (trip) return trip;
+      }
+
+      return undefined;
+    };
+
+    const isMergeableThroughShipSegment = (segment: TransitSegment): boolean => {
+      return (segment.mode ?? "FERRY") === "FERRY";
+    };
+
+    const canMergeThroughShipSegments = (
+      previous: TransitSegment,
+      next: TransitSegment
+    ): boolean => {
+      if (
+        !isMergeableThroughShipSegment(previous) ||
+        !isMergeableThroughShipSegment(next)
+      ) {
+        return false;
+      }
+      if (previous.ship !== next.ship || previous.arrival !== next.departure) {
+        return false;
+      }
+
+      const previousTrip = getSourceTripForSegment(previous);
+      const nextTrip = getSourceTripForSegment(next);
+      if (!previousTrip || !nextTrip) return false;
+
+      return shouldNormalizeTrips(previousTrip, nextTrip);
+    };
+
+    const normalizeThroughShipSegments = async (
+      segments: TransitSegment[]
+    ): Promise<TransitSegment[]> => {
+      if (segments.length <= 1) return segments;
+
+      const normalized: TransitSegment[] = [];
+      let group: TransitSegment[] = [];
+
+      const flushGroup = async () => {
+        if (group.length === 0) return;
+        if (group.length === 1) {
+          normalized.push(group[0]!);
+          group = [];
+          return;
+        }
+
+        const first = group[0]!;
+        const last = group[group.length - 1]!;
+        const fareFields = await calculateSegmentFareFields(
+          first.ship,
+          first.departure,
+          last.arrival,
+          first.departureTime,
+          false,
+          vehicleLengthMeters
+        );
+
+        normalized.push({
+          ...first,
+          tripId: group.map(segment => segment.tripId).join("-"),
+          arrival: last.arrival,
+          arrivalType: last.arrivalType,
+          arrivalTime: last.arrivalTime,
+          status: Math.max(...group.map(segment => segment.status)),
+          ...fareFields,
+        });
+        group = [];
+      };
+
+      for (const segment of segments) {
+        if (group.length === 0) {
+          group = [segment];
+          continue;
+        }
+
+        const previous = group[group.length - 1]!;
+        if (canMergeThroughShipSegments(previous, segment)) {
+          group.push(segment);
+          continue;
+        }
+
+        await flushGroup();
+        group = [segment];
+      }
+
+      await flushGroup();
+      return normalized;
+    };
+
+    const pushRouteIfComplete = async (state: IntermodalState): Promise<boolean> => {
       if (
         state.segments.length > 0 &&
         state.segments.some(segment => segment.mode === "WALK") &&
         matchesLocation(state.node, arrival)
       ) {
-        const routeKey = state.segments
+        const segments = await normalizeThroughShipSegments(state.segments);
+        const routeKey = segments
           .map(segment => `${segment.tripId}:${segment.departure}->${segment.arrival}`)
           .join("|");
         if (!routeKeys.has(routeKey)) {
           routeKeys.add(routeKey);
           routeResults.push({
-            segments: state.segments,
-            departureTime: state.segments[0]!.departureTime,
+            segments,
+            departureTime: segments[0]!.departureTime,
             arrivalTime: state.time,
-            totalFare: state.segments.reduce((sum, segment) => sum + segment.fare, 0),
-            transferCount: Math.max(0, state.segments.length - 1),
+            totalFare: segments.reduce((sum, segment) => sum + segment.fare, 0),
+            transferCount: Math.max(0, segments.length - 1),
           });
         }
         return true;
@@ -635,7 +738,7 @@ export const useRouteSearch = () => {
       const nextStates: IntermodalState[] = [];
 
       for (const state of states) {
-        if (pushRouteIfComplete(state)) {
+        if (await pushRouteIfComplete(state)) {
           continue;
         }
 
@@ -659,7 +762,7 @@ export const useRouteSearch = () => {
             segments: [...state.segments, segment],
             visited: nextVisited,
           };
-          if (pushRouteIfComplete(nextState)) continue;
+          if (await pushRouteIfComplete(nextState)) continue;
           nextStates.push(nextState);
         }
       }
@@ -1119,7 +1222,11 @@ export const useRouteSearch = () => {
 
   // Check if two trips should be normalized (same ship, connected)
   const shouldNormalizeTrips = (trip1: Trip, trip2: Trip): boolean => {
-    return trip1.name === trip2.name && trip1.nextId === trip2.tripId;
+    return (
+      trip1.name === trip2.name &&
+      trip1.nextId !== undefined &&
+      String(trip1.nextId) === String(trip2.tripId)
+    );
   };
 
   // Check if port is on mainland
@@ -1261,6 +1368,9 @@ export const useRouteSearch = () => {
     }
     if (ship === "OKINOSHIMA_TOWN_BUS") {
       return 300;
+    }
+    if (ship === "ICHIBATA_BUS_CONNECTION") {
+      return 1200;
     }
 
     // Ensure fare data is loaded
