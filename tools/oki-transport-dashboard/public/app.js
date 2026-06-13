@@ -15,6 +15,7 @@ const GTFS_ROUTE_STATUSES = ['draft', 'needs-review', 'ready', 'excluded']
 const VIEW_STATE_KEY = 'oki-transport-dashboard:view-state'
 const VIEW_STATE_MAX_AGE_MS = 60 * 60 * 1000
 const restoredViewState = loadViewState()
+const initialTab = initialMainTab(restoredViewState)
 
 let pendingScrollRestore = Boolean(restoredViewState?.scroll)
 let saveViewStateFrame = null
@@ -27,6 +28,7 @@ const state = {
   snapshot: null,
   gtfs: null,
   codex: null,
+  activeTab: initialTab,
   group: restoredViewState?.group || 'すべて',
   type: FILTER_TYPES.includes(restoredViewState?.type) ? restoredViewState.type : 'all',
   review: REVIEW_FILTERS.includes(restoredViewState?.review) ? restoredViewState.review : 'all',
@@ -38,6 +40,8 @@ const elements = {
   refreshBtn: document.querySelector('#refreshBtn'),
   saveBtn: document.querySelector('#saveBtn'),
   downloadBtn: document.querySelector('#downloadBtn'),
+  mainTabs: document.querySelectorAll('[data-main-tab]'),
+  tabPanels: document.querySelectorAll('[data-tab-panel]'),
   searchInput: document.querySelector('#searchInput'),
   segments: document.querySelectorAll('[data-filter-type]'),
   reviewSegments: document.querySelectorAll('[data-filter-review]'),
@@ -81,6 +85,9 @@ elements.saveBtn.addEventListener('click', () => collect({ save: true, download:
 elements.downloadBtn.addEventListener('click', () => collect({ save: true, download: true }))
 elements.gtfsCreateDraftBtn.addEventListener('click', createGtfsDraft)
 elements.gtfsExportBtn.addEventListener('click', exportGtfs)
+elements.mainTabs.forEach((button) => {
+  button.addEventListener('click', () => setActiveTab(button.dataset.mainTab, { scrollTop: true }))
+})
 elements.searchInput.addEventListener('input', (event) => {
   state.query = event.target.value.trim().toLowerCase()
   render()
@@ -112,6 +119,12 @@ document.addEventListener('visibilitychange', () => {
 document.addEventListener('click', (event) => {
   if (event.target instanceof Element && event.target.closest('a[href]')) saveViewState()
 }, true)
+window.addEventListener('hashchange', () => {
+  const tab = tabFromHash(location.hash)
+  if (tab) setActiveTab(tab)
+})
+
+renderTabs()
 
 loadLatest()
 loadGtfs()
@@ -375,6 +388,7 @@ async function fetchJson(url, options) {
 function render() {
   const snapshot = state.snapshot
   if (!snapshot) return
+  renderTabs()
   const summary = snapshot.summary
   const groups = ['すべて', ...new Set(snapshot.sources.map((source) => source.group))]
   if (!groups.includes(state.group)) state.group = 'すべて'
@@ -419,6 +433,27 @@ function renderGroups(groups, sources) {
       render()
     })
   })
+}
+
+function renderTabs() {
+  elements.mainTabs.forEach((button) => {
+    const active = button.dataset.mainTab === state.activeTab
+    button.classList.toggle('active', active)
+    button.setAttribute('aria-selected', active ? 'true' : 'false')
+  })
+  elements.tabPanels.forEach((panel) => {
+    panel.classList.toggle('active', panel.dataset.tabPanel === state.activeTab)
+  })
+}
+
+function setActiveTab(tab, options = {}) {
+  if (!['documents', 'gtfs'].includes(tab)) return
+  state.activeTab = tab
+  renderTabs()
+  saveViewState()
+  if (options.scrollTop) {
+    document.querySelector('.main-tabs')?.scrollIntoView({ behavior: 'smooth', block: 'start' })
+  }
 }
 
 function renderSummary(summary) {
@@ -536,6 +571,7 @@ function renderDocuments(documents) {
 
 function renderGtfs() {
   const gtfs = state.gtfs
+  renderTabs()
   if (!gtfs) {
     elements.gtfsMeta.textContent = '未読込'
     elements.gtfsFeeds.innerHTML = '<div class="empty">GTFS情報を読込中です</div>'
@@ -885,6 +921,7 @@ function runGtfsWorkflowAction(action) {
     return
   }
   if (action === 'review-required') {
+    setActiveTab('documents')
     state.type = 'timetable'
     state.review = 'required'
     document.querySelector('.table-panel')?.scrollIntoView({ behavior: 'smooth', block: 'start' })
@@ -1058,10 +1095,23 @@ function loadViewState() {
   }
 }
 
+function initialMainTab(restored) {
+  const fromHash = tabFromHash(location.hash)
+  if (fromHash) return fromHash
+  return restored?.activeTab === 'gtfs' ? 'gtfs' : 'documents'
+}
+
+function tabFromHash(hash) {
+  if (['#gtfsRoutesSection', '#gtfsFeedsCard', '#gtfsTabPanel'].includes(hash)) return 'gtfs'
+  if (hash === '#documentsTabPanel') return 'documents'
+  return null
+}
+
 function saveViewState() {
   try {
     const tableWrap = document.querySelector('.table-wrap')
     sessionStorage.setItem(VIEW_STATE_KEY, JSON.stringify({
+      activeTab: state.activeTab,
       group: state.group,
       type: state.type,
       review: state.review,

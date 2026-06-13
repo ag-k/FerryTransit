@@ -11,11 +11,14 @@ import {
 } from "@/utils/jstDate";
 import { buildStorageObjectDownloadUrl } from "@/utils/firebaseStorageUrl";
 import {
+  type BusStopRouteFilter,
   type BusStopLocation,
   getLocationTypeForCode,
   isTripActiveOnDate,
+  loadBusStopRouteFiltersIndex,
   loadBusStopsIndex,
 } from "@/utils/gtfsBusTimetable";
+import { AIRPORT_LABELS, AIRPORTS, AIR_TIMETABLE } from "@/data/air";
 
 // Port and Ship interfaces
 interface Port {
@@ -126,6 +129,61 @@ const isNativeClientPlatform = (): boolean => {
   }
 };
 
+const parseOptionalInteger = (value: unknown): number | undefined => {
+  const parsed = Number(value);
+  return Number.isFinite(parsed) ? parsed : undefined;
+};
+
+const parseStatus = (value: unknown): number => {
+  const parsed = Number(value);
+  return Number.isFinite(parsed) ? parsed : 0;
+};
+
+const normalizeTimetableTrip = (trip: any): Trip => {
+  return {
+    tripId: parseOptionalInteger(trip.trip_id ?? trip.tripId) ?? 0,
+    startDate: trip.start_date ?? trip.startDate,
+    endDate: trip.end_date ?? trip.endDate,
+    name: trip.name,
+    mode: trip.mode || "FERRY",
+    operatorId: trip.operator_id ?? trip.operatorId,
+    serviceId: trip.service_id ?? trip.serviceId,
+    vehicleId: trip.vehicle_id ?? trip.vehicleId,
+    departure: trip.departure,
+    departureType: trip.departure_type ?? trip.departureType,
+    departureTime: trip.departure_time ?? trip.departureTime,
+    arrival: trip.arrival,
+    arrivalType: trip.arrival_type ?? trip.arrivalType,
+    arrivalTime: trip.arrival_time ?? trip.arrivalTime,
+    activeDays: trip.active_days ?? trip.activeDays,
+    addedDates: trip.added_dates ?? trip.addedDates,
+    removedDates: trip.removed_dates ?? trip.removedDates,
+    platform: trip.platform,
+    terminal: trip.terminal,
+    gate: trip.gate,
+    nextId: parseOptionalInteger(trip.next_id ?? trip.nextId),
+    status: parseStatus(trip.status),
+    price: parseOptionalInteger(trip.price),
+    via: trip.via,
+  };
+};
+
+const withStaticTimetableTrips = (trips: Trip[]): Trip[] => {
+  const byTripId = new Map<number, Trip>();
+
+  for (const trip of trips) {
+    byTripId.set(trip.tripId, trip);
+  }
+
+  for (const trip of AIR_TIMETABLE) {
+    if (!byTripId.has(trip.tripId)) {
+      byTripId.set(trip.tripId, trip);
+    }
+  }
+
+  return Array.from(byTripId.values());
+};
+
 export const useFerryStore = defineStore("ferry", () => {
   const logger = createLogger("ferryStore");
   // State
@@ -150,16 +208,18 @@ export const useFerryStore = defineStore("ferry", () => {
   const lastFetchTime = ref<Date | null>(null);
   const busStops = ref<string[]>([]);
   const busStopLocations = ref<Record<string, BusStopLocation>>({});
-  const locationLabels = ref<Record<string, string>>({});
+  const busStopRouteFilters = ref<BusStopRouteFilter[]>([]);
+  const locationLabels = ref<Record<string, string>>({ ...AIRPORT_LABELS });
 
   // Port definitions
   const hondoPorts = ["HONDO", "HONDO_SHICHIRUI", "HONDO_SAKAIMINATO"];
   const dozenPorts = ["BEPPU", "HISHIURA", "KURI"];
   const dogoPorts = ["SAIGO"];
+  const airports = AIRPORTS.map(airport => airport.id);
 
   const allPorts = computed(() => [...hondoPorts, ...dozenPorts, ...dogoPorts]);
 
-  const allLocations = computed(() => [...allPorts.value, ...busStops.value]);
+  const allLocations = computed(() => [...allPorts.value, ...busStops.value, ...airports]);
 
   const getLocationLabel = (locationId: string): string | null => {
     return locationLabels.value[locationId] ?? null;
@@ -487,23 +547,34 @@ export const useFerryStore = defineStore("ferry", () => {
   });
 
   const ensureBusStopsLoaded = async () => {
-    if (busStops.value.length > 0) return;
+    if (busStops.value.length === 0) {
+      try {
+        const busIndex = await loadBusStopsIndex();
+        busStops.value = Array.from(new Set(busIndex.stopCodes));
+        locationLabels.value = {
+          ...AIRPORT_LABELS,
+          ...locationLabels.value,
+          ...busIndex.locationLabels,
+        };
+        busStopLocations.value = {
+          ...busStopLocations.value,
+          ...busIndex.stopLocations,
+        };
+      } catch (busError) {
+        logger.warn("Bus stop index load failed", {
+          error: toLoggableError(busError),
+        });
+      }
+    }
 
-    try {
-      const busIndex = await loadBusStopsIndex();
-      busStops.value = Array.from(new Set(busIndex.stopCodes));
-      locationLabels.value = {
-        ...locationLabels.value,
-        ...busIndex.locationLabels,
-      };
-      busStopLocations.value = {
-        ...busStopLocations.value,
-        ...busIndex.stopLocations,
-      };
-    } catch (busError) {
-      logger.warn("Bus stop index load failed", {
-        error: toLoggableError(busError),
-      });
+    if (busStopRouteFilters.value.length === 0) {
+      try {
+        busStopRouteFilters.value = await loadBusStopRouteFiltersIndex();
+      } catch (busRouteError) {
+        logger.warn("Bus stop route filter index load failed", {
+          error: toLoggableError(busRouteError),
+        });
+      }
     }
   };
 
@@ -596,23 +667,9 @@ export const useFerryStore = defineStore("ferry", () => {
       }
 
       // Map API response fields to expected format
-      const ferryTrips = data.map((trip) => ({
-        tripId: parseInt(trip.trip_id), // Convert string IDs to numbers
-        startDate: trip.start_date,
-        endDate: trip.end_date,
-        name: trip.name,
-        mode: trip.mode || "FERRY",
-        departure: trip.departure,
-        departureType: trip.departure_type,
-        departureTime: trip.departure_time, // Keep as string
-        arrival: trip.arrival,
-        arrivalType: trip.arrival_type,
-        arrivalTime: trip.arrival_time, // Keep as string
-        nextId: trip.next_id ? parseInt(trip.next_id) : undefined,
-        status: parseInt(trip.status) || 0,
-      }));
+      const ferryTrips = data.map(normalizeTimetableTrip);
 
-      timetableData.value = ferryTrips;
+      timetableData.value = withStaticTimetableTrips(ferryTrips);
 
       lastFetchTime.value = new Date();
 
@@ -644,22 +701,8 @@ export const useFerryStore = defineStore("ferry", () => {
           if (cached) {
             const data = JSON.parse(cached) as any[];
             // Map cached data to expected format
-            const ferryTrips = data.map((trip) => ({
-              tripId: parseInt(trip.trip_id), // Convert string IDs to numbers
-              startDate: trip.start_date,
-              endDate: trip.end_date,
-              name: trip.name,
-              mode: trip.mode || "FERRY",
-              departure: trip.departure,
-              departureType: trip.departure_type,
-              departureTime: trip.departure_time, // Keep as string
-              arrival: trip.arrival,
-              arrivalType: trip.arrival_type,
-              arrivalTime: trip.arrival_time, // Keep as string
-              nextId: trip.next_id ? parseInt(trip.next_id) : undefined,
-              status: parseInt(trip.status) || 0,
-            }));
-            timetableData.value = ferryTrips;
+            const ferryTrips = data.map(normalizeTimetableTrip);
+            timetableData.value = withStaticTimetableTrips(ferryTrips);
             error.value = "OFFLINE_TIMETABLE_ERROR";
             loadedFallbackTimetable = true;
           }
@@ -897,10 +940,12 @@ export const useFerryStore = defineStore("ferry", () => {
     hondoPorts,
     dozenPorts,
     dogoPorts,
+    airports,
     allPorts,
     allLocations,
     busStops,
     busStopLocations,
+    busStopRouteFilters,
     locationLabels,
     getLocationLabel,
     isStopLocation,

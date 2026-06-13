@@ -37,14 +37,20 @@
           <!-- Body -->
           <div class="p-4 sm:p-6 max-h-[calc(90vh-8rem)] sm:max-h-[calc(90vh-8rem)] overflow-y-auto">
             <!-- Ship image + details -->
-            <div v-if="type === 'ship' && shipId" class="text-center mb-4">
-              <img 
-                :src="`/images/${shipId}.jpg`"
-                :alt="title"
-                class="max-w-full h-auto max-h-72 sm:max-h-96 rounded-lg shadow-lg mx-auto"
-                @error="handleImageError"
-              >
-              <div v-if="shipDetails" class="mt-4 text-left">
+            <div v-if="type === 'ship' && shipId" class="mb-4">
+              <div v-if="isTransportServiceDetails && shipDetails" class="space-y-4 text-left">
+                <div class="rounded-lg border border-app-border/70 bg-app-surface-2/60 p-4">
+                  <div class="flex items-start gap-3">
+                    <span class="inline-flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-app-primary/10 text-app-primary-2">
+                      <Icon :name="serviceIconName" class="h-5 w-5" />
+                    </span>
+                    <div class="min-w-0">
+                      <p class="text-sm font-semibold text-app-fg">{{ serviceRouteLabel }}</p>
+                      <p class="mt-1 text-sm leading-6 text-app-muted">{{ serviceSummaryLabel }}</p>
+                    </div>
+                  </div>
+                </div>
+
                 <dl class="grid gap-3 sm:grid-cols-2">
                   <div class="rounded-lg border border-app-border/70 bg-app-surface-2/60 px-3 py-2">
                     <dt class="text-xs font-semibold text-app-muted">{{ t('ship.modal.operator') }}</dt>
@@ -63,21 +69,101 @@
                     </dd>
                   </div>
                   <div class="rounded-lg border border-app-border/70 bg-app-surface-2/60 px-3 py-2">
-                    <dt class="text-xs font-semibold text-app-muted">{{ t('ship.modal.capacity') }}</dt>
-                    <dd class="mt-1 text-sm font-medium text-app-fg">{{ shipCapacityLabel }}</dd>
+                    <dt class="text-xs font-semibold text-app-muted">{{ t('ship.modal.route') }}</dt>
+                    <dd class="mt-1 text-sm font-medium text-app-fg">{{ serviceRouteLabel }}</dd>
+                  </div>
+                  <div v-if="hasServiceFare" class="rounded-lg border border-app-border/70 bg-app-surface-2/60 px-3 py-2">
+                    <dt class="text-xs font-semibold text-app-muted">{{ t(shipDetails.fareTypeKey || 'FARE') }}</dt>
+                    <dd class="mt-1 text-sm font-medium text-app-fg">{{ serviceFareLabel }}</dd>
                   </div>
                   <div class="rounded-lg border border-app-border/70 bg-app-surface-2/60 px-3 py-2">
-                    <dt class="text-xs font-semibold text-app-muted">{{ t('ship.modal.carCarry') }}</dt>
-                    <dd class="mt-1 text-sm font-medium text-app-fg">{{ shipCarCarryLabel }}</dd>
-                  </div>
-                  <div
-                    v-if="shipCabinLabel"
-                    class="rounded-lg border border-app-border/70 bg-app-surface-2/60 px-3 py-2"
-                  >
-                    <dt class="text-xs font-semibold text-app-muted">{{ t('ship.modal.cabin') }}</dt>
-                    <dd class="mt-1 text-sm font-medium text-app-fg">{{ shipCabinLabel }}</dd>
+                    <dt class="text-xs font-semibold text-app-muted">{{ t('ship.modal.servicePeriod') }}</dt>
+                    <dd class="mt-1 text-sm font-medium text-app-fg">{{ servicePeriodLabel }}</dd>
                   </div>
                 </dl>
+
+                <div v-if="serviceStops.length" class="rounded-lg border border-app-border/70 bg-app-surface-2/60 p-3">
+                  <h4 class="text-xs font-semibold text-app-muted">{{ serviceStopsHeading }}</h4>
+                  <ol class="mt-3 grid gap-2 sm:grid-cols-2">
+                    <li
+                      v-for="(stop, index) in serviceStops"
+                      :key="`${stop}-${index}`"
+                      class="flex items-center gap-2 rounded-md bg-app-surface px-2.5 py-2 text-sm font-medium text-app-fg"
+                    >
+                      <span class="inline-flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-app-primary/10 text-xs font-semibold text-app-primary-2">
+                        {{ index + 1 }}
+                      </span>
+                      <span class="min-w-0">{{ stop }}</span>
+                    </li>
+                  </ol>
+                </div>
+
+                <div class="flex flex-wrap gap-2">
+                  <a
+                    v-if="shipDetails.sourceUrl"
+                    class="inline-flex min-h-10 items-center gap-1.5 rounded-md border border-app-border bg-app-surface px-3 py-2 text-sm font-semibold text-app-fg hover:bg-app-surface-2"
+                    :href="shipDetails.sourceUrl"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                  >
+                    {{ t('ship.modal.officialPage') }}
+                    <Icon name="heroicons:arrow-top-right-on-square" class="h-3.5 w-3.5" />
+                  </a>
+                  <a
+                    v-if="shipDetails.timetableUrl"
+                    class="inline-flex min-h-10 items-center gap-1.5 rounded-md border border-app-primary bg-app-primary px-3 py-2 text-sm font-semibold text-white hover:bg-app-primary-2"
+                    :href="shipDetails.timetableUrl"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                  >
+                    {{ serviceTimetableLinkLabel }}
+                    <Icon name="heroicons:arrow-top-right-on-square" class="h-3.5 w-3.5" />
+                  </a>
+                </div>
+              </div>
+
+              <div v-else class="text-center">
+                <img 
+                  :src="`/images/${shipId}.jpg`"
+                  :alt="title"
+                  class="max-w-full h-auto max-h-72 sm:max-h-96 rounded-lg shadow-lg mx-auto"
+                  @error="handleImageError"
+                >
+                <div v-if="shipDetails" class="mt-4 text-left">
+                  <dl class="grid gap-3 sm:grid-cols-2">
+                    <div class="rounded-lg border border-app-border/70 bg-app-surface-2/60 px-3 py-2">
+                      <dt class="text-xs font-semibold text-app-muted">{{ t('ship.modal.operator') }}</dt>
+                      <dd class="mt-1 text-sm font-medium text-app-fg">
+                        <a
+                          v-if="operatorInfo?.url"
+                          class="inline-flex items-center gap-1 text-app-primary-2 hover:underline"
+                          :href="operatorInfo.url"
+                          target="_blank"
+                          rel="noopener noreferrer"
+                        >
+                          {{ t(operatorInfo.nameKey) }}
+                          <Icon name="heroicons:arrow-top-right-on-square" class="w-3.5 h-3.5" />
+                        </a>
+                        <span v-else>{{ t(operatorInfo?.nameKey || shipDetails.operatorKey) }}</span>
+                      </dd>
+                    </div>
+                    <div class="rounded-lg border border-app-border/70 bg-app-surface-2/60 px-3 py-2">
+                      <dt class="text-xs font-semibold text-app-muted">{{ t('ship.modal.capacity') }}</dt>
+                      <dd class="mt-1 text-sm font-medium text-app-fg">{{ shipCapacityLabel }}</dd>
+                    </div>
+                    <div class="rounded-lg border border-app-border/70 bg-app-surface-2/60 px-3 py-2">
+                      <dt class="text-xs font-semibold text-app-muted">{{ t('ship.modal.carCarry') }}</dt>
+                      <dd class="mt-1 text-sm font-medium text-app-fg">{{ shipCarCarryLabel }}</dd>
+                    </div>
+                    <div
+                      v-if="shipCabinLabel"
+                      class="rounded-lg border border-app-border/70 bg-app-surface-2/60 px-3 py-2"
+                    >
+                      <dt class="text-xs font-semibold text-app-muted">{{ t('ship.modal.cabin') }}</dt>
+                      <dd class="mt-1 text-sm font-medium text-app-fg">{{ shipCabinLabel }}</dd>
+                    </div>
+                  </dl>
+                </div>
               </div>
             </div>
             
@@ -105,7 +191,7 @@
                   <div class="map-container">
                     <!-- Leaflet + OpenStreetMap (preferred) -->
                     <PortAreaLeafletMap
-                      v-if="currentPortId"
+                      v-if="currentPortId && !isAirportModal"
                       :port-id="currentPortId"
                       :title="currentPortTitle"
                       :zoom="currentPortZoom"
@@ -217,6 +303,7 @@ import PortBadges from '@/components/common/PortBadges.vue'
 import { PORTS_DATA } from '~/data/ports'
 import { SHIP_DETAILS } from '~/data/ships'
 import { BOARDING_FOCUS_ZOOM, getPortMapZoom } from '@/utils/portMapZoom'
+import { getLocationTypeForCode } from '@/utils/gtfsBusTimetable'
 
 interface Props {
   visible: boolean
@@ -270,6 +357,7 @@ const currentPortId = computed(() => {
 })
 
 const isBusStopModal = computed(() => typeof currentPortId.value === 'string' && currentPortId.value.startsWith('BUS_'))
+const isAirportModal = computed(() => getLocationTypeForCode(currentPortId.value) === 'AIRPORT')
 
 // Current port title
 const currentPortTitle = computed(() => {
@@ -287,6 +375,7 @@ const headerTitle = computed(() => {
   const id = currentPortId.value
   if (!id) return props.title
   if (isBusStopModal.value) return props.title
+  if (isAirportModal.value) return props.title
 
   const isJa = currentLocale.value.startsWith('ja')
   if (!isJa) return currentPortTitle.value
@@ -308,6 +397,14 @@ const shipDetails = computed(() => {
   return (SHIP_DETAILS as any)?.[props.shipId] ?? null
 })
 
+const isTransportServiceDetails = computed(() => {
+  return shipDetails.value?.mode === 'bus' || shipDetails.value?.mode === 'air'
+})
+
+const serviceIconName = computed(() => {
+  return shipDetails.value?.mode === 'air' ? 'mdi:airplane' : 'heroicons:map'
+})
+
 const operatorInfo = computed(() => {
   if (!shipDetails.value) return null
   const operatorKey = shipDetails.value.operatorKey
@@ -319,9 +416,66 @@ const operatorInfo = computed(() => {
     OKI_DOUZEN: {
       nameKey: 'OKI_DOUZEN',
       url: 'https://www.okikankou.com/'
+    },
+    ICHIBATA_BUS: {
+      nameKey: 'ICHIBATA_BUS',
+      url: 'https://bus.ichibata.co.jp/oki-kisen/oki-kisen-sichirui/'
+    },
+    JAL: {
+      nameKey: 'JAL',
+      url: 'https://www.jal.co.jp/'
     }
   }
   return infoMap[operatorKey] ?? { nameKey: operatorKey, url: '' }
+})
+
+const serviceSummaryLabel = computed(() => {
+  const key = shipDetails.value?.routeSummaryKey
+  return key ? String(t(key)) : ''
+})
+
+const serviceRouteLabel = computed(() => {
+  const key = shipDetails.value?.routeNameKey
+  return key ? String(t(key)) : props.title
+})
+
+const serviceFareLabel = computed(() => {
+  const fare = shipDetails.value?.fare
+  if (!fare && fare !== 0) return t('FARE_UNAVAILABLE')
+  return `¥${Number(fare).toLocaleString(currentLocale.value.startsWith('ja') ? 'ja-JP' : 'en-US')}`
+})
+
+const hasServiceFare = computed(() => {
+  const fare = shipDetails.value?.fare
+  return fare !== undefined && fare !== null
+})
+
+const formatGtfsDate = (value?: string) => {
+  if (!value) return ''
+  const match = value.match(/^(\d{4})(\d{2})(\d{2})$/)
+  if (!match) return value
+  return `${match[1]}/${match[2]}/${match[3]}`
+}
+
+const servicePeriodLabel = computed(() => {
+  const period = shipDetails.value?.servicePeriod
+  if (!period) return t('ship.modal.capacityUnknown')
+  return `${formatGtfsDate(period.startDate)} - ${formatGtfsDate(period.endDate)}`
+})
+
+const serviceStops = computed(() => {
+  const stops = shipDetails.value?.stops
+  return Array.isArray(stops) ? stops : []
+})
+
+const serviceStopsHeading = computed(() => {
+  return shipDetails.value?.mode === 'air' ? t('ship.modal.airports') : t('ship.modal.stops')
+})
+
+const serviceTimetableLinkLabel = computed(() => {
+  return shipDetails.value?.mode === 'air'
+    ? t('ship.modal.officialTimetable')
+    : t('ship.modal.officialPdfTimetable')
 })
 
 const shipCapacityLabel = computed(() => {
@@ -378,6 +532,7 @@ const headerTitleParts = computed(() => {
   const isJa = currentLocale.value.startsWith('ja')
   if (!id) return { name: currentPortTitle.value, badges: [] }
   if (isBusStopModal.value) return { name: props.title, badges: [] }
+  if (isAirportModal.value) return { name: props.title, badges: [] }
 
   const label = String(t(id))
   const parenRegex = /[（(]([^）)]+)[）)]/g

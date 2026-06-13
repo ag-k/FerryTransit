@@ -304,6 +304,46 @@ a {
   white-space: nowrap;
 }
 
+.main-tabs {
+  display: inline-flex;
+  gap: 4px;
+  margin: 0 0 14px;
+  padding: 4px;
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  background: var(--surface);
+}
+
+.main-tab {
+  min-width: 128px;
+  min-height: 38px;
+  padding: 8px 14px;
+  border: 0;
+  border-radius: 6px;
+  background: transparent;
+  color: var(--muted);
+  cursor: pointer;
+  font: inherit;
+  font-weight: 800;
+}
+
+.main-tab:hover {
+  color: var(--ink);
+}
+
+.main-tab.active {
+  background: var(--accent);
+  color: #fff;
+}
+
+.tab-panel {
+  display: none;
+}
+
+.tab-panel.active {
+  display: block;
+}
+
 .error-banner {
   margin-bottom: 16px;
   padding: 12px 14px;
@@ -554,7 +594,6 @@ tbody a:hover {
 }
 
 .gtfs-panel {
-  margin-top: 16px;
   border: 1px solid var(--line);
   border-radius: var(--radius);
   background: var(--surface);
@@ -1494,6 +1533,16 @@ tbody tr:hover {
 
   .actions {
     justify-content: stretch;
+  }
+
+  .main-tabs {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    width: 100%;
+  }
+
+  .main-tab {
+    min-width: 0;
   }
 
   .button {

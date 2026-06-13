@@ -100,6 +100,41 @@ describe('PortSelector', () => {
     expect(wrapper.find('[data-testid="port-section-mainland"]').exists()).toBe(true)
     expect(wrapper.find('[data-testid="port-section-dozen"]').exists()).toBe(true)
     expect(wrapper.find('[data-testid="port-section-dogo"]').exists()).toBe(true)
+    expect(wrapper.find('[data-testid="port-section-airports"]').exists()).toBe(false)
+  })
+
+  it('shows only airport section when allowedLocationType is AIRPORT', async () => {
+    const wrapper = mount(PortSelector, {
+      props: {
+        ...defaultProps,
+        allowedLocationType: 'AIRPORT'
+      },
+      global: {
+        mocks: {
+          $t: (key: string) => {
+            if (key === 'AIRPORTS_TITLE') return '空港'
+            if (key === 'AIRPORT_OKI') return '隠岐空港'
+            if (key === 'AIRPORT_IZUMO') return '出雲空港'
+            if (key === 'AIRPORT_ITAMI') return '大阪（伊丹）空港'
+            return key
+          }
+        },
+        stubs: {
+          Teleport: true,
+          Icon: true
+        }
+      }
+    })
+
+    await wrapper.find('[data-testid="port-selector-button"]').trigger('click')
+
+    expect(wrapper.find('[data-testid="port-section-airports"]').exists()).toBe(true)
+    expect(wrapper.find('[data-testid="port-section-mainland"]').exists()).toBe(false)
+    expect(wrapper.find('[data-testid="port-section-busStops"]').exists()).toBe(false)
+    expect(wrapper.text()).toContain('隠岐空港')
+    expect(wrapper.text()).toContain('出雲空港')
+    expect(wrapper.text()).toContain('大阪空港')
+    expect(wrapper.text()).toContain('伊丹')
   })
 
   it('shows bus stop section grouped by town tabs when allowedLocationType is STOP', async () => {
@@ -147,6 +182,10 @@ describe('PortSelector', () => {
     expect(tabs).toHaveLength(4)
     expect(tabs.map(tab => tab.text())).toEqual(['隠岐の島町', '西ノ島町', '海士町', '知夫村'])
     expect(tabs[0].attributes('aria-selected')).toBe('true')
+    expect(tabs[0].classes()).toContain('bg-amber-50')
+    expect(tabs[1].classes()).toContain('bg-emerald-50')
+    expect(tabs[2].classes()).toContain('bg-sky-50')
+    expect(tabs[3].classes()).toContain('bg-red-50')
 
     expect(wrapper.text()).toContain('ポート前')
     expect(wrapper.text()).toContain('隠岐の島町')
@@ -249,6 +288,7 @@ describe('PortSelector', () => {
           $t: (key: string) => {
             if (key === 'TRANSPORT_MODES.FERRY') return '船'
             if (key === 'TRANSPORT_MODES.BUS') return 'バス'
+            if (key === 'TRANSPORT_MODES.AIR') return '飛行機'
             if (key === 'MAINLAND') return '本土'
             if (key === 'AMA_CHO') return '海士町'
             return key
@@ -270,11 +310,99 @@ describe('PortSelector', () => {
     expect(townTabs.map(tab => tab.text())).toEqual(['海士町', '本土'])
     expect(townTabs[1].attributes('aria-selected')).toBe('true')
     expect(townTabs[1].classes()).toContain('col-span-2')
+    expect(townTabs[0].classes()).toContain('bg-sky-50')
+    expect(townTabs[1].classes()).toContain('bg-app-surface-2')
     expect(wrapper.text()).toContain('松江駅')
     expect(wrapper.text()).toContain('七類港')
     expect(wrapper.text()).toContain('境港')
     expect(wrapper.text()).toContain('本土')
     expect(wrapper.text()).not.toContain('豊田')
+  })
+
+  it('filters bus stops by route under the selected town tab', async () => {
+    const store = useFerryStore()
+    store.busStops = [
+      'BUS_OKINOSHIMA_port_mae',
+      'BUS_OKINOSHIMA_goka_branch',
+      'BUS_OKINOSHIMA_igo',
+      'BUS_NISHINOSHIMA_nishinoshima_001'
+    ]
+    store.locationLabels = {
+      BUS_OKINOSHIMA_port_mae: 'ポート前',
+      BUS_OKINOSHIMA_goka_branch: '五箇支所',
+      BUS_OKINOSHIMA_igo: '伊後',
+      BUS_NISHINOSHIMA_nishinoshima_001: '宇賀'
+    }
+    store.busStopRouteFilters = [
+      {
+        key: 'okinoshima|OKI_ICHIBATA|OKINOSHIMA_CHO|五箇線',
+        label: '五箇線',
+        operatorId: 'OKI_ICHIBATA',
+        townLabelKey: 'OKINOSHIMA_CHO',
+        stopCodes: ['BUS_OKINOSHIMA_port_mae', 'BUS_OKINOSHIMA_goka_branch']
+      },
+      {
+        key: 'okinoshima|OKI_ICHIBATA|OKINOSHIMA_CHO|中村線',
+        label: '中村線',
+        operatorId: 'OKI_ICHIBATA',
+        townLabelKey: 'OKINOSHIMA_CHO',
+        stopCodes: ['BUS_OKINOSHIMA_port_mae', 'BUS_OKINOSHIMA_igo']
+      },
+      {
+        key: 'nishinoshima|NISHINOSHIMA_TOWN|NISHINOSHIMA_CHO|宇賀線',
+        label: '宇賀線',
+        operatorId: 'NISHINOSHIMA_TOWN',
+        townLabelKey: 'NISHINOSHIMA_CHO',
+        stopCodes: ['BUS_NISHINOSHIMA_nishinoshima_001']
+      }
+    ]
+
+    const wrapper = mount(PortSelector, {
+      props: {
+        ...defaultProps,
+        allowedLocationType: 'STOP'
+      },
+      global: {
+        mocks: {
+          $t: (key: string) => {
+            if (key === 'BUS_ROUTES') return '路線'
+            if (key === 'ALL_ROUTES') return 'すべて'
+            return key
+          }
+        },
+        stubs: {
+          Teleport: true,
+          Icon: true
+        }
+      }
+    })
+
+    await wrapper.find('[data-testid="port-selector-button"]').trigger('click')
+
+    expect(wrapper.find('[data-testid="bus-stop-route-filter"]').exists()).toBe(true)
+    let routeTabs = wrapper.findAll('[data-testid="bus-stop-route-tab"]')
+    expect(routeTabs.map(tab => tab.text())).toEqual(['すべて', '五箇線', '中村線'])
+    expect(routeTabs[0]!.attributes('aria-selected')).toBe('true')
+    expect(wrapper.text()).toContain('五箇支所')
+    expect(wrapper.text()).toContain('伊後')
+
+    await routeTabs[1]!.trigger('click')
+
+    routeTabs = wrapper.findAll('[data-testid="bus-stop-route-tab"]')
+    expect(routeTabs[1]!.attributes('aria-selected')).toBe('true')
+    expect(wrapper.text()).toContain('ポート前')
+    expect(wrapper.text()).toContain('五箇支所')
+    expect(wrapper.text()).not.toContain('伊後')
+
+    await routeTabs[0]!.trigger('click')
+    expect(wrapper.text()).toContain('伊後')
+
+    const townTabs = wrapper.findAll('[data-testid="bus-stop-town-tab"]')
+    await townTabs[1]!.trigger('click')
+
+    expect(wrapper.find('[data-testid="bus-stop-route-filter"]').exists()).toBe(false)
+    expect(wrapper.text()).toContain('宇賀')
+    expect(wrapper.text()).not.toContain('五箇支所')
   })
 
   it('filters bus stops by text across town tabs', async () => {
@@ -338,6 +466,8 @@ describe('PortSelector', () => {
           $t: (key: string) => {
             if (key === 'TRANSPORT_MODES.FERRY') return '船'
             if (key === 'TRANSPORT_MODES.BUS') return 'バス'
+            if (key === 'TRANSPORT_MODES.AIR') return '飛行機'
+            if (key === 'AIRPORTS_TITLE') return '空港'
             return key
           }
         },
@@ -351,8 +481,8 @@ describe('PortSelector', () => {
     await wrapper.find('[data-testid="port-selector-button"]').trigger('click')
 
     const tabs = wrapper.findAll('[data-testid="port-selector-transport-tab"]')
-    expect(tabs).toHaveLength(2)
-    expect(tabs.map(tab => tab.text())).toEqual(['船', 'バス'])
+    expect(tabs).toHaveLength(3)
+    expect(tabs.map(tab => tab.text())).toEqual(['船', 'バス', '飛行機'])
     expect(tabs[0].attributes('aria-selected')).toBe('true')
     expect(wrapper.find('[data-testid="port-section-mainland"]').exists()).toBe(true)
     expect(wrapper.find('[data-testid="port-section-dozen"]').exists()).toBe(true)
@@ -371,6 +501,11 @@ describe('PortSelector', () => {
     expect(wrapper.text()).toContain('隠岐汽船')
     expect(wrapper.text()).toContain('西ノ島町')
     expect(wrapper.text()).not.toContain('豊田')
+
+    await updatedTabs[2].trigger('click')
+    expect(wrapper.find('[data-testid="port-section-airports"]').exists()).toBe(true)
+    expect(wrapper.find('[data-testid="port-section-busStops"]').exists()).toBe(false)
+    expect(wrapper.text()).toContain('空港')
   })
 
   it('defaults to the bus tab when the preferred source is a bus stop', async () => {

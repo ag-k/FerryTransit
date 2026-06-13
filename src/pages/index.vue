@@ -88,7 +88,7 @@
 
     <!-- 車両乗船オプション -->
     <ClientOnly>
-      <div v-if="selectedTransportMode !== 'BUS'" class="mb-4 rounded-md border border-app-border bg-app-surface px-4 py-3">
+      <div v-if="selectedTransportMode === 'FERRY'" class="mb-4 rounded-md border border-app-border bg-app-surface px-4 py-3">
         <ToggleSwitch
           data-test="with-car-toggle"
           :checked="withCar"
@@ -467,7 +467,7 @@ const normalizeTransportMode = (mode?: TransportMode | string): TransportMode =>
   return 'FERRY'
 }
 
-const transportModeOptions = computed<TransportMode[]>(() => ['FERRY', 'BUS'])
+const transportModeOptions = computed<TransportMode[]>(() => ['FERRY', 'BUS', 'AIR'])
 
 const selectedTransportMode = ref<TransportModeFilterValue>('FERRY')
 
@@ -482,6 +482,11 @@ watch(transportModeOptions, (options) => {
 })
 
 const preferredTransportModeForRoute = computed<TransportMode>(() => {
+  const hasAirport = [departure.value, arrival.value].some(locationId => {
+    return getLocationTypeForCode(locationId) === 'AIRPORT'
+  })
+  if (hasAirport) return 'AIR'
+
   const hasStop = [departure.value, arrival.value].some(locationId => {
     return getLocationTypeForCode(locationId) === 'STOP'
   })
@@ -495,11 +500,15 @@ watch([preferredTransportModeForRoute, transportModeOptions], ([preferredMode, o
 }, { immediate: true })
 
 const selectedLocationType = computed<LocationType>(() => {
-  return selectedTransportMode.value === 'BUS' ? 'STOP' : 'PORT'
+  if (selectedTransportMode.value === 'BUS') return 'STOP'
+  if (selectedTransportMode.value === 'AIR') return 'AIRPORT'
+  return 'PORT'
 })
 
-const selectedMapTransportMode = computed<Extract<TransportMode, 'FERRY' | 'BUS'>>(() => {
-  return selectedTransportMode.value === 'BUS' ? 'BUS' : 'FERRY'
+const selectedMapTransportMode = computed<Extract<TransportMode, 'FERRY' | 'BUS' | 'AIR'>>(() => {
+  if (selectedTransportMode.value === 'BUS') return 'BUS'
+  if (selectedTransportMode.value === 'AIR') return 'AIR'
+  return 'FERRY'
 })
 
 const mapBusStops = computed<BusStopLocation[]>(() => {
@@ -597,7 +606,9 @@ const sortedTimetable = computed(() => {
 })
 
 const formatTripMeta = (trip: Trip) => {
+  const flightNumber = normalizeTransportMode(trip.mode) === 'AIR' ? trip.vehicleId : ''
   const parts = [
+    flightNumber ? `${t('SEGMENT.FLIGHT')}: ${flightNumber}` : '',
     trip.platform ? `${t('SEGMENT.PLATFORM')}: ${trip.platform}` : '',
     trip.terminal ? `${t('SEGMENT.TERMINAL')}: ${trip.terminal}` : '',
     trip.gate ? `${t('SEGMENT.GATE')}: ${trip.gate}` : ''
@@ -611,6 +622,9 @@ const getTripTransportLabel = (trip: Trip) => {
     const busName = getBusTransportName(trip.name)
     if (!trip.via) return busName
     return `${busName}（${routeName}）`
+  }
+  if (normalizeTransportMode(trip.mode) === 'AIR') {
+    return String(t(trip.name))
   }
   return t(trip.name)
 }
@@ -705,11 +719,11 @@ watch(withCar, async (enabled) => {
 })
 
 watch(selectedTransportMode, (mode) => {
-  if (mode === 'BUS' && withCar.value) {
+  if (mode !== 'FERRY' && withCar.value) {
     withCar.value = false
   }
 
-  const allowedType = mode === 'BUS' ? 'STOP' : 'PORT'
+  const allowedType = mode === 'BUS' ? 'STOP' : mode === 'AIR' ? 'AIRPORT' : 'PORT'
   if (departure.value && getLocationTypeForCode(departure.value) !== allowedType) {
     ferryStore.setDeparture('')
   }
@@ -949,12 +963,12 @@ const handleMapPortClick = (port: any) => {
 const handleMapLocationClick = (_location: { id: string; type: LocationType }) => {}
 
 const handleMapLocationSetDeparture = (location: { id: string; type: LocationType }) => {
-  if (location.type !== 'STOP') return
+  if (location.type !== 'STOP' && location.type !== 'AIRPORT') return
   handleDepartureChange(location.id)
 }
 
 const handleMapLocationSetArrival = (location: { id: string; type: LocationType }) => {
-  if (location.type !== 'STOP') return
+  if (location.type !== 'STOP' && location.type !== 'AIRPORT') return
   handleArrivalChange(location.id)
 }
 

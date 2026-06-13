@@ -4,7 +4,7 @@ import { useFerryStore } from "@/stores/ferry";
 import { useFareStore } from "@/stores/fare";
 import { useFerryData } from "@/composables/useFerryData";
 import { useTimetableLoader } from "@/composables/useTimetableLoader";
-import type { Trip, TransitRoute, TransitSegment } from "@/types";
+import type { LocationType, Trip, TransitRoute, TransitSegment } from "@/types";
 import type { FareRoute, VesselType } from "@/types/fare";
 import { createLogger } from "~/utils/logger";
 import { isTodayJst } from "@/utils/jstDate";
@@ -19,8 +19,10 @@ import {
   getAllPortConnectedBusStopCodes,
   getBusStopConnectedPortId,
   getConnectedBusStopsForPort,
+  getLocationTypeForCode,
   isBusStopCode,
   isTripActiveOnDate,
+  loadBusTransferCandidateTripsForRoute,
   loadBusTripsForRoute,
 } from "@/utils/gtfsBusTimetable";
 
@@ -41,6 +43,10 @@ export const useRouteSearch = () => {
       return Number((trip as any).status ?? 0) || 0;
     }
     return getTripStatus(trip);
+  };
+
+  const getFlightNumberForTrip = (trip: Trip): string | undefined => {
+    return (trip.mode ?? "FERRY") === "AIR" ? trip.vehicleId : undefined;
   };
 
   const buildRouteSignature = (route: TransitRoute): string => {
@@ -175,20 +181,33 @@ export const useRouteSearch = () => {
       return isTripActiveOnDate(trip, searchDate, searchDateStr);
     });
     let busDirectTrips: Trip[] = [];
+    let busTransferCandidateTrips: Trip[] = [];
     if (!withCar) {
       try {
         busDirectTrips = await loadBusTripsForRoute(departure, arrival, searchDateStr);
+        if (
+          busDirectTrips.length === 0 &&
+          isBusStopCode(departure) &&
+          isBusStopCode(arrival)
+        ) {
+          busTransferCandidateTrips = await loadBusTransferCandidateTripsForRoute(
+            departure,
+            arrival,
+            searchDateStr
+          );
+        }
       } catch (error) {
         logger.warn("Failed to load bus search data", error);
       }
     }
     const searchableTimetable = withCar
       ? dayTimetable.filter((trip) => isVehicleSearchShip(trip.name))
-      : [...dayTimetable, ...busDirectTrips];
+      : [...dayTimetable, ...busDirectTrips, ...busTransferCandidateTrips];
 
     logger.debug("Filtered timetable for date range", {
       count: dayTimetable.length,
       busDirectCount: busDirectTrips.length,
+      busTransferCandidateCount: busTransferCandidateTrips.length,
       searchableCount: searchableTimetable.length,
       searchDate: searchDateStr,
     });
@@ -347,6 +366,7 @@ export const useRouteSearch = () => {
           operatorId: trip.operatorId,
           serviceId: trip.serviceId,
           vehicleId: trip.vehicleId,
+          flightNumber: getFlightNumberForTrip(trip),
           departure: trip.departure,
           departureType: trip.departureType,
           arrival: trip.arrival,
@@ -373,8 +393,8 @@ export const useRouteSearch = () => {
     return routes;
   };
 
-  const getLocationTypeForSearch = (locationId: string): "PORT" | "STOP" => {
-    return isBusStopCode(locationId) ? "STOP" : "PORT";
+  const getLocationTypeForSearch = (locationId: string): LocationType => {
+    return getLocationTypeForCode(locationId);
   };
 
   const expandHondoPort = (portId: string): string[] => {
@@ -429,6 +449,7 @@ export const useRouteSearch = () => {
       operatorId: trip.operatorId,
       serviceId: trip.serviceId,
       vehicleId: trip.vehicleId,
+      flightNumber: getFlightNumberForTrip(trip),
       departure: trip.departure,
       departureType: trip.departureType,
       arrival: trip.arrival,
@@ -1046,6 +1067,7 @@ export const useRouteSearch = () => {
               operatorId: t.operatorId,
               serviceId: t.serviceId,
               vehicleId: t.vehicleId,
+              flightNumber: getFlightNumberForTrip(t),
               departure: t.departure,
               departureType: t.departureType,
               arrival: t.arrival,
@@ -1123,6 +1145,7 @@ export const useRouteSearch = () => {
             operatorId: firstTrip.operatorId,
             serviceId: firstTrip.serviceId,
             vehicleId: firstTrip.vehicleId,
+            flightNumber: getFlightNumberForTrip(firstTrip),
             departure: firstTrip.departure,
             departureType: firstTrip.departureType,
             arrival: finalTrip.arrival,
@@ -1169,6 +1192,7 @@ export const useRouteSearch = () => {
             operatorId: firstTrip.operatorId,
             serviceId: firstTrip.serviceId,
             vehicleId: firstTrip.vehicleId,
+            flightNumber: getFlightNumberForTrip(firstTrip),
             departure: firstTrip.departure,
             departureType: firstTrip.departureType,
             arrival: firstTrip.arrival,
@@ -1193,6 +1217,7 @@ export const useRouteSearch = () => {
             operatorId: secondTrip.operatorId,
             serviceId: secondTrip.serviceId,
             vehicleId: secondTrip.vehicleId,
+            flightNumber: getFlightNumberForTrip(secondTrip),
             departure: secondTrip.departure,
             departureType: secondTrip.departureType,
             arrival: finalTrip.arrival,
@@ -1371,6 +1396,9 @@ export const useRouteSearch = () => {
     }
     if (ship === "ICHIBATA_BUS_CONNECTION") {
       return 1200;
+    }
+    if (ship === "JAL_OKI_ITAMI" || ship === "JAL_OKI_IZUMO") {
+      return 0;
     }
 
     // Ensure fare data is loaded

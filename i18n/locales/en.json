@@ -64,6 +64,9 @@
   "SHIP": "Ship",
   "TRANSPORT_NAME": "Transport",
   "BUS_STOPS": "Bus stops",
+  "BUS_ROUTES": "Routes",
+  "ALL_ROUTES": "All routes",
+  "AIRPORTS_TITLE": "Airports",
   "BUS_FARE": "Bus fares",
   "BUS_FARE_NOTE": "Standard fares for each municipal bus. Transit search uses these fares based on the operating agency.",
   "BUS_FARE_TYPE": "Type",
@@ -76,6 +79,9 @@
   "OKINOSHIMA_TOWN_BUS": "Okinoshima Town Bus",
   "ICHIBATA_BUS": "Ichibata Bus",
   "ICHIBATA_BUS_CONNECTION": "Ichibata Bus Oki Kisen Connection",
+  "JAL": "Japan Airlines (JAL)",
+  "JAL_OKI_ITAMI": "JAL Osaka (Itami) Route",
+  "JAL_OKI_IZUMO": "JAL Izumo Route",
   "WALK": "Walk",
   "TRANSPORT_MODES": {
     "FERRY": "Ship",
@@ -99,6 +105,7 @@
     "PREPARING": "Preparing"
   },
   "SEGMENT": {
+    "FLIGHT": "Flight",
     "PLATFORM": "Platform",
     "TERMINAL": "Terminal",
     "GATE": "Gate"
@@ -118,6 +125,9 @@
   "HONDO": "Shichirui (Matsue) or Sakaiminato (Sakaiminato)",
   "HONDO_SHICHIRUI": "Shichirui (Matsue)",
   "HONDO_SAKAIMINATO": "Sakaiminato (Sakaiminato)",
+  "AIRPORT_OKI": "Oki Airport",
+  "AIRPORT_IZUMO": "Izumo Airport",
+  "AIRPORT_ITAMI": "Osaka (Itami) Airport",
   "KURI": "Kurī (Chibu)",
   "BEPPU": "Beppu (Nishinoshima)",
   "HISHIURA": "Hishiura (Ama)",
@@ -618,7 +628,26 @@
       "carCarryNo": "Not available",
       "carCarryUnknown": "Unknown",
       "cabin": "Cabin types",
-      "cabinUnknown": "Unknown"
+      "cabinUnknown": "Unknown",
+      "route": "Route",
+      "servicePeriod": "Published period",
+      "stops": "Stops",
+      "airports": "Airports",
+      "officialPage": "Official page",
+      "officialTimetable": "Official timetable",
+      "officialPdfTimetable": "PDF timetable",
+      "ichibataBusConnection": {
+        "route": "Matsue Station, Shichirui Port, and Sakaiminato",
+        "summary": "Mainland connecting bus for Oki Kisen sailings from Shichirui Port and Sakaiminato."
+      },
+      "jalOkiItami": {
+        "route": "Oki Airport and Osaka (Itami) Airport",
+        "summary": "JAL air service between Oki Airport and Osaka (Itami) Airport. A special timetable applies from August 1 to August 28."
+      },
+      "jalOkiIzumo": {
+        "route": "Oki Airport and Izumo Airport",
+        "summary": "JAL air service between Oki Airport and Izumo Airport."
+      }
     }
   },
   "admin": {

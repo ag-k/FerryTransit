@@ -64,7 +64,7 @@ interface Props {
   selectedPort?: string
   selectedRoute?: { from: string; to: string }
   selectedRouteSegments?: RouteSegment[]
-  transportMode?: Extract<TransportMode, 'FERRY' | 'BUS'>
+  transportMode?: Extract<TransportMode, 'FERRY' | 'BUS' | 'AIR'>
   busStops?: BusStopLocation[]
   showPortDetails?: boolean
   height?: string

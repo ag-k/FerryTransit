@@ -1,6 +1,7 @@
 import { describe, it, expect, beforeEach, vi } from "vitest";
 import { setActivePinia, createPinia } from "pinia";
 import { useFerryStore } from "@/stores/ferry";
+import { AIR_TIMETABLE } from "@/data/air";
 import type { Trip } from "@/types";
 import {
   mockTrips,
@@ -113,7 +114,7 @@ describe("Ferry Store", () => {
 
       await store.fetchTimetable();
 
-      expect(store.timetableData).toHaveLength(mockTrips.length);
+      expect(store.timetableData).toHaveLength(mockTrips.length + AIR_TIMETABLE.length);
       expect(store.isLoading).toBe(false);
       expect(store.error).toBeNull();
       expect(mockGetCachedJsonFile).toHaveBeenCalledWith(
@@ -169,7 +170,7 @@ describe("Ferry Store", () => {
       );
       expect(mockGetCachedJsonFile).not.toHaveBeenCalled();
       expect(global.$fetch).not.toHaveBeenCalled();
-      expect(store.timetableData).toHaveLength(mockTrips.length);
+      expect(store.timetableData).toHaveLength(mockTrips.length + AIR_TIMETABLE.length);
     });
 
     it("should fallback to Storage SDK when native storage public URL fails", async () => {
@@ -199,7 +200,7 @@ describe("Ferry Store", () => {
         { cache: "no-store" }
       );
       expect(mockGetCachedJsonFile).toHaveBeenCalledTimes(1);
-      expect(store.timetableData).toHaveLength(mockTrips.length);
+      expect(store.timetableData).toHaveLength(mockTrips.length + AIR_TIMETABLE.length);
       expect(store.error).toBeNull();
     });
 

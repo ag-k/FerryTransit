@@ -54,6 +54,7 @@
 <script setup lang="ts">
 import { computed, nextTick, onMounted, onUnmounted, ref, watch } from 'vue'
 import { PORTS_DATA } from '~/data/ports'
+import { AIRPORTS } from '@/data/air'
 import CommonShipModal from '~/components/common/ShipModal.vue'
 import type { LocationType, Port, TransportMode } from '~/types'
 import type { RouteData, RoutePoint, RoutesDataFile } from '~/types/route'
@@ -79,7 +80,7 @@ import {
 } from '@/utils/ferryMap'
 
 type RouteSegment = { from: string; to: string; ship?: string }
-type MapMode = Extract<TransportMode, 'FERRY' | 'BUS'>
+type MapMode = Extract<TransportMode, 'FERRY' | 'BUS' | 'AIR'>
 type MapLocationPoint = {
   id: string
   type: LocationType
@@ -183,8 +184,24 @@ const busStopLocations = computed<MapLocationPoint[]>(() => {
   }))
 })
 
+const airportLocations = computed<MapLocationPoint[]>(() => {
+  return AIRPORTS.map(airport => ({
+    id: airport.id,
+    type: 'AIRPORT',
+    titleJa: airport.name,
+    titleEn: airport.nameEn,
+    location: {
+      lat: airport.lat,
+      lng: airport.lng
+    },
+    operatorId: 'JAL'
+  }))
+})
+
 const mapLocations = computed<MapLocationPoint[]>(() => {
-  return props.transportMode === 'BUS' ? busStopLocations.value : portLocations.value
+  if (props.transportMode === 'BUS') return busStopLocations.value
+  if (props.transportMode === 'AIR') return airportLocations.value
+  return portLocations.value
 })
 
 const getLocationTitle = (location: MapLocationPoint) => {
@@ -222,7 +239,7 @@ const createBusStopPopupHtml = (location: MapLocationPoint) => {
     [String($i18n.t('LOCATION_TYPES.STOP')), town],
     [String($i18n.t('TRANSPORT_NAME')), operatorLabel],
     [String($i18n.t('map.connectedPort')), connectedPortLabel || '']
-  ].filter(([, value]) => value)
+  ].filter((row): row is [string, string] => Boolean(row[1]))
 
   return `
     <div class="ferry-map-stop-popup" data-location-id="${escapeHtml(location.id)}">
@@ -247,6 +264,30 @@ const createBusStopPopupHtml = (location: MapLocationPoint) => {
   `
 }
 
+const createAirportPopupHtml = (location: MapLocationPoint) => {
+  const title = escapeHtml(getLocationTitle(location))
+
+  return `
+    <div class="ferry-map-stop-popup" data-location-id="${escapeHtml(location.id)}">
+      <div class="ferry-map-stop-popup__title">${title}</div>
+      <dl class="ferry-map-stop-popup__list">
+        <div class="ferry-map-stop-popup__row">
+          <dt>${escapeHtml(String($i18n.t('LOCATION_TYPES.AIRPORT')))}</dt>
+          <dd>${escapeHtml(String($i18n.t('TRANSPORT_MODES.AIR')))}</dd>
+        </div>
+      </dl>
+      <div class="ferry-map-stop-popup__actions">
+        <button type="button" class="ferry-map-stop-popup__button" data-map-action="set-departure">
+          ${escapeHtml(String($i18n.t('map.setAsDeparture')))}
+        </button>
+        <button type="button" class="ferry-map-stop-popup__button ferry-map-stop-popup__button--primary" data-map-action="set-arrival">
+          ${escapeHtml(String($i18n.t('map.setAsArrival')))}
+        </button>
+      </div>
+    </div>
+  `
+}
+
 const getPortBadgeLabel = (portId: string) => {
   const label = String($i18n.t(portId))
   const parenRegex = /[（(]([^）)]+)[）)]/
@@ -258,6 +299,9 @@ const getLocationLabelClassName = (location: MapLocationPoint) => {
   if (location.type === 'STOP') {
     const townLabel = location.townLabelKey ? String($i18n.t(location.townLabelKey)) : ''
     return `ferry-map-port-label ferry-map-port-label--bus-stop ferry-map-port-label--${getPortLabelVariant(townLabel)}`
+  }
+  if (location.type === 'AIRPORT') {
+    return 'ferry-map-port-label ferry-map-port-label--airport'
   }
 
   return `ferry-map-port-label ferry-map-port-label--${getPortLabelVariant(getPortBadgeLabel(location.id))}`
@@ -315,7 +359,11 @@ const bindStopPopupActions = (marker: any, location: MapLocationPoint) => {
       L.DomEvent.disableScrollPropagation(button)
       L.DomEvent.on(button, 'click', (clickEvent: Event) => {
         L.DomEvent.stop(clickEvent)
-        emit(eventName, { id: location.id, type: location.type })
+        if (eventName === 'locationSetDeparture') {
+          emit('locationSetDeparture', { id: location.id, type: location.type })
+        } else {
+          emit('locationSetArrival', { id: location.id, type: location.type })
+        }
         marker.closePopup?.()
       })
     }
@@ -394,7 +442,11 @@ const setMarkerLabelVisibility = (portId: string, visible: boolean) => {
   button.title = getLocationTitle(record.location)
   button.setAttribute('aria-label', buildPortLabelA11yLabel(
     getLocationTitle(record.location),
-    record.location.type === 'STOP' ? String($i18n.t('LOCATION_TYPES.STOP')) : String($i18n.t('map.portDetails'))
+    record.location.type === 'STOP'
+      ? String($i18n.t('LOCATION_TYPES.STOP'))
+      : record.location.type === 'AIRPORT'
+        ? String($i18n.t('LOCATION_TYPES.AIRPORT'))
+        : String($i18n.t('map.portDetails'))
   ))
 
   L.DomEvent.disableClickPropagation(button)
@@ -448,6 +500,16 @@ const getMarkerStyle = (location: MapLocationPoint, isActive: boolean) => {
       color: isActive ? '#3730A3' : '#6366F1',
       weight: isActive ? 2 : 1,
       fillOpacity: isActive ? 1 : 0.9,
+      opacity: 1
+    }
+  }
+  if (location.type === 'AIRPORT') {
+    return {
+      radius: isActive ? 9 : 6,
+      fillColor: isActive ? '#7C3AED' : '#DDD6FE',
+      color: isActive ? '#5B21B6' : '#8B5CF6',
+      weight: isActive ? 2 : 1,
+      fillOpacity: isActive ? 1 : 0.95,
       opacity: 1
     }
   }
@@ -505,6 +567,9 @@ const syncLocationMarkers = () => {
 
     if (location.type === 'STOP') {
       marker.bindPopup(createBusStopPopupHtml(location))
+      bindStopPopupActions(marker, location)
+    } else if (location.type === 'AIRPORT') {
+      marker.bindPopup(createAirportPopupHtml(location))
       bindStopPopupActions(marker, location)
     }
 
@@ -637,10 +702,10 @@ const drawRouteSegments = (segments: RouteSegment[]) => {
         const fallbackPath = buildFallbackPath(fromId, toId)
         if (fallbackPath.length === 0) return
         addRouteLayer(fallbackPath, undefined, undefined, {
-          color: props.transportMode === 'BUS' ? '#4F46E5' : '#64748B',
-          opacity: props.transportMode === 'BUS' ? 0.72 : 0.55,
-          weight: props.transportMode === 'BUS' ? 4 : 3,
-          dashArray: props.transportMode === 'BUS' ? '8 6' : '7 7'
+          color: props.transportMode === 'BUS' ? '#4F46E5' : props.transportMode === 'AIR' ? '#7C3AED' : '#64748B',
+          opacity: props.transportMode === 'AIR' ? 0.68 : props.transportMode === 'BUS' ? 0.72 : 0.55,
+          weight: props.transportMode === 'AIR' ? 3 : props.transportMode === 'BUS' ? 4 : 3,
+          dashArray: props.transportMode === 'AIR' ? '10 8' : props.transportMode === 'BUS' ? '8 6' : '7 7'
         })
         bounds.extend(toLatLngBounds(fallbackPath))
         drewAny = true
@@ -657,14 +722,14 @@ const drawSelectedRoutes = (selectedRoute: { from: string; to: string }) => {
   if (!map || !L) return
 
   const bounds = L.latLngBounds([])
-  if (props.transportMode === 'BUS') {
+  if (props.transportMode === 'BUS' || props.transportMode === 'AIR') {
     const fallbackPath = buildFallbackPath(selectedRoute.from, selectedRoute.to)
     if (fallbackPath.length === 0) return
     addRouteLayer(fallbackPath, undefined, undefined, {
-      color: '#4F46E5',
-      opacity: 0.72,
-      weight: 4,
-      dashArray: '8 6'
+      color: props.transportMode === 'AIR' ? '#7C3AED' : '#4F46E5',
+      opacity: props.transportMode === 'AIR' ? 0.68 : 0.72,
+      weight: props.transportMode === 'AIR' ? 3 : 4,
+      dashArray: props.transportMode === 'AIR' ? '10 8' : '8 6'
     })
     bounds.extend(toLatLngBounds(fallbackPath))
     fitBoundsWithUiPadding(bounds)
@@ -740,7 +805,7 @@ const focusLocation = (locationId: string) => {
   if (points.length === 1) {
     const point = points[0]
     if (!point) return
-    map.setView([point.location.lat, point.location.lng], props.transportMode === 'BUS' ? 14 : 12, { animate: false })
+    map.setView([point.location.lat, point.location.lng], props.transportMode === 'BUS' ? 14 : props.transportMode === 'AIR' ? 8 : 12, { animate: false })
   } else {
     const bounds = L.latLngBounds(points.map(location => [location.location.lat, location.location.lng]))
     fitBoundsWithUiPadding(bounds)
@@ -1088,6 +1153,12 @@ onUnmounted(() => {
   background: #eef2ff;
   color: #3730a3;
   border-color: #c7d2fe;
+}
+
+.map-container :deep(.ferry-map-port-label--airport) {
+  background: #f5f3ff;
+  color: #5b21b6;
+  border-color: #ddd6fe;
 }
 
 .map-container :deep(.ferry-map-port-label--chibu) {

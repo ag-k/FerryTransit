@@ -176,6 +176,14 @@ export type BusRouteLabel = {
   routeName: string
 }
 
+export type BusStopRouteFilter = {
+  key: string
+  label: string
+  operatorId: string
+  townLabelKey: string | null
+  stopCodes: string[]
+}
+
 type BusStopsIndex = {
   version: 1
   generatedAt: string
@@ -291,6 +299,10 @@ export const isBusStopCode = (value?: string): boolean => {
     isIchibataBusConnectionStopCode(value)
 }
 
+export const isAirportCode = (value?: string): boolean => {
+  return typeof value === 'string' && value.startsWith('AIRPORT_')
+}
+
 export const toAmaBusStopCode = (stopId: string): string => {
   return `${AMA_BUS_STOP_PREFIX}${stopId.replace(/[^a-zA-Z0-9]/g, '_')}`
 }
@@ -353,6 +365,7 @@ export const getAllPortConnectedBusStopCodes = (): string[] => {
 
 export const getLocationTypeForCode = (value?: string, fallback: LocationType = 'PORT'): LocationType => {
   if (isBusStopCode(value)) return 'STOP'
+  if (isAirportCode(value)) return 'AIRPORT'
   return fallback
 }
 
@@ -477,6 +490,93 @@ export const loadBusStopsIndex = async (): Promise<BusStopsIndexData> => {
   }
 }
 
+export const loadBusStopRouteFiltersIndex = async (): Promise<BusStopRouteFilter[]> => {
+  const feeds = await Promise.all(
+    (Object.keys(BUS_FEED_CONFIGS) as BusFeedId[]).map(feedId => loadBusSearchFeed(feedId))
+  )
+  const filtersByKey = new Map<string, BusStopRouteFilter>()
+
+  for (const feed of feeds) {
+    const config = BUS_FEED_CONFIGS[feed.feedId]
+
+    for (const busTrip of feed.trips) {
+      const route = feed.routes[busTrip.routeId]
+      const routeForConfig: GtfsRoute | undefined = route
+        ? {
+            routeId: busTrip.routeId,
+            agencyId: route.agencyId,
+            shortName: route.shortName,
+            longName: route.longName || route.shortName || busTrip.headsign
+          }
+        : undefined
+      const gtfsTrip: GtfsTrip = {
+        routeId: busTrip.routeId,
+        serviceId: busTrip.serviceId,
+        tripId: busTrip.tripId,
+        headsign: busTrip.headsign,
+        shortName: busTrip.shortName
+      }
+      const operatorId = config.resolveOperatorId?.(routeForConfig, gtfsTrip) ?? config.operatorId
+      const tripName = config.resolveTripName?.(routeForConfig, gtfsTrip) ?? config.tripName
+      const routeName = config.formatRouteName(routeForConfig, gtfsTrip)
+      const label = routeName ||
+        route?.shortName ||
+        route?.longName ||
+        busTrip.shortName ||
+        busTrip.headsign ||
+        normalizeFallbackBusRouteLabel(tripName)
+      const stopCodes = Array.from(new Set(
+        (busTrip.stops || [])
+          .map(stop => stop?.[0])
+          .filter((stopCode): stopCode is string => Boolean(stopCode))
+      ))
+      const townStopCodes = new Map<string | null, string[]>()
+
+      for (const stopCode of stopCodes) {
+        const townLabelKey = getBusStopTownLabelKey(stopCode)
+        townStopCodes.set(townLabelKey, [...(townStopCodes.get(townLabelKey) || []), stopCode])
+      }
+
+      for (const [townLabelKey, routeStopCodes] of townStopCodes.entries()) {
+        const key = [
+          feed.feedId,
+          operatorId,
+          townLabelKey ?? 'BUS_STOPS',
+          label
+        ].join('|')
+        const existing = filtersByKey.get(key)
+        if (existing) {
+          existing.stopCodes = Array.from(new Set([...existing.stopCodes, ...routeStopCodes]))
+          continue
+        }
+
+        filtersByKey.set(key, {
+          key,
+          label,
+          operatorId,
+          townLabelKey,
+          stopCodes: routeStopCodes
+        })
+      }
+    }
+  }
+
+  return Array.from(filtersByKey.values()).sort((left, right) => {
+    const townDiff = String(left.townLabelKey ?? '').localeCompare(String(right.townLabelKey ?? ''), 'ja')
+    if (townDiff !== 0) return townDiff
+    return left.label.localeCompare(right.label, 'ja')
+  })
+}
+
+const normalizeFallbackBusRouteLabel = (tripName: string): string => {
+  if (tripName === AMA_BUS_NAME) return '海士町路線バス'
+  if (tripName === NISHINOSHIMA_BUS_NAME) return '西ノ島町営バス'
+  if (tripName === CHIBU_BUS_NAME) return '知夫村営バス'
+  if (tripName === OKINOSHIMA_BUS_NAME) return '隠岐の島町営バス'
+  if (tripName === ICHIBATA_BUS_CONNECTION_NAME) return '一畑バス連絡バス'
+  return tripName
+}
+
 export const loadBusSearchFeed = (feedId: BusFeedId): Promise<BusSearchFeed> => {
   const cached = busSearchFeedPromises.get(feedId)
   if (cached) return cached
@@ -499,6 +599,21 @@ export const loadBusTripsForRoute = async (
 
   const feed = await loadBusSearchFeed(departureFeedId)
   return buildBusTripsForRoute(feed, departure, arrival, dateYmd)
+}
+
+export const loadBusTransferCandidateTripsForRoute = async (
+  departure: string,
+  arrival: string,
+  dateYmd: string
+): Promise<Trip[]> => {
+  const departureFeedId = getBusFeedIdForStopCode(departure)
+  const arrivalFeedId = getBusFeedIdForStopCode(arrival)
+  if (!departureFeedId || !arrivalFeedId || departureFeedId !== arrivalFeedId) {
+    return []
+  }
+
+  const feed = await loadBusSearchFeed(departureFeedId)
+  return buildBusTransferCandidateTripsForRoute(feed, departure, arrival, dateYmd)
 }
 
 export const loadBusRouteLabelsForStops = async (
@@ -570,13 +685,60 @@ export const buildBusRouteLabelsForStops = (
   return labels
 }
 
+export const buildBusTransferCandidateTripsForRoute = (
+  feed: BusSearchFeed,
+  departure: string,
+  arrival: string,
+  dateYmd: string
+): Trip[] => {
+  if (departure === arrival) return []
+
+  const transferStopCodes = new Set<string>()
+  const firstLegsByTransfer = new Map<string, Trip[]>()
+
+  for (const [tripIndex, originIndex] of feed.departuresByStop?.[departure] || []) {
+    const busTrip = feed.trips[tripIndex]
+    if (!busTrip) continue
+
+    const service = feed.services[busTrip.serviceId]
+    if (!service || !isBusServiceActiveOnDate(service, dateYmd)) continue
+
+    const origin = busTrip.stops[originIndex]
+    if (!origin || origin[0] !== departure) continue
+
+    for (let destinationIndex = originIndex + 1; destinationIndex < busTrip.stops.length; destinationIndex++) {
+      const destination = busTrip.stops[destinationIndex]
+      const transferStopCode = destination?.[0]
+      if (!transferStopCode || transferStopCode === departure || transferStopCode === arrival) continue
+
+      const firstLeg = buildBusTripFromStopPair(feed, busTrip, tripIndex, originIndex, destinationIndex)
+      if (!firstLeg) continue
+
+      transferStopCodes.add(transferStopCode)
+      firstLegsByTransfer.set(transferStopCode, [
+        ...(firstLegsByTransfer.get(transferStopCode) || []),
+        firstLeg
+      ])
+    }
+  }
+
+  const candidates: Trip[] = []
+  for (const transferStopCode of transferStopCodes) {
+    const secondLegs = buildBusTripsForRoute(feed, transferStopCode, arrival, dateYmd)
+    if (secondLegs.length === 0) continue
+
+    candidates.push(...(firstLegsByTransfer.get(transferStopCode) || []), ...secondLegs)
+  }
+
+  return dedupeBusTrips(candidates)
+}
+
 export const buildBusTripsForRoute = (
   feed: BusSearchFeed,
   departure: string,
   arrival: string,
   dateYmd: string
 ): Trip[] => {
-  const config = BUS_FEED_CONFIGS[feed.feedId]
   const departures = feed.departuresByStop?.[departure] || []
   const busTrips: Trip[] = []
 
@@ -604,53 +766,90 @@ export const buildBusTripsForRoute = (
       if (seenStopPairs.has(stopPairKey)) continue
       seenStopPairs.add(stopPairKey)
 
-      const route = feed.routes[busTrip.routeId]
-      const routeForConfig: GtfsRoute | undefined = route
-        ? {
-            routeId: busTrip.routeId,
-            agencyId: route.agencyId,
-            shortName: route.shortName,
-            longName: route.longName || route.shortName || busTrip.headsign
-          }
-        : undefined
-      const gtfsTrip: GtfsTrip = {
-        routeId: busTrip.routeId,
-        serviceId: busTrip.serviceId,
-        tripId: busTrip.tripId,
-        headsign: busTrip.headsign,
-        shortName: busTrip.shortName
-      }
-      const routeName = config.formatRouteName(routeForConfig, gtfsTrip)
-      const operatorId = config.resolveOperatorId?.(routeForConfig, gtfsTrip) ?? config.operatorId
-      const tripName = config.resolveTripName?.(routeForConfig, gtfsTrip) ?? config.tripName
-      const fare = config.resolveFare?.(routeForConfig, gtfsTrip) ?? config.fare
-
-      busTrips.push({
-        tripId: config.tripIdBase + tripIndex * 1000 + originIndex * 100 + destinationIndex,
-        startDate: service.startDate,
-        endDate: service.endDate,
-        activeDays: service.activeDays,
-        addedDates: service.addedDates ?? [],
-        removedDates: service.removedDates ?? [],
-        name: tripName,
-        mode: 'BUS',
-        operatorId,
-        serviceId: busTrip.serviceId,
-        vehicleId: busTrip.routeId,
-        departure,
-        departureType: 'STOP',
-        departureTime: origin[2],
-        arrival,
-        arrivalType: 'STOP',
-        arrivalTime: destination[1],
-        status: 0,
-        price: fare,
-        ...(routeName ? { via: routeName } : {})
-      })
+      const trip = buildBusTripFromStopPair(feed, busTrip, tripIndex, originIndex, destinationIndex)
+      if (trip) busTrips.push(trip)
     }
   }
 
   return busTrips
+}
+
+const buildBusTripFromStopPair = (
+  feed: BusSearchFeed,
+  busTrip: BusSearchTrip,
+  tripIndex: number,
+  originIndex: number,
+  destinationIndex: number
+): Trip | null => {
+  const config = BUS_FEED_CONFIGS[feed.feedId]
+  const service = feed.services[busTrip.serviceId]
+  const origin = busTrip.stops[originIndex]
+  const destination = busTrip.stops[destinationIndex]
+  if (!service || !origin || !destination) return null
+
+  const route = feed.routes[busTrip.routeId]
+  const routeForConfig: GtfsRoute | undefined = route
+    ? {
+        routeId: busTrip.routeId,
+        agencyId: route.agencyId,
+        shortName: route.shortName,
+        longName: route.longName || route.shortName || busTrip.headsign
+      }
+    : undefined
+  const gtfsTrip: GtfsTrip = {
+    routeId: busTrip.routeId,
+    serviceId: busTrip.serviceId,
+    tripId: busTrip.tripId,
+    headsign: busTrip.headsign,
+    shortName: busTrip.shortName
+  }
+  const routeName = config.formatRouteName(routeForConfig, gtfsTrip)
+  const operatorId = config.resolveOperatorId?.(routeForConfig, gtfsTrip) ?? config.operatorId
+  const tripName = config.resolveTripName?.(routeForConfig, gtfsTrip) ?? config.tripName
+  const fare = config.resolveFare?.(routeForConfig, gtfsTrip) ?? config.fare
+
+  return {
+    tripId: config.tripIdBase + tripIndex * 1000 + originIndex * 100 + destinationIndex,
+    startDate: service.startDate,
+    endDate: service.endDate,
+    activeDays: service.activeDays,
+    addedDates: service.addedDates ?? [],
+    removedDates: service.removedDates ?? [],
+    name: tripName,
+    mode: 'BUS',
+    operatorId,
+    serviceId: busTrip.serviceId,
+    vehicleId: busTrip.routeId,
+    departure: origin[0],
+    departureType: 'STOP',
+    departureTime: origin[2],
+    arrival: destination[0],
+    arrivalType: 'STOP',
+    arrivalTime: destination[1],
+    status: 0,
+    price: fare,
+    ...(routeName ? { via: routeName } : {})
+  }
+}
+
+const dedupeBusTrips = (trips: Trip[]): Trip[] => {
+  const seen = new Set<string>()
+  const result: Trip[] = []
+
+  for (const trip of trips) {
+    const key = [
+      trip.tripId,
+      trip.departure,
+      trip.departureTime,
+      trip.arrival,
+      trip.arrivalTime
+    ].join('|')
+    if (seen.has(key)) continue
+    seen.add(key)
+    result.push(trip)
+  }
+
+  return result
 }
 
 const loadGtfsBusTimetable = async (config: BusFeedConfig): Promise<BusTimetableData> => {

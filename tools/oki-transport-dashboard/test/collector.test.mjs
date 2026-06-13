@@ -73,3 +73,12 @@ test('一畑バス・隠岐汽船接続バスは松江・七類・境港間の�
     }
   ])
 })
+
+test('隠岐汽船は時刻表ダウンロードページを監視する', () => {
+  const source = SOURCES.find((item) => item.id === 'oki-kisen')
+  assert.equal(source?.pages.some((page) => (
+    page.role === 'timetable' &&
+    page.label === 'フェリー・高速船時刻表ダウンロード' &&
+    page.url === 'https://www.oki-kisen.co.jp/download/dl-timetable/29'
+  )), true)
+})

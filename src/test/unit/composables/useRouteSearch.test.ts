@@ -244,6 +244,55 @@ describe("useRouteSearch", () => {
       expect(results[0].transferCount).toBe(0);
     });
 
+    it("should find direct air routes from Oki Airport", async () => {
+      const store = useFerryStore();
+      store.timetableData = [
+        {
+          tripId: 8000002,
+          startDate: "2026-03-29",
+          endDate: "2026-07-31",
+          activeDays: [0, 1, 2, 3, 4, 5, 6],
+          name: "JAL_OKI_ITAMI",
+          mode: "AIR",
+          operatorId: "JAL",
+          serviceId: "jal_oki_itami_20260329_20260731",
+          vehicleId: "JAL2332",
+          departure: "AIRPORT_OKI",
+          departureType: "AIRPORT",
+          departureTime: "15:05",
+          arrival: "AIRPORT_ITAMI",
+          arrivalType: "AIRPORT",
+          arrivalTime: "15:45",
+          status: 0,
+        },
+      ] as any;
+
+      const { searchRoutes } = useRouteSearch();
+
+      const results = await searchRoutes(
+        "AIRPORT_OKI",
+        "AIRPORT_ITAMI",
+        new Date("2026-06-08T00:00:00+09:00"),
+        "14:00",
+        false
+      );
+
+      expect(results).toHaveLength(1);
+      expect(results[0].segments).toHaveLength(1);
+      expect(results[0].segments[0]).toMatchObject({
+        ship: "JAL_OKI_ITAMI",
+        mode: "AIR",
+        vehicleId: "JAL2332",
+        flightNumber: "JAL2332",
+        departure: "AIRPORT_OKI",
+        departureType: "AIRPORT",
+        arrival: "AIRPORT_ITAMI",
+        arrivalType: "AIRPORT",
+      });
+      expect(results[0].segments[0].fare).toBe(0);
+      expect(results[0].transferCount).toBe(0);
+    });
+
     it("should load only the selected bus feed and create direct bus candidates on demand", async () => {
       const store = useFerryStore();
       store.timetableData = mockTrips;
@@ -327,6 +376,119 @@ describe("useRouteSearch", () => {
         mode: "BUS",
         departure: "BUS_AMA_100_01",
         arrival: "BUS_AMA_126_01",
+        fare: 200,
+      });
+    });
+
+    it("should find a same-feed bus route with one transfer when no direct bus exists", async () => {
+      const store = useFerryStore();
+      store.timetableData = [];
+      store.locationLabels = {
+        BUS_NISHINOSHIMA_nishinoshima_005: "島前病院",
+        BUS_NISHINOSHIMA_nishinoshima_020: "浦郷",
+        BUS_NISHINOSHIMA_nishinoshima_026: "波止",
+      };
+
+      const fetchMock = vi.fn(() =>
+        Promise.resolve({
+          ok: true,
+          status: 200,
+          json: () =>
+            Promise.resolve({
+              version: 1,
+              feedId: "nishinoshima",
+              generatedAt: "2026-06-09T00:00:00.000Z",
+              operatorId: "NISHINOSHIMA_TOWN",
+              townLabelKey: "NISHINOSHIMA_CHO",
+              tripName: "NISHINOSHIMA_TOWN_BUS",
+              fare: 200,
+              routes: {
+                NISHINOSHIMA_MAIN: {
+                  agencyId: "NISHINOSHIMA_TOWN",
+                  shortName: "町営バス",
+                  longName: "西ノ島町営バス",
+                },
+                NISHINOSHIMA_HATO: {
+                  agencyId: "NISHINOSHIMA_TOWN",
+                  shortName: "波止線",
+                  longName: "西ノ島町営バス 波止線",
+                },
+              },
+              stops: [
+                ["BUS_NISHINOSHIMA_nishinoshima_005", "島前病院", 36.106629, 133.036793],
+                ["BUS_NISHINOSHIMA_nishinoshima_020", "浦郷", 36.09273782, 132.99520533],
+                ["BUS_NISHINOSHIMA_nishinoshima_026", "波止", 36.07446789, 133.01485121],
+              ],
+              services: {
+                daily: {
+                  startDate: "2026-01-01",
+                  endDate: "2026-12-31",
+                  activeDays: [0, 1, 2, 3, 4, 5, 6],
+                  addedDates: [],
+                  removedDates: [],
+                },
+              },
+              trips: [
+                {
+                  tripId: "B04_MAIN_0837",
+                  routeId: "NISHINOSHIMA_MAIN",
+                  serviceId: "daily",
+                  headsign: "赤ノ江",
+                  shortName: "2便",
+                  stops: [
+                    ["BUS_NISHINOSHIMA_nishinoshima_005", "08:37", "08:37"],
+                    ["BUS_NISHINOSHIMA_nishinoshima_020", "09:01", "09:01"],
+                  ],
+                },
+                {
+                  tripId: "H02_HATO_1130",
+                  routeId: "NISHINOSHIMA_HATO",
+                  serviceId: "daily",
+                  headsign: "島前病院",
+                  shortName: "波止線 2便",
+                  stops: [
+                    ["BUS_NISHINOSHIMA_nishinoshima_020", "11:34", "11:34"],
+                    ["BUS_NISHINOSHIMA_nishinoshima_026", "11:46", "11:46"],
+                  ],
+                },
+              ],
+              departuresByStop: {
+                BUS_NISHINOSHIMA_nishinoshima_005: [[0, 0]],
+                BUS_NISHINOSHIMA_nishinoshima_020: [[1, 0]],
+              },
+            }),
+        } as Response)
+      );
+      vi.stubGlobal("fetch", fetchMock);
+
+      const { searchRoutes } = useRouteSearch();
+      const results = await searchRoutes(
+        "BUS_NISHINOSHIMA_nishinoshima_005",
+        "BUS_NISHINOSHIMA_nishinoshima_026",
+        new Date("2026-06-09"),
+        "08:00",
+        false
+      );
+
+      const transferRoute = results.find(route =>
+        route.segments.map(segment => `${segment.departure}->${segment.arrival}`).join("|") ===
+        "BUS_NISHINOSHIMA_nishinoshima_005->BUS_NISHINOSHIMA_nishinoshima_020|BUS_NISHINOSHIMA_nishinoshima_020->BUS_NISHINOSHIMA_nishinoshima_026"
+      );
+      expect(transferRoute).toBeDefined();
+      expect(transferRoute?.transferCount).toBe(1);
+      expect(transferRoute?.segments).toHaveLength(2);
+      expect(transferRoute?.segments[0]).toMatchObject({
+        ship: "NISHINOSHIMA_TOWN_BUS",
+        mode: "BUS",
+        departure: "BUS_NISHINOSHIMA_nishinoshima_005",
+        arrival: "BUS_NISHINOSHIMA_nishinoshima_020",
+        fare: 200,
+      });
+      expect(transferRoute?.segments[1]).toMatchObject({
+        ship: "NISHINOSHIMA_TOWN_BUS",
+        mode: "BUS",
+        departure: "BUS_NISHINOSHIMA_nishinoshima_020",
+        arrival: "BUS_NISHINOSHIMA_nishinoshima_026",
         fare: 200,
       });
     });

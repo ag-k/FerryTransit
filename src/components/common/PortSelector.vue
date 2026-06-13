@@ -61,7 +61,8 @@
               <div class="space-y-5">
                 <div
                   v-if="showTransportTabsControl"
-                  class="grid grid-cols-2 gap-2"
+                  class="grid gap-2"
+                  :class="transportTabGridClass"
                   role="tablist"
                   :aria-label="$t('UI.TRANSPORT_FILTER')"
                   data-testid="port-selector-transport-tabs"
@@ -141,12 +142,49 @@
                       class="px-3 py-2 rounded-md border text-sm font-semibold transition-colors focus:outline-none focus:ring-2 focus:ring-app-primary-2"
                       :class="[
                         tab.key === 'MAINLAND' ? 'col-span-2' : '',
-                        tab.key === currentBusStopTownKey
-                          ? 'bg-app-primary text-white border-app-primary'
-                          : 'bg-app-surface text-app-fg border-app-border hover:bg-app-surface-2'
+                        getBusStopTownTabClass(tab)
                       ]" @click="selectBusStopTown(tab.key)">
                       {{ getTownBadgeLabel(tab.labelKey) }}
                     </button>
+                  </div>
+                  <div
+                    v-if="section.key === 'busStops' && !normalizedSearchQuery && activeBusStopRouteFilters.length > 1"
+                    class="space-y-2"
+                    data-testid="bus-stop-route-filter"
+                  >
+                    <h5 class="text-xs font-semibold text-app-muted">
+                      {{ $t('BUS_ROUTES') }}
+                    </h5>
+                    <div class="flex flex-wrap gap-2" role="tablist" :aria-label="$t('BUS_ROUTES')">
+                      <button
+                        type="button"
+                        role="tab"
+                        data-testid="bus-stop-route-tab"
+                        :aria-selected="activeBusStopRouteKey === null ? 'true' : 'false'"
+                        class="rounded-full border px-3 py-1.5 text-xs font-semibold transition-colors focus:outline-none focus:ring-2 focus:ring-app-primary-2"
+                        :class="activeBusStopRouteKey === null
+                          ? 'bg-app-primary text-white border-app-primary'
+                          : 'bg-app-surface text-app-fg border-app-border hover:bg-app-surface-2'"
+                        @click="selectBusStopRoute(null)"
+                      >
+                        {{ $t('ALL_ROUTES') }}
+                      </button>
+                      <button
+                        v-for="routeFilter in activeBusStopRouteFilters"
+                        :key="routeFilter.key"
+                        type="button"
+                        role="tab"
+                        data-testid="bus-stop-route-tab"
+                        :aria-selected="routeFilter.key === activeBusStopRouteKey ? 'true' : 'false'"
+                        class="rounded-full border px-3 py-1.5 text-xs font-semibold transition-colors focus:outline-none focus:ring-2 focus:ring-app-primary-2"
+                        :class="routeFilter.key === activeBusStopRouteKey
+                          ? 'bg-app-primary text-white border-app-primary'
+                          : 'bg-app-surface text-app-fg border-app-border hover:bg-app-surface-2'"
+                        @click="selectBusStopRoute(routeFilter.key)"
+                      >
+                        {{ routeFilter.label }}
+                      </button>
+                    </div>
                   </div>
                   <div class="grid grid-cols-1 gap-2">
                     <button v-for="port in section.ports" :key="port" type="button"
@@ -185,6 +223,8 @@ import LocationTypeIcon from '@/components/common/LocationTypeIcon.vue'
 import type { LocationType } from '@/types'
 import type { FavoriteRoute } from '@/types/favorite'
 import { getBusStopPortBadgeLabel, getBusStopTownLabelKey, getLocationTypeForCode } from '@/utils/gtfsBusTimetable'
+import type { BusStopRouteFilter } from '@/utils/gtfsBusTimetable'
+import { getPortBadgeClass } from '@/utils/portBadges'
 
 interface Props {
   modelValue: string
@@ -232,22 +272,27 @@ const hondoPorts = computed(() => (Array.isArray(props.hondoPorts) ? props.hondo
 const dozenPorts = computed(() => (Array.isArray(props.dozenPorts) ? props.dozenPorts : (ferryStore?.dozenPorts || [])))
 const dogoPorts = computed(() => (Array.isArray(props.dogoPorts) ? props.dogoPorts : (ferryStore?.dogoPorts || [])))
 const busStops = computed(() => ferryStore?.busStops || [])
+const busStopRouteFilters = computed(() => ferryStore?.busStopRouteFilters || [])
+const airports = computed(() => ferryStore?.airports || [])
 const showPorts = computed(() => props.allowedLocationType === 'ALL' || props.allowedLocationType === 'PORT')
 const showStops = computed(() => props.allowedLocationType === 'ALL' || props.allowedLocationType === 'STOP')
-type TransportTabKey = 'FERRY' | 'BUS'
+const showAirports = computed(() => props.allowedLocationType === 'ALL' || props.allowedLocationType === 'AIRPORT')
+type TransportTabKey = 'FERRY' | 'BUS' | 'AIR'
 
-const transportTabs: Array<{ key: TransportTabKey; icon: string }> = [
-  { key: 'FERRY', icon: 'mdi:ferry' },
-  { key: 'BUS', icon: 'mdi:bus' }
-]
+const transportTabs = computed<Array<{ key: TransportTabKey; icon: string }>>(() => {
+  const tabs: Array<{ key: TransportTabKey; icon: string }> = []
+  if (showPorts.value) tabs.push({ key: 'FERRY', icon: 'mdi:ferry' })
+  if (showStops.value && busStops.value.length > 0) tabs.push({ key: 'BUS', icon: 'mdi:bus' })
+  if (showAirports.value && airports.value.length > 0) tabs.push({ key: 'AIR', icon: 'mdi:airplane' })
+  return tabs
+})
 
 const selectedTransportTab = ref<TransportTabKey>('FERRY')
+const transportTabGridClass = computed(() => transportTabs.value.length >= 3 ? 'grid-cols-3' : 'grid-cols-2')
 const showTransportTabsControl = computed(() => {
   return props.showTransportTabs &&
     props.allowedLocationType === 'ALL' &&
-    showPorts.value &&
-    showStops.value &&
-    busStops.value.length > 0
+    transportTabs.value.length > 1
 })
 
 const showPortsInCurrentView = computed(() => {
@@ -256,6 +301,10 @@ const showPortsInCurrentView = computed(() => {
 
 const showStopsInCurrentView = computed(() => {
   return showStops.value && (!showTransportTabsControl.value || selectedTransportTab.value === 'BUS')
+})
+
+const showAirportsInCurrentView = computed(() => {
+  return showAirports.value && (!showTransportTabsControl.value || selectedTransportTab.value === 'AIR')
 })
 
 // Unique ID for accessibility
@@ -273,6 +322,9 @@ const availablePortsSet = computed(() => {
   }
   if (showStopsInCurrentView.value) {
     locations.push(...busStops.value)
+  }
+  if (showAirportsInCurrentView.value) {
+    locations.push(...airports.value)
   }
   return new Set<string>(locations)
 })
@@ -293,11 +345,12 @@ const favoriteRoutes = computed(() => {
   })
 })
 
-type Section = { key: 'favorites' | 'mainland' | 'dozen' | 'dogo' | 'busStops'; labelKey: string; ports: string[] }
+type Section = { key: 'favorites' | 'mainland' | 'dozen' | 'dogo' | 'busStops' | 'airports'; labelKey: string; ports: string[] }
 type BusStopTownTab = { key: string; labelKey: string; ports: string[] }
 
 const busStopTownOrder = ['MAINLAND', 'OKINOSHIMA_CHO', 'NISHINOSHIMA_CHO', 'AMA_CHO', 'CHIBU_MURA', 'BUS_STOPS']
 const activeBusStopTownKey = ref<string | null>(null)
+const activeBusStopRouteKey = ref<string | null>(null)
 
 const busStopTownTabs = computed<BusStopTownTab[]>(() => {
   const groupedStops = new Map<string, string[]>()
@@ -361,9 +414,41 @@ const currentBusStopTownKey = computed(() => {
   return getPreferredBusStopTownKey()
 })
 
+const activeBusStopRouteFilters = computed<BusStopRouteFilter[]>(() => {
+  const townKey = currentBusStopTownKey.value
+  if (!townKey) return []
+
+  const townStopCodes = new Set(
+    busStopTownTabs.value.find(tab => tab.key === townKey)?.ports || []
+  )
+  const seen = new Set<string>()
+
+  return busStopRouteFilters.value
+    .filter(routeFilter => {
+      if (routeFilter.townLabelKey !== townKey) return false
+      return routeFilter.stopCodes.some(stopCode => townStopCodes.has(stopCode))
+    })
+    .map(routeFilter => ({
+      ...routeFilter,
+      stopCodes: routeFilter.stopCodes.filter(stopCode => townStopCodes.has(stopCode))
+    }))
+    .filter(routeFilter => {
+      if (seen.has(routeFilter.key)) return false
+      seen.add(routeFilter.key)
+      return routeFilter.stopCodes.length > 0
+    })
+})
+
 const activeBusStopPorts = computed(() => {
   if (normalizedSearchQuery.value) return busStops.value.filter(matchesLocationSearch)
-  return busStopTownTabs.value.find(tab => tab.key === currentBusStopTownKey.value)?.ports || []
+  const townPorts = busStopTownTabs.value.find(tab => tab.key === currentBusStopTownKey.value)?.ports || []
+  if (!activeBusStopRouteKey.value) return townPorts
+
+  const routeFilter = activeBusStopRouteFilters.value.find(filter => filter.key === activeBusStopRouteKey.value)
+  if (!routeFilter) return townPorts
+
+  const routeStopCodes = new Set(routeFilter.stopCodes)
+  return townPorts.filter(stopCode => routeStopCodes.has(stopCode))
 })
 
 const sections = computed<Section[]>(() => {
@@ -379,6 +464,10 @@ const sections = computed<Section[]>(() => {
 
   if (showStopsInCurrentView.value && busStops.value.length > 0) {
     result.push({ key: 'busStops', labelKey: 'BUS_STOPS', ports: activeBusStopPorts.value })
+  }
+
+  if (showAirportsInCurrentView.value && airports.value.length > 0) {
+    result.push({ key: 'airports', labelKey: 'AIRPORTS_TITLE', ports: airports.value.filter(matchesLocationSearch) })
   }
 
   if (showPortsInCurrentView.value) {
@@ -409,6 +498,18 @@ const getTownBadgeLabel = (labelKey: string): string => {
   if (labelKey === 'CHIBU_MURA') return '知夫村'
   if (labelKey === 'OKINOSHIMA_CHO') return '隠岐の島町'
   return translated
+}
+
+const getBusStopTownTabClass = (tab: BusStopTownTab): string => {
+  const badgeClass = getPortBadgeClass(getTownBadgeLabel(tab.labelKey))
+  const isSelected = tab.key === currentBusStopTownKey.value
+
+  return [
+    badgeClass,
+    isSelected
+      ? 'border-current ring-2 ring-inset shadow-sm'
+      : 'border-transparent ring-1 ring-inset hover:opacity-90'
+  ].join(' ')
 }
 
 const getPreferredBusStopTownKeyForPort = (port?: string): string | null => {
@@ -476,10 +577,21 @@ const getRouteDisplayName = (route: FavoriteRoute) => {
 }
 
 const getPreferredTransportTab = (): TransportTabKey => {
-  return getLocationType(props.modelValue) === 'STOP' ||
+  if (
+    getLocationType(props.modelValue) === 'AIRPORT' ||
+    getLocationType(props.preferredBusStopTownSource) === 'AIRPORT'
+  ) {
+    return 'AIR'
+  }
+
+  if (
+    getLocationType(props.modelValue) === 'STOP' ||
     getLocationType(props.preferredBusStopTownSource) === 'STOP'
-    ? 'BUS'
-    : 'FERRY'
+  ) {
+    return 'BUS'
+  }
+
+  return 'FERRY'
 }
 
 const open = () => {
@@ -495,6 +607,11 @@ const close = () => {
 
 const selectBusStopTown = (townKey: string) => {
   activeBusStopTownKey.value = townKey
+  activeBusStopRouteKey.value = null
+}
+
+const selectBusStopRoute = (routeKey: string | null) => {
+  activeBusStopRouteKey.value = routeKey
 }
 
 const selectPort = (port: string) => {
@@ -531,6 +648,7 @@ watch(isOpen, (newValue) => {
   if (newValue) {
     selectedTransportTab.value = getPreferredTransportTab()
     activeBusStopTownKey.value = getPreferredBusStopTownKey()
+    activeBusStopRouteKey.value = null
     document.body.style.overflow = 'hidden'
   } else {
     document.body.style.overflow = ''
@@ -540,6 +658,13 @@ watch(isOpen, (newValue) => {
 watch(busStopTownTabs, (tabs) => {
   if (!tabs.some(tab => tab.key === activeBusStopTownKey.value)) {
     activeBusStopTownKey.value = getPreferredBusStopTownKey()
+    activeBusStopRouteKey.value = null
+  }
+})
+
+watch(activeBusStopRouteFilters, (routeFilters) => {
+  if (activeBusStopRouteKey.value && !routeFilters.some(routeFilter => routeFilter.key === activeBusStopRouteKey.value)) {
+    activeBusStopRouteKey.value = null
   }
 })
 

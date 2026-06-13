@@ -5,9 +5,11 @@ import { ref } from "vue";
 import IndexPage from "@/pages/index.vue";
 
 const mockGtfsBusTimetable = vi.hoisted(() => ({
-  getLocationTypeForCode: vi.fn((value?: string) =>
-    typeof value === "string" && value.startsWith("BUS_") ? "STOP" : "PORT"
-  ),
+  getLocationTypeForCode: vi.fn((value?: string) => {
+    if (typeof value === "string" && value.startsWith("BUS_")) return "STOP";
+    if (typeof value === "string" && value.startsWith("AIRPORT_")) return "AIRPORT";
+    return "PORT";
+  }),
   loadBusTripsForRoute: vi.fn(),
 }));
 
@@ -500,7 +502,7 @@ describe("IndexPage (時刻表ページ)", () => {
   });
 
   describe("交通手段タブ", () => {
-    it("時刻表データ取得前でも船とバスのタブを表示する", async () => {
+    it("時刻表データ取得前でも船・バス・飛行機のタブを表示する", async () => {
       mockUseFerryData.timetableData.value = [];
       mockUseFerryData.filteredTimetable.value = [];
 
@@ -517,14 +519,16 @@ describe("IndexPage (時刻表ページ)", () => {
       expect(wrapper.findAll('[data-test="mode-filter-icon"]').map(icon => icon.attributes("data-name"))).toEqual([
         "mdi:ferry",
         "mdi:bus",
+        "mdi:airplane",
       ]);
       expect(tabs.map(tab => tab.text())).toEqual([
         "FERRY",
         "BUS",
+        "AIR",
       ]);
     });
 
-    it("船とバスを「すべて」なしの別タブで切り替える", async () => {
+    it("船・バス・飛行機を「すべて」なしの別タブで切り替える", async () => {
       mockUseFerryData.timetableData.value = [
         {
           tripId: 1,
@@ -589,6 +593,21 @@ describe("IndexPage (時刻表ページ)", () => {
           via: "五箇線",
           status: 0,
         },
+        {
+          tripId: 8000002,
+          startDate: "2024-01-01",
+          endDate: "2024-12-31",
+          name: "JAL_OKI_ITAMI",
+          mode: "AIR",
+          vehicleId: "JAL2332",
+          departure: "AIRPORT_OKI",
+          departureType: "AIRPORT",
+          departureTime: "15:05",
+          arrival: "AIRPORT_ITAMI",
+          arrivalType: "AIRPORT",
+          arrivalTime: "15:45",
+          status: 0,
+        },
       ] as any;
       mockUseFerryData.filteredTimetable.value = mockUseFerryData.timetableData.value as any;
 
@@ -599,6 +618,7 @@ describe("IndexPage (時刻表ページ)", () => {
       expect(tabs.map(tab => tab.text())).toEqual([
         "FERRY",
         "BUS",
+        "AIR",
       ]);
       expect(wrapper.text()).toContain("FERRY_OKI");
       expect(wrapper.text()).not.toContain("海士町路線バス（豊田線）");
@@ -616,6 +636,11 @@ describe("IndexPage (時刻表ページ)", () => {
       expect(wrapper.text()).not.toContain("CHIBU_VILLAGE_BUS");
       expect(wrapper.text()).not.toContain("OKI_ICHIBATA_BUS");
       expect(wrapper.find('[data-test="with-car-toggle"]').exists()).toBe(false);
+
+      await tabs[2]!.trigger("click");
+      expect(wrapper.text()).toContain("JAL_OKI_ITAMI");
+      expect(wrapper.text()).toContain("SEGMENT.FLIGHT: JAL2332");
+      expect(wrapper.text()).not.toContain("FERRY_OKI");
     });
 
     it("停留所間の時刻表ではbus-searchの直行バス便を表示する", async () => {
@@ -694,6 +719,11 @@ describe("IndexPage (時刻表ページ)", () => {
       await tabs[1]!.trigger("click");
 
       expect(form().props("allowedLocationType")).toBe("STOP");
+
+      expect(tabs[2]).toBeTruthy();
+      await tabs[2]!.trigger("click");
+
+      expect(form().props("allowedLocationType")).toBe("AIRPORT");
     });
   });
 

@@ -700,7 +700,11 @@ const getNextDepartureTime = (route: TransitRoute, segmentIndex: number): Date =
 }
 
 const formatSegmentMeta = (segment: TransitSegment) => {
+  const flightNumber = normalizeTransportMode(segment.mode) === 'AIR'
+    ? (segment.flightNumber || segment.vehicleId)
+    : ''
   const parts = [
+    flightNumber ? `${t('SEGMENT.FLIGHT')}: ${flightNumber}` : '',
     segment.platform ? `${t('SEGMENT.PLATFORM')}: ${segment.platform}` : '',
     segment.terminal ? `${t('SEGMENT.TERMINAL')}: ${segment.terminal}` : '',
     segment.gate ? `${t('SEGMENT.GATE')}: ${segment.gate}` : ''

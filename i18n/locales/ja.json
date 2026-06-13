@@ -59,6 +59,9 @@
   "SHIP": "船名",
   "TRANSPORT_NAME": "交通機関",
   "BUS_STOPS": "バス停",
+  "BUS_ROUTES": "路線",
+  "ALL_ROUTES": "すべて",
+  "AIRPORTS_TITLE": "空港",
   "BUS_FARE": "バス運賃",
   "BUS_FARE_NOTE": "各町村バスの普通運賃です。乗換案内では運行事業者に応じてこの運賃を使用します。",
   "BUS_FARE_TYPE": "区分",
@@ -71,6 +74,9 @@
   "OKINOSHIMA_TOWN_BUS": "隠岐の島町営バス",
   "ICHIBATA_BUS": "一畑バス",
   "ICHIBATA_BUS_CONNECTION": "一畑バス 隠岐汽船接続バス",
+  "JAL": "日本航空（JAL）",
+  "JAL_OKI_ITAMI": "JAL 大阪（伊丹）線",
+  "JAL_OKI_IZUMO": "JAL 出雲線",
   "WALK": "徒歩",
   "TRANSPORT_MODES": {
     "FERRY": "船",
@@ -94,6 +100,7 @@
     "PREPARING": "準備中"
   },
   "SEGMENT": {
+    "FLIGHT": "便名",
     "PLATFORM": "のりば",
     "TERMINAL": "ターミナル",
     "GATE": "ゲート"
@@ -113,6 +120,9 @@
   "HONDO": "七類(松江市)または境港(境港市)",
   "HONDO_SHICHIRUI": "七類(松江市)",
   "HONDO_SAKAIMINATO": "境港(境港市)",
+  "AIRPORT_OKI": "隠岐空港",
+  "AIRPORT_IZUMO": "出雲空港",
+  "AIRPORT_ITAMI": "大阪（伊丹）空港",
   "KURI": "来居(知夫村)",
   "BEPPU": "別府(西ノ島町)",
   "HISHIURA": "菱浦(海士町)",
@@ -617,7 +627,26 @@
       "carCarryNo": "不可",
       "carCarryUnknown": "不明",
       "cabin": "船室タイプ",
-      "cabinUnknown": "不明"
+      "cabinUnknown": "不明",
+      "route": "運行区間",
+      "servicePeriod": "掲載期間",
+      "stops": "停留所",
+      "airports": "空港",
+      "officialPage": "公式ページ",
+      "officialTimetable": "公式時刻表",
+      "officialPdfTimetable": "PDF時刻表",
+      "ichibataBusConnection": {
+        "route": "松江駅・七類港・境港",
+        "summary": "隠岐汽船の七類港・境港発着便に接続する本土側の連絡バスです。"
+      },
+      "jalOkiItami": {
+        "route": "隠岐空港・大阪（伊丹）空港",
+        "summary": "JALの隠岐空港と大阪（伊丹）空港を結ぶ航空便です。8月1日から8月28日は特別ダイヤで運航されます。"
+      },
+      "jalOkiIzumo": {
+        "route": "隠岐空港・出雲空港",
+        "summary": "JALの隠岐空港と出雲空港を結ぶ航空便です。"
+      }
     }
   },
   "admin": {

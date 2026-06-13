@@ -64,58 +64,92 @@
           </div>
         </section>
 
-        <section class="toolbar" aria-label="絞り込み">
-          <label class="search">
-            <span aria-hidden="true">⌕</span>
-            <input id="searchInput" type="search" placeholder="会社名・資料名・URL">
-          </label>
-          <div class="segmented" role="tablist" aria-label="資料種別">
-            <button class="segment active" data-filter-type="all" type="button">すべて</button>
-            <button class="segment" data-filter-type="timetable" type="button">時刻表</button>
-            <button class="segment" data-filter-type="fare" type="button">料金</button>
-            <button class="segment" data-filter-type="notice" type="button">お知らせ</button>
-            <button class="segment" data-filter-type="status" type="button">運航</button>
-            <button class="segment" data-filter-type="map" type="button">地図</button>
-            <button class="segment" data-filter-type="other" type="button">その他</button>
-          </div>
-          <div class="filter-block" aria-label="レビュー状態">
-            <span>レビュー</span>
-            <div class="segmented compact" role="tablist">
-              <button class="segment active" data-filter-review="all" type="button">すべて</button>
-              <button class="segment" data-filter-review="unreviewed" type="button">未レビュー</button>
-              <button class="segment" data-filter-review="unnecessary" type="button">不要</button>
-              <button class="segment" data-filter-review="required" type="button">必要</button>
-            </div>
-          </div>
-          <div id="lastFetched" class="last-fetched">未取得</div>
-        </section>
+        <nav class="main-tabs" aria-label="表示切り替え">
+          <button class="main-tab active" type="button" data-main-tab="documents" aria-controls="documentsTabPanel" aria-selected="true">
+            検出資料
+          </button>
+          <button class="main-tab" type="button" data-main-tab="gtfs" aria-controls="gtfsTabPanel" aria-selected="false">
+            GTFS管理
+          </button>
+        </nav>
 
         <div id="errorBanner" class="error-banner hidden" role="alert"></div>
 
-        <section class="content-grid">
-          <div class="source-panel">
-            <div class="section-header">
-              <h3>ソース</h3>
-              <span id="sourcePanelMeta"></span>
+        <div id="documentsTabPanel" class="tab-panel active" data-tab-panel="documents">
+          <section class="toolbar" aria-label="絞り込み">
+            <label class="search">
+              <span aria-hidden="true">⌕</span>
+              <input id="searchInput" type="search" placeholder="会社名・資料名・URL">
+            </label>
+            <div class="segmented" role="tablist" aria-label="資料種別">
+              <button class="segment active" data-filter-type="all" type="button">すべて</button>
+              <button class="segment" data-filter-type="timetable" type="button">時刻表</button>
+              <button class="segment" data-filter-type="fare" type="button">料金</button>
+              <button class="segment" data-filter-type="notice" type="button">お知らせ</button>
+              <button class="segment" data-filter-type="status" type="button">運航</button>
+              <button class="segment" data-filter-type="map" type="button">地図</button>
+              <button class="segment" data-filter-type="other" type="button">その他</button>
             </div>
-            <div id="sourceCards" class="source-cards"></div>
-          </div>
+            <div class="filter-block" aria-label="レビュー状態">
+              <span>レビュー</span>
+              <div class="segmented compact" role="tablist">
+                <button class="segment active" data-filter-review="all" type="button">すべて</button>
+                <button class="segment" data-filter-review="unreviewed" type="button">未レビュー</button>
+                <button class="segment" data-filter-review="unnecessary" type="button">不要</button>
+                <button class="segment" data-filter-review="required" type="button">必要</button>
+              </div>
+            </div>
+            <div id="lastFetched" class="last-fetched">未取得</div>
+          </section>
 
-          <aside class="feed-panel">
-            <div class="section-header">
-              <h3>お知らせ</h3>
-              <span id="noticeMeta"></span>
+          <section class="content-grid">
+            <div class="source-panel">
+              <div class="section-header">
+                <h3>ソース</h3>
+                <span id="sourcePanelMeta"></span>
+              </div>
+              <div id="sourceCards" class="source-cards"></div>
             </div>
-            <div id="noticeFeed" class="notice-feed"></div>
-            <div class="section-header log-header">
-              <h3>取得ログ</h3>
-              <span id="pageMeta"></span>
-            </div>
-            <div id="pageLog" class="page-log"></div>
-          </aside>
-        </section>
 
-        <section class="gtfs-panel">
+            <aside class="feed-panel">
+              <div class="section-header">
+                <h3>お知らせ</h3>
+                <span id="noticeMeta"></span>
+              </div>
+              <div id="noticeFeed" class="notice-feed"></div>
+              <div class="section-header log-header">
+                <h3>取得ログ</h3>
+                <span id="pageMeta"></span>
+              </div>
+              <div id="pageLog" class="page-log"></div>
+            </aside>
+          </section>
+
+          <section class="table-panel">
+            <div class="section-header">
+              <h3>検出資料</h3>
+              <span id="documentMeta"></span>
+            </div>
+            <div class="table-wrap">
+              <table>
+                <thead>
+                  <tr>
+                    <th>状態</th>
+                    <th>レビュー</th>
+                    <th>種別</th>
+                    <th>資料</th>
+                    <th>ソース</th>
+                    <th>日付</th>
+                    <th>取得元</th>
+                  </tr>
+                </thead>
+                <tbody id="documentRows"></tbody>
+              </table>
+            </div>
+          </section>
+        </div>
+
+        <section id="gtfsTabPanel" class="gtfs-panel tab-panel" data-tab-panel="gtfs">
           <div class="section-header">
             <div>
               <h3>GTFS管理</h3>
@@ -193,29 +227,6 @@
                 <tbody id="gtfsRouteRows"></tbody>
               </table>
             </div>
-          </div>
-        </section>
-
-        <section class="table-panel">
-          <div class="section-header">
-            <h3>検出資料</h3>
-            <span id="documentMeta"></span>
-          </div>
-          <div class="table-wrap">
-            <table>
-              <thead>
-                <tr>
-                  <th>状態</th>
-                  <th>レビュー</th>
-                  <th>種別</th>
-                  <th>資料</th>
-                  <th>ソース</th>
-                  <th>日付</th>
-                  <th>取得元</th>
-                </tr>
-              </thead>
-              <tbody id="documentRows"></tbody>
-            </table>
           </div>
         </section>
       </main>

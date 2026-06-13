@@ -14,7 +14,9 @@ import {
   isOkinoshimaBusStopCode,
   isTripActiveOnDate,
   loadBusRouteLabelsForStops,
+  loadBusStopRouteFiltersIndex,
   loadBusStopsIndex,
+  loadBusTransferCandidateTripsForRoute,
   loadIchibataBusConnectionTimetable,
   loadBusTripsForRoute,
   loadAmaBusTimetable,
@@ -110,6 +112,11 @@ describe('gtfsBusTimetable', () => {
     expect(getBusStopConnectedPortId(shichiruiPort)).toBe('HONDO_SHICHIRUI')
     expect(getBusStopPortBadgeLabel(sakaiminatoPort)).toBe('境港')
     expect(getBusStopConnectedPortId(sakaiminatoPort)).toBe('HONDO_SAKAIMINATO')
+  })
+
+  it('空港コードを空港として扱う', () => {
+    expect(getLocationTypeForCode('AIRPORT_OKI')).toBe('AIRPORT')
+    expect(getLocationTypeForCode('AIRPORT_ITAMI')).toBe('AIRPORT')
   })
 
   it('海士島線の枝番を表示用にまとめる', () => {
@@ -773,6 +780,159 @@ describe('gtfsBusTimetable', () => {
     })
   })
 
+  it('bus-searchデータから町村別の路線フィルタを生成する', async () => {
+    const emptyFeed = (feedId: string, operatorId: string, townLabelKey: string | null, tripName: string) => ({
+      version: 1,
+      feedId,
+      generatedAt: '2026-06-09T00:00:00.000Z',
+      operatorId,
+      townLabelKey,
+      tripName,
+      fare: 0,
+      routes: {},
+      stops: [],
+      services: {},
+      trips: [],
+      departuresByStop: {}
+    })
+    const feeds: Record<string, unknown> = {
+      'ama.json': emptyFeed('ama', 'AMA_TOWN', 'AMA_CHO', 'AMA_TOWN_BUS'),
+      'nishinoshima.json': emptyFeed('nishinoshima', 'NISHINOSHIMA_TOWN', 'NISHINOSHIMA_CHO', 'NISHINOSHIMA_TOWN_BUS'),
+      'chibu.json': emptyFeed('chibu', 'CHIBU_VILLAGE', 'CHIBU_MURA', 'CHIBU_VILLAGE_BUS'),
+      'okinoshima.json': {
+        version: 1,
+        feedId: 'okinoshima',
+        generatedAt: '2026-06-09T00:00:00.000Z',
+        operatorId: 'OKINOSHIMA',
+        townLabelKey: 'OKINOSHIMA_CHO',
+        tripName: 'OKINOSHIMA_BUS',
+        fare: 500,
+        routes: {
+          OKI_ICHIBATA_GOKA: {
+            agencyId: 'OKI_ICHIBATA',
+            shortName: '五箇線',
+            longName: '隠岐一畑交通 五箇線'
+          },
+          OKI_ICHIBATA_NAKAMURA: {
+            agencyId: 'OKI_ICHIBATA',
+            shortName: '中村線',
+            longName: '隠岐一畑交通 中村線'
+          }
+        },
+        stops: [],
+        services: {},
+        trips: [
+          {
+            tripId: 'goka_1',
+            routeId: 'OKI_ICHIBATA_GOKA',
+            serviceId: 'daily',
+            headsign: '福浦',
+            shortName: '五箇線',
+            stops: [
+              ['BUS_OKINOSHIMA_port_mae', '08:29', '08:29'],
+              ['BUS_OKINOSHIMA_goka_branch', '09:14', '09:14']
+            ]
+          },
+          {
+            tripId: 'nakamura_1',
+            routeId: 'OKI_ICHIBATA_NAKAMURA',
+            serviceId: 'daily',
+            headsign: '伊後',
+            shortName: '中村線',
+            stops: [
+              ['BUS_OKINOSHIMA_port_mae', '10:00', '10:00'],
+              ['BUS_OKINOSHIMA_igo', '10:45', '10:45']
+            ]
+          }
+        ],
+        departuresByStop: {}
+      },
+      'ichibata_bus_connection.json': {
+        version: 1,
+        feedId: 'ichibata_bus_connection',
+        generatedAt: '2026-06-09T00:00:00.000Z',
+        operatorId: 'ICHIBATA_BUS',
+        townLabelKey: 'MAINLAND',
+        tripName: 'ICHIBATA_BUS_CONNECTION',
+        fare: 1200,
+        routes: {
+          route_ichibata_bus_connection_https_bus_ichibata_8927b51c: {
+            agencyId: 'agency_ichibata_bus_connection_a97e48aa',
+            shortName: '松江・七類・境港間時刻表',
+            longName: '一畑バス・隠岐汽船接続バス'
+          }
+        },
+        stops: [],
+        services: {},
+        trips: [
+          {
+            tripId: 'ICHIBATA_SHICHIRUI_0750',
+            routeId: 'route_ichibata_bus_connection_https_bus_ichibata_8927b51c',
+            serviceId: 'service_shichirui_daily',
+            headsign: '七類港',
+            shortName: '松江⇔七類港',
+            stops: [
+              ['BUS_ICHIBATA_CONNECTION_matsue_station', '07:50', '07:50'],
+              ['BUS_ICHIBATA_CONNECTION_shichirui_port', '08:30', '08:30']
+            ]
+          },
+          {
+            tripId: 'ICHIBATA_SAKAIMINATO_1315',
+            routeId: 'route_ichibata_bus_connection_https_bus_ichibata_8927b51c',
+            serviceId: 'service_sakaiminato_daily',
+            headsign: '境港',
+            shortName: '松江⇔境港',
+            stops: [
+              ['BUS_ICHIBATA_CONNECTION_matsue_station', '13:15', '13:15'],
+              ['BUS_ICHIBATA_CONNECTION_sakaiminato_port', '13:55', '13:55']
+            ]
+          }
+        ],
+        departuresByStop: {}
+      }
+    }
+    const fetchMock = vi.fn((input: string | URL | Request) => {
+      const fileName = String(input).split('/').pop() ?? ''
+      return Promise.resolve({
+        ok: true,
+        status: 200,
+        json: () => Promise.resolve(feeds[fileName])
+      } as Response)
+    })
+    vi.stubGlobal('fetch', fetchMock)
+
+    const result = await loadBusStopRouteFiltersIndex()
+
+    expect(fetchMock).toHaveBeenCalledWith('/data/bus-search/okinoshima.json')
+    expect(fetchMock).toHaveBeenCalledWith('/data/bus-search/ichibata_bus_connection.json')
+    expect(result).toEqual(expect.arrayContaining([
+      expect.objectContaining({
+        label: '五箇線',
+        operatorId: 'OKI_ICHIBATA',
+        townLabelKey: 'OKINOSHIMA_CHO',
+        stopCodes: ['BUS_OKINOSHIMA_port_mae', 'BUS_OKINOSHIMA_goka_branch']
+      }),
+      expect.objectContaining({
+        label: '中村線',
+        operatorId: 'OKI_ICHIBATA',
+        townLabelKey: 'OKINOSHIMA_CHO',
+        stopCodes: ['BUS_OKINOSHIMA_port_mae', 'BUS_OKINOSHIMA_igo']
+      }),
+      expect.objectContaining({
+        label: '松江⇔七類港',
+        operatorId: 'ICHIBATA_BUS',
+        townLabelKey: 'MAINLAND',
+        stopCodes: ['BUS_ICHIBATA_CONNECTION_matsue_station', 'BUS_ICHIBATA_CONNECTION_shichirui_port']
+      }),
+      expect.objectContaining({
+        label: '松江⇔境港',
+        operatorId: 'ICHIBATA_BUS',
+        townLabelKey: 'MAINLAND',
+        stopCodes: ['BUS_ICHIBATA_CONNECTION_matsue_station', 'BUS_ICHIBATA_CONNECTION_sakaiminato_port']
+      })
+    ]))
+  })
+
   it('bus-searchデータから指定区間の候補だけを生成する', async () => {
     const fetchMock = vi.fn(() => Promise.resolve({
       ok: true,
@@ -931,6 +1091,102 @@ describe('gtfsBusTimetable', () => {
       arrivalTime: '08:30',
       price: 1200,
       via: '松江⇔七類港'
+    })
+  })
+
+  it('bus-searchデータから同一フィード内のバス乗換候補を生成する', async () => {
+    const fetchMock = vi.fn(() => Promise.resolve({
+      ok: true,
+      status: 200,
+      json: () => Promise.resolve({
+        version: 1,
+        feedId: 'nishinoshima',
+        generatedAt: '2026-06-09T00:00:00.000Z',
+        operatorId: 'NISHINOSHIMA_TOWN',
+        townLabelKey: 'NISHINOSHIMA_CHO',
+        tripName: 'NISHINOSHIMA_TOWN_BUS',
+        fare: 200,
+        routes: {
+          NISHINOSHIMA_MAIN: {
+            agencyId: 'NISHINOSHIMA_TOWN',
+            shortName: '町営バス',
+            longName: '西ノ島町営バス'
+          },
+          NISHINOSHIMA_HATO: {
+            agencyId: 'NISHINOSHIMA_TOWN',
+            shortName: '波止線',
+            longName: '西ノ島町営バス 波止線'
+          }
+        },
+        stops: [
+          ['BUS_NISHINOSHIMA_nishinoshima_005', '島前病院', 36.106629, 133.036793],
+          ['BUS_NISHINOSHIMA_nishinoshima_020', '浦郷', 36.09273782, 132.99520533],
+          ['BUS_NISHINOSHIMA_nishinoshima_026', '波止', 36.07446789, 133.01485121]
+        ],
+        services: {
+          daily: {
+            startDate: '2026-01-01',
+            endDate: '2026-12-31',
+            activeDays: [0, 1, 2, 3, 4, 5, 6],
+            addedDates: [],
+            removedDates: []
+          }
+        },
+        trips: [
+          {
+            tripId: 'B04_MAIN_0837',
+            routeId: 'NISHINOSHIMA_MAIN',
+            serviceId: 'daily',
+            headsign: '赤ノ江',
+            shortName: '2便',
+            stops: [
+              ['BUS_NISHINOSHIMA_nishinoshima_005', '08:37', '08:37'],
+              ['BUS_NISHINOSHIMA_nishinoshima_020', '09:01', '09:01']
+            ]
+          },
+          {
+            tripId: 'H02_HATO_1130',
+            routeId: 'NISHINOSHIMA_HATO',
+            serviceId: 'daily',
+            headsign: '島前病院',
+            shortName: '波止線 2便',
+            stops: [
+              ['BUS_NISHINOSHIMA_nishinoshima_020', '11:34', '11:34'],
+              ['BUS_NISHINOSHIMA_nishinoshima_026', '11:46', '11:46']
+            ]
+          }
+        ],
+        departuresByStop: {
+          BUS_NISHINOSHIMA_nishinoshima_005: [[0, 0]],
+          BUS_NISHINOSHIMA_nishinoshima_020: [[1, 0]]
+        }
+      })
+    } as Response))
+    vi.stubGlobal('fetch', fetchMock)
+
+    const result = await loadBusTransferCandidateTripsForRoute(
+      'BUS_NISHINOSHIMA_nishinoshima_005',
+      'BUS_NISHINOSHIMA_nishinoshima_026',
+      '2026-06-09'
+    )
+
+    expect(fetchMock).toHaveBeenCalledWith('/data/bus-search/nishinoshima.json')
+    expect(result).toHaveLength(2)
+    expect(result[0]).toMatchObject({
+      name: 'NISHINOSHIMA_TOWN_BUS',
+      mode: 'BUS',
+      departure: 'BUS_NISHINOSHIMA_nishinoshima_005',
+      arrival: 'BUS_NISHINOSHIMA_nishinoshima_020',
+      departureTime: '08:37',
+      arrivalTime: '09:01',
+      price: 200
+    })
+    expect(result[1]).toMatchObject({
+      departure: 'BUS_NISHINOSHIMA_nishinoshima_020',
+      arrival: 'BUS_NISHINOSHIMA_nishinoshima_026',
+      departureTime: '11:34',
+      arrivalTime: '11:46',
+      via: '波止線'
     })
   })
 
