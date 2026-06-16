@@ -101,7 +101,7 @@
     "nuxt": "^4.4.8",
     "papaparse": "^5.5.3",
     "pinia": "^3.0.4",
-    "vue": "^3.5.34",
+    "vue": "3.5.35",
     "vue-router": "^4.6.4",
     "vuedraggable": "^4.1.0"
   },
@@ -130,7 +130,7 @@
     "unstorage": "^1.17.5",
     "vite": "^7.3.5",
     "vitest": "^4.1.7",
-    "vue-tsc": "^3.3.3"
+    "vue-tsc": "3.3.3"
   },
   "optionalDependencies": {
     "@oxc-parser/binding-darwin-arm64": "0.102.0",
@@ -148,7 +148,7 @@
     "nanotar": "^0.3.0",
     "google-gax": "^5.0.6",
     "http-proxy-agent": "^9.0.0",
-    "protobufjs": "^7.5.5",
+    "protobufjs": "^7.6.4",
     "qs": "^6.14.2",
     "fast-xml-parser": "^5.7.1",
     "retry-request": "^8.0.2",
