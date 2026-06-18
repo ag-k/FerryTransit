@@ -1,40 +1,41 @@
 import type { LocationType, Trip } from '@/types'
+import { buildStorageObjectDownloadUrl } from '@/utils/firebaseStorageUrl'
 
-const AMA_BUS_BASE_PATH = '/data/gtfs/bus/ama'
+const AMA_BUS_BASE_PATH = 'data/gtfs/bus/ama'
 const AMA_BUS_STOP_PREFIX = 'BUS_AMA_'
 const AMA_BUS_OPERATOR_ID = 'AMA_TOWN'
 const AMA_BUS_NAME = 'AMA_TOWN_BUS'
 const AMA_BUS_TRIP_ID_BASE = 3_000_000
 const AMA_BUS_FARE = 200
 
-const NISHINOSHIMA_BUS_BASE_PATH = '/data/gtfs/bus/nishinoshima'
+const NISHINOSHIMA_BUS_BASE_PATH = 'data/gtfs/bus/nishinoshima'
 const NISHINOSHIMA_BUS_STOP_PREFIX = 'BUS_NISHINOSHIMA_'
 const NISHINOSHIMA_BUS_OPERATOR_ID = 'NISHINOSHIMA_TOWN'
 const NISHINOSHIMA_BUS_NAME = 'NISHINOSHIMA_TOWN_BUS'
 const NISHINOSHIMA_BUS_TRIP_ID_BASE = 4_000_000
 const NISHINOSHIMA_BUS_FARE = 200
 
-const CHIBU_BUS_BASE_PATH = '/data/gtfs/bus/chibu'
+const CHIBU_BUS_BASE_PATH = 'data/gtfs/bus/chibu'
 const CHIBU_BUS_STOP_PREFIX = 'BUS_CHIBU_'
 const CHIBU_BUS_OPERATOR_ID = 'CHIBU_VILLAGE'
 const CHIBU_BUS_NAME = 'CHIBU_VILLAGE_BUS'
 const CHIBU_BUS_TRIP_ID_BASE = 5_000_000
 const CHIBU_BUS_FARE = 100
 
-const OKINOSHIMA_BUS_BASE_PATH = '/data/gtfs/bus/okinoshima'
+const OKINOSHIMA_BUS_BASE_PATH = 'data/gtfs/bus/okinoshima'
 const OKINOSHIMA_BUS_STOP_PREFIX = 'BUS_OKINOSHIMA_'
 const OKINOSHIMA_BUS_OPERATOR_ID = 'OKINOSHIMA'
 const OKINOSHIMA_BUS_NAME = 'OKINOSHIMA_BUS'
 const OKINOSHIMA_BUS_TRIP_ID_BASE = 6_000_000
 const OKINOSHIMA_BUS_FARE = 500
 
-const ICHIBATA_BUS_CONNECTION_BASE_PATH = '/data/gtfs/bus/ichibata_bus_connection'
+const ICHIBATA_BUS_CONNECTION_BASE_PATH = 'data/gtfs/bus/ichibata_bus_connection'
 const ICHIBATA_BUS_CONNECTION_STOP_PREFIX = 'BUS_ICHIBATA_CONNECTION_'
 const ICHIBATA_BUS_CONNECTION_OPERATOR_ID = 'ICHIBATA_BUS'
 const ICHIBATA_BUS_CONNECTION_NAME = 'ICHIBATA_BUS_CONNECTION'
 const ICHIBATA_BUS_CONNECTION_TRIP_ID_BASE = 7_000_000
 const ICHIBATA_BUS_CONNECTION_FARE = 1200
-const BUS_SEARCH_BASE_PATH = '/data/bus-search'
+const BUS_SEARCH_BASE_PATH = 'data/bus-search'
 
 type GtfsRoute = {
   routeId: string
@@ -964,20 +965,59 @@ const toBusStopCode = (config: BusFeedConfig, stopId: string): string => {
   return `${config.stopPrefix}${stopId.replace(/[^a-zA-Z0-9]/g, '_')}`
 }
 
-const fetchJson = async <T>(config: BusFeedConfig, fileName: string): Promise<T> => {
-  const response = await fetch(`${config.basePath}/${fileName}`)
-  if (!response.ok) {
-    throw new Error(`Failed to load ${config.id} bus GTFS data: ${fileName} (${response.status})`)
-  }
-  return await response.json() as T
+const fetchJson = <T>(config: BusFeedConfig, fileName: string): Promise<T> => {
+  return fetchJsonFromStoragePath<T>(
+    `${config.basePath}/${fileName}`,
+    `Failed to load ${config.id} bus GTFS data: ${fileName}`
+  )
 }
 
-const fetchJsonFromPath = async <T>(path: string): Promise<T> => {
-  const response = await fetch(path)
-  if (!response.ok) {
-    throw new Error(`Failed to load bus search data: ${path} (${response.status})`)
+const fetchJsonFromPath = <T>(path: string): Promise<T> => {
+  return fetchJsonFromStoragePath<T>(path, `Failed to load bus search data: ${path}`)
+}
+
+const fetchJsonFromStoragePath = async <T>(path: string, errorMessage: string): Promise<T> => {
+  const urls = buildDataUrls(path)
+  let lastError: unknown
+
+  for (const url of urls) {
+    try {
+      const response = await fetch(url)
+      if (!response.ok) {
+        throw new Error(`${errorMessage} (${response.status})`)
+      }
+      return await response.json() as T
+    } catch (error) {
+      lastError = error
+    }
   }
-  return await response.json() as T
+
+  if (lastError instanceof Error) {
+    throw lastError
+  }
+
+  throw new Error(errorMessage)
+}
+
+const buildDataUrls = (path: string): string[] => {
+  const normalizedPath = path.replace(/^\/+/, '')
+  const localPath = `/${normalizedPath}`
+  const firebase = getFirebasePublicConfig()
+
+  if (!firebase?.storageBucket) {
+    return [localPath]
+  }
+
+  const storageUrl = buildStorageObjectDownloadUrl(firebase, normalizedPath)
+  return storageUrl === localPath ? [localPath] : [storageUrl, localPath]
+}
+
+const getFirebasePublicConfig = () => {
+  try {
+    return useRuntimeConfig().public.firebase
+  } catch {
+    return null
+  }
 }
 
 const isBusServiceActiveOnDate = (service: BusSearchService, dateYmd: string): boolean => {

@@ -18,7 +18,7 @@ import {
   loadBusStopRouteFiltersIndex,
   loadBusStopsIndex,
 } from "@/utils/gtfsBusTimetable";
-import { AIRPORT_LABELS, AIRPORTS, AIR_TIMETABLE } from "@/data/air";
+import { AIRPORT_LABELS, AIRPORTS } from "@/data/air";
 
 // Port and Ship interfaces
 interface Port {
@@ -131,7 +131,19 @@ const isNativeClientPlatform = (): boolean => {
 
 const parseOptionalInteger = (value: unknown): number | undefined => {
   const parsed = Number(value);
-  return Number.isFinite(parsed) ? parsed : undefined;
+  if (Number.isFinite(parsed)) return parsed;
+
+  if (typeof value !== "string") return undefined;
+
+  const trimmed = value.trim();
+  if (!trimmed) return undefined;
+
+  let hash = 0;
+  for (let i = 0; i < trimmed.length; i++) {
+    hash = ((hash << 5) - hash + trimmed.charCodeAt(i)) | 0;
+  }
+
+  return 900_000_000 + Math.abs(hash % 1_000_000_000);
 };
 
 const parseStatus = (value: unknown): number => {
@@ -166,22 +178,6 @@ const normalizeTimetableTrip = (trip: any): Trip => {
     price: parseOptionalInteger(trip.price),
     via: trip.via,
   };
-};
-
-const withStaticTimetableTrips = (trips: Trip[]): Trip[] => {
-  const byTripId = new Map<number, Trip>();
-
-  for (const trip of trips) {
-    byTripId.set(trip.tripId, trip);
-  }
-
-  for (const trip of AIR_TIMETABLE) {
-    if (!byTripId.has(trip.tripId)) {
-      byTripId.set(trip.tripId, trip);
-    }
-  }
-
-  return Array.from(byTripId.values());
 };
 
 export const useFerryStore = defineStore("ferry", () => {
@@ -667,9 +663,7 @@ export const useFerryStore = defineStore("ferry", () => {
       }
 
       // Map API response fields to expected format
-      const ferryTrips = data.map(normalizeTimetableTrip);
-
-      timetableData.value = withStaticTimetableTrips(ferryTrips);
+      timetableData.value = data.map(normalizeTimetableTrip);
 
       lastFetchTime.value = new Date();
 
@@ -701,8 +695,7 @@ export const useFerryStore = defineStore("ferry", () => {
           if (cached) {
             const data = JSON.parse(cached) as any[];
             // Map cached data to expected format
-            const ferryTrips = data.map(normalizeTimetableTrip);
-            timetableData.value = withStaticTimetableTrips(ferryTrips);
+            timetableData.value = data.map(normalizeTimetableTrip);
             error.value = "OFFLINE_TIMETABLE_ERROR";
             loadedFallbackTimetable = true;
           }

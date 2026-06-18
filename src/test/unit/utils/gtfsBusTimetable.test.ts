@@ -36,6 +36,15 @@ import {
 } from '@/utils/gtfsBusTimetable'
 import type { Trip } from '@/types'
 
+const storageDataUrl = (path: string): string => {
+  return `https://firebasestorage.googleapis.com/v0/b/test-bucket/o/${encodeURIComponent(path)}?alt=media`
+}
+
+const fixtureFileName = (input: string | URL | Request): string => {
+  const decoded = decodeURIComponent(String(input)).split('?')[0] ?? ''
+  return decoded.split('/').pop() ?? ''
+}
+
 describe('gtfsBusTimetable', () => {
   beforeEach(() => {
     vi.restoreAllMocks()
@@ -231,7 +240,7 @@ describe('gtfsBusTimetable', () => {
     }
 
     const fetchMock = vi.fn((input: string | URL | Request) => {
-      const fileName = String(input).split('/').pop() ?? ''
+      const fileName = fixtureFileName(input)
       return Promise.resolve({
         ok: true,
         status: 200,
@@ -242,7 +251,7 @@ describe('gtfsBusTimetable', () => {
 
     const result = await loadAmaBusTimetable()
 
-    expect(fetchMock).toHaveBeenCalledWith('/data/gtfs/bus/ama/routes.json')
+    expect(fetchMock).toHaveBeenCalledWith(storageDataUrl('data/gtfs/bus/ama/routes.json'))
     expect(result.stopCodes).toEqual(['BUS_AMA_100_01', 'BUS_AMA_100_02', 'BUS_AMA_100_03'])
     expect(result.locationLabels.BUS_AMA_100_02).toBe('隠岐神社')
     expect(result.stopLocations.BUS_AMA_100_02).toMatchObject({
@@ -308,7 +317,7 @@ describe('gtfsBusTimetable', () => {
     }
 
     const fetchMock = vi.fn((input: string | URL | Request) => {
-      const fileName = String(input).split('/').pop() ?? ''
+      const fileName = fixtureFileName(input)
       return Promise.resolve({
         ok: true,
         status: 200,
@@ -319,7 +328,7 @@ describe('gtfsBusTimetable', () => {
 
     const result = await loadNishinoshimaBusTimetable()
 
-    expect(fetchMock).toHaveBeenCalledWith('/data/gtfs/bus/nishinoshima/routes.json')
+    expect(fetchMock).toHaveBeenCalledWith(storageDataUrl('data/gtfs/bus/nishinoshima/routes.json'))
     expect(result.stopCodes).toEqual([
       'BUS_NISHINOSHIMA_nishinoshima_001',
       'BUS_NISHINOSHIMA_nishinoshima_007'
@@ -385,7 +394,7 @@ describe('gtfsBusTimetable', () => {
     }
 
     const fetchMock = vi.fn((input: string | URL | Request) => {
-      const fileName = String(input).split('/').pop() ?? ''
+      const fileName = fixtureFileName(input)
       return Promise.resolve({
         ok: true,
         status: 200,
@@ -396,7 +405,7 @@ describe('gtfsBusTimetable', () => {
 
     const result = await loadChibuBusTimetable()
 
-    expect(fetchMock).toHaveBeenCalledWith('/data/gtfs/bus/chibu/routes.json')
+    expect(fetchMock).toHaveBeenCalledWith(storageDataUrl('data/gtfs/bus/chibu/routes.json'))
     expect(result.stopCodes).toEqual(['BUS_CHIBU_kuri_naikosen', 'BUS_CHIBU_nibu_bus'])
     expect(result.stopLocations.BUS_CHIBU_kuri_naikosen).toMatchObject({
       id: 'BUS_CHIBU_kuri_naikosen',
@@ -459,7 +468,7 @@ describe('gtfsBusTimetable', () => {
     }
 
     vi.stubGlobal('fetch', vi.fn((input: string | URL | Request) => {
-      const fileName = String(input).split('/').pop() ?? ''
+      const fileName = fixtureFileName(input)
       return Promise.resolve({
         ok: true,
         status: 200,
@@ -590,7 +599,7 @@ describe('gtfsBusTimetable', () => {
     }
 
     vi.stubGlobal('fetch', vi.fn((input: string | URL | Request) => {
-      const fileName = String(input).split('/').pop() ?? ''
+      const fileName = fixtureFileName(input)
       return Promise.resolve({
         ok: true,
         status: 200,
@@ -667,7 +676,7 @@ describe('gtfsBusTimetable', () => {
     }
 
     vi.stubGlobal('fetch', vi.fn((input: string | URL | Request) => {
-      const fileName = String(input).split('/').pop() ?? ''
+      const fileName = fixtureFileName(input)
       return Promise.resolve({
         ok: true,
         status: 200,
@@ -717,7 +726,7 @@ describe('gtfsBusTimetable', () => {
     }
 
     vi.stubGlobal('fetch', vi.fn((input: string | URL | Request) => {
-      const fileName = String(input).split('/').pop() ?? ''
+      const fileName = fixtureFileName(input)
       return Promise.resolve({
         ok: true,
         status: 200,
@@ -759,7 +768,7 @@ describe('gtfsBusTimetable', () => {
 
     const result = await loadBusStopsIndex()
 
-    expect(fetchMock).toHaveBeenCalledWith('/data/bus-search/stops.json')
+    expect(fetchMock).toHaveBeenCalledWith(storageDataUrl('data/bus-search/stops.json'))
     expect(result.stopCodes).toEqual([
       'BUS_AMA_100_01',
       'BUS_CHIBU_nibu_bus',
@@ -892,7 +901,7 @@ describe('gtfsBusTimetable', () => {
       }
     }
     const fetchMock = vi.fn((input: string | URL | Request) => {
-      const fileName = String(input).split('/').pop() ?? ''
+      const fileName = fixtureFileName(input)
       return Promise.resolve({
         ok: true,
         status: 200,
@@ -903,8 +912,8 @@ describe('gtfsBusTimetable', () => {
 
     const result = await loadBusStopRouteFiltersIndex()
 
-    expect(fetchMock).toHaveBeenCalledWith('/data/bus-search/okinoshima.json')
-    expect(fetchMock).toHaveBeenCalledWith('/data/bus-search/ichibata_bus_connection.json')
+    expect(fetchMock).toHaveBeenCalledWith(storageDataUrl('data/bus-search/okinoshima.json'))
+    expect(fetchMock).toHaveBeenCalledWith(storageDataUrl('data/bus-search/ichibata_bus_connection.json'))
     expect(result).toEqual(expect.arrayContaining([
       expect.objectContaining({
         label: '五箇線',
@@ -994,7 +1003,7 @@ describe('gtfsBusTimetable', () => {
       '2026-01-12'
     )
 
-    expect(fetchMock).toHaveBeenCalledWith('/data/bus-search/ama.json')
+    expect(fetchMock).toHaveBeenCalledWith(storageDataUrl('data/bus-search/ama.json'))
     expect(result).toHaveLength(1)
     expect(result[0]).toMatchObject({
       startDate: '2026-01-01',
@@ -1077,7 +1086,7 @@ describe('gtfsBusTimetable', () => {
       '2026-06-01'
     )
 
-    expect(fetchMock).toHaveBeenCalledWith('/data/bus-search/ichibata_bus_connection.json')
+    expect(fetchMock).toHaveBeenCalledWith(storageDataUrl('data/bus-search/ichibata_bus_connection.json'))
     expect(result).toHaveLength(1)
     expect(result[0]).toMatchObject({
       startDate: '2026-04-01',
@@ -1170,7 +1179,7 @@ describe('gtfsBusTimetable', () => {
       '2026-06-09'
     )
 
-    expect(fetchMock).toHaveBeenCalledWith('/data/bus-search/nishinoshima.json')
+    expect(fetchMock).toHaveBeenCalledWith(storageDataUrl('data/bus-search/nishinoshima.json'))
     expect(result).toHaveLength(2)
     expect(result[0]).toMatchObject({
       name: 'NISHINOSHIMA_TOWN_BUS',
@@ -1376,7 +1385,7 @@ describe('gtfsBusTimetable', () => {
 
     const result = await loadBusRouteLabelsForStops('BUS_AMA_100_01', 'BUS_AMA_126_01')
 
-    expect(fetchMock).toHaveBeenCalledWith('/data/bus-search/ama.json')
+    expect(fetchMock).toHaveBeenCalledWith(storageDataUrl('data/bus-search/ama.json'))
     expect(result).toEqual([
       {
         operatorId: 'AMA_TOWN',

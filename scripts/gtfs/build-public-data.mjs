@@ -5,7 +5,9 @@ import { join } from 'path'
 import Papa from 'papaparse'
 
 const ROOT = process.cwd()
-const BUS_SEARCH_TARGET_DIR = join(ROOT, 'src', 'public', 'data', 'bus-search')
+const PUBLIC_DATA_TARGET_ROOT = join(ROOT, 'gtfs', 'public-data', 'data')
+const GTFS_TARGET_ROOT = join(PUBLIC_DATA_TARGET_ROOT, 'gtfs')
+const BUS_SEARCH_TARGET_DIR = join(PUBLIC_DATA_TARGET_ROOT, 'bus-search')
 
 const BUS_FEED_CONFIGS = {
   ama: {
@@ -150,7 +152,7 @@ function buildCompactServices(calendar, calendarDates) {
 
 function buildPublicData(mode, id) {
   const gtfsDir = join(ROOT, 'gtfs', 'current', mode, id)
-  const targetDir = join(ROOT, 'src', 'public', 'data', 'gtfs', mode, id)
+  const targetDir = join(GTFS_TARGET_ROOT, mode, id)
 
   if (!existsSync(gtfsDir)) {
     throw new Error(`GTFS ディレクトリが見つかりません: ${gtfsDir}`)

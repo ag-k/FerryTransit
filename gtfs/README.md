@@ -12,15 +12,16 @@ gtfs/
   reports/                  # 検証結果や差分レポート
 ```
 
-アプリ配信用の JSON は `src/public/data/gtfs/` に生成します。`raw/` と `current/` は GTFS 原本、`src/public/data/gtfs/` は派生データとして扱います。
+アプリ配信用の JSON は `gtfs/public-data/data/` に生成し、Firebase Storage の同じオブジェクトパス（例: `data/gtfs/bus/ama/routes.json`, `data/bus-search/ama.json`）へアップロードします。`raw/` と `current/` は GTFS 原本、`gtfs/public-data/` は外部公開用の派生データとして扱います。
 
 ## 更新手順
 
 1. 最新 GTFS を取得して `gtfs/raw/{mode}/{id}/{YYYY-MM-DD}/` に展開する
 2. 内容を確認し、問題なければ `gtfs/current/{mode}/{id}/` を更新する
 3. `npm run gtfs:validate -- bus ama` で GTFS の基本整合性を確認する
-4. `npm run gtfs:build -- bus ama` で `src/public/data/gtfs/` を更新する
-5. アプリ側の表示・検索に関係するテストを実行する
+4. `npm run gtfs:build -- bus ama` で `gtfs/public-data/data/` を更新する
+5. `npm run gtfs:upload` で Firebase Storage の `data/...` へアップロードする（確認のみなら `npm run gtfs:upload -- --dry-run`）
+6. アプリ側の表示・検索に関係するテストを実行する
 
 ## 現在の採用データ
 

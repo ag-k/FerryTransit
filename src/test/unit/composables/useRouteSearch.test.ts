@@ -5,6 +5,10 @@ import { useFerryStore } from "@/stores/ferry";
 import { mockTrips } from "@/test/mocks/mockData";
 import { clearBusSearchFeedCacheForTests } from "@/utils/gtfsBusTimetable";
 
+const storageDataUrl = (path: string): string => {
+  return `https://firebasestorage.googleapis.com/v0/b/test-bucket/o/${encodeURIComponent(path)}?alt=media`;
+};
+
 // Mock useFerryData
 const mockGetTripStatus = vi.fn(() => 0);
 vi.mock("@/composables/useFerryData", () => ({
@@ -368,7 +372,7 @@ describe("useRouteSearch", () => {
       );
 
       expect(fetchMock).toHaveBeenCalledTimes(1);
-      expect(fetchMock).toHaveBeenCalledWith("/data/bus-search/ama.json");
+      expect(fetchMock).toHaveBeenCalledWith(storageDataUrl("data/bus-search/ama.json"));
       expect(store.timetableData.some((trip) => trip.mode === "BUS")).toBe(false);
       expect(results).toHaveLength(1);
       expect(results[0]?.segments[0]).toMatchObject({
