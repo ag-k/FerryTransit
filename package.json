@@ -138,6 +138,7 @@
   },
   "overrides": {
     "@google-cloud/storage": "^7.19.0",
+    "esbuild": "^0.28.1",
     "@isaacs/brace-expansion": "^5.0.1",
     "@xmldom/xmldom": "^0.8.13",
     "@tootallnate/once": "^3.0.1",
