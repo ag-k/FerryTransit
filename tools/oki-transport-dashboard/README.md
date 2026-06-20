@@ -14,6 +14,8 @@ npm --prefix tools/oki-transport-dashboard start
 
 UI の「最新取得」でライブ収集します。「保存して取得」は `tools/oki-transport-dashboard/data/snapshots/latest.json` と日時付き JSON を更新します。「PDF等も保存」は検出した PDF/画像資料を `tools/oki-transport-dashboard/data/downloads/` に保存します。
 
+ダッシュボード起動中は、保存済みスナップショットが24時間以上古い場合に1日1回の自動更新を行い、`latest.json` を更新します。無効化する場合は `OKI_DASHBOARD_AUTO_REFRESH=0`、間隔を変える場合は `OKI_DASHBOARD_REFRESH_INTERVAL_HOURS=12` のように指定します。自動更新でも資料ファイルを保存する場合は `OKI_DASHBOARD_REFRESH_DOWNLOAD=1` を指定します。
+
 資料リンクは PDF/Excel/画像などのファイルだけでなく、HTML 本文に時刻表・運賃表などの表が掲載されているページも `HTML` 資料として検出します。
 
 検出資料のレビュー状態は「未レビュー / 不要 / 必要」の3種類です。状態は資料 URL をキーにして `tools/oki-transport-dashboard/data/reviews.json` にローカル保存され、次回起動後も維持されます。

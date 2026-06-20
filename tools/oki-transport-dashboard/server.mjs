@@ -3,6 +3,7 @@ import { stat } from 'node:fs/promises'
 import { extname, join, normalize } from 'node:path'
 import { fileURLToPath } from 'node:url'
 import http from 'node:http'
+import { createDailySnapshotRefresh, parseRefreshIntervalMs } from './src/autoRefresh.mjs'
 import { collectAll, loadLatestSnapshot, ROOT_DIR, SOURCES } from './src/collector.mjs'
 import {
   createGtfsCodexJob,
@@ -25,6 +26,17 @@ import { attachReviewState, loadReviewStore, setReviewStatus } from './src/revie
 
 const PUBLIC_DIR = join(ROOT_DIR, 'public')
 const PORT = Number(process.env.PORT || 4177)
+const AUTO_REFRESH_ENABLED = process.env.OKI_DASHBOARD_AUTO_REFRESH !== '0'
+const AUTO_REFRESH_INTERVAL_MS = parseRefreshIntervalMs(process.env.OKI_DASHBOARD_REFRESH_INTERVAL_HOURS)
+const AUTO_REFRESH_DOWNLOAD = process.env.OKI_DASHBOARD_REFRESH_DOWNLOAD === '1'
+const EMPTY_SNAPSHOT = { summary: null, sources: [], documents: [], notices: [], pages: [] }
+
+const dailyRefresh = createDailySnapshotRefresh({
+  collectAll,
+  loadLatestSnapshot,
+  intervalMs: AUTO_REFRESH_INTERVAL_MS,
+  download: AUTO_REFRESH_DOWNLOAD
+})
 
 const server = http.createServer(async (request, response) => {
   try {
@@ -33,14 +45,17 @@ const server = http.createServer(async (request, response) => {
       return sendJson(response, { sources: SOURCES })
     }
     if (url.pathname === '/api/latest') {
-      const latest = await loadLatestSnapshot()
-      return sendJson(response, await withReviewState(latest || { summary: null, sources: [], documents: [], notices: [], pages: [] }))
+      const latest = await loadDashboardLatestSnapshot()
+      return sendJson(response, await withDashboardState(latest || EMPTY_SNAPSHOT))
     }
     if (url.pathname === '/api/collect') {
       const save = url.searchParams.get('save') === '1'
       const download = url.searchParams.get('download') === '1'
       const snapshot = await collectAll({ save, download })
-      return sendJson(response, await withReviewState(snapshot))
+      if (save && AUTO_REFRESH_ENABLED) {
+        dailyRefresh.reschedule()
+      }
+      return sendJson(response, await withDashboardState(snapshot))
     }
     if (url.pathname === '/api/document-types' && request.method === 'GET') {
       return sendJson(response, await loadDocumentTypeStore())
@@ -66,8 +81,8 @@ const server = http.createServer(async (request, response) => {
     }
     if (url.pathname === '/api/gtfs/draft/from-latest' && request.method === 'POST') {
       const body = await readJsonBody(request)
-      const latest = body.snapshot?.summary ? body.snapshot : await loadLatestSnapshot()
-      const snapshot = await withReviewState(latest || { summary: null, sources: [], documents: [], notices: [], pages: [] })
+      const latest = body.snapshot?.summary ? body.snapshot : await loadDashboardLatestSnapshot()
+      const snapshot = await withReviewState(latest || EMPTY_SNAPSHOT)
       const draft = await createGtfsDraftFromSnapshot(snapshot, body)
       return sendJson(response, { draft, dashboard: await loadGtfsDashboard() })
     }
@@ -122,7 +137,28 @@ const server = http.createServer(async (request, response) => {
 
 server.listen(PORT, () => {
   console.log(`隠岐交通ソース監視: http://localhost:${PORT}`)
+  if (AUTO_REFRESH_ENABLED) {
+    dailyRefresh.start()
+    console.log(`日次自動更新: 有効 (${Math.round(AUTO_REFRESH_INTERVAL_MS / 60 / 60 / 1000)}時間ごと)`)
+  } else {
+    console.log('日次自動更新: 無効')
+  }
 })
+
+async function loadDashboardLatestSnapshot() {
+  if (!AUTO_REFRESH_ENABLED) return loadLatestSnapshot()
+  return dailyRefresh.ensureFresh('api/latest')
+}
+
+async function withDashboardState(snapshot) {
+  const state = await withReviewState(snapshot)
+  return {
+    ...state,
+    autoRefresh: AUTO_REFRESH_ENABLED
+      ? dailyRefresh.getStatus()
+      : { enabled: false }
+  }
+}
 
 async function withReviewState(snapshot) {
   const withDocumentTypes = attachDocumentTypeState(snapshot, await loadDocumentTypeStore())
