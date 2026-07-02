@@ -16,12 +16,14 @@ import { attachDocumentTypeState, loadDocumentTypeStore, setDocumentType } from 
 import {
   createGtfsDraftFromSnapshot,
   exportGtfsDraft,
+  loadGtfsDraft,
   loadGtfsDashboard,
   loadGtfsView,
   resolveGtfsArtifact,
   runGtfsTask,
   updateGtfsDraft
 } from './src/gtfs.mjs'
+import { attachReflectionState } from './src/reflectionState.mjs'
 import { attachReviewState, loadReviewStore, setReviewStatus } from './src/reviews.mjs'
 
 const PUBLIC_DIR = join(ROOT_DIR, 'public')
@@ -162,7 +164,8 @@ async function withDashboardState(snapshot) {
 
 async function withReviewState(snapshot) {
   const withDocumentTypes = attachDocumentTypeState(snapshot, await loadDocumentTypeStore())
-  return attachReviewState(withDocumentTypes, await loadReviewStore())
+  const withReviews = attachReviewState(withDocumentTypes, await loadReviewStore())
+  return attachReflectionState(withReviews, await loadGtfsDraft())
 }
 
 async function readJsonBody(request) {

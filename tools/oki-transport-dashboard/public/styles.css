@@ -479,6 +479,26 @@ a {
   color: #52636b;
 }
 
+.badge.reflection.undecided {
+  background: #edf2f4;
+  color: #52636b;
+}
+
+.badge.reflection.not-needed {
+  background: #f1f5f9;
+  color: #475569;
+}
+
+.badge.reflection.needs-reflection {
+  background: #fff7df;
+  color: #9a5d12;
+}
+
+.badge.reflection.reflected {
+  background: #e7f7ed;
+  color: var(--ok);
+}
+
 .source-stats {
   display: grid;
   grid-template-columns: repeat(3, minmax(0, 1fr));

@@ -7,8 +7,7 @@ export const SOURCES = [
     officialUrl: 'https://www.oki-kisen.co.jp/',
     area: '本土・島後・島前',
     pages: [
-      { role: 'timetable', label: 'フェリー・高速船時刻表', url: 'https://www.oki-kisen.co.jp/timetable/' },
-      { role: 'timetable', label: 'フェリー・高速船時刻表ダウンロード', url: 'https://www.oki-kisen.co.jp/download/dl-timetable/29' },
+      { role: 'timetable', label: 'フェリー・高速船時刻表', url: 'https://www.oki-kisen.co.jp/download/dl-timetable/29' },
       { role: 'fare', label: '運賃', url: 'https://www.oki-kisen.co.jp/fare/' },
       { role: 'notices', label: 'ニュース', url: 'https://www.oki-kisen.co.jp/news/' },
       { role: 'status', label: '運航状況', url: 'https://www.oki-kisen.co.jp/situation/' }

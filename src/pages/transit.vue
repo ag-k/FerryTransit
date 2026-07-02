@@ -612,6 +612,7 @@ const isSearching = ref(false)
 const hasSearched = ref(false)
 const searchResults = ref<TransitRoute[]>([])
 const searchDateForResults = ref<Date | null>(null)
+const isArrivalModeForResults = ref(false)
 const displayLimit = ref(5)
 const showDetailsModal = ref(false)
 const selectedRoute = ref<TransitRoute | null>(null)
@@ -727,6 +728,42 @@ const hasCancelledSegment = (route: TransitRoute): boolean => {
 
 const hasChangedSegment = (route: TransitRoute): boolean => {
   return Array.isArray(route?.segments) && route.segments.some(s => s.status === 3)
+}
+
+const compareByRecommended = (a: TransitRoute, b: TransitRoute): number => {
+  const cancelledDiff = Number(hasCancelledSegment(a)) - Number(hasCancelledSegment(b))
+  if (cancelledDiff !== 0) {
+    return cancelledDiff
+  }
+
+  if (isArrivalModeForResults.value) {
+    const departureDiff = b.departureTime.getTime() - a.departureTime.getTime()
+    if (departureDiff !== 0) {
+      return departureDiff
+    }
+
+    const arrivalDiff = a.arrivalTime.getTime() - b.arrivalTime.getTime()
+    if (arrivalDiff !== 0) {
+      return arrivalDiff
+    }
+  } else {
+    const arrivalDiff = a.arrivalTime.getTime() - b.arrivalTime.getTime()
+    if (arrivalDiff !== 0) {
+      return arrivalDiff
+    }
+
+    const departureDiff = b.departureTime.getTime() - a.departureTime.getTime()
+    if (departureDiff !== 0) {
+      return departureDiff
+    }
+  }
+
+  const transferDiff = a.transferCount - b.transferCount
+  if (transferDiff !== 0) {
+    return transferDiff
+  }
+
+  return a.totalFare - b.totalFare
 }
 
 const cloneRouteForState = (route: TransitRoute): TransitRoute => {
@@ -905,8 +942,8 @@ const sortedResults = computed(() => {
     return filteredRoutes.sort(compareByTransfer)
   }
 
-  // 時系列順（出発時刻順）でソート
-  return filteredRoutes.sort(compareByDepartureTime)
+  // おすすめ順でソート
+  return filteredRoutes.sort(compareByRecommended)
 })
 
 const displayedResults = computed(() => {
@@ -1128,6 +1165,7 @@ async function handleSearch() {
   hasSearched.value = true
   displayLimit.value = 5
   searchDateForResults.value = new Date(date.value)
+  isArrivalModeForResults.value = isArrivalMode.value
 
   try {
     const results = await searchRoutes(

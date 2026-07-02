@@ -22,8 +22,8 @@
   },
   "devDependencies": {
     "@types/cors": "^2.8.17",
-    "@typescript-eslint/eslint-plugin": "^8.61.0",
-    "@typescript-eslint/parser": "^8.61.0",
+    "@typescript-eslint/eslint-plugin": "^8.62.0",
+    "@typescript-eslint/parser": "^8.62.0",
     "eslint": "^9.39.4",
     "eslint-config-google": "^0.14.0",
     "eslint-plugin-import": "^2.25.4",
@@ -42,7 +42,8 @@
     "js-yaml": "^4.2.0",
     "retry-request": "^8.0.2",
     "teeny-request": "^10.1.2",
-    "uuid": "^14.0.0"
+    "uuid": "^14.0.0",
+    "ts-deepmerge": "8.0.0"
   },
   "private": true
 }

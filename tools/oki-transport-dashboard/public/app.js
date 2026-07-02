@@ -191,7 +191,9 @@ async function createGtfsDraft() {
     })
     state.gtfs = result.dashboard
     showGtfsTaskLog(`GTFS下書きを作成しました: ${result.draft.summary.routeCount} route候補`)
+    recomputeSnapshotState()
     renderGtfs()
+    render()
   } catch (error) {
     showError(error.message)
   } finally {
@@ -292,7 +294,9 @@ async function saveGtfsRoute(button) {
     })
     state.gtfs = result.dashboard
     showGtfsTaskLog(`routeを保存しました: ${routeId}`)
+    recomputeSnapshotState()
     renderGtfs()
+    render()
   } catch (error) {
     showError(error.message)
   } finally {
@@ -458,10 +462,11 @@ function setActiveTab(tab, options = {}) {
 
 function renderSummary(summary) {
   const reviewSummary = state.snapshot.reviewSummary || {}
+  const reflectionSummary = computeReflectionSummary(state.snapshot.documents || [])
   elements.sourceCount.textContent = summary.sourceCount
   elements.sourceStatus.textContent = `OK ${summary.okSources} / 注意 ${summary.warningSources} / 失敗 ${summary.errorSources}`
   elements.documentCount.textContent = summary.documentCount
-  elements.documentStatus.textContent = `未レビュー ${reviewSummary.unreviewed ?? 0} / 必要 ${reviewSummary.required ?? 0} / 不要 ${reviewSummary.unnecessary ?? 0}`
+  elements.documentStatus.textContent = `必要 ${reviewSummary.required ?? 0} / 要反映 ${reflectionSummary.needsReflection} / 反映済み ${reflectionSummary.reflected}`
   elements.changedCount.textContent = summary.changedDocuments + summary.changedPages
   elements.changedStatus.textContent = `資料 ${summary.changedDocuments} / ページ ${summary.changedPages}`
   elements.noticeCount.textContent = summary.noticeCount
@@ -494,7 +499,7 @@ function renderSources(sources) {
       <div class="source-stats">
         <div><strong>${source.counts.documents}</strong><span>資料</span></div>
         <div><strong>${source.reviewCounts?.required ?? 0}</strong><span>必要</span></div>
-        <div><strong>${source.reviewCounts?.unreviewed ?? 0}</strong><span>未レビュー</span></div>
+        <div><strong>${sourceReflectionCounts(source).needsReflection}</strong><span>要反映</span></div>
       </div>
       <div class="page-chips">${pageChips}</div>
       <div class="card-links">
@@ -538,13 +543,21 @@ function renderPages(pages) {
 }
 
 function renderDocuments(documents) {
-  const rows = documents.slice(0, 250).map((document) => `
+  const documentsWithReflection = documents.map((document) => ({
+    ...document,
+    ...documentReflectionState(document)
+  }))
+  const rows = documentsWithReflection.slice(0, 250).map((document) => `
     <tr>
       <td><span class="badge ${document.changeStatus}">${changeLabel(document.changeStatus)}</span></td>
       <td>
         <select class="review-select ${document.reviewStatus || 'unreviewed'}" data-review-url="${escapeAttr(document.url)}" aria-label="レビュー状態">
           ${reviewOptions(document.reviewStatus)}
         </select>
+      </td>
+      <td>
+        <span class="badge reflection ${escapeAttr(document.reflectionStatus)}" title="${escapeAttr(document.reflectionReason)}">${escapeHtml(reflectionLabel(document.reflectionStatus))}</span>
+        ${document.reflectionRouteIds?.length ? `<div class="item-meta"><span>${escapeHtml(document.reflectionRouteIds.join(', '))}</span></div>` : ''}
       </td>
       <td>
         <select class="type-select ${document.type || 'other'} ${document.manualType ? 'manual' : 'auto'}" data-type-url="${escapeAttr(document.url)}" aria-label="資料種別" title="${escapeAttr(typeSelectTitle(document))}">
@@ -560,7 +573,7 @@ function renderDocuments(documents) {
       <td><a href="${escapeAttr(document.pageUrl)}" target="_blank" rel="noreferrer">ページ</a></td>
     </tr>
   `).join('')
-  elements.documentRows.innerHTML = rows || '<tr><td colspan="7" class="empty">該当する資料はありません</td></tr>'
+  elements.documentRows.innerHTML = rows || '<tr><td colspan="8" class="empty">該当する資料はありません</td></tr>'
   elements.documentRows.querySelectorAll('[data-review-url]').forEach((select) => {
     select.addEventListener('change', () => updateReviewStatus(select))
   })
@@ -1002,28 +1015,40 @@ async function updateDocumentType(select) {
 }
 
 function recomputeSnapshotState() {
+  if (!state.snapshot) return
   const reviewCounts = createReviewCount()
+  const reflectionCounts = createReflectionCount()
   const sourceCounts = new Map()
+  const sourceReflectionCounts = new Map()
   const sourceTypeCounts = new Map()
   const documentsByUrl = new Map()
   for (const document of state.snapshot.documents || []) {
     const status = document.reviewStatus || 'unreviewed'
     const type = normalizeDocumentType(document.type)
+    const reflection = documentReflectionState(document)
     document.type = type
     document.detectedType = normalizeDocumentType(document.detectedType || type)
+    document.reflectionStatus = reflection.reflectionStatus
+    document.reflectionReason = reflection.reflectionReason
+    document.reflectionRouteIds = reflection.reflectionRouteIds
     documentsByUrl.set(document.url, document)
     reviewCounts.total += 1
     reviewCounts[status] = (reviewCounts[status] || 0) + 1
+    addReflectionCount(reflectionCounts, reflection.reflectionStatus)
     const sourceCount = sourceCounts.get(document.sourceId) || createReviewCount()
     sourceCount.total += 1
     sourceCount[status] = (sourceCount[status] || 0) + 1
     sourceCounts.set(document.sourceId, sourceCount)
+    const sourceReflectionCount = sourceReflectionCounts.get(document.sourceId) || createReflectionCount()
+    addReflectionCount(sourceReflectionCount, reflection.reflectionStatus)
+    sourceReflectionCounts.set(document.sourceId, sourceReflectionCount)
     const sourceTypeCount = sourceTypeCounts.get(document.sourceId) || createDocumentTypeCount()
     sourceTypeCount.documents += 1
     sourceTypeCount[type] = (sourceTypeCount[type] || 0) + 1
     sourceTypeCounts.set(document.sourceId, sourceTypeCount)
   }
   state.snapshot.reviewSummary = reviewCounts
+  state.snapshot.reflectionSummary = reflectionCounts
   state.snapshot.summary = {
     ...state.snapshot.summary,
     timetableCount: (state.snapshot.documents || []).filter((document) => document.type === 'timetable').length,
@@ -1039,6 +1064,7 @@ function recomputeSnapshotState() {
       ...source,
       documents: (source.documents || []).map((document) => documentsByUrl.get(document.url) || document),
       reviewCounts: sourceCounts.get(source.id) || createReviewCount(),
+      reflectionCounts: sourceReflectionCounts.get(source.id) || createReflectionCount(),
       counts: {
         ...source.counts,
         ...typeCounts,
@@ -1310,6 +1336,91 @@ function reviewLabel(status) {
   return { unreviewed: '未レビュー', unnecessary: '不要', required: '必要' }[status] || '未レビュー'
 }
 
+function reflectionLabel(status) {
+  return {
+    undecided: '未判定',
+    'not-needed': '対象外',
+    'needs-reflection': '要反映',
+    reflected: '反映済み'
+  }[status] || '未判定'
+}
+
+function documentReflectionState(document) {
+  const draftRoutes = state.gtfs?.draft?.routes
+  if (!draftRoutes) {
+    return {
+      reflectionStatus: document.reflectionStatus || 'undecided',
+      reflectionReason: document.reflectionReason || 'GTFS下書き未読込のため判定できません',
+      reflectionRouteIds: document.reflectionRouteIds || []
+    }
+  }
+  const routes = draftRoutes.filter((route) => route.source_document_url === document.url)
+  const routeIds = routes.map((route) => route.route_id).filter(Boolean)
+  if ((document.reviewStatus || 'unreviewed') === 'unnecessary') {
+    return {
+      reflectionStatus: 'not-needed',
+      reflectionReason: 'レビューで不要に設定されています',
+      reflectionRouteIds: routeIds
+    }
+  }
+  if ((document.reviewStatus || 'unreviewed') !== 'required') {
+    return {
+      reflectionStatus: 'undecided',
+      reflectionReason: 'レビューで必要判定されていません',
+      reflectionRouteIds: routeIds
+    }
+  }
+  if (routes.some((route) => route.status === 'ready')) {
+    return {
+      reflectionStatus: 'reflected',
+      reflectionReason: 'GTFS route候補がGTFS化済みです',
+      reflectionRouteIds: routeIds
+    }
+  }
+  return {
+    reflectionStatus: 'needs-reflection',
+    reflectionReason: routeIds.length
+      ? '必要資料ですがGTFS化済みrouteがありません'
+      : '必要資料ですがGTFS下書きrouteがありません',
+    reflectionRouteIds: routeIds
+  }
+}
+
+function computeReflectionSummary(documents) {
+  const counts = createReflectionCount()
+  for (const document of documents || []) {
+    const reflection = documentReflectionState(document)
+    addReflectionCount(counts, reflection.reflectionStatus)
+  }
+  return counts
+}
+
+function sourceReflectionCounts(source) {
+  if (state.gtfs?.draft?.routes) {
+    return computeReflectionSummary(source.documents || [])
+  }
+  return normalizeReflectionCount(source.reflectionCounts)
+}
+
+function normalizeReflectionCount(counts) {
+  return {
+    total: counts?.total || 0,
+    undecided: counts?.undecided || 0,
+    notNeeded: counts?.['not-needed'] || counts?.notNeeded || 0,
+    needsReflection: counts?.['needs-reflection'] || counts?.needsReflection || 0,
+    reflected: counts?.reflected || 0,
+    'not-needed': counts?.['not-needed'] || counts?.notNeeded || 0,
+    'needs-reflection': counts?.['needs-reflection'] || counts?.needsReflection || 0
+  }
+}
+
+function addReflectionCount(counts, status) {
+  counts.total += 1
+  counts[status] = (counts[status] || 0) + 1
+  if (status === 'not-needed') counts.notNeeded += 1
+  if (status === 'needs-reflection') counts.needsReflection += 1
+}
+
 function codexTransportLabel(transport) {
   return {
     'local-queue': 'ローカルキュー',
@@ -1367,6 +1478,18 @@ function createReviewCount() {
     unreviewed: 0,
     unnecessary: 0,
     required: 0
+  }
+}
+
+function createReflectionCount() {
+  return {
+    total: 0,
+    undecided: 0,
+    'not-needed': 0,
+    'needs-reflection': 0,
+    notNeeded: 0,
+    needsReflection: 0,
+    reflected: 0
   }
 }
 

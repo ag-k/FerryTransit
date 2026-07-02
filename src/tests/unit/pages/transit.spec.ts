@@ -162,6 +162,49 @@ const buildSampleRoutes = (): TransitRoute[] => {
   ]
 }
 
+const buildRoute = ({
+  tripId,
+  departureTime,
+  arrivalTime,
+  totalFare,
+  transferCount = 0,
+  status = 1
+}: {
+  tripId: string
+  departureTime: string
+  arrivalTime: string
+  totalFare: number
+  transferCount?: number
+  status?: number
+}): TransitRoute => {
+  const toDate = (time: string): Date => new Date(`2024-01-01T${time}:00`)
+  const departureDate = toDate(departureTime)
+  const arrivalDate = toDate(arrivalTime)
+
+  return {
+    segments: [
+      {
+        tripId,
+        ship: 'FERRY_OKI',
+        departure: 'HONDO',
+        arrival: 'SAIGO',
+        departureTime: departureDate,
+        arrivalTime: arrivalDate,
+        status,
+        fare: totalFare
+      }
+    ],
+    departureTime: departureDate,
+    arrivalTime: arrivalDate,
+    totalFare,
+    transferCount
+  }
+}
+
+const getTripIds = (routes: TransitRoute[]): string[] => {
+  return routes.map(route => route.segments[0].tripId)
+}
+
 describe('Transit Page', () => {
   beforeEach(() => {
     Object.keys(routeQuery).forEach((key) => {
@@ -585,22 +628,22 @@ describe('Transit Page', () => {
     expect(tripIds).not.toContain('route-balanced-1')
   })
 
-  it('sorts routes by chronological order (departure time) by default', async () => {
+  it('sorts recommended routes by earliest arrival and latest departure by default', async () => {
     const wrapper = createWrapper()
-    wrapper.vm.searchResults = buildSampleRoutes()
+    wrapper.vm.searchResults = [
+      buildRoute({ tripId: 'same-arrival-early-departure', departureTime: '08:00', arrivalTime: '10:00', totalFare: 6000 }),
+      buildRoute({ tripId: 'early-arrival', departureTime: '07:30', arrivalTime: '09:30', totalFare: 7000 }),
+      buildRoute({ tripId: 'same-arrival-late-departure', departureTime: '09:00', arrivalTime: '10:00', totalFare: 6000 })
+    ]
     await wrapper.vm.$nextTick()
 
     const results = wrapper.vm.sortedResults
-    // 時系列順（出発時刻順）になっていることを確認
-    for (let i = 0; i < results.length - 1; i++) {
-      const current = results[i].departureTime.getTime()
-      const next = results[i + 1].departureTime.getTime()
-      expect(current).toBeLessThanOrEqual(next)
-    }
-    
-    // 同じ出発時刻で到着が遅い結果が除外されていることを確認
-    const tripIds = results.map((route: TransitRoute) => route.segments[0].tripId)
-    expect(tripIds).not.toContain('route-balanced-1')
+    // 到着時刻が早い順。同着の場合は遅く出発できるルートを優先する。
+    expect(getTripIds(results)).toEqual([
+      'early-arrival',
+      'same-arrival-late-departure',
+      'same-arrival-early-departure'
+    ])
   })
 
   it('updates sort order when a tab is clicked', async () => {
@@ -824,7 +867,7 @@ describe('Transit Page', () => {
       expect(results[2].segments[0].tripId).toBe('transfer-1')
     })
 
-    it('sorts by chronological order: departure time first, then arrival time', async () => {
+    it('sorts by recommended order: arrival time first, then latest departure time', async () => {
       const wrapper = createWrapper()
       const toDate = (time: string): Date => new Date(`2024-01-01T${time}:00`)
       
@@ -860,19 +903,98 @@ describe('Transit Page', () => {
       await wrapper.vm.$nextTick()
 
       const results = wrapper.vm.sortedResults
-      // 時系列順（出発時刻順）になっていることを確認
-      // direct-slow (08:00) < transfer-slow (09:00) < direct-fast (10:00)
+      // おすすめ順: direct-fast / direct-slow は11:00同着なので出発が遅いdirect-fastを優先
       expect(results).toHaveLength(3)
-      expect(results[0].segments[0].tripId).toBe('direct-slow')
-      expect(results[1].segments[0].tripId).toBe('transfer-slow')
-      expect(results[2].segments[0].tripId).toBe('direct-fast')
-      
-      // 出発時刻が時系列順になっていることを確認
-      for (let i = 0; i < results.length - 1; i++) {
-        const current = results[i].departureTime.getTime()
-        const next = results[i + 1].departureTime.getTime()
-        expect(current).toBeLessThanOrEqual(next)
+      expect(results[0].segments[0].tripId).toBe('direct-fast')
+      expect(results[1].segments[0].tripId).toBe('direct-slow')
+      expect(results[2].segments[0].tripId).toBe('transfer-slow')
+    })
+
+    it('puts dominated routes later in recommended order', async () => {
+      const wrapper = createWrapper()
+
+      wrapper.vm.searchResults = [
+        buildRoute({ tripId: 'dominated', departureTime: '08:00', arrivalTime: '13:00', totalFare: 5000 }),
+        buildRoute({ tripId: 'dominant', departureTime: '09:00', arrivalTime: '12:00', totalFare: 5000 })
+      ]
+      await wrapper.vm.$nextTick()
+
+      wrapper.vm.sortOption = 'recommended'
+      await wrapper.vm.$nextTick()
+
+      expect(getTripIds(wrapper.vm.sortedResults)).toEqual([
+        'dominant',
+        'dominated'
+      ])
+    })
+
+    it('sorts recommended arrival-mode results by latest departure', async () => {
+      const wrapper = createWrapper()
+
+      wrapper.vm.isArrivalModeForResults = true
+      wrapper.vm.searchResults = [
+        buildRoute({ tripId: 'same-departure-late-arrival', departureTime: '09:00', arrivalTime: '12:00', totalFare: 6000 }),
+        buildRoute({ tripId: 'early-departure', departureTime: '08:00', arrivalTime: '09:30', totalFare: 6000 }),
+        buildRoute({ tripId: 'same-departure-early-arrival', departureTime: '09:00', arrivalTime: '11:00', totalFare: 6000 }),
+        buildRoute({ tripId: 'latest-departure', departureTime: '10:00', arrivalTime: '12:30', totalFare: 6000 })
+      ]
+      await wrapper.vm.$nextTick()
+
+      wrapper.vm.sortOption = 'recommended'
+      await wrapper.vm.$nextTick()
+
+      // 同一出発時刻の候補は既存の前処理で最早着だけが残る。
+      expect(getTripIds(wrapper.vm.sortedResults)).toEqual([
+        'latest-departure',
+        'same-departure-early-arrival',
+        'early-departure'
+      ])
+    })
+
+    it('puts cancelled routes last in recommended order', async () => {
+      const wrapper = createWrapper()
+
+      wrapper.vm.searchResults = [
+        buildRoute({ tripId: 'normal-later', departureTime: '09:00', arrivalTime: '12:00', totalFare: 6000 }),
+        buildRoute({ tripId: 'cancelled-earliest', departureTime: '08:00', arrivalTime: '09:00', totalFare: 6000, status: 2 }),
+        buildRoute({ tripId: 'normal-middle', departureTime: '10:00', arrivalTime: '11:00', totalFare: 6000 })
+      ]
+      await wrapper.vm.$nextTick()
+
+      wrapper.vm.sortOption = 'recommended'
+      await wrapper.vm.$nextTick()
+
+      expect(getTripIds(wrapper.vm.sortedResults)).toEqual([
+        'normal-middle',
+        'normal-later',
+        'cancelled-earliest'
+      ])
+    })
+
+    it('uses transfer count and fare as recommended tie breakers', async () => {
+      const wrapper = createWrapper()
+      const routes = [
+        buildRoute({ tripId: 'same-time-expensive-direct', departureTime: '08:00', arrivalTime: '11:00', totalFare: 7000 }),
+        buildRoute({ tripId: 'same-time-transfer', departureTime: '08:00', arrivalTime: '11:00', totalFare: 3000, transferCount: 1 }),
+        buildRoute({ tripId: 'same-time-cheap-direct', departureTime: '08:00', arrivalTime: '11:00', totalFare: 5000 })
+      ]
+
+      wrapper.vm.searchResults = routes
+      await wrapper.vm.$nextTick()
+
+      wrapper.vm.sortOption = 'recommended'
+      await wrapper.vm.$nextTick()
+
+      const vm = wrapper.vm as typeof wrapper.vm & {
+        compareByRecommended: (a: TransitRoute, b: TransitRoute) => number
       }
+
+      expect(getTripIds([...routes].sort(vm.compareByRecommended))).toEqual([
+        'same-time-cheap-direct',
+        'same-time-expensive-direct',
+        'same-time-transfer'
+      ])
+      expect(wrapper.vm.sortedResults).toHaveLength(1)
     })
   })
 })
