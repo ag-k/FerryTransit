@@ -150,8 +150,9 @@ v-for="field in VEHICLE_SIZE_FIELDS" :key="field.key"
                   区間
                 </th>
                 <th
+v-for="field in HIGHSPEED_FARE_FIELDS" :key="field.key"
                   class="px-4 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider dark:text-gray-400">
-                  大人
+                  {{ field.label }}
                 </th>
               </tr>
             </thead>
@@ -160,8 +161,10 @@ v-for="field in VEHICLE_SIZE_FIELDS" :key="field.key"
                 <td class="px-4 py-3 text-sm font-medium text-gray-900 dark:text-gray-100">
                   {{ fare.routeLabel || fare.route }}
                 </td>
-                <td class="px-4 py-3 text-sm text-center text-gray-900 dark:text-gray-100">
-                  {{ formatCurrency(fare.adult) }}
+                <td
+v-for="field in HIGHSPEED_FARE_FIELDS" :key="field.key"
+                  class="px-4 py-3 text-sm text-center text-gray-900 dark:text-gray-100">
+                  {{ formatCurrency(fare[field.key]) }}
                 </td>
               </tr>
             </tbody>
@@ -315,14 +318,26 @@ v-model.number="category.vehicle[field.key]" type="number" min="0"
         </div>
 
         <!-- 高速船料金編集 -->
-        <div v-else-if="activeTab === 'highspeed'">
-          <div v-for="(fare, index) in editingHighspeedFares" :key="index" class="border-b pb-4 mb-4">
-            <h4 class="font-medium mb-2">{{ fare.routeLabel || fare.route }}</h4>
-            <div class="grid grid-cols-1 gap-3">
-              <div>
-                <label class="text-xs text-gray-500">大人</label>
+        <div v-else-if="activeTab === 'highspeed'" class="space-y-4">
+          <div
+v-if="!editingHighspeedFares.length"
+            class="rounded-md border border-dashed border-gray-300 dark:border-gray-600 bg-gray-50 dark:bg-gray-700/40 p-6 text-center text-sm text-gray-500 dark:text-gray-400">
+            編集できる高速船料金がありません。版を選択してから再読み込みしてください。
+          </div>
+          <div v-for="(fare, index) in editingHighspeedFares" :key="fare.route || index" class="border-b pb-4 last:border-b-0 last:pb-0">
+            <div class="mb-3 rounded-md bg-gray-50 dark:bg-gray-700/50 px-3 py-2">
+              <p class="text-xs font-medium text-gray-500 dark:text-gray-400">
+                区間
+              </p>
+              <p class="text-sm font-semibold text-gray-900 dark:text-gray-100">
+                {{ fare.routeLabel || fare.route || '未設定' }}
+              </p>
+            </div>
+            <div class="grid grid-cols-1 gap-3 md:grid-cols-2 xl:grid-cols-4">
+              <div v-for="field in HIGHSPEED_FARE_FIELDS" :key="field.key">
+                <label class="text-xs text-gray-500">{{ field.label }}</label>
                 <input
-v-model.number="fare.adult" type="number" min="0"
+v-model.number="fare[field.key]" type="number" min="0"
                   class="w-full rounded-md border border-gray-300 dark:border-gray-600 dark:bg-gray-700 focus:border-blue-500 dark:focus:border-blue-400 focus:ring-2 focus:ring-blue-500 focus:ring-opacity-30 transition-colors">
               </div>
             </div>
@@ -842,6 +857,31 @@ const VEHICLE_SIZE_FIELDS: Array<{ key: VehicleSizeKey; label: string }> = [
   { key: 'over12mPer1m', label: '12m超(1m毎)' }
 ]
 
+type HighspeedFareFieldKey = 'adult' | 'child' | 'disabledAdult' | 'disabledChild'
+
+const HIGHSPEED_FARE_FIELDS: Array<{ key: HighspeedFareFieldKey; label: string }> = [
+  { key: 'adult', label: '大人' },
+  { key: 'child', label: '小人' },
+  { key: 'disabledAdult', label: '障がい者（大人）' },
+  { key: 'disabledChild', label: '障がい者（小人）' }
+]
+
+const EDITABLE_HIGHSPEED_ROUTE_IDS: Array<keyof typeof HIGHSPEED_ROUTE_TRANSLATION_KEYS> = [
+  'hondo-oki',
+  'dozen-dogo',
+  'beppu-hishiura'
+]
+
+type EditableHighspeedRouteId = typeof EDITABLE_HIGHSPEED_ROUTE_IDS[number]
+
+const EDITABLE_HIGHSPEED_ROUTE_ID_SET = new Set<string>(EDITABLE_HIGHSPEED_ROUTE_IDS)
+
+const DEFAULT_HIGHSPEED_ADULT_FARES: Record<EditableHighspeedRouteId, number> = {
+  'hondo-oki': 6430,
+  'dozen-dogo': 4890,
+  'beppu-hishiura': 4890
+}
+
 type DiscountFormItem = {
   formKey: string
   id: string
@@ -1254,6 +1294,68 @@ const calculateChildFare = (adult: number | null | undefined): number | null => 
   return roundUpToTen(value)
 }
 
+const getDefaultHighspeedAdultFare = (routeId: string | null | undefined): number | null => {
+  if (!routeId || !EDITABLE_HIGHSPEED_ROUTE_ID_SET.has(routeId)) return null
+  return DEFAULT_HIGHSPEED_ADULT_FARES[routeId as EditableHighspeedRouteId]
+}
+
+const normalizeHighspeedFareRecord = (
+  fare: (FareDoc & { id?: string }) | null | undefined,
+  fallbackRouteId?: EditableHighspeedRouteId
+): FareDoc => {
+  const resolved = fare ? resolveHighspeedRouteInfo(fare) : { routeId: fallbackRouteId ?? null, label: '' }
+  const routeId = resolved.routeId ?? fallbackRouteId ?? null
+  const label = (routeId ? getHighspeedRouteLabel(routeId) : null) ?? resolved.label ?? routeId ?? '未設定'
+  const passenger = extractPassenger(fare ?? {})
+  const adult = passenger.adult ?? getDefaultHighspeedAdultFare(routeId)
+  const child = passenger.child ?? calculateChildFare(adult)
+  const disabled = extractDisabledFare(fare ?? {})
+  const disabledAdult = disabled.adult
+  const disabledChild = disabled.child ?? (disabledAdult ? calculateChildFare(disabledAdult) : null)
+
+  return {
+    ...(fare ?? {}),
+    route: routeId ?? (typeof fare?.route === 'string' ? fare.route : ''),
+    routeLabel: label,
+    displayName: fare?.displayName ?? label,
+    routeName: fare?.routeName ?? label,
+    adult,
+    child,
+    disabledAdult,
+    disabledChild,
+    type: 'highspeed',
+    versionId: fare?.versionId ?? selectedHighspeedVersionId.value ?? undefined
+  }
+}
+
+const buildHighspeedFareRows = (fareDocs: Array<FareDoc & { id?: string }>): FareDoc[] => {
+  const routeFareMap = new Map<EditableHighspeedRouteId, FareDoc & { id?: string }>()
+  const extraFares: Array<FareDoc & { id?: string }> = []
+  const sorted = [...fareDocs].sort((a, b) => {
+    const routeA = typeof a.route === 'string' ? a.route : ''
+    const routeB = typeof b.route === 'string' ? b.route : ''
+    return routeA.localeCompare(routeB)
+  })
+
+  sorted.forEach(fare => {
+    if (isHighspeedKuriRoute(fare)) return
+    const { routeId } = resolveHighspeedRouteInfo(fare)
+    if (routeId && EDITABLE_HIGHSPEED_ROUTE_ID_SET.has(routeId)) {
+      const editableRouteId = routeId as EditableHighspeedRouteId
+      if (!routeFareMap.has(editableRouteId)) {
+        routeFareMap.set(editableRouteId, fare)
+      }
+      return
+    }
+    extraFares.push(fare)
+  })
+
+  return [
+    ...EDITABLE_HIGHSPEED_ROUTE_IDS.map(routeId => normalizeHighspeedFareRecord(routeFareMap.get(routeId), routeId)),
+    ...extraFares.map(fare => normalizeHighspeedFareRecord(fare))
+  ]
+}
+
 const buildFerryCategories = (fareDocs: Array<FareDoc & { id?: string }>): FerryCategoryRecord[] => {
   const routeDocMap = new Map<string, FareDoc & { id?: string }>()
   const categoryFallback: Record<string, FareDoc | null> = {}
@@ -1583,32 +1685,7 @@ const loadFaresForType = async (vesselType: VesselType) => {
     ferryCategories.value = categories
     editingFerryCategories.value = categories.map(category => cloneCategoryRecord(category))
   } else if (vesselType === 'highspeed') {
-    const sorted = filtered.sort((a, b) => {
-      const routeA = typeof a.route === 'string' ? a.route : ''
-      const routeB = typeof b.route === 'string' ? b.route : ''
-      return routeA.localeCompare(routeB)
-    })
-
-    const withoutKuri = sorted.filter(fare => !isHighspeedKuriRoute(fare))
-
-    const enriched = withoutKuri.map(fare => {
-      const { routeId, label } = resolveHighspeedRouteInfo(fare)
-      const adult = pickNumber(fare.adult)
-      const disabled = extractDisabledFare(fare)
-      return {
-        ...fare,
-        route: routeId ?? (typeof fare.route === 'string' ? mapHighspeedToCanonicalRoute(fare.route) ?? fare.route : ''),
-        routeLabel: label,
-        displayName: fare.displayName ?? label,
-        routeName: fare.routeName ?? label,
-        adult,
-        child: calculateChildFare(adult),
-        disabledAdult: disabled.adult,
-        disabledChild: disabled.child ?? (disabled.adult ? calculateChildFare(disabled.adult) : null)
-      }
-    })
-
-    highspeedFares.value = enriched
+    highspeedFares.value = buildHighspeedFareRows(filtered)
     editingHighspeedFares.value = highspeedFares.value.map(fare => ({ ...fare }))
   }
 }
@@ -2009,11 +2086,6 @@ const loadFareData = async () => {
     ])
     versionsInitialized.value = true
 
-    // 高速船料金が空の場合はデフォルトを設定
-    if (highspeedFares.value.length === 0) {
-      initializeDefaults()
-    }
-
     // 割引設定
     await loadDiscounts()
   } catch (error) {
@@ -2181,30 +2253,7 @@ const setDefaultData = () => {
   editingFerryCategories.value = defaultCategories.map(category => cloneCategoryRecord(category))
 
   // デフォルトの高速船料金
-  const defaultHighspeedRouteIds: Array<keyof typeof HIGHSPEED_ROUTE_TRANSLATION_KEYS> = [
-    'hondo-oki',
-    'dozen-dogo',
-    'beppu-hishiura'
-  ]
-  const defaultHighspeedAdults = [6430, 4890, 4890]
-
-  highspeedFares.value = defaultHighspeedRouteIds.map((routeId, index) => {
-    const label = getHighspeedRouteLabel(routeId) ?? routeId
-    const adult = defaultHighspeedAdults[index]
-    return {
-      route: routeId,
-      routeLabel: label,
-      displayName: label,
-      routeName: label,
-      adult,
-      child: calculateChildFare(adult),
-      disabledAdult: null,
-      disabledChild: null,
-      type: 'highspeed',
-      versionId: selectedHighspeedVersionId.value ?? undefined
-    }
-  })
-
+  highspeedFares.value = buildHighspeedFareRows([])
   editingHighspeedFares.value = highspeedFares.value.map(fare => ({ ...fare }))
 
   // デフォルトの割引設定
@@ -2558,7 +2607,7 @@ watch(showEditModal, (isOpen) => {
     if (activeTab.value === 'ferry') {
       editingFerryCategories.value = ferryCategories.value.map(category => cloneCategoryRecord(category))
     } else if (activeTab.value === 'highspeed') {
-      editingHighspeedFares.value = highspeedFares.value.map(fare => ({ ...fare }))
+      editingHighspeedFares.value = buildHighspeedFareRows(highspeedFares.value).map(fare => ({ ...fare }))
     } else if (activeTab.value === 'local') {
       // 内航船料金の編集用データを初期化
       editingInnerIslandFare.value = {

@@ -1,0 +1,20 @@
+{
+  "ok": true,
+  "checkedAt": "2026-07-02T13:08:43.934Z",
+  "mode": "bus",
+  "id": "okinoshima",
+  "gtfsDir": "/Users/ag/works/FerryTransit/gtfs/current/bus/okinoshima",
+  "summary": {
+    "agencyCount": 2,
+    "routeCount": 13,
+    "stopCount": 69,
+    "tripCount": 64,
+    "stopTimeCount": 626,
+    "serviceCount": 5,
+    "feedStartDate": "20260101",
+    "feedEndDate": "20261231",
+    "feedVersion": "20260302_20260101-20261231"
+  },
+  "issues": [],
+  "warnings": []
+}

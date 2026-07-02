@@ -1,0 +1,20 @@
+{
+  "ok": true,
+  "checkedAt": "2026-07-02T13:08:43.655Z",
+  "mode": "bus",
+  "id": "nishinoshima",
+  "gtfsDir": "/Users/ag/works/FerryTransit/gtfs/current/bus/nishinoshima",
+  "summary": {
+    "agencyCount": 1,
+    "routeCount": 6,
+    "stopCount": 27,
+    "tripCount": 37,
+    "stopTimeCount": 467,
+    "serviceCount": 7,
+    "feedStartDate": "20260301",
+    "feedEndDate": "20261231",
+    "feedVersion": "20260220140915710489010da_20260301-20261231"
+  },
+  "issues": [],
+  "warnings": []
+}

@@ -5,6 +5,8 @@
     "origin": [
       "https://transit.oki-digilab.com",
       "https://oki-ferryguide.web.app",
+      "https://oki-ferryguide-dev.web.app",
+      "https://oki-ferryguide-dev.firebaseapp.com",
       "capacitor://localhost",
       "http://localhost",
       "https://localhost"
