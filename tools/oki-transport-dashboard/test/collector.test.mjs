@@ -18,6 +18,7 @@ test('アンカーと単独ファイル URL を抽出できる', () => {
   const html = `
     <a href="/files/timetable.pdf" title="PDF">「時刻表：２０２６年３月１日～１２月３１日」</a>
     <a href="https://example.test/fare.pdf"><img alt="運賃表"></a>
+    <a href="[%link%]">[%title%]</a>
     <script>const pdf="/assets/isokaze2026.pdf"</script>
   `
   const links = extractLinksFromHtml(html, 'https://example.test/page/')
@@ -28,6 +29,14 @@ test('アンカーと単独ファイル URL を抽出できる', () => {
   assert.equal(links[1].text, '運賃表')
   const files = extractStandaloneFileUrls(html, 'https://example.test/page/')
   assert.equal(files.some((file) => file.url === 'https://example.test/assets/isokaze2026.pdf'), true)
+})
+
+test('監視対象のお知らせURLは現行の一覧ページを指す', () => {
+  const ichibata = SOURCES.find((item) => item.id === 'oki-ichibata')
+  assert.equal(ichibata?.pages.find((page) => page.label === '新着情報')?.url, 'https://oki.ichibata.co.jp/news/')
+
+  const chibu = SOURCES.find((item) => item.id === 'chibu-village')
+  assert.equal(chibu?.pages.find((page) => page.label === 'お知らせ')?.url, 'http://www.chibu.jp/news/')
 })
 
 test('HTML 本文の時刻表ページを資料として扱える', () => {
@@ -78,7 +87,7 @@ test('隠岐汽船は時刻表ダウンロードページを監視する', () =>
   const source = SOURCES.find((item) => item.id === 'oki-kisen')
   assert.equal(source?.pages.some((page) => (
     page.role === 'timetable' &&
-    page.label === 'フェリー・高速船時刻表ダウンロード' &&
+    page.label === 'フェリー・高速船時刻表' &&
     page.url === 'https://www.oki-kisen.co.jp/download/dl-timetable/29'
   )), true)
 })

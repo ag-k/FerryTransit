@@ -411,7 +411,7 @@ export function extractJapaneseDate(text = '') {
 }
 
 function extractYearMonthDayFromUrl(url) {
-  const value = decodeURIComponent(url)
+  const value = safeDecodeURIComponent(url)
   const compact = value.match(/(?:^|[^\d])((?:20)\d{2})(\d{2})(\d{2})(?:[^\d]|$)/)
   if (compact) return toIsoDate(compact[1], compact[2], compact[3])
   return extractJapaneseDate(value)
@@ -453,6 +453,7 @@ function extractImageAlt(html) {
 function normalizeUrl(href, baseUrl) {
   const trimmed = href.trim()
   if (!trimmed || /^(javascript:|mailto:|tel:|#)/i.test(trimmed)) return null
+  if (/\[%.*?%]/.test(trimmed)) return null
   try {
     const url = new URL(trimmed, baseUrl)
     url.hash = url.hash && url.pathname === new URL(baseUrl).pathname ? url.hash : url.hash
@@ -656,7 +657,15 @@ function decodeHtmlEntities(text) {
 function filenameFromUrl(url) {
   const pathname = new URL(url).pathname
   const name = pathname.split('/').filter(Boolean).pop() || new URL(url).hostname
-  return decodeURIComponent(name)
+  return safeDecodeURIComponent(name)
+}
+
+function safeDecodeURIComponent(value) {
+  try {
+    return decodeURIComponent(value)
+  } catch {
+    return value
+  }
 }
 
 function sanitizeFileName(value) {

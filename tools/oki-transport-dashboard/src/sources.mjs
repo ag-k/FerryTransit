@@ -39,7 +39,7 @@ export const SOURCES = [
       { role: 'timetable', label: '路線バスのご案内', url: 'https://oki.ichibata.co.jp/route.html' },
       { role: 'timetable', label: '路線バス時刻表', url: 'https://oki.ichibata.co.jp/route-time.html' },
       { role: 'timetable', label: '空港連絡バス', url: 'https://oki.ichibata.co.jp/airport.html' },
-      { role: 'notices', label: '新着情報', url: 'https://oki.ichibata.co.jp/news.html' }
+      { role: 'notices', label: '新着情報', url: 'https://oki.ichibata.co.jp/news/' }
     ],
     expectedKeywords: ['路線バス', '時刻表', '運賃表']
   },
@@ -97,7 +97,7 @@ export const SOURCES = [
     area: '知夫村',
     pages: [
       { role: 'timetable', label: 'アクセス・島内交通', url: 'http://www.chibu.jp/access.html' },
-      { role: 'notices', label: 'お知らせ', url: 'http://www.chibu.jp/news.html' }
+      { role: 'notices', label: 'お知らせ', url: 'http://www.chibu.jp/news/' }
     ],
     expectedKeywords: ['アクセス', '島内交通', '時刻表'],
     includeImageDocuments: true
