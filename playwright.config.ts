@@ -5,7 +5,7 @@ const HOST = process.env.PLAYWRIGHT_HOST ?? "localhost";
 const baseURL = process.env.PLAYWRIGHT_BASE_URL ?? `http://${HOST}:${PORT}`;
 
 export default defineConfig({
-  testDir: "./src/tests/e2e",
+  testDir: "./src/test/e2e",
   timeout: 60_000,
   expect: {
     timeout: 10_000,

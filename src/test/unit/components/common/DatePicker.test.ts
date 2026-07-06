@@ -36,6 +36,22 @@ describe("DatePicker", () => {
     expect(wrapper.find("button").text()).toBe("TODAY");
   });
 
+  it("displays the correct date value", () => {
+    const wrapper = mount(DatePicker, {
+      props: {
+        modelValue: parseYmdAsJstMidnight("2025-06-28"),
+      },
+      global: {
+        mocks: {
+          $t: (key: string) => key,
+        },
+      },
+    });
+
+    const input = wrapper.find('input[type="date"]');
+    expect((input.element as HTMLInputElement).value).toBe("2025-06-28");
+  });
+
   it("emits update:modelValue when date is changed", async () => {
     const date = parseYmdAsJstMidnight("2025-06-28");
     const wrapper = mount(DatePicker, {

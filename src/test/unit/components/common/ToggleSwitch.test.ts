@@ -1,6 +1,6 @@
 import { describe, it, expect } from 'vitest'
 import { mount } from '@vue/test-utils'
-import ToggleSwitch from '../ToggleSwitch.vue'
+import ToggleSwitch from '~/components/common/ToggleSwitch.vue'
 
 describe('ToggleSwitch', () => {
   it('ラベルが表示される', () => {

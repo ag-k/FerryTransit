@@ -1,0 +1,74 @@
+import { describe, it, expect } from "vitest";
+import { readFileSync } from "node:fs";
+import { resolve } from "node:path";
+
+// このテストは実ファイルの内容を検証するため、リポジトリルート（Vitest 実行ディレクトリ）を基準にパスを解決する
+const ROOT = process.cwd();
+
+describe("FarePage Tab Navigation", () => {
+  it("should have overflow-x-auto and scrollbar-hide classes for responsive design", () => {
+    // This test verifies that the tab navigation includes the necessary CSS classes
+    // to prevent overflow on smaller screens
+
+    // Read the fare.vue file content to verify the classes are present
+    const filePath = resolve(ROOT, "src/pages/fare.vue");
+    const fileContent = readFileSync(filePath, "utf8");
+
+    // Check if the tab navigation has the overflow handling classes
+    expect(fileContent).toContain("overflow-x-auto");
+    expect(fileContent).toContain("scrollbar-hide");
+    expect(fileContent).toContain("flex-shrink-0");
+
+    // Verify the old problematic classes are removed
+    expect(fileContent).not.toContain("space-x-8");
+
+    // Verify tab semantics & clearer "tab" styling exist
+    expect(fileContent).toContain('role="tablist"');
+    expect(fileContent).toContain('role="tab"');
+    expect(fileContent).toContain("rounded-t-lg");
+
+    // Sticky tabs: keep the tab row visible when scrolling
+    expect(fileContent).toContain("sticky");
+    expect(fileContent).toContain("top-0");
+
+    // Switching tabs scrolls back to the top (tab bar)
+    expect(fileContent).toContain("scrollIntoView");
+  });
+
+  it("should have scrollbar-hide utility in Tailwind config", () => {
+    const tailwindConfigPath = resolve(ROOT, "tailwind.config.js");
+    const configContent = readFileSync(tailwindConfigPath, "utf8");
+
+    // Verify the scrollbar-hide utility is configured
+    expect(configContent).toContain("scrollbar-hide");
+    expect(configContent).toContain("-ms-overflow-style");
+    expect(configContent).toContain("scrollbar-width");
+    expect(configContent).toContain("&::-webkit-scrollbar");
+  });
+
+  it("should have enhanced scrollbar hiding styles in global CSS", () => {
+    const cssPath = resolve(ROOT, "src/assets/css/main.scss");
+    const cssContent = readFileSync(cssPath, "utf8");
+
+    // Verify enhanced scrollbar hiding styles
+    expect(cssContent).toContain(".scrollbar-hide::-webkit-scrollbar");
+    expect(cssContent).toContain("display: none !important");
+    expect(cssContent).toContain("width: 0px !important");
+    expect(cssContent).toContain("background: transparent !important");
+  });
+
+  it("should include bus fare tab and bus fare rows", () => {
+    const filePath = resolve(ROOT, "src/pages/fare.vue");
+    const fileContent = readFileSync(filePath, "utf8");
+
+    expect(fileContent).toContain("{ id: 'bus', nameKey: 'TRANSPORT_MODES.BUS' }");
+    expect(fileContent).toContain("const shipTabs = [");
+    expect(fileContent).toContain("const activeBusFare = computed");
+    expect(fileContent).toContain('id="fare-tabpanel-bus"');
+    expect(fileContent).toContain("operatorKey: 'AMA_TOWN_BUS', fareTypeKey: 'BUS_FLAT_FARE', fare: 200");
+    expect(fileContent).toContain("operatorKey: 'NISHINOSHIMA_TOWN_BUS', fareTypeKey: 'BUS_FLAT_FARE', fare: 200");
+    expect(fileContent).toContain("operatorKey: 'CHIBU_VILLAGE_BUS', fareTypeKey: 'BUS_FLAT_FARE', fare: 100");
+    expect(fileContent).toContain("operatorKey: 'OKI_ICHIBATA_BUS', fareTypeKey: 'BUS_MAX_FARE', fare: 500");
+    expect(fileContent).toContain("operatorKey: 'OKINOSHIMA_TOWN_BUS', fareTypeKey: 'BUS_FLAT_FARE', fare: 300");
+  });
+});

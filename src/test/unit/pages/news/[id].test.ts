@@ -164,7 +164,7 @@ beforeAll(async () => {
   })
   await router.push('/news/1')
   await router.isReady()
-  NewsDetailPage = (await import('../[id].vue')).default
+  NewsDetailPage = (await import('~/pages/news/[id].vue')).default
 })
 
 beforeEach(async () => {

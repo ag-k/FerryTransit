@@ -1,7 +1,7 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest'
 import { mount } from '@vue/test-utils'
 import { nextTick } from 'vue'
-import RoutesAdminPage from '../routes.vue'
+import RoutesAdminPage from '~/pages/admin/routes.vue'
 import { ref } from 'vue'
 
 // Mocks

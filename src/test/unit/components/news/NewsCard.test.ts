@@ -1,7 +1,7 @@
 import { describe, it, expect, vi } from 'vitest'
 import { mount } from '@vue/test-utils'
 import { createI18n } from 'vue-i18n'
-import NewsCard from '../NewsCard.vue'
+import NewsCard from '~/components/news/NewsCard.vue'
 import type { News } from '~/types'
 
 // useNewsのモック

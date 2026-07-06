@@ -96,6 +96,15 @@ node scripts/cap-build.mjs android --dev --open
 - プラットフォーム別の Bundle ID（iOS: `com.naturebot-lab.FerryTransit`, Android: `com.naturebotlab.ferrytransit`）
 - 環境ファイル（`.env.development` または `.env.production`）の自動切り替え
 
+## テスト構成
+
+テストはすべて `src/test/` 配下に集約されています。新規テストもこの構成に従って配置してください。
+
+- **ユニットテスト**: `src/test/unit/**` — ソースディレクトリ構成（`components/`, `composables/`, `pages/`, `stores/`, `utils/` など）をミラーリングし、ファイル名は `*.test.ts` に統一
+- **E2E テスト**: `src/test/e2e/**` — Playwright（`playwright.config.ts` の `testDir` が参照）
+- **セットアップ・モック**: `src/test/setup.ts`, `src/test/mocks/`
+- ソース隣接の `__tests__/` ディレクトリや `*.spec.ts` 命名、`src/tests/`（複数形）は使用しない
+
 ## 主要機能
 
 ### 実装済み機能

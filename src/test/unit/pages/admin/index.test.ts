@@ -1,7 +1,7 @@
 import { describe, it, expect, beforeEach, vi } from 'vitest'
 import { mount, flushPromises } from '@vue/test-utils'
 import { setActivePinia, createPinia } from 'pinia'
-import DashboardPage from '../index.vue'
+import DashboardPage from '~/pages/admin/index.vue'
 
 const mockGetPvTrend = vi.fn()
 const mockGetDailyAnalytics = vi.fn()

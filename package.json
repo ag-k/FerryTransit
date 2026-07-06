@@ -29,7 +29,7 @@
     "test:all": "vitest run src/test/unit/api/ src/test/integration/",
     "test:e2e": "playwright test",
     "test:e2e:ui": "playwright test --ui",
-    "test:e2e:appstore-screenshots": "APPSTORE_STATIC_ROOT=.output/public APPSTORE_SCREENSHOT_DIR=output/appstore-screenshots/ios-6.7-ja playwright test -c playwright.appstore.config.ts src/tests/e2e/appstore-screenshots.spec.ts --workers=1",
+    "test:e2e:appstore-screenshots": "APPSTORE_STATIC_ROOT=.output/public APPSTORE_SCREENSHOT_DIR=output/appstore-screenshots/ios-6.7-ja playwright test -c playwright.appstore.config.ts src/test/e2e/appstore-screenshots.spec.ts --workers=1",
     "lint": "eslint src",
     "typecheck": "nuxt typecheck",
     "firebase:emulators": "firebase emulators:start",

@@ -2,7 +2,7 @@ import { describe, it, expect, beforeEach } from 'vitest'
 import { mount } from '@vue/test-utils'
 import { createI18n } from 'vue-i18n'
 import { createPinia } from 'pinia'
-import HistoryItem from '../HistoryItem.vue'
+import HistoryItem from '~/components/history/HistoryItem.vue'
 import { useFerryStore } from '~/stores/ferry'
 
 // Mock i18n messages

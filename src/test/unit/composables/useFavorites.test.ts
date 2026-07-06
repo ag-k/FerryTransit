@@ -1,6 +1,6 @@
 import { describe, it, expect, beforeEach, vi } from 'vitest'
 import { setActivePinia, createPinia } from 'pinia'
-import { useFavorites } from './useFavorites'
+import { useFavorites } from '@/composables/useFavorites'
 import { useFavoriteStore } from '@/stores/favorite'
 import { useUIStore } from '@/stores/ui'
 import { useFerryStore } from '@/stores/ferry'

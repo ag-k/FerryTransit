@@ -25,7 +25,7 @@ export default defineConfig({
       '**/node_modules/**',
       '.nuxt',
       'dist',
-      'src/tests/e2e/**',
+      'src/test/e2e/**',
       'src/functions/node_modules/**'
     ],
     coverage: {

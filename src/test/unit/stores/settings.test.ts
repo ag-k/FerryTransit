@@ -1,6 +1,6 @@
 import { describe, it, expect, beforeEach, vi } from 'vitest'
 import { setActivePinia, createPinia } from 'pinia'
-import { useSettingsStore } from '../settings'
+import { useSettingsStore } from '~/stores/settings'
 
 // localStorage のモック
 const localStorageMock = {
