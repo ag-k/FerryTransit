@@ -94,22 +94,21 @@ xmlns="http://www.w3.org/2000/svg" width="48" height="48" fill="currentColor"
           <table class="min-w-[760px] w-full text-sm">
             <thead class="bg-gray-50 text-left text-xs font-semibold uppercase text-gray-600 dark:bg-slate-800 dark:text-gray-300">
               <tr>
+                <th scope="col" class="px-4 py-3">{{ $t('TIMETABLE_VALIDITY_OPERATOR') }}</th>
                 <th scope="col" class="px-4 py-3">{{ $t('TIMETABLE_VALIDITY_MODE') }}</th>
-                <th scope="col" class="px-4 py-3">{{ $t('ROUTE') }}</th>
                 <th scope="col" class="px-4 py-3">{{ $t('TRANSPORT_NAME') }}</th>
                 <th scope="col" class="px-4 py-3 whitespace-nowrap">{{ $t('VALID_FROM') }}</th>
                 <th scope="col" class="px-4 py-3 whitespace-nowrap">{{ $t('VALID_UNTIL') }}</th>
-                <th scope="col" class="px-4 py-3 whitespace-nowrap">{{ $t('TIMETABLE_VALIDITY_STATUS') }}</th>
               </tr>
             </thead>
             <tbody class="divide-y divide-gray-200 dark:divide-gray-700">
               <tr v-if="isValidityLoading && timetableValidityRows.length === 0">
-                <td colspan="6" class="px-4 py-6 text-center text-gray-600 dark:text-gray-300">
+                <td colspan="5" class="px-4 py-6 text-center text-gray-600 dark:text-gray-300">
                   {{ $t('TIMETABLE_VALIDITY_LOADING') }}
                 </td>
               </tr>
               <tr v-else-if="timetableValidityRows.length === 0">
-                <td colspan="6" class="px-4 py-6 text-center text-gray-600 dark:text-gray-300">
+                <td colspan="5" class="px-4 py-6 text-center text-gray-600 dark:text-gray-300">
                   {{ $t('TIMETABLE_VALIDITY_EMPTY') }}
                 </td>
               </tr>
@@ -117,23 +116,17 @@ xmlns="http://www.w3.org/2000/svg" width="48" height="48" fill="currentColor"
                 <tr
                   v-for="row in timetableValidityRows"
                   :key="row.key"
-                  class="text-gray-800 dark:text-gray-100">
+                  class="text-gray-800 dark:text-gray-100"
+                  :class="{ 'border-t-4 border-gray-200 dark:border-gray-600': row.startsOperatorGroup }">
+                  <td class="px-4 py-3 font-semibold text-gray-700 dark:text-gray-200">{{ row.operatorLabel }}</td>
                   <td class="px-4 py-3">
                     <span class="inline-flex items-center rounded-full bg-slate-100 px-2.5 py-1 text-xs font-medium text-slate-700 dark:bg-slate-700 dark:text-slate-100">
                       {{ formatModeLabel(row.mode) }}
                     </span>
                   </td>
-                  <td class="px-4 py-3 font-medium">{{ row.routeLabel }}</td>
-                  <td class="px-4 py-3 text-gray-600 dark:text-gray-300">{{ row.serviceLabel }}</td>
+                  <td class="px-4 py-3 font-medium">{{ row.transportLabel }}</td>
                   <td class="px-4 py-3 whitespace-nowrap">{{ formatValidityDate(row.startDate) }}</td>
                   <td class="px-4 py-3 whitespace-nowrap font-semibold">{{ formatValidityDate(row.endDate) }}</td>
-                  <td class="px-4 py-3 whitespace-nowrap">
-                    <span
-                      class="inline-flex items-center rounded-full px-2.5 py-1 text-xs font-medium"
-                      :class="getValidityStatusClass(row)">
-                      {{ getValidityStatusLabel(row) }}
-                    </span>
-                  </td>
                 </tr>
               </template>
             </tbody>
@@ -225,42 +218,26 @@ fill-rule="evenodd"
 import { computed, onMounted, ref } from 'vue'
 import NewsSection from '@/components/news/NewsSection.vue'
 import StatusAlerts from '@/components/common/StatusAlerts.vue'
+import { SHIP_DETAILS, type ShipId } from '@/data/ships'
 import { useFerryStore } from '@/stores/ferry'
-import type { TransportMode, Trip } from '@/types'
+import type { TransportMode } from '@/types'
 import {
   loadBusRouteValiditySummaries,
   type BusRouteValiditySummary
 } from '@/utils/gtfsBusTimetable'
-import { formatDateYmdJst } from '@/utils/jstDate'
+import {
+  buildTransportTimetableValidityRows,
+  normalizeTimetableValidityDate,
+  type TimetableValidityRow,
+  type TimetableValiditySource
+} from '@/utils/timetableValidity'
 
 const localePath = useLocalePath()
 const { locale, t, te } = useI18n()
 const ferryStore = useFerryStore()
 const busValiditySummaries = ref<BusRouteValiditySummary[]>([])
 const isValidityLoading = ref(false)
-const todayYmd = computed(() => formatDateYmdJst(new Date()))
 const TIMETABLE_VALIDITY_LOAD_TIMEOUT_MS = 8000
-
-type TimetableValidityRow = {
-  key: string
-  mode: TransportMode
-  routeLabel: string
-  serviceLabel: string
-  startDate: string
-  endDate: string
-}
-
-const MODE_ORDER: Record<TransportMode, number> = {
-  FERRY: 0,
-  AIR: 1,
-  BUS: 2,
-  WALK: 3
-}
-
-const normalizeYmd = (value?: string): string | null => {
-  const normalized = String(value ?? '').trim().replace(/\//g, '-').slice(0, 10)
-  return /^\d{4}-\d{2}-\d{2}$/.test(normalized) ? normalized : null
-}
 
 const normalizeMode = (mode?: TransportMode): TransportMode => mode || 'FERRY'
 
@@ -269,95 +246,54 @@ const translateKey = (key?: string | null): string => {
   return te(key) ? t(key) : key
 }
 
-const formatLocationLabel = (locationId?: string): string => {
-  if (!locationId) return t('UNKNOWN')
-  return ferryStore.getLocationLabel(locationId) ?? translateKey(locationId)
+const resolveTransportOperatorKey = (transportKey: string, operatorId?: string): string => {
+  const shipOperatorKey = SHIP_DETAILS[transportKey as ShipId]?.operatorKey
+  return shipOperatorKey || operatorId || 'UNKNOWN'
 }
 
-const formatTripRouteLabel = (trip: Trip): string => {
-  const separator = locale.value === 'ja' ? '→' : '->'
-  const endpointLabel = `${formatLocationLabel(trip.departure)} ${separator} ${formatLocationLabel(trip.arrival)}`
+const OKI_KISEN_FERRY_GROUP = new Set(['FERRY_OKI', 'FERRY_KUNIGA', 'FERRY_SHIRASHIMA'])
 
-  if (normalizeMode(trip.mode) === 'BUS' && trip.via) {
-    return `${trip.via} (${endpointLabel})`
-  }
-
-  return endpointLabel
+const resolveTransportValidityKey = (transportKey: string): string => {
+  if (OKI_KISEN_FERRY_GROUP.has(transportKey)) return 'OKI_KISEN_FERRY_GROUP'
+  return transportKey
 }
 
-const formatBusSummaryRouteLabel = (summary: BusRouteValiditySummary): string => {
-  const routeName = summary.routeName || translateKey(summary.tripName)
-  const townLabel = summary.townLabelKey ? translateKey(summary.townLabelKey) : ''
-
-  if (!townLabel || routeName.includes(townLabel)) return routeName
-  return `${townLabel} ${routeName}`
-}
-
-const mergeValidityRow = (
-  rowsByKey: Map<string, TimetableValidityRow>,
-  row: TimetableValidityRow
-) => {
-  const existing = rowsByKey.get(row.key)
-
-  if (existing) {
-    if (row.startDate < existing.startDate) existing.startDate = row.startDate
-    if (row.endDate > existing.endDate) existing.endDate = row.endDate
-    return
-  }
-
-  rowsByKey.set(row.key, row)
+const resolveTransportValidityLabel = (transportKey: string): string => {
+  if (OKI_KISEN_FERRY_GROUP.has(transportKey)) return translateKey('OKI_KISEN_FERRY_FLEET_LABEL')
+  return translateKey(transportKey)
 }
 
 const timetableValidityRows = computed<TimetableValidityRow[]>(() => {
-  const rowsByKey = new Map<string, TimetableValidityRow>()
+  const sources: TimetableValiditySource[] = []
 
   for (const trip of ferryStore.timetableData) {
-    const startDate = normalizeYmd(trip.startDate)
-    const endDate = normalizeYmd(trip.endDate)
-    if (!startDate || !endDate) continue
-
     const mode = normalizeMode(trip.mode)
-    const routeLabel = formatTripRouteLabel(trip)
-    const serviceLabel = translateKey(trip.name)
-    const key = [mode, serviceLabel, routeLabel].join('|')
+    const operatorKey = resolveTransportOperatorKey(trip.name, trip.operatorId)
 
-    mergeValidityRow(rowsByKey, {
-      key,
+    sources.push({
       mode,
-      routeLabel,
-      serviceLabel,
-      startDate,
-      endDate
+      operatorKey,
+      operatorLabel: translateKey(operatorKey),
+      transportKey: resolveTransportValidityKey(trip.name),
+      transportLabel: resolveTransportValidityLabel(trip.name),
+      startDate: trip.startDate,
+      endDate: trip.endDate
     })
   }
 
   for (const summary of busValiditySummaries.value) {
-    const startDate = normalizeYmd(summary.startDate)
-    const endDate = normalizeYmd(summary.endDate)
-    if (!startDate || !endDate) continue
-
-    const mode: TransportMode = 'BUS'
-    const routeLabel = formatBusSummaryRouteLabel(summary)
-    const serviceLabel = translateKey(summary.tripName)
-    const key = [mode, serviceLabel, routeLabel].join('|')
-
-    mergeValidityRow(rowsByKey, {
-      key,
-      mode,
-      routeLabel,
-      serviceLabel,
-      startDate,
-      endDate
+    sources.push({
+      mode: 'BUS',
+      operatorKey: summary.operatorId,
+      operatorLabel: translateKey(summary.operatorId),
+      transportKey: [summary.operatorId, summary.tripName].join('|'),
+      transportLabel: translateKey(summary.tripName),
+      startDate: summary.startDate,
+      endDate: summary.endDate
     })
   }
 
-  return Array.from(rowsByKey.values()).sort((left, right) => {
-    const modeDiff = MODE_ORDER[left.mode] - MODE_ORDER[right.mode]
-    if (modeDiff !== 0) return modeDiff
-    const routeDiff = left.routeLabel.localeCompare(right.routeLabel, locale.value)
-    if (routeDiff !== 0) return routeDiff
-    return left.serviceLabel.localeCompare(right.serviceLabel, locale.value)
-  })
+  return buildTransportTimetableValidityRows(sources, locale.value)
 })
 
 const formatModeLabel = (mode: TransportMode): string => {
@@ -365,7 +301,7 @@ const formatModeLabel = (mode: TransportMode): string => {
 }
 
 const formatValidityDate = (date: string): string => {
-  const normalized = normalizeYmd(date)
+  const normalized = normalizeTimetableValidityDate(date)
   if (!normalized) return t('UNKNOWN')
 
   if (locale.value === 'ja') {
@@ -374,32 +310,6 @@ const formatValidityDate = (date: string): string => {
   }
 
   return normalized
-}
-
-const getValidityStatus = (row: TimetableValidityRow): 'active' | 'expired' | 'upcoming' => {
-  if (row.startDate > todayYmd.value) return 'upcoming'
-  if (row.endDate < todayYmd.value) return 'expired'
-  return 'active'
-}
-
-const getValidityStatusLabel = (row: TimetableValidityRow): string => {
-  const status = getValidityStatus(row)
-  if (status === 'expired') return t('TIMETABLE_VALIDITY_STATUS_EXPIRED')
-  if (status === 'upcoming') return t('TIMETABLE_VALIDITY_STATUS_UPCOMING')
-  return t('TIMETABLE_VALIDITY_STATUS_ACTIVE')
-}
-
-const getValidityStatusClass = (row: TimetableValidityRow): string => {
-  const status = getValidityStatus(row)
-
-  if (status === 'expired') {
-    return 'bg-red-50 text-red-700 dark:bg-red-900/30 dark:text-red-200'
-  }
-  if (status === 'upcoming') {
-    return 'bg-blue-50 text-blue-700 dark:bg-blue-900/30 dark:text-blue-200'
-  }
-
-  return 'bg-emerald-50 text-emerald-700 dark:bg-emerald-900/30 dark:text-emerald-200'
 }
 
 const withValidityLoadTimeout = (promise: Promise<unknown>): Promise<unknown> => {
