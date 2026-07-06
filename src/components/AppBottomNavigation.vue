@@ -5,7 +5,7 @@
     :style="bottomNavStyle"
   >
     <div class="mx-auto max-w-screen-lg px-2">
-      <div class="grid grid-cols-4">
+      <div class="grid grid-cols-5">
         <NuxtLink 
           v-for="item in navItems" 
           :key="item.path"
@@ -81,6 +81,11 @@ const navItems = computed(() => [
     path: localePath('/status'),
     label: 'STATUS',
     icon: 'M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z'
+  },
+  {
+    path: localePath('/favorites'),
+    label: 'favorites.title',
+    icon: 'M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z'
   },
   {
     path: localePath('/settings'),

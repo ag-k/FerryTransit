@@ -177,6 +177,16 @@ export type BusRouteLabel = {
   routeName: string
 }
 
+export type BusRouteValiditySummary = {
+  feedId: BusFeedId
+  operatorId: string
+  tripName: string
+  routeName: string
+  townLabelKey: string | null
+  startDate: string
+  endDate: string
+}
+
 export type BusStopRouteFilter = {
   key: string
   label: string
@@ -585,6 +595,89 @@ export const loadBusSearchFeed = (feedId: BusFeedId): Promise<BusSearchFeed> => 
   const promise = fetchJsonFromPath<BusSearchFeed>(`${BUS_SEARCH_BASE_PATH}/${feedId}.json`)
   busSearchFeedPromises.set(feedId, promise)
   return promise
+}
+
+export const loadBusRouteValiditySummaries = async (): Promise<BusRouteValiditySummary[]> => {
+  const feeds = await Promise.all(
+    (Object.keys(BUS_FEED_CONFIGS) as BusFeedId[]).map(feedId => loadBusSearchFeed(feedId))
+  )
+
+  return feeds.flatMap(feed => buildBusRouteValiditySummaries(feed)).sort((left, right) => {
+    const modeDiff = String(left.townLabelKey ?? '').localeCompare(String(right.townLabelKey ?? ''), 'ja')
+    if (modeDiff !== 0) return modeDiff
+    const operatorDiff = left.operatorId.localeCompare(right.operatorId, 'ja')
+    if (operatorDiff !== 0) return operatorDiff
+    return left.routeName.localeCompare(right.routeName, 'ja')
+  })
+}
+
+export const buildBusRouteValiditySummaries = (feed: BusSearchFeed): BusRouteValiditySummary[] => {
+  const config = BUS_FEED_CONFIGS[feed.feedId]
+  const summariesByKey = new Map<string, BusRouteValiditySummary>()
+
+  for (const busTrip of feed.trips || []) {
+    const service = feed.services?.[busTrip.serviceId]
+    if (!service?.startDate || !service?.endDate) continue
+
+    const route = feed.routes?.[busTrip.routeId]
+    const routeForConfig: GtfsRoute | undefined = route
+      ? {
+          routeId: busTrip.routeId,
+          agencyId: route.agencyId,
+          shortName: route.shortName,
+          longName: route.longName || route.shortName || busTrip.headsign
+        }
+      : undefined
+    const gtfsTrip: GtfsTrip = {
+      routeId: busTrip.routeId,
+      serviceId: busTrip.serviceId,
+      tripId: busTrip.tripId,
+      headsign: busTrip.headsign,
+      shortName: busTrip.shortName
+    }
+    const operatorId = config.resolveOperatorId?.(routeForConfig, gtfsTrip) ?? config.operatorId
+    const tripName = config.resolveTripName?.(routeForConfig, gtfsTrip) ?? config.tripName
+    const routeName = config.formatRouteName(routeForConfig, gtfsTrip) ||
+      route?.shortName ||
+      route?.longName ||
+      busTrip.shortName ||
+      busTrip.headsign ||
+      normalizeFallbackBusRouteLabel(tripName)
+    const townLabelKeys = Array.from(new Set(
+      (busTrip.stops || [])
+        .map(stop => getBusStopTownLabelKey(stop?.[0]))
+        .filter((townLabelKey): townLabelKey is string => Boolean(townLabelKey))
+    ))
+    const townLabelKey = townLabelKeys.length === 1
+      ? townLabelKeys[0] ?? null
+      : feed.townLabelKey ?? null
+    const key = [
+      feed.feedId,
+      operatorId,
+      tripName,
+      townLabelKey ?? 'BUS_STOPS',
+      routeName
+    ].join('|')
+    const existing = summariesByKey.get(key)
+
+    if (existing) {
+      if (service.startDate < existing.startDate) existing.startDate = service.startDate
+      if (service.endDate > existing.endDate) existing.endDate = service.endDate
+      continue
+    }
+
+    summariesByKey.set(key, {
+      feedId: feed.feedId,
+      operatorId,
+      tripName,
+      routeName,
+      townLabelKey,
+      startDate: service.startDate,
+      endDate: service.endDate
+    })
+  }
+
+  return Array.from(summariesByKey.values())
 }
 
 export const loadBusTripsForRoute = async (

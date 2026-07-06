@@ -1,5 +1,6 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest'
 import {
+  buildBusRouteValiditySummaries,
   clearBusSearchFeedCacheForTests,
   getAllPortConnectedBusStopCodes,
   getBusStopPortBadgeLabel,
@@ -940,6 +941,78 @@ describe('gtfsBusTimetable', () => {
         stopCodes: ['BUS_ICHIBATA_CONNECTION_matsue_station', 'BUS_ICHIBATA_CONNECTION_sakaiminato_port']
       })
     ]))
+  })
+
+  it('bus-searchデータから路線ごとの有効期限を集計する', () => {
+    const result = buildBusRouteValiditySummaries({
+      version: 1,
+      feedId: 'ama',
+      generatedAt: '2026-05-25T00:00:00.000Z',
+      operatorId: 'AMA_TOWN',
+      townLabelKey: 'AMA_CHO',
+      tripName: 'AMA_TOWN_BUS',
+      fare: 200,
+      routes: {
+        TOYODA: {
+          agencyId: '',
+          shortName: '',
+          longName: '豊田線'
+        }
+      },
+      stops: [
+        ['BUS_AMA_100_01', '豊田', 36.105471, 133.125968],
+        ['BUS_AMA_126_01', '隠岐汽船乗り場', 36.105058, 133.076744]
+      ],
+      services: {
+        weekday: {
+          startDate: '2026-04-01',
+          endDate: '2026-09-30',
+          activeDays: [1, 2, 3, 4, 5]
+        },
+        holiday: {
+          startDate: '2026-04-01',
+          endDate: '2027-03-31',
+          activeDays: [0, 6]
+        }
+      },
+      trips: [
+        {
+          tripId: 'weekday_1',
+          routeId: 'TOYODA',
+          serviceId: 'weekday',
+          headsign: '隠岐汽船乗り場',
+          shortName: '',
+          stops: [
+            ['BUS_AMA_100_01', '08:00', '08:00'],
+            ['BUS_AMA_126_01', '08:20', '08:20']
+          ]
+        },
+        {
+          tripId: 'holiday_1',
+          routeId: 'TOYODA',
+          serviceId: 'holiday',
+          headsign: '隠岐汽船乗り場',
+          shortName: '',
+          stops: [
+            ['BUS_AMA_100_01', '09:00', '09:00'],
+            ['BUS_AMA_126_01', '09:20', '09:20']
+          ]
+        }
+      ],
+      departuresByStop: {}
+    })
+
+    expect(result).toEqual([
+      {
+        feedId: 'ama',
+        operatorId: 'AMA_TOWN',
+        tripName: 'AMA_TOWN_BUS',
+        routeName: '豊田線',
+        townLabelKey: 'AMA_CHO',
+        startDate: '2026-04-01',
+        endDate: '2027-03-31'
+      }
+    ])
   })
 
   it('bus-searchデータから指定区間の候補だけを生成する', async () => {
