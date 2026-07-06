@@ -4,9 +4,219 @@ import { useRouteSearch } from "@/composables/useRouteSearch";
 import { useFerryStore } from "@/stores/ferry";
 import { mockTrips } from "@/test/mocks/mockData";
 import { clearBusSearchFeedCacheForTests } from "@/utils/gtfsBusTimetable";
+import type { Trip } from "@/types";
 
 const storageDataUrl = (path: string): string => {
   return `https://firebasestorage.googleapis.com/v0/b/test-bucket/o/${encodeURIComponent(path)}?alt=media`;
+};
+
+type TestFerryTrip = Omit<
+  Trip,
+  | "startDate"
+  | "endDate"
+  | "activeDays"
+  | "mode"
+  | "departureType"
+  | "arrivalType"
+  | "status"
+> &
+  Partial<
+    Pick<
+      Trip,
+      | "startDate"
+      | "endDate"
+      | "activeDays"
+      | "mode"
+      | "departureType"
+      | "arrivalType"
+      | "status"
+    >
+  >;
+
+const createTestFerryTrip = (trip: TestFerryTrip): Trip => ({
+  startDate: "2026-06-01",
+  endDate: "2026-08-07",
+  activeDays: [0, 1, 2, 3, 4, 5, 6],
+  mode: "FERRY",
+  departureType: "PORT",
+  arrivalType: "PORT",
+  status: 0,
+  ...trip,
+});
+
+const createRainbowJetMainlandDetourTrips = (): Trip[] => [
+  createTestFerryTrip({
+    tripId: 93,
+    nextId: 94,
+    name: "RAINBOWJET",
+    departure: "BEPPU",
+    departureTime: "08:00",
+    arrival: "HISHIURA",
+    arrivalTime: "08:10",
+  }),
+  createTestFerryTrip({
+    tripId: 94,
+    nextId: 95,
+    name: "RAINBOWJET",
+    departure: "HISHIURA",
+    departureTime: "08:14",
+    arrival: "SAIGO",
+    arrivalTime: "08:45",
+  }),
+  createTestFerryTrip({
+    tripId: 95,
+    nextId: 96,
+    name: "RAINBOWJET",
+    departure: "SAIGO",
+    departureTime: "08:54",
+    arrival: "HONDO_SHICHIRUI",
+    arrivalTime: "10:03",
+  }),
+  createTestFerryTrip({
+    tripId: 96,
+    nextId: 97,
+    name: "RAINBOWJET",
+    departure: "HONDO_SHICHIRUI",
+    departureTime: "16:50",
+    arrival: "SAIGO",
+    arrivalTime: "17:59",
+  }),
+  createTestFerryTrip({
+    tripId: 97,
+    nextId: 98,
+    name: "RAINBOWJET",
+    departure: "SAIGO",
+    departureTime: "18:05",
+    arrival: "HISHIURA",
+    arrivalTime: "18:36",
+  }),
+  createTestFerryTrip({
+    tripId: 98,
+    name: "RAINBOWJET",
+    departure: "HISHIURA",
+    departureTime: "18:39",
+    arrival: "BEPPU",
+    arrivalTime: "18:49",
+  }),
+];
+
+const createOkiAirportBusAirportToSaigoTrip = (): Trip => ({
+  tripId: 8100001,
+  nextId: 8100002,
+  startDate: "2026-03-29",
+  endDate: "2026-07-31",
+  activeDays: [0, 1, 2, 3, 4, 5, 6],
+  name: "OKI_AIRPORT_BUS",
+  mode: "BUS",
+  operatorId: "OKI_ICHIBATA",
+  serviceId: "oki_airport_bus_jal_oki_itami_20260329_20260731",
+  departure: "AIRPORT_OKI",
+  departureType: "AIRPORT",
+  departureTime: "14:50",
+  arrival: "SAIGO",
+  arrivalType: "PORT",
+  arrivalTime: "15:00",
+  status: 0,
+});
+
+const createOkiAirportBusSaigoToOfficeTrip = (): Trip => ({
+  tripId: 8100002,
+  startDate: "2026-03-29",
+  endDate: "2026-07-31",
+  activeDays: [0, 1, 2, 3, 4, 5, 6],
+  name: "OKI_AIRPORT_BUS",
+  mode: "BUS",
+  operatorId: "OKI_ICHIBATA",
+  serviceId: "oki_airport_bus_jal_oki_itami_20260329_20260731",
+  departure: "SAIGO",
+  departureType: "PORT",
+  departureTime: "15:01",
+  arrival: "BUS_OKINOSHIMA_eigyosho",
+  arrivalType: "STOP",
+  arrivalTime: "15:05",
+  status: 0,
+});
+
+const createOkiAirportBusOfficeToSaigoTrip = (): Trip => ({
+  tripId: 8100003,
+  nextId: 8100004,
+  startDate: "2026-03-29",
+  endDate: "2026-07-31",
+  activeDays: [0, 1, 2, 3, 4, 5, 6],
+  name: "OKI_AIRPORT_BUS",
+  mode: "BUS",
+  operatorId: "OKI_ICHIBATA",
+  serviceId: "oki_airport_bus_jal_oki_itami_20260329_20260731",
+  departure: "BUS_OKINOSHIMA_eigyosho",
+  departureType: "STOP",
+  departureTime: "14:10",
+  arrival: "SAIGO",
+  arrivalType: "PORT",
+  arrivalTime: "14:14",
+  status: 0,
+});
+
+const createOkiAirportBusSaigoToAirportTrip = (): Trip => ({
+  tripId: 8100004,
+  startDate: "2026-03-29",
+  endDate: "2026-07-31",
+  activeDays: [0, 1, 2, 3, 4, 5, 6],
+  name: "OKI_AIRPORT_BUS",
+  mode: "BUS",
+  operatorId: "OKI_ICHIBATA",
+  serviceId: "oki_airport_bus_jal_oki_itami_20260329_20260731",
+  departure: "SAIGO",
+  departureType: "PORT",
+  departureTime: "14:15",
+  arrival: "AIRPORT_OKI",
+  arrivalType: "AIRPORT",
+  arrivalTime: "14:25",
+  status: 0,
+});
+
+const createJalOkiToItamiTrip = (): Trip => ({
+  tripId: 8000002,
+  startDate: "2026-03-29",
+  endDate: "2026-07-31",
+  activeDays: [0, 1, 2, 3, 4, 5, 6],
+  name: "JAL_OKI_ITAMI",
+  mode: "AIR",
+  operatorId: "JAL",
+  serviceId: "jal_oki_itami_20260329_20260731",
+  vehicleId: "JAL2332",
+  departure: "AIRPORT_OKI",
+  departureType: "AIRPORT",
+  departureTime: "15:05",
+  arrival: "AIRPORT_ITAMI",
+  arrivalType: "AIRPORT",
+  arrivalTime: "15:45",
+  status: 0,
+});
+
+const stubEmptyOkinoshimaBusSearchFeed = () => {
+  const fetchMock = vi.fn(() =>
+    Promise.resolve({
+      ok: true,
+      status: 200,
+      json: () =>
+        Promise.resolve({
+          version: 1,
+          feedId: "okinoshima",
+          generatedAt: "2026-06-08T00:00:00.000Z",
+          operatorId: "OKINOSHIMA",
+          townLabelKey: "OKINOSHIMA_CHO",
+          tripName: "OKINOSHIMA_BUS",
+          fare: 500,
+          routes: {},
+          stops: [],
+          services: {},
+          trips: [],
+          departuresByStop: {},
+        }),
+    } as Response)
+  );
+  vi.stubGlobal("fetch", fetchMock);
+  return fetchMock;
 };
 
 // Mock useFerryData
@@ -60,6 +270,12 @@ vi.mock("@/stores/fare", () => ({
         {
           id: "hondo-shichirui-beppu",
           departure: "HONDO_SHICHIRUI",
+          arrival: "BEPPU",
+          fares: { adult: 6680, child: 3340 },
+        },
+        {
+          id: "hondo-beppu",
+          departure: "HONDO",
           arrival: "BEPPU",
           fares: { adult: 6680, child: 3340 },
         },
@@ -134,6 +350,12 @@ vi.mock("@/stores/fare", () => ({
         {
           id: "hondo-shichirui-beppu",
           departure: "HONDO_SHICHIRUI",
+          arrival: "BEPPU",
+          fares: { adult: 6680, child: 3340 },
+        },
+        {
+          id: "hondo-beppu",
+          departure: "HONDO",
           arrival: "BEPPU",
           fares: { adult: 6680, child: 3340 },
         },
@@ -295,6 +517,188 @@ describe("useRouteSearch", () => {
       });
       expect(results[0].segments[0].fare).toBe(0);
       expect(results[0].transferCount).toBe(0);
+    });
+
+    it("should find direct Oki airport shuttle bus routes with fare", async () => {
+      const store = useFerryStore();
+      store.timetableData = [createOkiAirportBusSaigoToAirportTrip()];
+
+      const { searchRoutes } = useRouteSearch();
+
+      const results = await searchRoutes(
+        "SAIGO",
+        "AIRPORT_OKI",
+        new Date("2026-06-08T00:00:00+09:00"),
+        "14:00",
+        false
+      );
+
+      expect(results).toHaveLength(1);
+      expect(results[0].segments).toHaveLength(1);
+      expect(results[0].segments[0]).toMatchObject({
+        ship: "OKI_AIRPORT_BUS",
+        mode: "BUS",
+        operatorId: "OKI_ICHIBATA",
+        departure: "SAIGO",
+        departureType: "PORT",
+        arrival: "AIRPORT_OKI",
+        arrivalType: "AIRPORT",
+        fare: 520,
+        passengerFare: 520,
+      });
+      expect(results[0].totalFare).toBe(520);
+      expect(results[0].transferCount).toBe(0);
+    });
+
+    it("should normalize connected Oki airport shuttle bus trips from office to airport", async () => {
+      const store = useFerryStore();
+      stubEmptyOkinoshimaBusSearchFeed();
+      store.timetableData = [
+        createOkiAirportBusOfficeToSaigoTrip(),
+        createOkiAirportBusSaigoToAirportTrip(),
+      ];
+
+      const { searchRoutes } = useRouteSearch();
+
+      const results = await searchRoutes(
+        "BUS_OKINOSHIMA_eigyosho",
+        "AIRPORT_OKI",
+        new Date("2026-06-08T00:00:00+09:00"),
+        "14:00",
+        false
+      );
+
+      const directRoute = results.find(route =>
+        route.segments.length === 1 &&
+        route.segments[0]?.ship === "OKI_AIRPORT_BUS" &&
+        route.segments[0]?.departure === "BUS_OKINOSHIMA_eigyosho" &&
+        route.segments[0]?.arrival === "AIRPORT_OKI"
+      );
+
+      expect(directRoute).toBeDefined();
+      expect(directRoute?.segments[0]).toMatchObject({
+        ship: "OKI_AIRPORT_BUS",
+        mode: "BUS",
+        operatorId: "OKI_ICHIBATA",
+        departure: "BUS_OKINOSHIMA_eigyosho",
+        departureType: "STOP",
+        arrival: "AIRPORT_OKI",
+        arrivalType: "AIRPORT",
+        fare: 520,
+        passengerFare: 520,
+      });
+      expect(directRoute?.segments[0]?.departureTime.getHours()).toBe(14);
+      expect(directRoute?.segments[0]?.departureTime.getMinutes()).toBe(10);
+      expect(directRoute?.segments[0]?.arrivalTime.getHours()).toBe(14);
+      expect(directRoute?.segments[0]?.arrivalTime.getMinutes()).toBe(25);
+      expect(directRoute?.totalFare).toBe(520);
+      expect(directRoute?.transferCount).toBe(0);
+    });
+
+    it("should normalize connected Oki airport shuttle bus trips from airport to office", async () => {
+      const store = useFerryStore();
+      store.timetableData = [
+        createOkiAirportBusAirportToSaigoTrip(),
+        createOkiAirportBusSaigoToOfficeTrip(),
+      ];
+
+      const { searchRoutes } = useRouteSearch();
+
+      const results = await searchRoutes(
+        "AIRPORT_OKI",
+        "BUS_OKINOSHIMA_eigyosho",
+        new Date("2026-06-08T00:00:00+09:00"),
+        "14:40",
+        false
+      );
+
+      const directRoute = results.find(route =>
+        route.segments.length === 1 &&
+        route.segments[0]?.ship === "OKI_AIRPORT_BUS" &&
+        route.segments[0]?.departure === "AIRPORT_OKI" &&
+        route.segments[0]?.arrival === "BUS_OKINOSHIMA_eigyosho"
+      );
+
+      expect(directRoute).toBeDefined();
+      expect(directRoute?.segments[0]).toMatchObject({
+        ship: "OKI_AIRPORT_BUS",
+        mode: "BUS",
+        operatorId: "OKI_ICHIBATA",
+        departure: "AIRPORT_OKI",
+        departureType: "AIRPORT",
+        arrival: "BUS_OKINOSHIMA_eigyosho",
+        arrivalType: "STOP",
+        fare: 520,
+        passengerFare: 520,
+      });
+      expect(directRoute?.segments[0]?.departureTime.getHours()).toBe(14);
+      expect(directRoute?.segments[0]?.departureTime.getMinutes()).toBe(50);
+      expect(directRoute?.segments[0]?.arrivalTime.getHours()).toBe(15);
+      expect(directRoute?.segments[0]?.arrivalTime.getMinutes()).toBe(5);
+      expect(directRoute?.totalFare).toBe(520);
+      expect(directRoute?.transferCount).toBe(0);
+    });
+
+    it("should connect Oki airport shuttle bus to JAL flights", async () => {
+      const store = useFerryStore();
+      store.timetableData = [
+        createOkiAirportBusSaigoToAirportTrip(),
+        createJalOkiToItamiTrip(),
+      ];
+
+      const { searchRoutes } = useRouteSearch();
+
+      const results = await searchRoutes(
+        "SAIGO",
+        "AIRPORT_ITAMI",
+        new Date("2026-06-08T00:00:00+09:00"),
+        "14:00",
+        false
+      );
+
+      const transferRoute = results.find(route =>
+        route.segments.map(segment => segment.ship).join(">") === "OKI_AIRPORT_BUS>JAL_OKI_ITAMI"
+      );
+      expect(transferRoute).toBeDefined();
+      expect(transferRoute?.segments).toHaveLength(2);
+      expect(transferRoute?.segments[0]).toMatchObject({
+        ship: "OKI_AIRPORT_BUS",
+        departure: "SAIGO",
+        arrival: "AIRPORT_OKI",
+        fare: 520,
+      });
+      expect(transferRoute?.segments[1]).toMatchObject({
+        ship: "JAL_OKI_ITAMI",
+        departure: "AIRPORT_OKI",
+        arrival: "AIRPORT_ITAMI",
+        fare: 0,
+      });
+      expect(transferRoute?.segments[0]?.departureTime.getHours()).toBe(14);
+      expect(transferRoute?.segments[0]?.departureTime.getMinutes()).toBe(15);
+      expect(transferRoute?.segments[0]?.arrivalTime.getHours()).toBe(14);
+      expect(transferRoute?.segments[0]?.arrivalTime.getMinutes()).toBe(25);
+      expect(transferRoute?.segments[1]?.departureTime.getHours()).toBe(15);
+      expect(transferRoute?.segments[1]?.departureTime.getMinutes()).toBe(5);
+      expect(transferRoute?.totalFare).toBe(520);
+      expect(transferRoute?.transferCount).toBe(1);
+    });
+
+    it("should exclude Oki airport shuttle bus from car boarding searches", async () => {
+      const store = useFerryStore();
+      store.timetableData = [createOkiAirportBusSaigoToAirportTrip()];
+
+      const { searchRoutes } = useRouteSearch();
+
+      const results = await searchRoutes(
+        "SAIGO",
+        "AIRPORT_OKI",
+        new Date("2026-06-08T00:00:00+09:00"),
+        "14:00",
+        false,
+        true
+      );
+
+      expect(results).toHaveLength(0);
     });
 
     it("should load only the selected bus feed and create direct bus candidates on demand", async () => {
@@ -1896,6 +2300,594 @@ describe("useRouteSearch", () => {
       expect(transferRoute!.segments[1].ship).toBe("RAINBOWJET");
       expect(transferRoute!.segments[1].departure).toBe("HISHIURA");
       expect(transferRoute!.segments[1].arrival).toBe("HONDO_SHICHIRUI");
+    });
+
+    it("should find transfer routes from ports reached by staying on the same ship (BUG-002)", async () => {
+      const store = useFerryStore();
+      store.hondoPorts = ["HONDO_SHICHIRUI", "HONDO_SAKAIMINATO"];
+      store.timetableData = [
+        {
+          tripId: 39,
+          nextId: 40,
+          startDate: "2026-06-01",
+          endDate: "2026-08-07",
+          activeDays: [0, 1, 2, 3, 4, 5, 6],
+          name: "FERRY_SHIRASHIMA",
+          mode: "FERRY",
+          departure: "HONDO_SAKAIMINATO",
+          departureType: "PORT",
+          departureTime: "14:10",
+          arrival: "KURI",
+          arrivalType: "PORT",
+          arrivalTime: "16:35",
+          status: 0,
+        },
+        {
+          tripId: 40,
+          nextId: 41,
+          startDate: "2026-06-01",
+          endDate: "2026-08-07",
+          activeDays: [0, 1, 2, 3, 4, 5, 6],
+          name: "FERRY_SHIRASHIMA",
+          mode: "FERRY",
+          departure: "KURI",
+          departureType: "PORT",
+          departureTime: "16:40",
+          arrival: "BEPPU",
+          arrivalType: "PORT",
+          arrivalTime: "17:10",
+          status: 0,
+        },
+        {
+          tripId: 41,
+          startDate: "2026-06-01",
+          endDate: "2026-08-07",
+          activeDays: [0, 1, 2, 3, 4, 5, 6],
+          name: "FERRY_SHIRASHIMA",
+          mode: "FERRY",
+          departure: "BEPPU",
+          departureType: "PORT",
+          departureTime: "17:20",
+          arrival: "SAIGO",
+          arrivalType: "PORT",
+          arrivalTime: "18:35",
+          status: 0,
+        },
+        {
+          tripId: 244,
+          nextId: 245,
+          startDate: "2026-06-01",
+          endDate: "2026-08-07",
+          activeDays: [0, 1, 2, 3, 4, 5, 6],
+          name: "ISOKAZE",
+          mode: "FERRY",
+          departure: "BEPPU",
+          departureType: "PORT",
+          departureTime: "17:20",
+          arrival: "HISHIURA",
+          arrivalType: "PORT",
+          arrivalTime: "17:27",
+          status: 0,
+        },
+        {
+          tripId: 596,
+          startDate: "2026-06-01",
+          endDate: "2026-08-07",
+          activeDays: [0, 1, 2, 3, 4, 5, 6],
+          name: "FERRY_DOZEN",
+          mode: "FERRY",
+          departure: "BEPPU",
+          departureType: "PORT",
+          departureTime: "17:40",
+          arrival: "HISHIURA",
+          arrivalType: "PORT",
+          arrivalTime: "17:52",
+          status: 0,
+        },
+        {
+          tripId: 246,
+          nextId: 247,
+          startDate: "2026-06-01",
+          endDate: "2026-08-07",
+          activeDays: [0, 1, 2, 3, 4, 5, 6],
+          name: "ISOKAZE",
+          mode: "FERRY",
+          departure: "KURI",
+          departureType: "PORT",
+          departureTime: "17:49",
+          arrival: "HISHIURA",
+          arrivalType: "PORT",
+          arrivalTime: "18:07",
+          status: 0,
+        },
+        {
+          tripId: 251,
+          nextId: 252,
+          startDate: "2026-06-01",
+          endDate: "2026-08-07",
+          activeDays: [0, 1, 2, 3, 4, 5, 6],
+          name: "ISOKAZE",
+          mode: "FERRY",
+          departure: "KURI",
+          departureType: "PORT",
+          departureTime: "19:30",
+          arrival: "HISHIURA",
+          arrivalType: "PORT",
+          arrivalTime: "19:51",
+          status: 0,
+        },
+        {
+          tripId: 255,
+          nextId: 256,
+          startDate: "2026-06-01",
+          endDate: "2026-08-07",
+          activeDays: [0, 1, 2, 3, 4, 5, 6],
+          name: "ISOKAZE",
+          mode: "FERRY",
+          departure: "KURI",
+          departureType: "PORT",
+          departureTime: "20:40",
+          arrival: "HISHIURA",
+          arrivalType: "PORT",
+          arrivalTime: "21:01",
+          status: 0,
+        },
+      ];
+
+      const { searchRoutes } = useRouteSearch();
+      const results = await searchRoutes(
+        "HONDO_SAKAIMINATO",
+        "HISHIURA",
+        new Date("2026-07-05T00:00:00+09:00"),
+        "08:00",
+        false,
+        false
+      );
+
+      expect(results).toHaveLength(3);
+      expect(results.every((route) => route.transferCount === 1)).toBe(true);
+
+      const signatures = results
+        .map((route) =>
+          route.segments
+            .map((segment) => `${segment.departure}->${segment.arrival}:${segment.ship}`)
+            .join("|")
+        )
+        .sort();
+      expect(signatures).toEqual(
+        [
+          "HONDO_SAKAIMINATO->BEPPU:FERRY_SHIRASHIMA|BEPPU->HISHIURA:FERRY_DOZEN",
+          "HONDO_SAKAIMINATO->BEPPU:FERRY_SHIRASHIMA|BEPPU->HISHIURA:ISOKAZE",
+          "HONDO_SAKAIMINATO->KURI:FERRY_SHIRASHIMA|KURI->HISHIURA:ISOKAZE",
+        ].sort()
+      );
+
+      const beppuTransferRoutes = results.filter(
+        (route) => route.segments[0]?.arrival === "BEPPU"
+      );
+      expect(beppuTransferRoutes).toHaveLength(2);
+
+      for (const route of beppuTransferRoutes) {
+        expect(route.segments).toHaveLength(2);
+        expect(route.segments[0]).toMatchObject({
+          tripId: "39-40",
+          ship: "FERRY_SHIRASHIMA",
+          departure: "HONDO_SAKAIMINATO",
+          arrival: "BEPPU",
+        });
+        expect(route.segments[0]?.departureTime.getHours()).toBe(14);
+        expect(route.segments[0]?.departureTime.getMinutes()).toBe(10);
+        expect(route.segments[0]?.arrivalTime.getHours()).toBe(17);
+        expect(route.segments[0]?.arrivalTime.getMinutes()).toBe(10);
+      }
+
+      const beppuIsokazeRoute = beppuTransferRoutes.find(
+        (route) => route.segments[1]?.ship === "ISOKAZE"
+      );
+      expect(beppuIsokazeRoute?.arrivalTime.getHours()).toBe(17);
+      expect(beppuIsokazeRoute?.arrivalTime.getMinutes()).toBe(27);
+
+      const beppuDozenRoute = beppuTransferRoutes.find(
+        (route) => route.segments[1]?.ship === "FERRY_DOZEN"
+      );
+      expect(beppuDozenRoute?.arrivalTime.getHours()).toBe(17);
+      expect(beppuDozenRoute?.arrivalTime.getMinutes()).toBe(52);
+    });
+
+    it("should find through-ship routes even when five or more direct rows exist (BUG-003)", async () => {
+      const store = useFerryStore();
+      const lateDirectTimes: Array<[string, string]> = [
+        ["10:31", "10:49"],
+        ["11:20", "11:38"],
+        ["13:10", "13:28"],
+        ["15:05", "15:23"],
+        ["17:40", "17:58"],
+      ];
+
+      store.timetableData = [
+        createTestFerryTrip({
+          tripId: 215,
+          nextId: 216,
+          name: "ISOKAZE",
+          departure: "KURI",
+          departureTime: "07:17",
+          arrival: "HISHIURA",
+          arrivalTime: "07:35",
+        }),
+        createTestFerryTrip({
+          tripId: 216,
+          nextId: 217,
+          name: "ISOKAZE",
+          departure: "HISHIURA",
+          departureTime: "07:37",
+          arrival: "BEPPU",
+          arrivalTime: "07:44",
+        }),
+        createTestFerryTrip({
+          tripId: 217,
+          nextId: 218,
+          name: "ISOKAZE",
+          departure: "BEPPU",
+          departureTime: "07:46",
+          arrival: "KURI",
+          arrivalTime: "08:03",
+        }),
+        createTestFerryTrip({
+          tripId: 218,
+          nextId: 219,
+          name: "ISOKAZE",
+          departure: "KURI",
+          departureTime: "08:05",
+          arrival: "BEPPU",
+          arrivalTime: "08:22",
+        }),
+        createTestFerryTrip({
+          tripId: 219,
+          nextId: 220,
+          name: "ISOKAZE",
+          departure: "BEPPU",
+          departureTime: "08:25",
+          arrival: "HISHIURA",
+          arrivalTime: "08:32",
+        }),
+        createTestFerryTrip({
+          tripId: 220,
+          nextId: 221,
+          name: "ISOKAZE",
+          departure: "HISHIURA",
+          departureTime: "08:34",
+          arrival: "KURI",
+          arrivalTime: "08:52",
+        }),
+        createTestFerryTrip({
+          tripId: 221,
+          nextId: 222,
+          name: "ISOKAZE",
+          departure: "KURI",
+          departureTime: "08:58",
+          arrival: "BEPPU",
+          arrivalTime: "09:15",
+        }),
+        createTestFerryTrip({
+          tripId: 222,
+          nextId: 223,
+          name: "ISOKAZE",
+          departure: "BEPPU",
+          departureTime: "09:17",
+          arrival: "HISHIURA",
+          arrivalTime: "09:24",
+        }),
+        createTestFerryTrip({
+          tripId: 900,
+          name: "FERRY_DOZEN",
+          departure: "BEPPU",
+          departureTime: "08:40",
+          arrival: "HISHIURA",
+          arrivalTime: "08:52",
+        }),
+        ...lateDirectTimes.map(([departureTime, arrivalTime], index) =>
+          createTestFerryTrip({
+            tripId: 300 + index,
+            name: "ISOKAZE",
+            departure: "KURI",
+            departureTime,
+            arrival: "HISHIURA",
+            arrivalTime,
+          })
+        ),
+      ];
+
+      const { searchRoutes } = useRouteSearch();
+      const results = await searchRoutes(
+        "KURI",
+        "HISHIURA",
+        new Date("2026-07-05T00:00:00+09:00"),
+        "08:00",
+        false,
+        false
+      );
+
+      const throughRoute = results.find(
+        (route) => route.segments[0]?.tripId === "218-219"
+      );
+      expect(throughRoute).toBeDefined();
+      expect(throughRoute?.segments).toHaveLength(1);
+      expect(throughRoute?.segments[0]).toMatchObject({
+        ship: "ISOKAZE",
+        departure: "KURI",
+        arrival: "HISHIURA",
+      });
+      expect(throughRoute?.segments[0]?.departureTime.getHours()).toBe(8);
+      expect(throughRoute?.segments[0]?.departureTime.getMinutes()).toBe(5);
+      expect(throughRoute?.segments[0]?.arrivalTime.getHours()).toBe(8);
+      expect(throughRoute?.segments[0]?.arrivalTime.getMinutes()).toBe(32);
+      expect(
+        results.filter((route) => route.segments.length === 1).length
+      ).toBeGreaterThanOrEqual(6);
+
+      const dominatedTransfer = results.find(
+        (route) =>
+          route.segments.map((segment) => segment.tripId).join("|") ===
+          "218|900"
+      );
+      expect(dominatedTransfer).toBeUndefined();
+    });
+
+    it("should remove transfer routes dominated by direct-like routes and keep earlier-arriving transfers (BUG-003)", async () => {
+      const store = useFerryStore();
+      store.timetableData = [
+        createTestFerryTrip({
+          tripId: 1000,
+          name: "DIRECT_FERRY",
+          departure: "KURI",
+          departureTime: "09:00",
+          arrival: "HISHIURA",
+          arrivalTime: "09:30",
+        }),
+        createTestFerryTrip({
+          tripId: 1001,
+          name: "SLOW_FIRST",
+          departure: "KURI",
+          departureTime: "08:00",
+          arrival: "BEPPU",
+          arrivalTime: "08:20",
+        }),
+        createTestFerryTrip({
+          tripId: 1002,
+          name: "SLOW_SECOND",
+          departure: "BEPPU",
+          departureTime: "08:40",
+          arrival: "HISHIURA",
+          arrivalTime: "09:30",
+        }),
+        createTestFerryTrip({
+          tripId: 1003,
+          name: "FAST_FIRST",
+          departure: "KURI",
+          departureTime: "08:05",
+          arrival: "BEPPU",
+          arrivalTime: "08:25",
+        }),
+        createTestFerryTrip({
+          tripId: 1004,
+          name: "FAST_SECOND",
+          departure: "BEPPU",
+          departureTime: "08:30",
+          arrival: "HISHIURA",
+          arrivalTime: "09:10",
+        }),
+      ];
+
+      const { searchRoutes } = useRouteSearch();
+      const results = await searchRoutes(
+        "KURI",
+        "HISHIURA",
+        new Date("2026-07-05T00:00:00+09:00"),
+        "08:00",
+        false,
+        false
+      );
+
+      const routeTripIds = results.map((route) =>
+        route.segments.map((segment) => segment.tripId).join("|")
+      );
+      expect(routeTripIds).toContain("1000");
+      expect(routeTripIds).not.toContain("1001|1002");
+      expect(routeTripIds).toContain("1003|1004");
+    });
+
+    it("should keep dominated transfer routes when they include a cancelled segment (BUG-003)", async () => {
+      const store = useFerryStore();
+      store.timetableData = [
+        createTestFerryTrip({
+          tripId: 2000,
+          name: "DIRECT_FERRY",
+          departure: "KURI",
+          departureTime: "09:00",
+          arrival: "HISHIURA",
+          arrivalTime: "09:30",
+        }),
+        createTestFerryTrip({
+          tripId: 2001,
+          name: "CANCELLED_FIRST",
+          departure: "KURI",
+          departureTime: "08:00",
+          arrival: "BEPPU",
+          arrivalTime: "08:20",
+          status: 2,
+        }),
+        createTestFerryTrip({
+          tripId: 2002,
+          name: "CANCELLED_SECOND",
+          departure: "BEPPU",
+          departureTime: "08:40",
+          arrival: "HISHIURA",
+          arrivalTime: "09:30",
+        }),
+      ];
+
+      const { searchRoutes } = useRouteSearch();
+      const results = await searchRoutes(
+        "KURI",
+        "HISHIURA",
+        new Date("2026-07-05T00:00:00+09:00"),
+        "08:00",
+        false,
+        false
+      );
+
+      const cancelledTransfer = results.find(
+        (route) =>
+          route.segments.map((segment) => segment.tripId).join("|") ===
+          "2001|2002"
+      );
+      expect(cancelledTransfer).toBeDefined();
+      expect(
+        cancelledTransfer?.segments.some((segment) => segment.status === 2)
+      ).toBe(true);
+    });
+
+    it("BUG-004: 本土から戻った後の直行行を重複生成しない", async () => {
+      const store = useFerryStore();
+      store.hondoPorts = ["HONDO_SHICHIRUI", "HONDO_SAKAIMINATO"];
+      store.timetableData = createRainbowJetMainlandDetourTrips();
+
+      const { searchRoutes } = useRouteSearch();
+      const results = await searchRoutes(
+        "SAIGO",
+        "HISHIURA",
+        new Date("2026-07-05T00:00:00+09:00"),
+        "08:00",
+        false,
+        false
+      );
+
+      const rainbowJet1805Routes = results.filter((route) => {
+        const segment = route.segments[0];
+        if (!segment) {
+          return false;
+        }
+        return (
+          route.segments.length === 1 &&
+          segment.ship === "RAINBOWJET" &&
+          segment.departure === "SAIGO" &&
+          segment.arrival === "HISHIURA" &&
+          segment.departureTime.getHours() === 18 &&
+          segment.departureTime.getMinutes() === 5 &&
+          segment.arrivalTime.getHours() === 18 &&
+          segment.arrivalTime.getMinutes() === 36
+        );
+      });
+
+      expect(rainbowJet1805Routes).toHaveLength(1);
+      expect(rainbowJet1805Routes[0]?.segments[0]?.tripId).toBe("97");
+    });
+
+    it("BUG-004: 本土から戻った後の同一船正規化ルートを分割生成しない", async () => {
+      const store = useFerryStore();
+      store.hondoPorts = ["HONDO_SHICHIRUI", "HONDO_SAKAIMINATO"];
+      store.timetableData = createRainbowJetMainlandDetourTrips();
+
+      const { searchRoutes } = useRouteSearch();
+      const results = await searchRoutes(
+        "SAIGO",
+        "BEPPU",
+        new Date("2026-07-05T00:00:00+09:00"),
+        "08:00",
+        false,
+        false
+      );
+
+      const saigo1805RainbowJetRoutes = results.filter((route) => {
+        const segment = route.segments[0];
+        if (!segment) {
+          return false;
+        }
+        return (
+          segment.ship === "RAINBOWJET" &&
+          segment.departure === "SAIGO" &&
+          segment.departureTime.getHours() === 18 &&
+          segment.departureTime.getMinutes() === 5
+        );
+      });
+      const splitRoute = results.find(
+        (route) =>
+          route.segments.map((segment) => segment.tripId).join("|") ===
+          "97|98"
+      );
+
+      expect(saigo1805RainbowJetRoutes).toHaveLength(1);
+      expect(saigo1805RainbowJetRoutes[0]?.segments).toHaveLength(1);
+      expect(saigo1805RainbowJetRoutes[0]?.segments[0]).toMatchObject({
+        tripId: "97-98",
+        ship: "RAINBOWJET",
+        departure: "SAIGO",
+        arrival: "BEPPU",
+      });
+      expect(
+        saigo1805RainbowJetRoutes[0]?.segments[0]?.arrivalTime.getHours()
+      ).toBe(18);
+      expect(
+        saigo1805RainbowJetRoutes[0]?.segments[0]?.arrivalTime.getMinutes()
+      ).toBe(49);
+      expect(splitRoute).toBeUndefined();
+    });
+
+    it("BUG-004: via 本土フラグ付きの再開区間は引き続き含める", async () => {
+      const store = useFerryStore();
+      store.hondoPorts = ["HONDO_SHICHIRUI", "HONDO_SAKAIMINATO"];
+      store.timetableData = [
+        createTestFerryTrip({
+          tripId: 3000,
+          nextId: 3001,
+          name: "FERRY_SHIRASHIMA",
+          departure: "KURI",
+          departureTime: "10:55",
+          arrival: "HONDO_SAKAIMINATO",
+          arrivalTime: "13:20",
+        }),
+        createTestFerryTrip({
+          tripId: 3001,
+          nextId: 3002,
+          name: "FERRY_SHIRASHIMA",
+          departure: "HONDO_SAKAIMINATO",
+          departureTime: "14:10",
+          arrival: "KURI",
+          arrivalTime: "16:35",
+        }),
+        createTestFerryTrip({
+          tripId: 3002,
+          name: "FERRY_SHIRASHIMA",
+          departure: "KURI",
+          departureTime: "16:40",
+          arrival: "BEPPU",
+          arrivalTime: "17:10",
+          via: "HONDO_SAKAIMINATO",
+        }),
+      ];
+
+      const { searchRoutes } = useRouteSearch();
+      const results = await searchRoutes(
+        "KURI",
+        "BEPPU",
+        new Date("2026-07-05T00:00:00+09:00"),
+        "10:00",
+        false,
+        false
+      );
+
+      const resumedRoute = results.find(
+        (route) =>
+          route.segments.length === 1 &&
+          route.segments[0]?.tripId === "3002"
+      );
+
+      expect(resumedRoute).toBeDefined();
+      expect(resumedRoute?.segments[0]).toMatchObject({
+        ship: "FERRY_SHIRASHIMA",
+        departure: "KURI",
+        arrival: "BEPPU",
+      });
     });
   });
 

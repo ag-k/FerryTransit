@@ -884,7 +884,8 @@ const busFareRows = [
   { id: 'chibu', operatorKey: 'CHIBU_VILLAGE_BUS', fareTypeKey: 'BUS_FLAT_FARE', fare: 100 },
   { id: 'okinoshima-ichibata', operatorKey: 'OKI_ICHIBATA_BUS', fareTypeKey: 'BUS_MAX_FARE', fare: 500 },
   { id: 'okinoshima-town', operatorKey: 'OKINOSHIMA_TOWN_BUS', fareTypeKey: 'BUS_FLAT_FARE', fare: 300 },
-  { id: 'ichibata-connection', operatorKey: 'ICHIBATA_BUS_CONNECTION', fareTypeKey: 'BUS_MAX_FARE', fare: 1200 }
+  { id: 'ichibata-connection', operatorKey: 'ICHIBATA_BUS_CONNECTION', fareTypeKey: 'BUS_MAX_FARE', fare: 1200 },
+  { id: 'oki-airport-bus', operatorKey: 'OKI_AIRPORT_BUS', fareTypeKey: 'BUS_ADULT_ONE_WAY_FARE', fare: 520 }
 ]
 
 const activeBusFare = computed(() =>

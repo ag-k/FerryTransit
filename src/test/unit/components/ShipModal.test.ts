@@ -6,6 +6,9 @@ import ShipModal from "@/components/common/ShipModal.vue";
 const stubs = {
   Teleport: {
     template: '<div><slot /></div>'
+  },
+  PortAreaLeafletMap: {
+    template: '<div class="port-area-leaflet-map-stub"></div>'
   }
 }
 
@@ -78,6 +81,30 @@ describe("ShipModal", () => {
     const links = wrapper.findAll("a");
     expect(links.some(link => link.attributes("href") === "https://bus.ichibata.co.jp/oki-kisen/oki-kisen-sichirui/")).toBe(true);
     expect(links.some(link => link.attributes("href") === "https://bus.ichibata.co.jp/media/oki_2026_dia.pdf")).toBe(true);
+  });
+
+  it("renders Oki airport shuttle bus details without a ship image", () => {
+    const wrapper = mount(ShipModal, {
+      props: {
+        ...defaultProps,
+        title: "隠岐空港連絡バス",
+        type: "ship",
+        shipId: "OKI_AIRPORT_BUS",
+      },
+      global: { stubs }
+    });
+
+    expect(wrapper.find("img").exists()).toBe(false);
+
+    const text = wrapper.text();
+    expect(text).toContain("隠岐空港");
+    expect(text).toContain("隠岐ポートプラザ前");
+    expect(text).toContain("隠岐一畑交通");
+    expect(text).toContain("¥520");
+    expect(text).toContain("2026/03/29 - 2026/10/24");
+
+    const links = wrapper.findAll("a");
+    expect(links.some(link => link.attributes("href") === "https://oki.ichibata.co.jp/airport.html")).toBe(true);
   });
 
   it("renders JAL air route details without a ship image or fare field", () => {

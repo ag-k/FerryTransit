@@ -716,7 +716,8 @@ const busTransports = ref<TransportOption[]>([
   { id: 'CHIBU_VILLAGE_BUS', name: '知夫村営バス', mode: 'BUS', operatorId: 'CHIBU_VILLAGE' },
   { id: 'OKI_ICHIBATA_BUS', name: '隠岐一畑交通', mode: 'BUS', operatorId: 'OKI_ICHIBATA' },
   { id: 'OKINOSHIMA_TOWN_BUS', name: '隠岐の島町営バス', mode: 'BUS', operatorId: 'OKINOSHIMA_TOWN' },
-  { id: 'ICHIBATA_BUS_CONNECTION', name: '一畑バス 隠岐汽船接続バス', mode: 'BUS', operatorId: 'ICHIBATA_BUS' }
+  { id: 'ICHIBATA_BUS_CONNECTION', name: '一畑バス 隠岐汽船接続バス', mode: 'BUS', operatorId: 'ICHIBATA_BUS' },
+  { id: 'OKI_AIRPORT_BUS', name: '隠岐空港連絡バス', mode: 'BUS', operatorId: 'OKI_ICHIBATA' }
 ])
 
 const airTransports = ref<TransportOption[]>([

@@ -3,6 +3,7 @@ import { mkdir, readFile, writeFile } from 'node:fs/promises'
 import { dirname, extname, join } from 'node:path'
 import { fileURLToPath } from 'node:url'
 import { SOURCES } from './sources.mjs'
+import { recordChangeHistory } from './changeHistory.mjs'
 
 const __dirname = dirname(fileURLToPath(import.meta.url))
 const ROOT_DIR = join(__dirname, '..')
@@ -50,6 +51,8 @@ export async function collectAll(options = {}) {
 
   if (options.save) {
     await saveSnapshot(snapshot, startedAt)
+    const history = await recordChangeHistory(snapshot, previousIndex)
+    snapshot.history = history
   }
 
   return snapshot

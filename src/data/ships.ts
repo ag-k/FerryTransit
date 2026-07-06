@@ -6,10 +6,11 @@ export type ShipId =
   | 'ISOKAZE'
   | 'FERRY_DOZEN'
   | 'ICHIBATA_BUS_CONNECTION'
+  | 'OKI_AIRPORT_BUS'
   | 'JAL_OKI_ITAMI'
   | 'JAL_OKI_IZUMO'
 
-type ShipOperatorKey = 'OKI_KISEN' | 'OKI_DOUZEN' | 'ICHIBATA_BUS' | 'JAL'
+type ShipOperatorKey = 'OKI_KISEN' | 'OKI_DOUZEN' | 'ICHIBATA_BUS' | 'OKI_ICHIBATA' | 'JAL'
 
 export type ShipDetails = {
   operatorKey: ShipOperatorKey
@@ -86,6 +87,20 @@ export const SHIP_DETAILS: Record<ShipId, ShipDetails> = {
     stops: ['松江駅', '附属学園入口', 'レインボープラザ前', '七類港', '境港'],
     sourceUrl: 'https://bus.ichibata.co.jp/oki-kisen/oki-kisen-sichirui/',
     timetableUrl: 'https://bus.ichibata.co.jp/media/oki_2026_dia.pdf'
+  },
+  OKI_AIRPORT_BUS: {
+    operatorKey: 'OKI_ICHIBATA',
+    mode: 'bus',
+    routeSummaryKey: 'ship.modal.okiAirportBus.summary',
+    routeNameKey: 'ship.modal.okiAirportBus.route',
+    fareTypeKey: 'BUS_ADULT_ONE_WAY_FARE',
+    fare: 520,
+    servicePeriod: {
+      startDate: '20260329',
+      endDate: '20261024'
+    },
+    stops: ['隠岐空港', '隠岐ポートプラザ前', '隠岐一畑交通'],
+    sourceUrl: 'https://oki.ichibata.co.jp/airport.html'
   },
   JAL_OKI_ITAMI: {
     operatorKey: 'JAL',

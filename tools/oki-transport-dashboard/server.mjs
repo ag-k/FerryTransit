@@ -4,6 +4,7 @@ import { extname, join, normalize } from 'node:path'
 import { fileURLToPath } from 'node:url'
 import http from 'node:http'
 import { createDailySnapshotRefresh, parseRefreshIntervalMs } from './src/autoRefresh.mjs'
+import { loadChangeHistory } from './src/changeHistory.mjs'
 import { collectAll, loadLatestSnapshot, ROOT_DIR, SOURCES } from './src/collector.mjs'
 import {
   createGtfsCodexJob,
@@ -49,6 +50,10 @@ const server = http.createServer(async (request, response) => {
     if (url.pathname === '/api/latest') {
       const latest = await loadDashboardLatestSnapshot()
       return sendJson(response, await withDashboardState(latest || EMPTY_SNAPSHOT))
+    }
+    if (url.pathname === '/api/change-history') {
+      const limit = Number(url.searchParams.get('limit') || 100)
+      return sendJson(response, await loadChangeHistory({ limit }))
     }
     if (url.pathname === '/api/collect') {
       const save = url.searchParams.get('save') === '1'

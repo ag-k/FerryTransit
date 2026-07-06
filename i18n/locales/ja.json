@@ -67,13 +67,16 @@
   "BUS_FARE_TYPE": "区分",
   "BUS_FLAT_FARE": "均一運賃",
   "BUS_MAX_FARE": "上限運賃",
+  "BUS_ADULT_ONE_WAY_FARE": "大人運賃（片道）",
   "AMA_TOWN_BUS": "海士町路線バス",
   "NISHINOSHIMA_TOWN_BUS": "西ノ島町営バス",
   "CHIBU_VILLAGE_BUS": "知夫村営バス",
   "OKI_ICHIBATA_BUS": "隠岐一畑交通",
+  "OKI_ICHIBATA": "隠岐一畑交通",
   "OKINOSHIMA_TOWN_BUS": "隠岐の島町営バス",
   "ICHIBATA_BUS": "一畑バス",
   "ICHIBATA_BUS_CONNECTION": "一畑バス 隠岐汽船接続バス",
+  "OKI_AIRPORT_BUS": "隠岐空港連絡バス",
   "JAL": "日本航空（JAL）",
   "JAL_OKI_ITAMI": "JAL 大阪（伊丹）線",
   "JAL_OKI_IZUMO": "JAL 出雲線",
@@ -638,6 +641,10 @@
       "ichibataBusConnection": {
         "route": "松江駅・七類港・境港",
         "summary": "隠岐汽船の七類港・境港発着便に接続する本土側の連絡バスです。"
+      },
+      "okiAirportBus": {
+        "route": "隠岐一畑交通・西郷港（隠岐ポートプラザ前）・隠岐空港",
+        "summary": "隠岐一畑交通が運行する空港連絡バスです。航空便の発着に合わせて運行されます。"
       },
       "jalOkiItami": {
         "route": "隠岐空港・大阪（伊丹）空港",

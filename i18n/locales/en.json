@@ -72,13 +72,16 @@
   "BUS_FARE_TYPE": "Type",
   "BUS_FLAT_FARE": "Flat fare",
   "BUS_MAX_FARE": "Maximum fare",
+  "BUS_ADULT_ONE_WAY_FARE": "Adult one-way fare",
   "AMA_TOWN_BUS": "Ama Town Route Bus",
   "NISHINOSHIMA_TOWN_BUS": "Nishinoshima Town Bus",
   "CHIBU_VILLAGE_BUS": "Chibu Village Bus",
   "OKI_ICHIBATA_BUS": "Oki Ichibata Bus",
+  "OKI_ICHIBATA": "Oki Ichibata Kotsu",
   "OKINOSHIMA_TOWN_BUS": "Okinoshima Town Bus",
   "ICHIBATA_BUS": "Ichibata Bus",
   "ICHIBATA_BUS_CONNECTION": "Ichibata Bus Oki Kisen Connection",
+  "OKI_AIRPORT_BUS": "Oki Airport Shuttle Bus",
   "JAL": "Japan Airlines (JAL)",
   "JAL_OKI_ITAMI": "JAL Osaka (Itami) Route",
   "JAL_OKI_IZUMO": "JAL Izumo Route",
@@ -639,6 +642,10 @@
       "ichibataBusConnection": {
         "route": "Matsue Station, Shichirui Port, and Sakaiminato",
         "summary": "Mainland connecting bus for Oki Kisen sailings from Shichirui Port and Sakaiminato."
+      },
+      "okiAirportBus": {
+        "route": "Oki Ichibata Kotsu, Saigo Port (Oki Port Plaza-mae), and Oki Airport",
+        "summary": "Airport shuttle bus operated by Oki Ichibata Kotsu. It runs in coordination with flight arrivals and departures."
       },
       "jalOkiItami": {
         "route": "Oki Airport and Osaka (Itami) Airport",

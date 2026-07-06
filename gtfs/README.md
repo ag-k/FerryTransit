@@ -98,3 +98,26 @@ npm run gtfs:build -- bus ichibata_bus_connection
 ```
 
 変換処理は松江駅-七類港、松江駅-境港の接続バス固定時刻を `trips.txt` / `stop_times.txt` に転記します。隠岐汽船欠航時は接続バスも運休する注記がありますが、静的 GTFS ではリアルタイム運休として表現せず、接続船情報を `jp_trip_desc` に保持します。
+
+## 隠岐空港連絡バスの生成
+
+隠岐一畑交通の隠岐空港連絡バスは固定ダイヤではなく航空便の発着に連動して運行されるため、GTFS バスフィードではなくマスター時刻表に投入する JSON として生成します。
+
+```bash
+npm run gtfs:generate:oki-airport-bus
+```
+
+入力は `gtfs/raw/air/jal_oki_2026_timetable.json`、出力は `gtfs/generated/bus/oki_airport_bus_2026_timetable.json` です。航空便データを更新した場合は、このコマンドを再実行して生成物も更新してください。
+
+生成規則は次の通りです。
+
+- 航空便が `AIRPORT_OKI` を出発する場合は、2 Trip を `next_id` で連結する
+  - 第1区間: `BUS_OKINOSHIMA_eigyosho`（隠岐一畑交通営業所）発を航空便出発55分前、`SAIGO` 着を51分前にする
+  - 第2区間: `SAIGO` 発を航空便出発50分前、`AIRPORT_OKI` 着を40分前にする
+- 航空便が `AIRPORT_OKI` に到着する場合は、2 Trip を `next_id` で連結する
+  - 第1区間: `AIRPORT_OKI` 発を航空便到着15分後、`SAIGO` 着を25分後にする
+  - 第2区間: `SAIGO` 発を航空便到着26分後、`BUS_OKINOSHIMA_eigyosho`（隠岐一畑交通営業所）着を30分後にする
+- `SAIGO` では乗換検索の時刻判定に合わせて1分停車し、連結区間は同一 `name` と `next_id` により直行便として扱う
+- 運行期間と曜日は元の航空便の `start_date` / `end_date` / `active_days` を継承する
+
+生成した JSON は管理画面の時刻表インポートで「JSONファイル」を選び、マスター時刻表へ取り込みます。取り込み後は通常の時刻表公開手順で Firebase Storage の `data/timetable.json` に反映します。

@@ -10,6 +10,14 @@ const mockDeleteDocument = vi.fn()
 const mockBatchWrite = vi.fn()
 const mockPublishData = vi.fn()
 
+vi.mock('firebase/firestore', () => ({
+  orderBy: vi.fn((field: string, direction?: string) => ({ field, direction }))
+}))
+
+vi.mock('@/utils/gtfsBusTimetable', () => ({
+  loadBusStopsIndex: vi.fn(() => Promise.resolve([]))
+}))
+
 vi.mock('@/composables/useAdminFirestore', () => ({
   useAdminFirestore: () => ({
     getCollection: mockGetCollection,
