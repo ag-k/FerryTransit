@@ -1,8 +1,21 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest'
+import { createPinia, setActivePinia } from 'pinia'
 import { ref } from 'vue'
+import { useOfflineStore } from '@/stores/offline'
 import type { HolidayMaster } from '@/types/holiday'
+import { useHolidayCalendar } from '../../../composables/useHolidayCalendar'
 
-// Mock data
+const loggerMock = vi.hoisted(() => ({
+  debug: vi.fn(),
+  info: vi.fn(),
+  warn: vi.fn(),
+  error: vi.fn()
+}))
+
+vi.mock('~/utils/logger', () => ({
+  createLogger: () => loggerMock
+}))
+
 const mockHolidayData: HolidayMaster = {
   holidays: [
     {
@@ -25,328 +38,197 @@ const mockHolidayData: HolidayMaster = {
   ]
 }
 
-// Mock composable module
-vi.mock('@/composables/useHolidayCalendar', () => {
-  const mockHolidayDataRef = {
-    holidays: [
-      {
-        date: '2025-01-01',
-        nameKey: 'HOLIDAY_NEW_YEAR',
-        type: 'national'
-      },
-      {
-        date: '2025-05-05',
-        nameKey: 'HOLIDAY_CHILDRENS_DAY',
-        type: 'national'
-      }
-    ],
-    specialOperations: [
-      {
-        date: '2025-01-01',
-        operationType: 'reduced',
-        descriptionKey: 'OPERATION_NEW_YEAR'
-      }
-    ]
-  }
-  
-  return {
-    useHolidayCalendar: vi.fn(() => {
-      const holidayMaster = ref<HolidayMaster | null>(null)
-      const isLoading = ref(false)
-      const error = ref<string | null>(null)
-      
-      const loadHolidayData = vi.fn(async () => {
-        isLoading.value = true
-        error.value = null
-        
-        try {
-          holidayMaster.value = mockHolidayDataRef
-        } catch (err) {
-          error.value = 'HOLIDAY_LOAD_ERROR'
-        } finally {
-          isLoading.value = false
-        }
-      })
-      
-      const isHoliday = vi.fn((date: string | Date) => {
-        const dateStr = typeof date === 'string' ? date : date.toISOString().split('T')[0]
-        return holidayMaster.value?.holidays.some(h => h.date === dateStr) || false
-      })
-      
-      const getHoliday = vi.fn((date: string | Date) => {
-        const dateStr = typeof date === 'string' ? date : date.toISOString().split('T')[0]
-        return holidayMaster.value?.holidays.find(h => h.date === dateStr)
-      })
-      
-      const getSpecialOperation = vi.fn((date: string | Date) => {
-        const dateStr = typeof date === 'string' ? date : date.toISOString().split('T')[0]
-        return holidayMaster.value?.specialOperations.find(o => o.date === dateStr)
-      })
-      
-      const getDayOfWeek = vi.fn((date: string | Date) => {
-        const dateObj = typeof date === 'string' ? new Date(date) : date
-        const days = ['日', '月', '火', '水', '木', '金', '土']
-        return days[dateObj.getDay()]
-      })
-      
-      const formatDate = vi.fn((date: string | Date, format: 'short' | 'long' = 'short') => {
-        const dateObj = typeof date === 'string' ? new Date(date) : date
-        const month = dateObj.getMonth() + 1
-        const day = dateObj.getDate()
-        const year = dateObj.getFullYear()
-        const dayOfWeek = getDayOfWeek(dateObj)
-        
-        if (format === 'short') {
-          return `${month}月${day}日`
-        } else {
-          return `${year}年${month}月${day}日 ${dayOfWeek}曜日`
-        }
-      })
-      
-      const getHolidaysByMonth = vi.fn((year: number, month: number) => {
-        const monthStr = month.toString().padStart(2, '0')
-        const yearMonthPrefix = `${year}-${monthStr}`
-        
-        return holidayMaster.value?.holidays.filter(h => 
-          h.date.startsWith(yearMonthPrefix)
-        ) || []
-      })
-      
-      const generateCalendarData = vi.fn((year: number, month: number) => {
-        
-        const firstDay = new Date(year, month - 1, 1)
-        const lastDay = new Date(year, month, 0)
-        const startDay = firstDay.getDay()
-        const totalDays = lastDay.getDate()
-        
-        const calendar = []
-        let week = new Array(7).fill(null)
-        let currentDay = 1
-        
-        // Fill first week
-        for (let i = startDay; i < 7 && currentDay <= totalDays; i++) {
-          const date = `${year}-${month.toString().padStart(2, '0')}-${currentDay.toString().padStart(2, '0')}`
-          week[i] = {
-            day: currentDay,
-            date,
-            isHoliday: isHoliday(date),
-            holiday: getHoliday(date) || null,
-            specialOperation: getSpecialOperation(date) || null,
-            dayOfWeek: getDayOfWeek(date)
-          }
-          currentDay++
-        }
-        calendar.push(week)
-        
-        // Fill remaining weeks
-        while (currentDay <= totalDays) {
-          week = new Array(7).fill(null)
-          for (let i = 0; i < 7 && currentDay <= totalDays; i++) {
-            const date = `${year}-${month.toString().padStart(2, '0')}-${currentDay.toString().padStart(2, '0')}`
-            week[i] = {
-              day: currentDay,
-            date,
-            isHoliday: isHoliday(date),
-            holiday: getHoliday(date) || null,
-            specialOperation: getSpecialOperation(date) || null,
-            dayOfWeek: getDayOfWeek(date)
-          }
-            currentDay++
-          }
-          calendar.push(week)
-        }
-        
-        return calendar
-      })
-      
-      return {
-        loadHolidayData,
-        isHoliday,
-        getHoliday,
-        getSpecialOperation,
-        getDayOfWeek,
-        formatDate,
-        getHolidaysByMonth,
-        generateCalendarData,
-        holidayMaster,
-        isLoading,
-        error
-      }
-    })
-  }
-})
+const setI18nLocale = (locale: 'ja' | 'en') => {
+  vi.stubGlobal('useI18n', () => ({
+    locale: ref(locale),
+    locales: ref([
+      { code: 'ja', name: '日本語' },
+      { code: 'en', name: 'English' }
+    ]),
+    t: (key: string) => key
+  }))
+}
 
-// Import after mock is set up
-import { useHolidayCalendar } from '@/composables/useHolidayCalendar'
+const stubHolidayFetch = (data: HolidayMaster | null) => {
+  const offlineStore = useOfflineStore()
+  return vi.spyOn(offlineStore, 'fetchHolidayData').mockResolvedValue(data)
+}
 
 describe('useHolidayCalendar', () => {
   beforeEach(() => {
+    setActivePinia(createPinia())
     vi.clearAllMocks()
-    // Reset the mock implementation for each test
-    vi.mocked(useHolidayCalendar).mockClear()
+    setI18nLocale('ja')
   })
 
-  it('loads holiday data', async () => {
+  it('loads holiday data from the offline store', async () => {
+    const fetchHolidayData = stubHolidayFetch(mockHolidayData)
     const { loadHolidayData, holidayMaster, isLoading, error } = useHolidayCalendar()
-    
+
     expect(holidayMaster.value).toBeNull()
     expect(isLoading.value).toBe(false)
     expect(error.value).toBeNull()
-    
+
     await loadHolidayData()
-    
+
+    expect(fetchHolidayData).toHaveBeenCalledTimes(1)
     expect(holidayMaster.value).toEqual(mockHolidayData)
     expect(isLoading.value).toBe(false)
     expect(error.value).toBeNull()
   })
 
-  it('detects holidays correctly', async () => {
+  it('detects holidays and returns holiday details after data is loaded', async () => {
+    stubHolidayFetch(mockHolidayData)
     const { loadHolidayData, isHoliday, getHoliday } = useHolidayCalendar()
-    
+
+    expect(isHoliday('2025-01-01')).toBe(false)
+    expect(getHoliday('2025-01-01')).toBeUndefined()
+
     await loadHolidayData()
-    
+
     expect(isHoliday('2025-01-01')).toBe(true)
     expect(isHoliday('2025-01-02')).toBe(false)
-    expect(isHoliday(new Date('2025-05-05'))).toBe(true)
-    
+    expect(isHoliday(new Date('2025-05-05T00:00:00.000Z'))).toBe(true)
+
     const holiday = getHoliday('2025-01-01')
-    expect(holiday).toBeDefined()
-    expect(holiday?.nameKey).toBe('HOLIDAY_NEW_YEAR')
+    expect(holiday).toEqual({
+      date: '2025-01-01',
+      nameKey: 'HOLIDAY_NEW_YEAR',
+      type: 'national'
+    })
   })
 
-  it('gets special operations correctly', async () => {
+  it('returns special operation information for matching dates', async () => {
+    stubHolidayFetch(mockHolidayData)
     const { loadHolidayData, getSpecialOperation } = useHolidayCalendar()
-    
+
+    expect(getSpecialOperation('2025-01-01')).toBeUndefined()
+
     await loadHolidayData()
-    
-    const operation = getSpecialOperation('2025-01-01')
-    expect(operation).toBeDefined()
-    expect(operation?.operationType).toBe('reduced')
-    expect(operation?.descriptionKey).toBe('OPERATION_NEW_YEAR')
-    
+
+    expect(getSpecialOperation('2025-01-01')).toEqual({
+      date: '2025-01-01',
+      operationType: 'reduced',
+      descriptionKey: 'OPERATION_NEW_YEAR'
+    })
     expect(getSpecialOperation('2025-01-02')).toBeUndefined()
   })
 
-  it('formats day of week correctly', () => {
-    const { getDayOfWeek } = useHolidayCalendar()
-    
-    // 2025-01-01 is Wednesday
-    expect(getDayOfWeek('2025-01-01')).toBe('水')
-    expect(getDayOfWeek(new Date('2025-01-01'))).toBe('水')
+  it('formats day names using the active locale', () => {
+    const japaneseCalendar = useHolidayCalendar()
+
+    expect(japaneseCalendar.getDayOfWeek('2025-01-01')).toBe('水')
+    expect(japaneseCalendar.getDayOfWeek(new Date('2025-01-05T00:00:00.000Z'))).toBe('日')
+
+    setI18nLocale('en')
+    const englishCalendar = useHolidayCalendar()
+
+    expect(englishCalendar.getDayOfWeek('2025-01-01')).toBe('Wed')
+    expect(englishCalendar.getDayOfWeek('2025-01-05')).toBe('Sun')
   })
 
-  it('formats dates correctly', () => {
+  it('formats dates using localized short and long formats', () => {
     const { formatDate } = useHolidayCalendar()
-    
-    const date = '2025-01-01'
-    
-    // Japanese short format
-    expect(formatDate(date, 'short')).toContain('1月')
-    expect(formatDate(date, 'short')).toContain('1日')
-    
-    // Japanese long format
-    const longFormat = formatDate(date, 'long')
+
+    expect(formatDate('2025-01-01', 'short')).toContain('1月')
+    expect(formatDate('2025-01-01', 'short')).toContain('1日')
+
+    const longFormat = formatDate('2025-01-01', 'long')
     expect(longFormat).toContain('2025年')
     expect(longFormat).toContain('1月')
     expect(longFormat).toContain('1日')
     expect(longFormat).toContain('水曜日')
+
+    setI18nLocale('en')
+    expect(useHolidayCalendar().formatDate('2025-01-01', 'long')).toContain('Wednesday')
   })
 
-  it('gets holidays by month', async () => {
+  it('returns holidays for a requested month', async () => {
+    stubHolidayFetch(mockHolidayData)
     const { loadHolidayData, getHolidaysByMonth } = useHolidayCalendar()
-    
+
+    expect(getHolidaysByMonth(2025, 1)).toEqual([])
+
     await loadHolidayData()
-    
-    const januaryHolidays = getHolidaysByMonth(2025, 1)
-    expect(januaryHolidays).toHaveLength(1)
-    expect(januaryHolidays[0].nameKey).toBe('HOLIDAY_NEW_YEAR')
-    
-    const mayHolidays = getHolidaysByMonth(2025, 5)
-    expect(mayHolidays).toHaveLength(1)
-    expect(mayHolidays[0].nameKey).toBe('HOLIDAY_CHILDRENS_DAY')
-    
-    const juneHolidays = getHolidaysByMonth(2025, 6)
-    expect(juneHolidays).toHaveLength(0)
+
+    expect(getHolidaysByMonth(2025, 1)).toEqual([mockHolidayData.holidays[0]])
+    expect(getHolidaysByMonth(2025, 5)).toEqual([mockHolidayData.holidays[1]])
+    expect(getHolidaysByMonth(2025, 6)).toEqual([])
   })
 
-  it('generates calendar data correctly', async () => {
+  it('generates month calendar data with holiday and special operation details', async () => {
+    stubHolidayFetch(mockHolidayData)
     const { loadHolidayData, generateCalendarData } = useHolidayCalendar()
-    
+
     await loadHolidayData()
-    
+
     const calendar = generateCalendarData(2025, 1)
-    
-    // January 2025 starts on Wednesday (index 3)
-    expect(calendar[0][0]).toBeNull() // Sunday
-    expect(calendar[0][1]).toBeNull() // Monday
-    expect(calendar[0][2]).toBeNull() // Tuesday
-    expect(calendar[0][3]).not.toBeNull() // Wednesday (1st)
-    expect(calendar[0][3]?.day).toBe(1)
-    expect(calendar[0][3]?.isHoliday).toBe(true)
-    expect(calendar[0][3]?.specialOperation).toBeDefined()
-    
-    // Check last day (31st is Friday)
-    const lastWeek = calendar[calendar.length - 1]
-    const friday = lastWeek[5]
-    expect(friday?.day).toBe(31)
-    expect(friday?.isHoliday).toBe(false)
+    const firstWeek = calendar[0]
+    const lastWeek = calendar[4]
+
+    expect(calendar).toHaveLength(5)
+    expect(firstWeek).toBeDefined()
+    expect(lastWeek).toBeDefined()
+
+    if (!firstWeek || !lastWeek) {
+      throw new Error('Expected January 2025 calendar to contain first and last weeks')
+    }
+
+    expect(firstWeek[0]).toBeNull()
+    expect(firstWeek[1]).toBeNull()
+    expect(firstWeek[2]).toBeNull()
+    expect(firstWeek[3]).toMatchObject({
+      day: 1,
+      date: '2025-01-01',
+      isHoliday: true,
+      holiday: mockHolidayData.holidays[0],
+      specialOperation: mockHolidayData.specialOperations[0],
+      dayOfWeek: '水'
+    })
+
+    expect(lastWeek[5]).toMatchObject({
+      day: 31,
+      date: '2025-01-31',
+      isHoliday: false,
+      holiday: undefined,
+      specialOperation: undefined,
+      dayOfWeek: '金'
+    })
+    expect(lastWeek[6]).toBeNull()
   })
 
-  it('handles errors correctly', async () => {
-    // Create a special mock for error testing
-    vi.mocked(useHolidayCalendar).mockImplementationOnce(() => {
-      const holidayMaster = ref<HolidayMaster | null>(null)
-      const isLoading = ref(false)
-      const error = ref<string | null>(null)
-      
-      const loadHolidayData = vi.fn(async () => {
-        isLoading.value = true
-        error.value = null
-        
-        try {
-          // Simulate an error
-          throw new Error('Network error')
-        } catch (err) {
-          error.value = 'HOLIDAY_LOAD_ERROR'
-        } finally {
-          isLoading.value = false
-        }
-      })
-      
-      return {
-        loadHolidayData,
-        isHoliday: vi.fn(),
-        getHoliday: vi.fn(),
-        getSpecialOperation: vi.fn(),
-        getDayOfWeek: vi.fn(),
-        formatDate: vi.fn(),
-        getHolidaysByMonth: vi.fn(),
-        generateCalendarData: vi.fn(),
-        holidayMaster,
-        isLoading,
-        error
-      }
-    })
-    
-    const { loadHolidayData, error, isLoading } = useHolidayCalendar()
-    
+  it('sets an error when holiday data is unavailable', async () => {
+    const fetchHolidayData = stubHolidayFetch(null)
+    const { loadHolidayData, holidayMaster, error, isLoading } = useHolidayCalendar()
+
     await loadHolidayData()
-    
+
+    expect(fetchHolidayData).toHaveBeenCalledTimes(1)
+    expect(holidayMaster.value).toBeNull()
     expect(error.value).toBe('HOLIDAY_LOAD_ERROR')
     expect(isLoading.value).toBe(false)
   })
 
-  it('caches holiday data', async () => {
+  it('sets an error and logs when the offline store rejects', async () => {
+    const offlineStore = useOfflineStore()
+    const fetchError = new Error('Network error')
+    vi.spyOn(offlineStore, 'fetchHolidayData').mockRejectedValue(fetchError)
+    const { loadHolidayData, error, isLoading } = useHolidayCalendar()
+
+    await loadHolidayData()
+
+    expect(error.value).toBe('HOLIDAY_LOAD_ERROR')
+    expect(isLoading.value).toBe(false)
+    expect(loggerMock.error).toHaveBeenCalledWith('Failed to load holiday data', fetchError)
+  })
+
+  it('does not fetch holiday data again once loaded', async () => {
+    const fetchHolidayData = stubHolidayFetch(mockHolidayData)
     const { loadHolidayData } = useHolidayCalendar()
-    
+
     await loadHolidayData()
-    expect(loadHolidayData).toHaveBeenCalledTimes(1)
-    
-    // Second call should not fetch again (in real implementation)
     await loadHolidayData()
-    expect(loadHolidayData).toHaveBeenCalledTimes(2)
-    
-    // Note: In a real implementation, we would check that $fetch was only called once
-    // But since we're mocking the entire composable, we just verify the method was called
+
+    expect(fetchHolidayData).toHaveBeenCalledTimes(1)
   })
 })

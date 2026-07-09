@@ -91,3 +91,51 @@ test('隠岐汽船は時刻表ダウンロードページを監視する', () =>
     page.url === 'https://www.oki-kisen.co.jp/download/dl-timetable/29'
   )), true)
 })
+
+test('JAL・隠岐空港発着便は空港公式のフライト時刻ページを監視する', () => {
+  const source = SOURCES.find((item) => item.id === 'jal-oki-flights')
+  assert.equal(source?.group, '航空')
+  assert.equal(source?.officialUrl, 'https://www.jal.co.jp/jp/ja/dom/route/time/')
+  assert.deepEqual(source?.pages, [
+    { role: 'timetable', label: '隠岐空港フライト情報', url: 'https://www.oki-airport.jp/flight' },
+    {
+      role: 'timetable',
+      label: 'JAL令和8年度上期運航計画',
+      url: 'https://www.oki-airport.jp/news/archives/14',
+      fetchStrategy: 'curl'
+    },
+    { role: 'timetable', label: '出雲空港 就航路線・時刻表', url: 'https://www.izumo-airport.co.jp/flight/flight-time' }
+  ])
+})
+
+test('航空フライト情報のHTML本文を時刻表資料として扱える', () => {
+  const html = `
+    <title>フライト情報｜隠岐世界ジオパーク空港</title>
+    <h1>フライト情報</h1>
+    <h2>出発便</h2>
+    <table>
+      <tr><th>航空会社</th><th>便名</th><th>行き先</th><th>出発時刻</th></tr>
+      <tr><td>JAL</td><td>2332</td><td>大阪（伊丹）</td><td>15:05</td></tr>
+    </table>
+    <h2>到着便</h2>
+    <table>
+      <tr><td>JAL</td><td>2331</td><td>大阪（伊丹）</td><td>14:35</td></tr>
+    </table>
+  `
+  const document = normalizeHtmlPageDocument(
+    html,
+    { role: 'timetable', label: '隠岐空港フライト情報', url: 'https://www.oki-airport.jp/flight' },
+    {
+      url: 'https://www.oki-airport.jp/flight',
+      contentType: 'text/html; charset=utf-8',
+      sizeBytes: html.length,
+      hash: 'flight123'
+    },
+    'フライト情報｜隠岐世界ジオパーク空港'
+  )
+
+  assert.equal(document.type, 'timetable')
+  assert.equal(document.title, 'フライト情報｜隠岐世界ジオパーク空港')
+  assert.equal(document.url, 'https://www.oki-airport.jp/flight')
+  assert.equal(document.extension, 'html')
+})

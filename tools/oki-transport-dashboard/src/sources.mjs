@@ -116,6 +116,25 @@ export const SOURCES = [
     expectedKeywords: ['時刻表', '運賃', '連絡バス']
   },
   {
+    id: 'jal-oki-flights',
+    name: 'JAL・隠岐空港発着便',
+    group: '航空',
+    operator: '日本航空株式会社 / ジェイエア / 日本エアコミューター',
+    officialUrl: 'https://www.jal.co.jp/jp/ja/dom/route/time/',
+    area: '隠岐・大阪（伊丹）・出雲',
+    pages: [
+      { role: 'timetable', label: '隠岐空港フライト情報', url: 'https://www.oki-airport.jp/flight' },
+      {
+        role: 'timetable',
+        label: 'JAL令和8年度上期運航計画',
+        url: 'https://www.oki-airport.jp/news/archives/14',
+        fetchStrategy: 'curl'
+      },
+      { role: 'timetable', label: '出雲空港 就航路線・時刻表', url: 'https://www.izumo-airport.co.jp/flight/flight-time' }
+    ],
+    expectedKeywords: ['JAL', '隠岐', '大阪', '伊丹', '出雲', 'フライト', '時刻表', '8月1日', '8月28日', 'B738']
+  },
+  {
     id: 'ichibata-bus-connection',
     name: '一畑バス・隠岐汽船接続バス',
     group: '連絡バス',

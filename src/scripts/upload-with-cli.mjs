@@ -23,7 +23,7 @@ const __dirname = dirname(__filename)
 // アップロードするファイルの設定
 const filesToUpload = [
   {
-    localPath: 'public/data/timetable.json',
+    localPath: '../gtfs/generated/public/timetable.json',
     storagePath: 'data/timetable.json'
   },
   {

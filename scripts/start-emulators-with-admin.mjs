@@ -88,23 +88,21 @@ try {
   console.log('   node src/scripts/setup-admin.js admin@ferry-dev.local Admin123! super')
 }
 
-// Import timetable data
-console.log('📅 Importing timetable data...')
+// Build code-managed public timetable data
+console.log('📅 Building code-managed public timetable data...')
 try {
   const { execSync } = await import('child_process')
-  execSync('node scripts/import-timetable-admin.mjs', {
+  execSync('npm run timetable:build', {
     stdio: 'inherit',
     cwd: projectRoot,
     env: {
-      ...process.env,
-      FIREBASE_AUTH_EMULATOR_HOST: 'localhost:9099',
-      FIRESTORE_EMULATOR_HOST: 'localhost:8095'
+      ...process.env
     }
   })
-  console.log('✅ Timetable data imported successfully')
+  console.log('✅ Public timetable data built successfully')
 } catch (error) {
-  console.log('⚠️  Could not import timetable data. You can run it manually with:')
-  console.log('   node scripts/import-timetable-admin.mjs')
+  console.log('⚠️  Could not build public timetable data. You can run it manually with:')
+  console.log('   npm run timetable:build')
 }
 
 // Import fare data

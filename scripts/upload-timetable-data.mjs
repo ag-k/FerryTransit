@@ -20,11 +20,12 @@ async function uploadTimetableData() {
 
     const bucketName = 'oki-ferryguide.appspot.com';
     const fileName = 'data/timetable.json';
-    const filePath = path.join(__dirname, '..', 'src', 'public', 'data', 'timetable.json');
+    const filePath = path.join(__dirname, '..', 'gtfs', 'generated', 'public', 'timetable.json');
 
     // ファイルが存在するか確認
     if (!fs.existsSync(filePath)) {
       console.error('❌ 時刻表データファイルが見つかりません:', filePath);
+      console.error('   先に npm run timetable:build を実行してください。');
       process.exit(1);
     }
 

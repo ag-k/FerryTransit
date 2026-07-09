@@ -1,11 +1,14 @@
 import { createHash } from 'node:crypto'
+import { execFile } from 'node:child_process'
 import { mkdir, readFile, writeFile } from 'node:fs/promises'
 import { dirname, extname, join } from 'node:path'
+import { promisify } from 'node:util'
 import { fileURLToPath } from 'node:url'
 import { SOURCES } from './sources.mjs'
 import { recordChangeHistory } from './changeHistory.mjs'
 
 const __dirname = dirname(fileURLToPath(import.meta.url))
+const execFileAsync = promisify(execFile)
 const ROOT_DIR = join(__dirname, '..')
 const SNAPSHOT_DIR = join(ROOT_DIR, 'data', 'snapshots')
 const DOWNLOAD_DIR = join(ROOT_DIR, 'data', 'downloads')
@@ -122,7 +125,7 @@ async function collectSource(source, previousIndex, options) {
 async function collectPage(source, page, previousIndex) {
   const collectedAt = new Date().toISOString()
   try {
-    const response = await fetchResource(page.url)
+    const response = await fetchResource(page.url, page)
     const text = response.text || ''
     const links = response.isText ? extractLinksFromHtml(text, page.url) : []
     const discoveredFiles = response.isText ? extractStandaloneFileUrls(text, page.url) : []
@@ -188,7 +191,11 @@ async function collectPage(source, page, previousIndex) {
   }
 }
 
-async function fetchResource(url) {
+async function fetchResource(url, options = {}) {
+  if (options.fetchStrategy === 'curl') {
+    return fetchResourceWithCurl(url)
+  }
+
   const controller = new AbortController()
   const timer = setTimeout(() => controller.abort(), REQUEST_TIMEOUT_MS)
   try {
@@ -219,6 +226,90 @@ async function fetchResource(url) {
     }
   } finally {
     clearTimeout(timer)
+  }
+}
+
+async function fetchResourceWithCurl(url) {
+  const timeoutSeconds = Math.max(1, Math.ceil(REQUEST_TIMEOUT_MS / 1000))
+  const { stdout } = await execFileAsync('curl', [
+    '-L',
+    '-sS',
+    '--max-time',
+    String(timeoutSeconds),
+    '--max-filesize',
+    String(MAX_DOWNLOAD_BYTES),
+    '-A',
+    USER_AGENT,
+    '-H',
+    'accept: text/html,application/xhtml+xml,application/pdf,image/*,*/*;q=0.8',
+    '-D',
+    '-',
+    '--url',
+    url
+  ], {
+    encoding: 'buffer',
+    maxBuffer: MAX_DOWNLOAD_BYTES + 1024 * 1024
+  })
+
+  return parseCurlResponse(stdout, url)
+}
+
+function parseCurlResponse(stdout, url) {
+  const separator = Buffer.from('\r\n\r\n')
+  const splitIndex = stdout.lastIndexOf(separator)
+  if (splitIndex < 0) {
+    throw new Error('curl のレスポンスヘッダーを解析できませんでした')
+  }
+
+  const headerText = stdout.subarray(0, splitIndex).toString('utf8')
+  const headers = parseCurlHeaders(headerText)
+  const buffer = stdout.subarray(splitIndex + separator.length)
+  const contentType = headers.get('content-type') || ''
+  const isText = TEXT_CONTENT_TYPES.some((type) => contentType.toLowerCase().includes(type))
+
+  return {
+    ok: headers.status >= 200 && headers.status < 300,
+    url,
+    status: headers.status,
+    contentType,
+    lastModified: headers.get('last-modified'),
+    etag: headers.get('etag'),
+    sizeBytes: buffer.length,
+    hash: sha256(buffer),
+    text: isText ? decodeText(buffer) : null,
+    buffer,
+    isText
+  }
+}
+
+function parseCurlHeaders(headerText) {
+  const blocks = headerText
+    .split(/\r?\n\r?\n/)
+    .map((block) => block.trim())
+    .filter(Boolean)
+  const finalBlock = [...blocks].reverse().find((block) => /^HTTP\//i.test(block))
+  if (!finalBlock) {
+    throw new Error('curl の最終レスポンスヘッダーを解析できませんでした')
+  }
+
+  const lines = finalBlock.split(/\r?\n/)
+  const status = Number(lines[0].match(/^HTTP\/\S+\s+(\d+)/i)?.[1])
+  if (!Number.isInteger(status)) {
+    throw new Error(`curl のステータスコードを解析できませんでした: ${lines[0]}`)
+  }
+
+  const values = new Map()
+  for (const line of lines.slice(1)) {
+    const index = line.indexOf(':')
+    if (index <= 0) continue
+    values.set(line.slice(0, index).trim().toLowerCase(), line.slice(index + 1).trim())
+  }
+
+  return {
+    status,
+    get(name) {
+      return values.get(String(name).toLowerCase()) || null
+    }
   }
 }
 
@@ -359,7 +450,7 @@ function isLikelyHtmlDocument(html, page) {
   if (!html || !HTML_DOCUMENT_ROLES.has(page.role)) return false
   const text = cleanText(stripTags(html))
   const tableCount = (html.match(/<table\b/gi) || []).length
-  const hasDocumentKeyword = /時刻表|運賃表|料金表|運航状況|ダイヤ|路線バス|空港連絡バス|接続バス/.test(text)
+  const hasDocumentKeyword = /時刻表|運賃表|料金表|運航状況|運航計画|ダイヤ|路線バス|空港連絡バス|接続バス|フライト情報|就航路線|出発便|到着便/.test(text)
 
   if (!hasDocumentKeyword) return false
   if (page.role === 'status') return /運航状況|欠航|運休|休航|運航/.test(text)
@@ -383,7 +474,7 @@ export function classifyResourceType(text = '', url = '', pageRole = 'other') {
     path = url
   }
   const value = `${text} ${path}`.toLowerCase()
-  if (/時刻|ダイヤ|timetable|schedule|jikoku|rosen|route-time|sougoujikoku|isokaze|douzen|goka|seibu|sinnryoujo|bus/.test(value)) return 'timetable'
+  if (/時刻|ダイヤ|フライト|就航路線|出発便|到着便|運航計画|timetable|schedule|flight|jikoku|rosen|route-time|sougoujikoku|isokaze|douzen|goka|seibu|sinnryoujo|bus/.test(value)) return 'timetable'
   if (/運賃表|料金表|fare|fee|unchin|price/.test(value)) return 'fare'
   if (/運航状況|situation|status|欠航|運休|休航/.test(value)) return 'status'
   if (/停留所|マップ|map|乗り場|乗場/.test(value)) return 'map'

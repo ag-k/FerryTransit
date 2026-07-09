@@ -39,7 +39,7 @@ const bucket = getStorage().bucket()
 // アップロードするファイルの設定
 const filesToUpload = [
   {
-    localPath: 'public/data/timetable.json',
+    localPath: '../gtfs/generated/public/timetable.json',
     storagePath: 'data/timetable.json',
     contentType: 'application/json'
   },

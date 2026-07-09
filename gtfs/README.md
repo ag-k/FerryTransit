@@ -9,10 +9,19 @@ gtfs/
   sources/                  # 取得元、ライセンス、更新方針などのメタ情報
   raw/                      # 取得・展開した原本の履歴
   current/                  # アプリで採用中の GTFS
+  generated/                # コード管理する生成済み時刻表・公開JSON
   reports/                  # 検証結果や差分レポート
 ```
 
 アプリ配信用の JSON は `gtfs/public-data/data/` に生成し、Firebase Storage の同じオブジェクトパス（例: `data/gtfs/bus/ama/routes.json`, `data/bus-search/ama.json`）へアップロードします。`raw/` と `current/` は GTFS 原本、`gtfs/public-data/` は外部公開用の派生データとして扱います。
+
+公開時刻表 `data/timetable.json` は管理画面の Firestore データをマスターにせず、コード管理された次のソースを合成して生成します。
+
+- `timetable.json`: 船の基礎時刻表
+- `gtfs/raw/air/jal_oki_2026_timetable.json`: JAL 隠岐発着便
+- `gtfs/generated/bus/oki_airport_bus_2026_timetable.json`: 隠岐空港連絡バス
+
+合成結果は `gtfs/generated/public/timetable.json` に出力し、Firebase Storage の `data/timetable.json` へ直接公開します。
 
 ## 更新手順
 
@@ -22,6 +31,28 @@ gtfs/
 4. `npm run gtfs:build -- bus ama` で `gtfs/public-data/data/` を更新する
 5. `npm run gtfs:upload` で Firebase Storage の `data/...` へアップロードする（確認のみなら `npm run gtfs:upload -- --dry-run`）
 6. アプリ側の表示・検索に関係するテストを実行する
+
+## 公開時刻表の生成・公開
+
+管理画面を通さず、コード管理ソースから公開時刻表を生成します。
+
+```bash
+npm run timetable:build
+```
+
+このコマンドは `gtfs:generate:oki-airport-bus` を実行してから、船・航空便・空港連絡バスを合成し、`gtfs/generated/public/timetable.json` を更新します。公開前の確認は次を使います。
+
+```bash
+npm run timetable:publish:dry-run
+```
+
+問題なければ Firebase Storage の `data/timetable.json` へ直接反映します。
+
+```bash
+npm run timetable:publish
+```
+
+公開時は既存の `data/timetable.json` を `backups/timetable/{YYYYMMDD-HHmmss}.json` に退避してから上書きします。
 
 ## 現在の採用データ
 
@@ -101,7 +132,7 @@ npm run gtfs:build -- bus ichibata_bus_connection
 
 ## 隠岐空港連絡バスの生成
 
-隠岐一畑交通の隠岐空港連絡バスは固定ダイヤではなく航空便の発着に連動して運行されるため、GTFS バスフィードではなくマスター時刻表に投入する JSON として生成します。
+隠岐一畑交通の隠岐空港連絡バスは固定ダイヤではなく航空便の発着に連動して運行されるため、GTFS バスフィードではなく公開時刻表へ合成する JSON として生成します。
 
 ```bash
 npm run gtfs:generate:oki-airport-bus
@@ -120,4 +151,4 @@ npm run gtfs:generate:oki-airport-bus
 - `SAIGO` では乗換検索の時刻判定に合わせて1分停車し、連結区間は同一 `name` と `next_id` により直行便として扱う
 - 運行期間と曜日は元の航空便の `start_date` / `end_date` / `active_days` を継承する
 
-生成した JSON は管理画面の時刻表インポートで「JSONファイル」を選び、マスター時刻表へ取り込みます。取り込み後は通常の時刻表公開手順で Firebase Storage の `data/timetable.json` に反映します。
+生成した JSON は `npm run timetable:build` で `gtfs/generated/public/timetable.json` に合成し、`npm run timetable:publish` で Firebase Storage の `data/timetable.json` に直接反映します。
