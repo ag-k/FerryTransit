@@ -239,8 +239,8 @@ describe('TimetablePage', () => {
     expect(mockToast.success).toHaveBeenCalledWith('1件のデータをインポートしました')
   })
 
-  it('時刻表データを公開できる', async () => {
-    mockPublishData.mockResolvedValue('https://example.com/timetable.json')
+  it('管理画面からは時刻表の公開プレビューだけを生成する', async () => {
+    mockPublishData.mockResolvedValue('https://example.com/preview/timetable.json')
 
     const wrapper = mountPage()
     await flushPromises()
@@ -248,7 +248,7 @@ describe('TimetablePage', () => {
     await wrapper.find('[data-test="timetable-publish"]').trigger('click')
     await flushPromises()
 
-    expect(mockPublishData).toHaveBeenCalledWith('timetable')
-    expect(mockToast.success).toHaveBeenCalledWith('時刻表データを公開しました')
+    expect(mockPublishData).toHaveBeenCalledWith('timetable', true)
+    expect(mockToast.success).toHaveBeenCalledWith('時刻表プレビューを生成しました。本番データはコード管理パイプラインから公開してください')
   })
 })

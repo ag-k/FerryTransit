@@ -76,10 +76,10 @@
     "timetable:fetch:jal": "node scripts/timetable/fetch-jal-oki-timetable.mjs",
     "timetable:fetch:jal:dry-run": "node scripts/timetable/fetch-jal-oki-timetable.mjs --dry-run",
     "timetable:refresh:jal": "npm run timetable:fetch:jal && npm run timetable:build",
-    "timetable:build": "npm run gtfs:generate:oki-airport-bus && node scripts/timetable/build-public-timetable.mjs",
-    "timetable:build:dry-run": "npm run gtfs:generate:oki-airport-bus && node scripts/timetable/build-public-timetable.mjs --dry-run",
-    "timetable:publish:dry-run": "npm run timetable:build && node scripts/timetable/publish-public-timetable.mjs --dry-run",
-    "timetable:publish": "npm run timetable:build && node scripts/timetable/publish-public-timetable.mjs"
+    "timetable:build": "node scripts/timetable/build-timetable-pipeline.mjs",
+    "timetable:build:dry-run": "node scripts/timetable/build-timetable-pipeline.mjs --dry-run",
+    "timetable:publish:dry-run": "node scripts/timetable/publish-public-timetable.mjs --dry-run",
+    "timetable:publish": "node scripts/timetable/publish-public-timetable.mjs"
   },
   "portless": {
     "name": "ferry-transit",

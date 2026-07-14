@@ -5,16 +5,38 @@ import { relative, join } from 'path'
 import { pathToFileURL } from 'url'
 import { cert, initializeApp } from 'firebase-admin/app'
 import { getStorage } from 'firebase-admin/storage'
+import { resolveFirebasePublishTarget } from '../lib/firebase-publish-target.mjs'
 
 const ROOT = process.cwd()
 const SOURCE_ROOT = join(ROOT, 'gtfs', 'public-data', 'data')
-const DEFAULT_BUCKET = 'oki-ferryguide.firebasestorage.app'
 
-const args = new Set(process.argv.slice(2))
-const dryRun = args.has('--dry-run')
-const bucketName = process.env.FIREBASE_STORAGE_BUCKET ||
-  process.env.NUXT_PUBLIC_FIREBASE_STORAGE_BUCKET ||
-  DEFAULT_BUCKET
+const parseArgs = (argv) => {
+  const args = { dryRun: false, target: '', bucket: '' }
+  for (let i = 0; i < argv.length; i++) {
+    const arg = argv[i]
+    if (arg === '--dry-run') {
+      args.dryRun = true
+    } else if (arg === '--target') {
+      const value = argv[++i]
+      if (!value) throw new Error('--target には dev または prod を指定してください')
+      args.target = value
+    } else if (arg.startsWith('--target=')) {
+      args.target = arg.slice('--target='.length)
+    } else if (arg === '--bucket') {
+      const value = argv[++i]
+      if (!value) throw new Error('--bucket にはFirebase Storageバケット名を指定してください')
+      args.bucket = value
+    } else if (arg.startsWith('--bucket=')) {
+      args.bucket = arg.slice('--bucket='.length)
+    } else {
+      throw new Error(`未知の引数です: ${arg}`)
+    }
+  }
+  return args
+}
+
+const args = parseArgs(process.argv.slice(2))
+const { target, bucketName } = resolveFirebasePublishTarget(args)
 
 const collectFiles = (dir) => {
   const files = []
@@ -56,10 +78,11 @@ const main = async () => {
   }
 
   console.log(`GTFS公開データ: ${SOURCE_ROOT}`)
+  console.log(`公開環境: ${target}`)
   console.log(`Firebase Storage bucket: ${bucketName}`)
   console.log(`対象ファイル数: ${files.length}`)
 
-  if (dryRun) {
+  if (args.dryRun) {
     for (const file of files) {
       console.log(`[dry-run] ${file} -> ${toStoragePath(file)}`)
     }

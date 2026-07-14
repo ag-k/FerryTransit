@@ -2,6 +2,8 @@
 
 JAL公式の国内線時刻表ページから隠岐―大阪（伊丹）線、隠岐―出雲線を取得し、アプリ形式へ変換して dev の Firebase Storage に公開する。
 
+GTFSデータ管理、公開時刻表、交通情報ダッシュボードとの責務分担と、Phase 1で適用した単一ビルド・単一公開経路は [交通データ管理・合成・配信パイプライン](transport-data-pipeline.md) を参照する。
+
 ## ローカル実行
 
 JAL公式サイトはヘッドレスブラウザからの取得を拒否するため、通常のChromiumを一時的に起動する。実行中はブラウザウィンドウが表示される。
@@ -18,10 +20,21 @@ npm run timetable:refresh:jal
 `.github/workflows/update-jal-timetable.yml` が毎日 03:17 JST に次を実行する。
 
 1. JAL公式時刻表を取得・検証する
-2. 隠岐空港連絡バスと公開時刻表を再生成する
-3. `oki-ferryguide-dev.firebasestorage.app/data/timetable.json` をバックアップ後に更新する
-4. 変更された入力・生成JSONを `dev` ブランチへコミットする
+2. 隠岐空港連絡バスと公開時刻表を1回だけ生成する
+3. 入力・生成JSONに変更がなければ、コミット・バックアップ・公開を省略する
+4. 変更された入力・生成JSONを `dev` ブランチへコミット・pushする
+5. そのコミットと同じ生成JSONを `oki-ferryguide-dev.firebasestorage.app/data/timetable.json` へバックアップ付きで公開し、SHA-256を検証する
 
 GitHub ActionsのRepository secretに、dev用サービスアカウントJSONを `FIREBASE_SERVICE_ACCOUNT_DEV` という名前で登録する。Storageオブジェクトの読み書き権限が必要。
 
 workflowのスケジュール実行はGitHubのdefault branchにある定義が使われる。default branchが `master` のため、このworkflow自体は `master` にも反映する必要がある。処理対象と自動コミット先は常に `dev` ブランチ。
+
+公開コマンドはpublish-onlyであり、単独実行する場合も公開先を明示する。
+
+```bash
+npm run timetable:build:dry-run
+npm run timetable:publish:dry-run -- --target dev
+npm run timetable:publish -- --target dev
+```
+
+管理画面とCloud Functionsからは本番 `data/timetable.json` を更新できない。管理画面の時刻表操作はFirestore編集と `preview/timetable.json` の生成までとする。

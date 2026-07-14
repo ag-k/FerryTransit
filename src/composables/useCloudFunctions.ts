@@ -37,6 +37,9 @@ export const useCloudFunctions = () => {
    * データの公開
    */
   const publishData = async (dataType: 'timetable' | 'fare' | 'holidays') => {
+    if (dataType === 'timetable') {
+      throw new Error('公開時刻表はコード管理パイプラインからのみ公開できます')
+    }
     const func = httpsCallable($firebase.functions, 'publishData')
     const result = await func({ dataType })
     return result.data

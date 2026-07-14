@@ -1,4 +1,4 @@
-import { mkdtempSync, rmSync, writeFileSync } from "fs";
+import { mkdtempSync, readFileSync, rmSync, writeFileSync } from "fs";
 import { tmpdir } from "os";
 import { join, resolve } from "path";
 import { pathToFileURL } from "url";
@@ -23,6 +23,7 @@ type BuildPublicTimetableModule = {
       label?: string;
       file: string;
       replaceNames?: string[];
+      trips?: TimetableTrip[];
     }>,
     options?: { root?: string }
   ) => {
@@ -39,6 +40,13 @@ type BuildPublicTimetableModule = {
 
 const scriptUrl = pathToFileURL(resolve("scripts/timetable/build-public-timetable.mjs")).href;
 const { buildPublicTimetable, validateTimetable } = await import(scriptUrl) as BuildPublicTimetableModule;
+const pipelineScriptUrl = pathToFileURL(resolve("scripts/timetable/build-timetable-pipeline.mjs")).href;
+const { buildTimetablePipeline } = await import(pipelineScriptUrl) as {
+  buildTimetablePipeline: (options?: { dryRun?: boolean }) => {
+    busTrips: TimetableTrip[];
+    trips: TimetableTrip[];
+  };
+};
 
 const tempDirs: string[] = [];
 
@@ -104,10 +112,24 @@ describe("buildPublicTimetable", () => {
       { id: "generated", file: "generated.json", replaceNames: ["OKI_AIRPORT_BUS"] },
     ], { root });
 
-    expect(result.sourceSummaries[1].removed).toBe(1);
+    expect(result.sourceSummaries[1]?.removed).toBe(1);
     expect(result.summary.total).toBe(2);
     expect(result.summary.byName.OKI_AIRPORT_BUS).toBe(1);
     expect(result.trips.find(trip => trip.name === "OKI_AIRPORT_BUS")?.trip_id).toBe("3");
+  });
+
+  it("dry-runでは連絡バスと公開時刻表の管理対象ファイルを書き換えない", () => {
+    const airportBusFile = resolve("gtfs/generated/bus/oki_airport_bus_timetable.json");
+    const publicTimetableFile = resolve("gtfs/generated/public/timetable.json");
+    const beforeAirportBus = readFileSync(airportBusFile, "utf-8");
+    const beforePublicTimetable = readFileSync(publicTimetableFile, "utf-8");
+
+    const result = buildTimetablePipeline({ dryRun: true });
+
+    expect(result.busTrips).toHaveLength(20);
+    expect(result.trips.length).toBeGreaterThan(900);
+    expect(readFileSync(airportBusFile, "utf-8")).toBe(beforeAirportBus);
+    expect(readFileSync(publicTimetableFile, "utf-8")).toBe(beforePublicTimetable);
   });
 
   it("trip_id の重複は公開時刻表として拒否する", () => {

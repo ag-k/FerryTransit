@@ -178,7 +178,12 @@ export const buildPublicTimetable = (sources = PUBLIC_TIMETABLE_SOURCES, options
 
   for (const source of sources) {
     const filePath = resolveProjectPath(source.file, root)
-    const sourceTrips = readJsonArray(filePath)
+    const sourceTrips = source.trips === undefined
+      ? readJsonArray(filePath)
+      : source.trips
+    if (!Array.isArray(sourceTrips)) {
+      throw new Error(`時刻表ソースは配列である必要があります: ${source.id}`)
+    }
     let removed = 0
 
     if (source.replaceNames?.length) {

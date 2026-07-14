@@ -37,6 +37,10 @@ export const getJSONData = async <T>(path: string): Promise<T | null> => {
 export const uploadJSON = async (path: string, data: any, userInfo?: { uid: string }): Promise<string> => {
   const { $firebase } = useNuxtApp()
   const logger = createLogger('uploadJSON')
+
+  if (path.replace(/^\/+/, '').replace(/^data\//, '') === 'timetable.json') {
+    throw new Error('公開時刻表はコード管理パイプラインからのみ公開できます')
+  }
   
   try {
     const jsonBlob = new Blob([JSON.stringify(data, null, 2)], {
@@ -93,6 +97,9 @@ export const useDataPublish = () => {
   ): Promise<string> => {
 
     if (!user.value) throw new Error('認証が必要です')
+    if (dataType === 'timetable' && !preview) {
+      throw new Error('公開時刻表はコード管理パイプラインからのみ公開できます。管理画面ではプレビューのみ生成できます。')
+    }
 
     try {
       // Firestoreからデータを取得
@@ -680,6 +687,10 @@ export const useDataPublish = () => {
         throw new Error('履歴が見つかりません')
       }
 
+      if (history.type === 'timetable') {
+        throw new Error('公開時刻表のロールバックはコード管理パイプラインからのみ実行できます')
+      }
+
       // データを復元
       const jsonBlob = new Blob([JSON.stringify(history.dataSnapshot, null, 2)], {
         type: 'application/json'
@@ -687,9 +698,6 @@ export const useDataPublish = () => {
 
       let fileName: string
       switch (history.type) {
-        case 'timetable':
-          fileName = 'timetable.json'
-          break
         case 'fare':
           fileName = 'fare-master.json'
           break

@@ -108,7 +108,7 @@
           @click="publishTimetableData"
         >
           <CloudArrowUpIcon class="h-5 w-5 inline mr-1" />
-          {{ isPublishing ? '公開中...' : 'データ公開' }}
+          {{ isPublishing ? '生成中...' : '公開プレビュー' }}
         </PrimaryButton>
       </div>
       <div class="flex flex-col sm:flex-row gap-2">
@@ -1578,11 +1578,11 @@ const importData = async () => {
 const publishTimetableData = async () => {
   isPublishing.value = true
   try {
-    await publishData('timetable')
-    $toast.success('時刻表データを公開しました')
+    await publishData('timetable', true)
+    $toast.success('時刻表プレビューを生成しました。本番データはコード管理パイプラインから公開してください')
   } catch (error) {
     logger.error('Failed to publish data', error)
-    $toast.error('データの公開に失敗しました')
+    $toast.error('プレビューの生成に失敗しました')
   } finally {
     isPublishing.value = false
   }

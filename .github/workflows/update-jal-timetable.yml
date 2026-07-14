@@ -38,23 +38,38 @@ jobs:
       - name: Fetch and validate JAL timetable
         run: xvfb-run -a npm run timetable:refresh:jal
 
-      - name: Publish timetable to dev Storage
-        env:
-          FIREBASE_SERVICE_ACCOUNT_DEV: ${{ secrets.FIREBASE_SERVICE_ACCOUNT_DEV }}
-          FIREBASE_STORAGE_BUCKET: oki-ferryguide-dev.firebasestorage.app
+      - name: Detect timetable changes
+        id: timetable-changes
         run: |
-          test -n "$FIREBASE_SERVICE_ACCOUNT_DEV"
-          printf '%s' "$FIREBASE_SERVICE_ACCOUNT_DEV" > "$RUNNER_TEMP/firebase-service-account.json"
-          GOOGLE_APPLICATION_CREDENTIALS="$RUNNER_TEMP/firebase-service-account.json" npm run timetable:publish
-
-      - name: Commit generated timetable data
-        run: |
-          git config user.name "github-actions[bot]"
-          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
           git add gtfs/raw/air/jal_oki_timetable.json
           git add gtfs/generated/bus/oki_airport_bus_timetable.json
           git add gtfs/generated/public/timetable.json
-          if ! git diff --cached --quiet; then
-            git commit -m "chore(timetable): update JAL Oki schedule"
-            git push origin HEAD:dev
+          if git diff --cached --quiet; then
+            echo "changed=false" >> "$GITHUB_OUTPUT"
+          else
+            echo "changed=true" >> "$GITHUB_OUTPUT"
           fi
+
+      - name: Commit generated timetable data
+        if: steps.timetable-changes.outputs.changed == 'true'
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git commit -m "chore(timetable): update JAL Oki schedule"
+          git push origin HEAD:dev
+
+      - name: Publish committed timetable to dev Storage
+        if: steps.timetable-changes.outputs.changed == 'true'
+        env:
+          FIREBASE_SERVICE_ACCOUNT_DEV: ${{ secrets.FIREBASE_SERVICE_ACCOUNT_DEV }}
+        run: |
+          test -n "$FIREBASE_SERVICE_ACCOUNT_DEV"
+          printf '%s' "$FIREBASE_SERVICE_ACCOUNT_DEV" > "$RUNNER_TEMP/firebase-service-account.json"
+          trap 'rm -f "$RUNNER_TEMP/firebase-service-account.json"' EXIT
+          SOURCE_GIT_SHA="$(git rev-parse HEAD)" \
+            GOOGLE_APPLICATION_CREDENTIALS="$RUNNER_TEMP/firebase-service-account.json" \
+            npm run timetable:publish -- --target dev
+
+      - name: Skip unchanged timetable
+        if: steps.timetable-changes.outputs.changed == 'false'
+        run: echo "JAL timetable is unchanged; commit, backup, and publish were skipped."

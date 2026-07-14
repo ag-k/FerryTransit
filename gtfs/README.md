@@ -2,6 +2,8 @@
 
 このディレクトリは、公共交通 GTFS データの原本、採用中データ、検証結果を分けて管理します。
 
+GTFS、公開時刻表、交通情報ダッシュボード、JAL取得、定期実行の責務と統合方針は [交通データ管理・合成・配信パイプライン](../docs/operations/transport-data-pipeline.md) を参照してください。
+
 ## ディレクトリ構成
 
 ```text
@@ -29,7 +31,7 @@ gtfs/
 2. 内容を確認し、問題なければ `gtfs/current/{mode}/{id}/` を更新する
 3. `npm run gtfs:validate -- bus ama` で GTFS の基本整合性を確認する
 4. `npm run gtfs:build -- bus ama` で `gtfs/public-data/data/` を更新する
-5. `npm run gtfs:upload` で Firebase Storage の `data/...` へアップロードする（確認のみなら `npm run gtfs:upload -- --dry-run`）
+5. `npm run gtfs:upload -- --target dev` で dev Firebase Storage の `data/...` へアップロードする（確認のみなら `npm run gtfs:upload -- --dry-run --target dev`）。本番はQA・Go承認後に `--target prod` を明示する
 6. アプリ側の表示・検索に関係するテストを実行する
 
 ## 公開時刻表の生成・公開
@@ -43,16 +45,18 @@ npm run timetable:build
 このコマンドは `gtfs:generate:oki-airport-bus` を実行してから、船・航空便・空港連絡バスを合成し、`gtfs/generated/public/timetable.json` を更新します。公開前の確認は次を使います。
 
 ```bash
-npm run timetable:publish:dry-run
+npm run timetable:publish:dry-run -- --target dev
 ```
 
-問題なければ Firebase Storage の `data/timetable.json` へ直接反映します。
+問題なければ、生成済みJSONを再ビルドせずFirebase Storageの `data/timetable.json` へ反映します。公開先の指定は必須です。
 
 ```bash
-npm run timetable:publish
+npm run timetable:publish -- --target dev
+# 本番QA・Go承認後のみ
+npm run timetable:publish -- --target prod
 ```
 
-公開時は既存の `data/timetable.json` を `backups/timetable/{YYYYMMDD-HHmmss}.json` に退避してから上書きします。
+公開時は既存データとSHA-256が同じなら更新を省略します。変更がある場合は `data/timetable.json` を `backups/timetable/{YYYYMMDD-HHmmss}.json` に退避してから上書きし、アップロード後のSHA-256を検証します。
 
 ## 現在の採用データ
 
@@ -157,4 +161,4 @@ npm run timetable:refresh:jal
 - `SAIGO` では乗換検索の時刻判定に合わせて1分停車し、連結区間は同一 `name` と `next_id` により直行便として扱う
 - 運行期間と曜日は元の航空便の `start_date` / `end_date` / `active_days` を継承する
 
-生成した JSON は `npm run timetable:build` で `gtfs/generated/public/timetable.json` に合成し、`npm run timetable:publish` で Firebase Storage の `data/timetable.json` に直接反映します。
+生成した JSON は `npm run timetable:build` で `gtfs/generated/public/timetable.json` に合成し、`npm run timetable:publish -- --target dev|prod` で Firebase Storage の `data/timetable.json` に直接反映します。公開コマンドは生成済み成果物だけを検証・配信し、再ビルドしません。
