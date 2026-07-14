@@ -4,6 +4,12 @@ on:
   schedule:
     - cron: '17 18 * * *'
   workflow_dispatch:
+    inputs:
+      publish_existing:
+        description: Publish and smoke-test the existing committed artifact even when unchanged
+        required: false
+        default: false
+        type: boolean
 
 permissions:
   contents: write
@@ -35,8 +41,14 @@ jobs:
       - name: Install Chromium
         run: npx playwright install --with-deps chromium
 
-      - name: Fetch and validate JAL timetable
-        run: xvfb-run -a npm run timetable:refresh:jal
+      - name: Acquire JAL timetable
+        run: xvfb-run -a npm run transport:acquire -- --source jal-oki-flights
+
+      - name: Validate JAL source
+        run: npm run transport:check -- --source jal-oki-flights
+
+      - name: Build public timetable once
+        run: npm run transport:build -- --source jal-oki-flights
 
       - name: Detect timetable changes
         id: timetable-changes
@@ -59,7 +71,7 @@ jobs:
           git push origin HEAD:dev
 
       - name: Publish committed timetable to dev Storage
-        if: steps.timetable-changes.outputs.changed == 'true'
+        if: steps.timetable-changes.outputs.changed == 'true' || inputs.publish_existing == true
         env:
           FIREBASE_SERVICE_ACCOUNT_DEV: ${{ secrets.FIREBASE_SERVICE_ACCOUNT_DEV }}
         run: |
@@ -67,9 +79,14 @@ jobs:
           printf '%s' "$FIREBASE_SERVICE_ACCOUNT_DEV" > "$RUNNER_TEMP/firebase-service-account.json"
           trap 'rm -f "$RUNNER_TEMP/firebase-service-account.json"' EXIT
           SOURCE_GIT_SHA="$(git rev-parse HEAD)" \
+            SOURCE_GIT_DATE="$(git show -s --format=%cI HEAD)" \
             GOOGLE_APPLICATION_CREDENTIALS="$RUNNER_TEMP/firebase-service-account.json" \
-            npm run timetable:publish -- --target dev
+            npm run transport:publish -- --source jal-oki-flights --target dev
+
+      - name: Smoke test committed timetable on dev Storage
+        if: steps.timetable-changes.outputs.changed == 'true' || inputs.publish_existing == true
+        run: npm run transport:smoke -- --source jal-oki-flights --target dev --git-sha "$(git rev-parse HEAD)"
 
       - name: Skip unchanged timetable
-        if: steps.timetable-changes.outputs.changed == 'false'
+        if: steps.timetable-changes.outputs.changed == 'false' && inputs.publish_existing != true
         run: echo "JAL timetable is unchanged; commit, backup, and publish were skipped."
