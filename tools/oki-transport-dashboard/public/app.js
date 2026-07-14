@@ -217,7 +217,7 @@ async function exportGtfs() {
 }
 
 async function runGtfsFeedTask(button) {
-  const { feedId, mode, action } = button.dataset
+  const { feedId, sourceId, mode, action } = button.dataset
   setGtfsBusy(true)
   hideError()
   showGtfsTaskLog(`${gtfsTaskLabel(action)}を実行中: ${feedId}`)
@@ -225,7 +225,7 @@ async function runGtfsFeedTask(button) {
     const result = await fetchJson('/api/gtfs/run', {
       method: 'POST',
       headers: { 'content-type': 'application/json' },
-      body: JSON.stringify({ feedId, mode, action })
+      body: JSON.stringify({ feedId, sourceId, mode, action })
     })
     state.gtfs = result.dashboard
     const task = result.task
@@ -657,8 +657,16 @@ function renderGtfsWorkflow() {
       label: '採用中更新',
       status: latestExport ? 'active' : 'pending',
       metric: `${gtfs.summary.currentFeedCount} feed / 検証OK ${validationOkCount}`,
-      detail: '変換 → 検証 → JSON生成',
+      detail: 'acquire → validate → build',
       action: '<a class="mini-button" href="#gtfsFeedsCard">採用中GTFS</a>'
+    },
+    {
+      key: 'publish',
+      label: '公開・smoke',
+      status: 'pending',
+      metric: 'CLIでdevを明示',
+      detail: 'publish → smoke / prodは昇格のみ',
+      action: '<span class="item-meta">認証・承認が必要</span>'
     }
   ]
 
@@ -777,12 +785,12 @@ function renderGtfsFeeds(feeds) {
       ? `<span class="badge ${validation.ok ? 'ok' : 'error'}">${validation.ok ? '検証OK' : '要確認'}</span>`
       : '<span class="badge unknown">未検証</span>'
     const converterButton = feed.hasConverter
-      ? `<button class="mini-button" type="button" data-gtfs-task="true" data-action="convert" data-feed-id="${escapeAttr(feed.id)}" data-mode="${escapeAttr(feed.mode || 'bus')}">変換</button>`
+      ? `<button class="mini-button" type="button" data-gtfs-task="true" data-action="convert" data-feed-id="${escapeAttr(feed.id)}" data-source-id="${escapeAttr(feed.sourceId)}" data-mode="${escapeAttr(feed.mode || 'bus')}">変換</button>`
       : ''
     return `<article class="gtfs-feed">
       <div>
         <h5>${escapeHtml(feed.name)}</h5>
-        <p>${escapeHtml(feed.mode || 'bus')} / ${escapeHtml(feed.id)} / ${escapeHtml(feed.agencyName || feed.agency_name || '')}</p>
+        <p>source ${escapeHtml(feed.sourceId || '-')} / feed ${escapeHtml(feed.id)} / ${escapeHtml(feed.agencyName || feed.agency_name || '')}</p>
       </div>
       <div class="gtfs-feed-stats">
         <span>${feed.summary.routeCount} route</span>
@@ -799,8 +807,8 @@ function renderGtfsFeeds(feeds) {
         <div class="button-row">
           <a class="mini-button primary" href="${escapeAttr(gtfsViewerUrl({ source: 'current', mode: feed.mode || 'bus', id: feed.id }))}">ビュー</a>
           ${converterButton}
-          <button class="mini-button" type="button" data-gtfs-task="true" data-action="validate" data-feed-id="${escapeAttr(feed.id)}" data-mode="${escapeAttr(feed.mode || 'bus')}">検証</button>
-          <button class="mini-button" type="button" data-gtfs-task="true" data-action="build" data-feed-id="${escapeAttr(feed.id)}" data-mode="${escapeAttr(feed.mode || 'bus')}">JSON生成</button>
+          <button class="mini-button" type="button" data-gtfs-task="true" data-action="validate" data-feed-id="${escapeAttr(feed.id)}" data-source-id="${escapeAttr(feed.sourceId)}" data-mode="${escapeAttr(feed.mode || 'bus')}">検証</button>
+          <button class="mini-button" type="button" data-gtfs-task="true" data-action="build" data-feed-id="${escapeAttr(feed.id)}" data-source-id="${escapeAttr(feed.sourceId)}" data-mode="${escapeAttr(feed.mode || 'bus')}">JSON生成</button>
         </div>
       </div>
     </article>`

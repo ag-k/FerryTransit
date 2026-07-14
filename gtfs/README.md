@@ -31,7 +31,7 @@ gtfs/
 2. 内容を確認し、問題なければ `gtfs/current/{mode}/{id}/` を更新する
 3. `npm run gtfs:validate -- bus ama` で GTFS の基本整合性を確認する
 4. `npm run gtfs:build -- bus ama` で `gtfs/public-data/data/` を更新する
-5. `npm run gtfs:upload -- --target dev` で dev Firebase Storage の `data/...` へアップロードする（確認のみなら `npm run gtfs:upload -- --dry-run --target dev`）。本番はQA・Go承認後に `--target prod` を明示する
+5. `npm run transport:publish -- --source ama-town --target dev` で dev Firebase Storage の `data/...` へアップロードする
 6. アプリ側の表示・検索に関係するテストを実行する
 
 ## 公開時刻表の生成・公開
@@ -52,11 +52,17 @@ npm run timetable:publish:dry-run -- --target dev
 
 ```bash
 npm run timetable:publish -- --target dev
-# 本番QA・Go承認後のみ
-npm run timetable:publish -- --target prod
 ```
 
 公開時は既存データとSHA-256が同じなら更新を省略します。変更がある場合は `data/timetable.json` を `backups/timetable/{YYYYMMDD-HHmmss}.json` に退避してから上書きし、アップロード後のSHA-256を検証します。
+
+本番へは直接publishしません。QA・Go承認済みのリリースコミットSHAとdevのmanifestを指定し、検証済みのdev公開物を昇格します。
+
+```bash
+npm run transport:promote -- --from dev --target prod \
+  --manifest data/manifests/public-timetable.json \
+  --git-sha <release-commit-sha> --approve-prod
+```
 
 ## 現在の採用データ
 
@@ -161,4 +167,4 @@ npm run timetable:refresh:jal
 - `SAIGO` では乗換検索の時刻判定に合わせて1分停車し、連結区間は同一 `name` と `next_id` により直行便として扱う
 - 運行期間と曜日は元の航空便の `start_date` / `end_date` / `active_days` を継承する
 
-生成した JSON は `npm run timetable:build` で `gtfs/generated/public/timetable.json` に合成し、`npm run timetable:publish -- --target dev|prod` で Firebase Storage の `data/timetable.json` に直接反映します。公開コマンドは生成済み成果物だけを検証・配信し、再ビルドしません。
+生成した JSON は `npm run timetable:build` で `gtfs/generated/public/timetable.json` に合成し、`npm run transport:publish -- --source jal-oki-flights --target dev` で dev Firebase Storage の `data/timetable.json` に反映します。公開コマンドは生成済み成果物だけを検証・配信し、再ビルドしません。本番はQA・Go承認後にdev manifestから `transport:promote` で昇格します。

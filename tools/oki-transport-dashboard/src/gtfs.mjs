@@ -4,6 +4,8 @@ import { mkdir, readdir, readFile, stat, writeFile } from 'node:fs/promises'
 import { basename, dirname, join, normalize } from 'node:path'
 import { fileURLToPath } from 'node:url'
 import { promisify } from 'node:util'
+import { getTransportCliCommand } from '../../../scripts/lib/transport-orchestrator.mjs'
+import { loadTransportSourceRegistry } from '../../../scripts/lib/transport-source-registry.mjs'
 
 const __dirname = dirname(fileURLToPath(import.meta.url))
 const ROOT_DIR = join(__dirname, '..')
@@ -41,12 +43,7 @@ const GTFS_TABLES = Object.keys(GTFS_FILE_HEADERS).map((fileName) => ({
   headers: GTFS_FILE_HEADERS[fileName]
 }))
 
-const CONVERSION_TASKS = {
-  ama: { script: 'gtfs:convert:ama:r8', args: ['--current'] },
-  nishinoshima: { script: 'gtfs:convert:nishinoshima:2026', args: ['--current'] },
-  chibu: { script: 'gtfs:convert:chibu:2023', args: ['--current'] },
-  okinoshima: { script: 'gtfs:convert:okinoshima:2026', args: ['--current'] }
-}
+const TRANSPORT_REGISTRY = loadTransportSourceRegistry(REPO_ROOT)
 
 export async function loadGtfsDashboard() {
   const [currentFeeds, draft, taskHistory] = await Promise.all([
@@ -80,10 +77,12 @@ export async function loadCurrentFeeds() {
       ? join(REPO_ROOT, meta.currentPath)
       : join(GTFS_CURRENT_DIR, meta.mode || 'bus', meta.id)
     const summary = await summarizeGtfsDirectory(gtfsDir)
+    const registryFeed = TRANSPORT_REGISTRY.feedById[meta.id]
     feeds.push({
       ...meta,
+      sourceId: registryFeed?.sourceId || null,
       gtfsDir,
-      hasConverter: Boolean(CONVERSION_TASKS[meta.id]),
+      hasConverter: Boolean(registryFeed?.conversionTask),
       summary,
       lastValidation: await loadLatestValidationReport(meta.mode || 'bus', meta.id)
     })
@@ -425,11 +424,13 @@ export async function runGtfsTask(input = {}) {
   const mode = String(input.mode || 'bus').trim()
   const action = String(input.action || '').trim()
   if (!feedId) throw new Error('GTFS フィード ID が指定されていません')
-  const command = buildTaskCommand(action, mode, feedId)
+  const sourceId = String(input.sourceId || TRANSPORT_REGISTRY.feedById[feedId]?.sourceId || '').trim()
+  if (!sourceId) throw new Error(`GTFSフィードにsource IDがありません: ${feedId}`)
+  const command = buildTaskCommand(action, sourceId)
   const ranAt = new Date().toISOString()
   let result
   try {
-    const { stdout, stderr } = await execFileAsync('npm', command.args, {
+    const { stdout, stderr } = await execFileAsync(command.executable, command.args, {
       cwd: REPO_ROOT,
       timeout: 180000,
       maxBuffer: 1024 * 1024
@@ -437,6 +438,7 @@ export async function runGtfsTask(input = {}) {
     result = {
       ok: true,
       feedId,
+      sourceId,
       mode,
       action,
       ranAt,
@@ -449,6 +451,7 @@ export async function runGtfsTask(input = {}) {
     result = {
       ok: false,
       feedId,
+      sourceId,
       mode,
       action,
       ranAt,
@@ -960,28 +963,10 @@ function toExportRecord(manifest) {
   }
 }
 
-function buildTaskCommand(action, mode, feedId) {
-  if (action === 'validate') {
-    return {
-      args: ['run', 'gtfs:validate', '--', mode, feedId],
-      label: `npm run gtfs:validate -- ${mode} ${feedId}`
-    }
-  }
-  if (action === 'build') {
-    return {
-      args: ['run', 'gtfs:build', '--', mode, feedId],
-      label: `npm run gtfs:build -- ${mode} ${feedId}`
-    }
-  }
-  if (action === 'convert') {
-    const task = CONVERSION_TASKS[feedId]
-    if (!task) throw new Error(`${feedId} の変換スクリプトは登録されていません`)
-    return {
-      args: ['run', task.script, '--', ...task.args],
-      label: `npm run ${task.script} -- ${task.args.join(' ')}`
-    }
-  }
-  throw new Error(`不正な GTFS タスクです: ${action}`)
+export function buildTaskCommand(action, sourceId) {
+  const stage = { convert: 'acquire', validate: 'validate', build: 'build' }[action]
+  if (!stage) throw new Error(`不正な GTFS タスクです: ${action}`)
+  return getTransportCliCommand(sourceId, stage)
 }
 
 async function loadTaskHistory() {

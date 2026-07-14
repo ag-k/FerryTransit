@@ -146,9 +146,9 @@ server.listen(PORT, () => {
   console.log(`隠岐交通ソース監視: http://localhost:${PORT}`)
   if (AUTO_REFRESH_ENABLED) {
     dailyRefresh.start()
-    console.log(`日次自動更新: 有効 (${Math.round(AUTO_REFRESH_INTERVAL_MS / 60 / 60 / 1000)}時間ごと)`)
+    console.log(`source-monitor: 有効 (${Math.round(AUTO_REFRESH_INTERVAL_MS / 60 / 60 / 1000)}時間ごと)`)
   } else {
-    console.log('日次自動更新: 無効')
+    console.log('source-monitor: 無効')
   }
 })
 
@@ -161,6 +161,7 @@ async function withDashboardState(snapshot) {
   const state = await withReviewState(snapshot)
   return {
     ...state,
+    monitorType: 'source-monitor',
     autoRefresh: AUTO_REFRESH_ENABLED
       ? dailyRefresh.getStatus()
       : { enabled: false }

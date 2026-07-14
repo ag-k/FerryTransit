@@ -4,7 +4,7 @@
 
 GTFSデータ管理基盤、公開時刻表の合成・配信、交通情報ダッシュボード、JAL時刻表の自動取得・更新、JAL更新の定期実行について、現状の関係と正本を整理し、重複処理を統合する方針を定める。
 
-この文書は設計・運用上の基準である。Phase 1とPhase 2は2026-07-14に実装済みであり、Phase 3以降は段階的に実装する。
+この文書は設計・運用上の基準である。Phase 1からPhase 3は2026-07-14に実装済みである。
 
 ## 結論
 
@@ -106,7 +106,7 @@ flowchart LR
 3. 内容をレビューし、採用するデータを `gtfs/current/{mode}/{id}/` に置く。
 4. `npm run gtfs:validate -- {mode} {id}` で基本項目、参照整合性、フィード期間を検証し、`gtfs/reports/` に記録する。
 5. `npm run gtfs:build -- {mode} {id}` でアプリ向けJSONを `gtfs/public-data/data/` に生成する。
-6. `npm run gtfs:upload -- --target dev|prod` で `data/gtfs/**` と `data/bus-search/**` へ公開する。公開先の明示は必須とする。
+6. `npm run transport:publish -- --source <source-id> --target dev` で `data/gtfs/**` と `data/bus-search/**` へ公開する。本番はdev manifestから昇格する。
 
 `gtfs:upload` は各オブジェクトの変更前バックアップ、公開後SHA-256検証を共通公開モジュールで行い、最後に `data/manifests/gtfs-public-data.json` を公開する。manifestには公開対象パス、ハッシュ、サイズ、環境、Git SHAを記録する。
 
@@ -124,7 +124,7 @@ flowchart LR
 
 `npm run timetable:build` は、JAL JSONから空港連絡バスをメモリ上で生成し、船・JAL・空港連絡バスを1回で検証・出力する。`npm run timetable:build:dry-run` は同じ処理を行うが、管理対象ファイルへ書き込まない。
 
-`npm run timetable:publish -- --target dev|prod` は生成済み公開時刻表を再ビルドせず、検証、既存データとの差分確認、バックアップ、アップロード、アップロード後のSHA-256検証だけを行う。公開先の明示は必須である。
+`npm run transport:publish -- --source jal-oki-flights --target dev` は生成済み公開時刻表を再ビルドせず、検証、既存データとの差分確認、バックアップ、アップロード、manifest生成、アップロード後のSHA-256検証だけを行う。本番への直接publishは拒否し、dev manifestから昇格する。
 
 ### 3. JAL定期更新
 
@@ -303,10 +303,34 @@ Gitへのpush後に公開が失敗した場合は、同じコミットの成果�
 
 ### Phase 3: オーケストレータと運用画面を揃える
 
-- `acquire → validate → build → publish → smoke` を明示的なオーケストレータで実行する。
-- ダッシュボードはsource IDとタスクIDを使って同じCLIを呼び、独自のコマンド対応表を減らす。
-- source監視のCI化が必要な場合はJAL更新とは別workflowにし、変更通知・レビュー候補の作成までに限定する。
-- devからprodへの昇格を、リリースコミットとmanifestを指定する操作へ変更する。
+- [x] `acquire → validate → build → publish → smoke` を `transport:*` オーケストレータで実行する。
+- [x] ダッシュボードはsource IDとタスクIDを使って同じ `transport:*` CLIを呼び、独自の事業者別コマンド対応表を廃止する。
+- [x] source監視とJALデータ更新の名称・責務を分離する。source監視CIは現時点では追加せず、ローカルレビュー補助のままとする。
+- [x] devからprodへの昇格を、リリースコミットSHAとdev Storage上のmanifestを指定する `transport:promote` へ変更する。
+
+Phase 3の共通CLIは次のとおり。`transport:update` はdev専用で、prodへの直接公開を拒否する。
+
+```bash
+npm run transport:acquire -- --source jal-oki-flights
+npm run transport:check -- --source jal-oki-flights
+npm run transport:build -- --source jal-oki-flights
+npm run transport:publish -- --source jal-oki-flights --target dev
+npm run transport:smoke -- --source jal-oki-flights --target dev --git-sha <commit-sha>
+npm run transport:update -- --source jal-oki-flights --target dev
+```
+
+本番昇格はdevに公開済みの実体を再利用し、manifest内の環境、Git SHA、全オブジェクトのSHA-256・サイズを照合してから実行する。
+
+```bash
+npm run transport:promote -- \
+  --from dev \
+  --target prod \
+  --manifest data/manifests/public-timetable.json \
+  --git-sha <release-commit-sha> \
+  --approve-prod
+```
+
+確認だけの場合は `--dry-run` を付ける。`--approve-prod`、40桁のコミットSHA、manifestの一致が1つでも欠けた場合は昇格しない。
 
 ## 完了条件
 

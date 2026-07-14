@@ -32,11 +32,17 @@ function validateRequiredRows(rows, file, keys, issues) {
   })
 }
 
-const writeValidationReport = (reportDir, report) => writeReport(reportDir, 'validation', report)
+const writeValidationReport = (reportDir, report, checkOnly) => {
+  if (checkOnly) return null
+  return writeReport(reportDir, 'validation', report)
+}
 
 function main() {
-  const mode = process.argv[2] || 'bus'
-  const id = process.argv[3] || 'ama'
+  const argv = process.argv.slice(2)
+  const checkOnly = argv.includes('--check')
+  const positional = argv.filter(arg => arg !== '--check')
+  const mode = positional[0] || 'bus'
+  const id = positional[1] || 'ama'
   const gtfsDir = join(ROOT, 'gtfs', 'current', mode, id)
   const reportDir = join(ROOT, 'gtfs', 'reports', mode, id)
 
@@ -54,7 +60,7 @@ function main() {
   }
 
   if (issues.length > 0) {
-    writeValidationReport(reportDir, { ok: false, checkedAt: new Date().toISOString(), mode, id, gtfsDir, issues, warnings })
+    writeValidationReport(reportDir, { ok: false, checkedAt: new Date().toISOString(), mode, id, gtfsDir, issues, warnings }, checkOnly)
     process.exitCode = 1
     return
   }
@@ -134,7 +140,7 @@ function main() {
     warnings
   }
 
-  writeValidationReport(reportDir, report)
+  writeValidationReport(reportDir, report, checkOnly)
 
   if (issues.length > 0) {
     console.error(`GTFS 検証に失敗しました: ${issues.length} 件`)

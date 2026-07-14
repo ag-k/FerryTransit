@@ -3,6 +3,7 @@
 import { existsSync, readdirSync, readFileSync, statSync } from 'fs'
 import { relative, join } from 'path'
 import { createFirebaseStoragePublisher } from '../lib/firebase-storage-publisher.mjs'
+import { FIREBASE_STORAGE_BUCKETS } from '../lib/firebase-publish-target.mjs'
 import { createPublishManifest, sha256 } from '../lib/transport-data.mjs'
 
 const ROOT = process.cwd()
@@ -36,6 +37,9 @@ const parseArgs = (argv) => {
 const args = parseArgs(process.argv.slice(2))
 const publisher = createFirebaseStoragePublisher(args)
 const { target, bucketName } = publisher
+if (target === 'prod' || bucketName === FIREBASE_STORAGE_BUCKETS.prod) {
+  throw new Error('prodへは直接公開できません。transport:promoteでdevのmanifestを昇格してください')
+}
 
 const collectFiles = (dir) => {
   const files = []

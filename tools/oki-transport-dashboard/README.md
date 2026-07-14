@@ -28,7 +28,7 @@ UI の「最新取得」でライブ収集します。「保存して取得」�
 
 ## GTFS 管理
 
-UI の「GTFS管理」では、採用中の `gtfs/current/{mode}/{id}` の概要、検証結果、変換/検証/配信用 JSON 生成コマンドを確認・実行できます。
+UI の「GTFS管理」では、採用中の `gtfs/current/{mode}/{id}` の概要、検証結果、変換/検証/配信用 JSON 生成コマンドを確認・実行できます。各操作は共通レジストリのsource IDとtask IDから `transport:acquire` / `transport:check` / `transport:build` を呼び、ダッシュボード固有の事業者別コマンド表は持ちません。
 
 GTFS 化の作業順は、画面上の「GTFS化ワークフロー」で確認できます。
 
@@ -85,3 +85,5 @@ npm --prefix tools/oki-transport-dashboard test
 ## 注意
 
 このツールは公式ページの HTML と資料リンクを監視し、GTFS 化の作業状態を管理する補助ツールです。PDF/画像/HTML の表から停留所・便・時刻を完全自動抽出する処理は、対象ごとの既存 `scripts/gtfs/` 変換スクリプトまたは手動レビューで補完してください。
+
+24時間更新の名称と責務は `source-monitor`（変更通知・レビュー候補の作成）です。JAL構造化データの `jal-data-refresh` やStorage公開とは独立しており、ダッシュボードを起動しただけでは公開データを変更しません。source監視の常設CIは現在導入していません。

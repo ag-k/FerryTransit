@@ -3,16 +3,19 @@
 import { existsSync, readFileSync } from 'fs'
 import { isAbsolute, join, resolve } from 'path'
 import { createFirebaseStoragePublisher } from '../lib/firebase-storage-publisher.mjs'
-import { sha256 } from '../lib/transport-data.mjs'
+import { FIREBASE_STORAGE_BUCKETS } from '../lib/firebase-publish-target.mjs'
+import { createPublishManifest, sha256 } from '../lib/transport-data.mjs'
 import { summarizeTimetable, validateTimetable } from './build-public-timetable.mjs'
 
 const ROOT = process.cwd()
 const DEFAULT_SOURCE_FILE = join(ROOT, 'gtfs', 'generated', 'public', 'timetable.json')
 const DEFAULT_STORAGE_PATH = 'data/timetable.json'
+const DEFAULT_MANIFEST_PATH = 'data/manifests/public-timetable.json'
 
 const args = {
   sourceFile: DEFAULT_SOURCE_FILE,
   storagePath: DEFAULT_STORAGE_PATH,
+  manifestPath: DEFAULT_MANIFEST_PATH,
   dryRun: false,
   target: '',
   bucket: ''
@@ -47,6 +50,12 @@ for (let i = 2; i < process.argv.length; i++) {
     args.storagePath = value
   } else if (arg.startsWith('--storage-path=')) {
     args.storagePath = arg.slice('--storage-path='.length)
+  } else if (arg === '--manifest-path') {
+    const value = process.argv[++i]
+    if (!value) throw new Error('--manifest-path にはStorageパスを指定してください')
+    args.manifestPath = value
+  } else if (arg.startsWith('--manifest-path=')) {
+    args.manifestPath = arg.slice('--manifest-path='.length)
   } else {
     throw new Error(`未知の引数です: ${arg}`)
   }
@@ -54,6 +63,9 @@ for (let i = 2; i < process.argv.length; i++) {
 
 const publisher = createFirebaseStoragePublisher(args)
 const { target, bucketName } = publisher
+if (target === 'prod' || bucketName === FIREBASE_STORAGE_BUCKETS.prod) {
+  throw new Error('prodへは直接公開できません。transport:promoteでdevのmanifestを昇格してください')
+}
 
 const readSourceTimetable = (sourceFile) => {
   if (!existsSync(sourceFile)) {
@@ -88,6 +100,7 @@ const main = async () => {
   console.log(`byMode=${JSON.stringify(summary.byMode)}`)
 
   if (args.dryRun) {
+    console.log(`[dry-run] manifest=${args.manifestPath}`)
     console.log('[dry-run] Storageへのバックアップ/アップロードは行いません')
     return
   }
@@ -103,11 +116,27 @@ const main = async () => {
   })
   if (result.status === 'skipped') {
     console.log('uploaded=skipped（公開済みオブジェクトと内容が同一です）')
-    return
+  } else {
+    console.log(result.backupPath ? `backup=gs://${bucketName}/${result.backupPath}` : `backup=なし（既存の ${args.storagePath} がありません）`)
+    console.log(`uploaded=gs://${bucketName}/${args.storagePath}`)
+    console.log(`verifiedSha256=${result.sha256}`)
   }
-  console.log(result.backupPath ? `backup=gs://${bucketName}/${result.backupPath}` : `backup=なし（既存の ${args.storagePath} がありません）`)
-  console.log(`uploaded=gs://${bucketName}/${args.storagePath}`)
-  console.log(`verifiedSha256=${result.sha256}`)
+
+  const manifest = createPublishManifest({
+    sourceId: 'public-timetable',
+    environment: target,
+    gitSha: process.env.SOURCE_GIT_SHA,
+    generatedAt: process.env.SOURCE_GIT_DATE || null,
+    objects: [{ path: args.storagePath, sha256: sourceHash, bytes: buffer.byteLength }]
+  })
+  const manifestContents = Buffer.from(`${JSON.stringify(manifest, null, 2)}\n`)
+  const manifestResult = await publisher.publishObject({
+    contents: manifestContents,
+    storagePath: args.manifestPath,
+    sourceId: 'public-timetable-manifest',
+    backupRoot: 'backups/manifests'
+  })
+  console.log(`manifest=${manifestResult.status}: gs://${bucketName}/${args.manifestPath} sha256=${manifestResult.sha256}`)
 }
 
 main().catch((error) => {

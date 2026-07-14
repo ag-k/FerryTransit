@@ -1,6 +1,17 @@
 import assert from 'node:assert/strict'
 import { test } from 'node:test'
-import { buildGtfsDraftFromSnapshot, buildGtfsFiles, buildGtfsViewFromFiles, normalizeDraft } from '../src/gtfs.mjs'
+import { buildGtfsDraftFromSnapshot, buildGtfsFiles, buildGtfsViewFromFiles, buildTaskCommand, normalizeDraft } from '../src/gtfs.mjs'
+
+test('GTFS操作はsource IDと共通transport CLIから組み立てる', () => {
+  assert.equal(
+    buildTaskCommand('validate', 'ama-town').label,
+    'npm run transport:check -- --source ama-town'
+  )
+  assert.equal(
+    buildTaskCommand('convert', 'nishinoshima-town').label,
+    'npm run transport:acquire -- --source nishinoshima-town'
+  )
+})
 
 test('収集資料からGTFS下書きのagency/routesを作成できる', () => {
   const snapshot = {
