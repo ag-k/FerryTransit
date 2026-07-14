@@ -4,6 +4,7 @@ import { mkdirSync, writeFileSync } from 'fs'
 import { dirname, isAbsolute, join, resolve } from 'path'
 import { pathToFileURL } from 'url'
 import { chromium } from '@playwright/test'
+import { getTransportSourceOperation } from '../../config/transport-sources.mjs'
 import {
   buildJalTimetableTrips,
   parsePublicationPeriod,
@@ -11,8 +12,9 @@ import {
 } from './jal-timetable.mjs'
 
 const ROOT = process.cwd()
-const OFFICIAL_INDEX_URL = 'https://www.jal.co.jp/jp/ja/dom/route/time/'
-const OFFICIAL_TIMETABLE_URL = 'https://www.jal.co.jp/jp/ja/dom/route/time/timeTable.html'
+const JAL_SOURCE = getTransportSourceOperation('jal-oki-flights')
+const OFFICIAL_INDEX_URL = JAL_SOURCE.officialUrl
+const OFFICIAL_TIMETABLE_URL = JAL_SOURCE.timetableUrl
 const DEFAULT_OUTPUT_FILE = join(ROOT, 'gtfs', 'raw', 'air', 'jal_oki_timetable.json')
 const ROUTES = [
   {

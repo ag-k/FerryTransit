@@ -56,8 +56,10 @@ ios/App/App.xcodeproj/project.xcworkspace/xcshareddata/swiftpm/
 ios/App/App/GoogleService-Info.plist
 android/app/google-services.json
 
-# Config directories
-/config
+# Config directories（交通データの非機密レジストリだけを管理対象にする）
+/config/*
+!/config/bus-feeds.json
+!/config/transport-sources.mjs
 .firebase
 test-results
 

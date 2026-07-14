@@ -4,6 +4,7 @@
 import { cpSync, existsSync, mkdirSync, writeFileSync } from 'fs'
 import { join, resolve } from 'path'
 import Papa from 'papaparse'
+import { getTransportSourceOperation } from '../../config/transport-sources.mjs'
 
 // eslint-disable-next-line import/no-named-as-default-member
 const { unparse: unparseCsv } = Papa
@@ -17,7 +18,7 @@ const REPORT_DIR = join(ROOT, 'gtfs', 'reports', 'bus', 'chibu')
 const FEED_START = '20260101'
 const FEED_END = '20261231'
 const FEED_VERSION = '20230201_20260101-20261231'
-const SOURCE_URL = 'https://chibu.jp/access.html'
+const SOURCE_URL = getTransportSourceOperation('chibu-village').sourceUrl
 
 const ROUTES = [
   {

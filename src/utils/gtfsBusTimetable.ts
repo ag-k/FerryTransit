@@ -1,40 +1,20 @@
 import type { LocationType, Trip } from '@/types'
+import { BUS_FEED_DEFINITION_BY_ID, type BusFeedId } from '@/generated/busFeedConfig'
 import { buildStorageObjectDownloadUrl } from '@/utils/firebaseStorageUrl'
 
-const AMA_BUS_BASE_PATH = 'data/gtfs/bus/ama'
-const AMA_BUS_STOP_PREFIX = 'BUS_AMA_'
-const AMA_BUS_OPERATOR_ID = 'AMA_TOWN'
-const AMA_BUS_NAME = 'AMA_TOWN_BUS'
-const AMA_BUS_TRIP_ID_BASE = 3_000_000
-const AMA_BUS_FARE = 200
+export type { BusFeedId } from '@/generated/busFeedConfig'
 
-const NISHINOSHIMA_BUS_BASE_PATH = 'data/gtfs/bus/nishinoshima'
-const NISHINOSHIMA_BUS_STOP_PREFIX = 'BUS_NISHINOSHIMA_'
-const NISHINOSHIMA_BUS_OPERATOR_ID = 'NISHINOSHIMA_TOWN'
-const NISHINOSHIMA_BUS_NAME = 'NISHINOSHIMA_TOWN_BUS'
-const NISHINOSHIMA_BUS_TRIP_ID_BASE = 4_000_000
-const NISHINOSHIMA_BUS_FARE = 200
+const AMA_BUS_DEFINITION = BUS_FEED_DEFINITION_BY_ID.ama
+const NISHINOSHIMA_BUS_DEFINITION = BUS_FEED_DEFINITION_BY_ID.nishinoshima
+const CHIBU_BUS_DEFINITION = BUS_FEED_DEFINITION_BY_ID.chibu
+const OKINOSHIMA_BUS_DEFINITION = BUS_FEED_DEFINITION_BY_ID.okinoshima
+const ICHIBATA_BUS_CONNECTION_DEFINITION = BUS_FEED_DEFINITION_BY_ID.ichibata_bus_connection
 
-const CHIBU_BUS_BASE_PATH = 'data/gtfs/bus/chibu'
-const CHIBU_BUS_STOP_PREFIX = 'BUS_CHIBU_'
-const CHIBU_BUS_OPERATOR_ID = 'CHIBU_VILLAGE'
-const CHIBU_BUS_NAME = 'CHIBU_VILLAGE_BUS'
-const CHIBU_BUS_TRIP_ID_BASE = 5_000_000
-const CHIBU_BUS_FARE = 100
-
-const OKINOSHIMA_BUS_BASE_PATH = 'data/gtfs/bus/okinoshima'
-const OKINOSHIMA_BUS_STOP_PREFIX = 'BUS_OKINOSHIMA_'
-const OKINOSHIMA_BUS_OPERATOR_ID = 'OKINOSHIMA'
-const OKINOSHIMA_BUS_NAME = 'OKINOSHIMA_BUS'
-const OKINOSHIMA_BUS_TRIP_ID_BASE = 6_000_000
-const OKINOSHIMA_BUS_FARE = 500
-
-const ICHIBATA_BUS_CONNECTION_BASE_PATH = 'data/gtfs/bus/ichibata_bus_connection'
-const ICHIBATA_BUS_CONNECTION_STOP_PREFIX = 'BUS_ICHIBATA_CONNECTION_'
-const ICHIBATA_BUS_CONNECTION_OPERATOR_ID = 'ICHIBATA_BUS'
-const ICHIBATA_BUS_CONNECTION_NAME = 'ICHIBATA_BUS_CONNECTION'
-const ICHIBATA_BUS_CONNECTION_TRIP_ID_BASE = 7_000_000
-const ICHIBATA_BUS_CONNECTION_FARE = 1200
+const AMA_BUS_STOP_PREFIX = AMA_BUS_DEFINITION.stopPrefix
+const NISHINOSHIMA_BUS_STOP_PREFIX = NISHINOSHIMA_BUS_DEFINITION.stopPrefix
+const CHIBU_BUS_STOP_PREFIX = CHIBU_BUS_DEFINITION.stopPrefix
+const OKINOSHIMA_BUS_STOP_PREFIX = OKINOSHIMA_BUS_DEFINITION.stopPrefix
+const ICHIBATA_BUS_CONNECTION_STOP_PREFIX = ICHIBATA_BUS_CONNECTION_DEFINITION.stopPrefix
 const BUS_SEARCH_BASE_PATH = 'data/bus-search'
 
 type GtfsRoute = {
@@ -126,8 +106,6 @@ export type BusTimetableData = {
 }
 
 export type AmaBusTimetableData = BusTimetableData
-export type BusFeedId = 'ama' | 'nishinoshima' | 'chibu' | 'okinoshima' | 'ichibata_bus_connection'
-
 export type BusStopsIndexData = Omit<BusTimetableData, 'trips'>
 
 type BusSearchRoute = {
@@ -209,50 +187,26 @@ type BusStopsIndex = {
 }
 
 const AMA_BUS_CONFIG: BusFeedConfig = {
-  id: 'ama',
-  basePath: AMA_BUS_BASE_PATH,
-  stopPrefix: AMA_BUS_STOP_PREFIX,
-  operatorId: AMA_BUS_OPERATOR_ID,
-  tripName: AMA_BUS_NAME,
-  tripIdBase: AMA_BUS_TRIP_ID_BASE,
-  fare: AMA_BUS_FARE,
+  ...AMA_BUS_DEFINITION,
   formatRouteName: (route, trip) => normalizeAmaBusRouteName(route?.longName || route?.shortName || trip.headsign)
 }
 
 const NISHINOSHIMA_BUS_CONFIG: BusFeedConfig = {
-  id: 'nishinoshima',
-  basePath: NISHINOSHIMA_BUS_BASE_PATH,
-  stopPrefix: NISHINOSHIMA_BUS_STOP_PREFIX,
-  operatorId: NISHINOSHIMA_BUS_OPERATOR_ID,
-  tripName: NISHINOSHIMA_BUS_NAME,
-  tripIdBase: NISHINOSHIMA_BUS_TRIP_ID_BASE,
-  fare: NISHINOSHIMA_BUS_FARE,
+  ...NISHINOSHIMA_BUS_DEFINITION,
   formatRouteName: (route, trip) => normalizeNishinoshimaBusRouteName(
     route?.shortName || route?.longName || trip.shortName || trip.headsign
   )
 }
 
 const CHIBU_BUS_CONFIG: BusFeedConfig = {
-  id: 'chibu',
-  basePath: CHIBU_BUS_BASE_PATH,
-  stopPrefix: CHIBU_BUS_STOP_PREFIX,
-  operatorId: CHIBU_BUS_OPERATOR_ID,
-  tripName: CHIBU_BUS_NAME,
-  tripIdBase: CHIBU_BUS_TRIP_ID_BASE,
-  fare: CHIBU_BUS_FARE,
+  ...CHIBU_BUS_DEFINITION,
   formatRouteName: (route, trip) => normalizeChibuBusRouteName(
     route?.shortName || route?.longName || trip.shortName || trip.headsign
   )
 }
 
 const OKINOSHIMA_BUS_CONFIG: BusFeedConfig = {
-  id: 'okinoshima',
-  basePath: OKINOSHIMA_BUS_BASE_PATH,
-  stopPrefix: OKINOSHIMA_BUS_STOP_PREFIX,
-  operatorId: OKINOSHIMA_BUS_OPERATOR_ID,
-  tripName: OKINOSHIMA_BUS_NAME,
-  tripIdBase: OKINOSHIMA_BUS_TRIP_ID_BASE,
-  fare: OKINOSHIMA_BUS_FARE,
+  ...OKINOSHIMA_BUS_DEFINITION,
   formatRouteName: (route, trip) => normalizeOkinoshimaBusRouteName(
     route?.shortName || route?.longName || trip.shortName || trip.headsign
   ),
@@ -262,13 +216,7 @@ const OKINOSHIMA_BUS_CONFIG: BusFeedConfig = {
 }
 
 const ICHIBATA_BUS_CONNECTION_CONFIG: BusFeedConfig = {
-  id: 'ichibata_bus_connection',
-  basePath: ICHIBATA_BUS_CONNECTION_BASE_PATH,
-  stopPrefix: ICHIBATA_BUS_CONNECTION_STOP_PREFIX,
-  operatorId: ICHIBATA_BUS_CONNECTION_OPERATOR_ID,
-  tripName: ICHIBATA_BUS_CONNECTION_NAME,
-  tripIdBase: ICHIBATA_BUS_CONNECTION_TRIP_ID_BASE,
-  fare: ICHIBATA_BUS_CONNECTION_FARE,
+  ...ICHIBATA_BUS_CONNECTION_DEFINITION,
   formatRouteName: (_route, trip) => normalizeIchibataBusConnectionRouteName(trip.shortName || trip.headsign)
 }
 

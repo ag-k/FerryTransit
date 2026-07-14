@@ -1,8 +1,8 @@
 #!/usr/bin/env node
 
-import { existsSync, mkdirSync, readFileSync, writeFileSync } from 'fs'
+import { existsSync } from 'fs'
 import { join } from 'path'
-import Papa from 'papaparse'
+import { formatGtfsDate, readCsv, writeReport } from '../lib/transport-data.mjs'
 
 const ROOT = process.cwd()
 const REQUIRED_FILES = [
@@ -13,41 +13,13 @@ const REQUIRED_FILES = [
   'stop_times.txt'
 ]
 
-function readCsv(filePath) {
-  const text = readFileSync(filePath, 'utf-8').replace(/^\uFEFF/, '')
-  const parsed = Papa.parse(text, {
-    header: true,
-    skipEmptyLines: true
-  })
-  return {
-    rows: parsed.data.map(trimRow),
-    errors: parsed.errors
-  }
-}
-
-function trimRow(row) {
-  return Object.fromEntries(
-    Object.entries(row).map(([key, value]) => [
-      key,
-      typeof value === 'string' ? value.trim() : value
-    ])
-  )
-}
-
 function readOptionalCsv(dir, name) {
-  const path = join(dir, name)
-  if (!existsSync(path)) return { rows: [], errors: [], missing: true }
-  return readCsv(path)
+  return readCsv(join(dir, name), { optional: true })
 }
 
 function requiredValue(row, key) {
   const value = row?.[key]
   return typeof value === 'string' && value.trim() !== ''
-}
-
-function parseGtfsDate(value) {
-  if (!/^\d{8}$/.test(value || '')) return null
-  return `${value.slice(0, 4)}-${value.slice(4, 6)}-${value.slice(6, 8)}`
 }
 
 function validateRequiredRows(rows, file, keys, issues) {
@@ -60,11 +32,7 @@ function validateRequiredRows(rows, file, keys, issues) {
   })
 }
 
-function writeReport(reportDir, report) {
-  mkdirSync(reportDir, { recursive: true })
-  const reportPath = join(reportDir, `${new Date().toISOString().slice(0, 10)}.validation.json`)
-  writeFileSync(reportPath, `${JSON.stringify(report, null, 2)}\n`, 'utf-8')
-}
+const writeValidationReport = (reportDir, report) => writeReport(reportDir, 'validation', report)
 
 function main() {
   const mode = process.argv[2] || 'bus'
@@ -86,7 +54,7 @@ function main() {
   }
 
   if (issues.length > 0) {
-    writeReport(reportDir, { ok: false, checkedAt: new Date().toISOString(), mode, id, gtfsDir, issues, warnings })
+    writeValidationReport(reportDir, { ok: false, checkedAt: new Date().toISOString(), mode, id, gtfsDir, issues, warnings })
     process.exitCode = 1
     return
   }
@@ -138,7 +106,7 @@ function main() {
   }
 
   const feed = feedInfo.rows[0]
-  const feedEndDate = parseGtfsDate(feed?.feed_end_date)
+  const feedEndDate = formatGtfsDate(feed?.feed_end_date)
   if (feedEndDate && feedEndDate < new Date().toISOString().slice(0, 10)) {
     warnings.push({ code: 'feed_expired', file: 'feed_info.txt', feed_end_date: feed.feed_end_date })
   }
@@ -166,7 +134,7 @@ function main() {
     warnings
   }
 
-  writeReport(reportDir, report)
+  writeValidationReport(reportDir, report)
 
   if (issues.length > 0) {
     console.error(`GTFS 検証に失敗しました: ${issues.length} 件`)

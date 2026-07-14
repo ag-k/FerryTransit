@@ -5,6 +5,7 @@ import { cpSync, existsSync, mkdirSync, writeFileSync } from 'fs'
 import { join, resolve } from 'path'
 import { spawnSync } from 'child_process'
 import Papa from 'papaparse'
+import { getTransportSourceOperation } from '../../config/transport-sources.mjs'
 
 const { unparse: unparseCsv } = Papa
 
@@ -17,8 +18,9 @@ const REPORT_DIR = join(ROOT, 'gtfs', 'reports', 'bus', 'ichibata_bus_connection
 const FEED_START = '20260401'
 const FEED_END = '20261231'
 const FEED_VERSION = 'oki_2026_dia_20260401-20261231'
-const SOURCE_URL = 'https://bus.ichibata.co.jp/media/oki_2026_dia.pdf'
-const SOURCE_PAGE_URL = 'https://bus.ichibata.co.jp/oki-kisen/oki-kisen-sichirui/'
+const ICHIBATA_SOURCE = getTransportSourceOperation('ichibata-bus-connection')
+const SOURCE_URL = ICHIBATA_SOURCE.sourceUrl
+const SOURCE_PAGE_URL = ICHIBATA_SOURCE.officialUrl
 
 const AGENCY_ID = 'agency_ichibata_bus_connection_a97e48aa'
 const ROUTE_ID = 'route_ichibata_bus_connection_https_bus_ichibata_8927b51c'

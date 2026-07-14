@@ -4,7 +4,7 @@
 
 GTFSデータ管理基盤、公開時刻表の合成・配信、交通情報ダッシュボード、JAL時刻表の自動取得・更新、JAL更新の定期実行について、現状の関係と正本を整理し、重複処理を統合する方針を定める。
 
-この文書は設計・運用上の基準である。Phase 1は2026-07-14に実装済みであり、Phase 2以降は段階的に実装する。
+この文書は設計・運用上の基準である。Phase 1とPhase 2は2026-07-14に実装済みであり、Phase 3以降は段階的に実装する。
 
 ## 結論
 
@@ -86,6 +86,17 @@ flowchart LR
 | JAL時刻表の自動取得・更新 | `timetable:fetch:jal`、`timetable:refresh:jal` | JAL公式国内線時刻表 | `gtfs/raw/air/jal_oki_timetable.json` と再生成物 | 開発者、GitHub Actions | 一般的な公式ページ変更監視、Firebaseへの直接公開 |
 | JAL更新の定期実行 | `.github/workflows/update-jal-timetable.yml` | リポジトリ、JAL公式サイト、dev用資格情報 | dev向け生成物、dev Storage、自動コミット | GitHub Actions | 本番への自動昇格、ダッシュボードの起動管理 |
 
+## Phase 2で導入した共通基盤
+
+- `config/transport-sources.mjs`: source ID、公式URL、GTFS feed ID、取得・変換タスクを関連付ける正本。ダッシュボード、JAL取得、事業者別変換が参照する。
+- `config/bus-feeds.json`: バスfeed ID、公開パス、停留所prefix、事業者ID、便名、運賃、アプリ用trip ID領域の正本。
+- `npm run gtfs:config:generate`: バス設定からNode用 `scripts/generated/bus-feed-config.mjs` とアプリ用 `src/generated/busFeedConfig.ts` を生成する。生成物は直接編集しない。
+- `scripts/lib/transport-data.mjs`: CSV読込、GTFS日付・時刻、JSON・レポート出力、SHA-256、公開manifestを共通化する。
+- `scripts/lib/firebase-storage-publisher.mjs`: 認証、公開先解決、差分判定、バックアップ、アップロード、公開後ハッシュ検証を共通化する。
+- `scripts/assert-no-bundled-timetable.mjs`: Capacitor用Web成果物に `timetable.json`、GTFS、bus-searchデータが含まれないことを検査する。
+
+アプリへ生成するのはバスfeedの設定コードだけで、時刻表・GTFS JSONは同梱しない。アプリはFirebase Storageの公開物を実行時に取得する。`cap-build.mjs` は生成後に非同梱チェックを必須実行し、違反があればネイティブ同期前に停止する。
+
 ## 現在のデータフロー
 
 ### 1. 事業者別GTFSの更新
@@ -96,6 +107,8 @@ flowchart LR
 4. `npm run gtfs:validate -- {mode} {id}` で基本項目、参照整合性、フィード期間を検証し、`gtfs/reports/` に記録する。
 5. `npm run gtfs:build -- {mode} {id}` でアプリ向けJSONを `gtfs/public-data/data/` に生成する。
 6. `npm run gtfs:upload -- --target dev|prod` で `data/gtfs/**` と `data/bus-search/**` へ公開する。公開先の明示は必須とする。
+
+`gtfs:upload` は各オブジェクトの変更前バックアップ、公開後SHA-256検証を共通公開モジュールで行い、最後に `data/manifests/gtfs-public-data.json` を公開する。manifestには公開対象パス、ハッシュ、サイズ、環境、Git SHAを記録する。
 
 ダッシュボードはこの作業の資料発見、レビュー、GTFS下書き、変換・検証・生成コマンドの起動を補助する。`gtfs/current/` の採用判断とStorage公開を自動では行わない。
 
@@ -175,7 +188,7 @@ Cloud Functions側の拒否は、変更したFunctionsを対象環境へデプ�
 
 GTFSアップロードと公開時刻表の配信は、`--target dev|prod` または `--bucket` を必須にした。環境変数がない場合の本番バケット既定値は使用しない。prodはリリース承認済みのコミットからだけ実行する。
 
-### P1: ソース・路線・事業者設定が分散している
+### 対応済み（Phase 2）: ソース・路線・事業者設定の共通化
 
 次の情報が複数箇所に重複している。
 
@@ -183,15 +196,15 @@ GTFSアップロードと公開時刻表の配信は、`--target dev|prod` ま�
 - GTFS変換コマンド: `package.json`、ダッシュボードの変換タスク定義
 - バスフィードのID、公開パス、便名、運賃等: GTFSビルダーとアプリの `src/utils/gtfsBusTimetable.ts`
 
-共通の交通ソースレジストリを正本にし、CLI、ダッシュボード、アプリ用設定をそこから読み込むか生成する。Node専用のコマンド情報と、ブラウザで必要なランタイム情報は同じファイルへ無理に混在させず、共通IDを介して派生設定を生成する。
+交通ソースレジストリとバスfeedレジストリを正本にし、CLIとダッシュボードはsource IDで参照する。ブラウザに不要なコマンド情報を含めないよう、アプリ用設定は必要項目だけをTypeScriptへ生成する。
 
-### P2: Firebase公開処理が重複している
+### 対応済み（Phase 2）: Firebase公開処理の共通化
 
-Firebase Admin初期化、サービスアカウントの読込、バケット選択、JSONアップロード、dry-run、バックアップの扱いがGTFS用と時刻表用で別実装になっている。共通公開モジュールへ集約し、公開先の明示、入力ハッシュ、バックアップ、メタデータ、結果記録を統一する。
+Firebase Admin初期化、サービスアカウントの読込、バケット選択、JSONアップロード、バックアップ、ハッシュ検証を共通公開モジュールへ集約した。GTFS公開は公開manifestも生成する。
 
-### P2: 解析・検証の共通部品が重複している
+### 対応済み（Phase 2）: 解析・検証の共通部品
 
-CSV解析、日付・時刻の正規化、検証レポートの形式がスクリプトごとに分かれている。CSVローダー、基本的な日付・時刻ユーティリティ、レポート外形は共通化する。一方、GTFS参照整合性とJAL掲載期間の検証はドメインが異なるため、個別バリデータとして残す。
+CSVローダー、GTFS日付・時刻、JSON・レポート出力、ハッシュ、manifestを共通化した。一方、GTFS参照整合性とJAL掲載期間の検証はドメインが異なるため、個別バリデータとして残す。
 
 ### P2: ダッシュボードと定期実行の名称が紛らわしい
 
@@ -224,7 +237,7 @@ flowchart LR
 
 ### 共通交通ソースレジストリ
 
-将来的に `config/transport-sources/*.json` を設け、少なくとも次を一元管理する。
+`config/transport-sources.mjs` と `config/bus-feeds.json` を設け、次の共通項目を一元管理する。
 
 - 安定したsource ID、交通モード、事業者ID
 - 公式ページ・資料URLと監視対象
@@ -233,7 +246,7 @@ flowchart LR
 - 更新頻度、手動レビュー要否、ライセンス・出典
 - 公開対象とアプリ向け表示ID
 
-秘密情報、サービスアカウント、環境別バケットはレジストリへ入れない。既存の `gtfs/sources/*.json` は移行元とし、ダッシュボード固有の表示キーワードなどはsource IDを参照する補助設定に分ける。
+秘密情報、サービスアカウント、環境別バケットはレジストリへ入れない。`gtfs/sources/*.json` は採用日、ライセンス、注意事項などfeed固有の運用記録として残し、共通レジストリがsource IDとfeed IDで関連付ける。ダッシュボード固有の表示キーワードはsource IDを参照する補助設定に分ける。
 
 ### ビルドと公開の分離
 
@@ -282,10 +295,11 @@ Gitへのpush後に公開が失敗した場合は、同じコミットの成果�
 
 ### Phase 2: 共通設定と共通部品を作る
 
-- 共通交通ソースレジストリを導入し、GTFSメタ情報、ダッシュボード、JAL URL、変換タスクの重複を減らす。
-- Firebase認証、バケット選択、バックアップ、アップロード、ハッシュ確認を共通公開モジュールへ集約する。
-- CSV読込、日付・時刻正規化、検証レポート、manifest生成を共通ライブラリへ移す。
-- バスフィード設定から、ビルダー用設定とアプリ用設定を生成してID・パスのずれを防ぐ。
+- [x] 共通交通ソースレジストリを導入し、GTFSメタ情報、ダッシュボード、JAL URL、変換タスクをsource IDで関連付ける。
+- [x] Firebase認証、バケット選択、バックアップ、アップロード、ハッシュ確認を共通公開モジュールへ集約する。
+- [x] CSV読込、日付・時刻正規化、検証レポート、manifest生成を共通ライブラリへ移す。
+- [x] バスフィード設定から、ビルダー用設定とアプリ用設定を生成してID・パスのずれを防ぐ。
+- [x] アプリ成果物へ時刻表・GTFS JSONを同梱せず、Capacitor同期前に自動検査する。
 
 ### Phase 3: オーケストレータと運用画面を揃える
 

@@ -4,6 +4,7 @@
 import { cpSync, existsSync, mkdirSync, writeFileSync } from 'fs'
 import { join, resolve } from 'path'
 import Papa from 'papaparse'
+import { getTransportSourceOperation } from '../../config/transport-sources.mjs'
 
 // eslint-disable-next-line import/no-named-as-default-member
 const { unparse: unparseCsv } = Papa
@@ -17,7 +18,7 @@ const REPORT_DIR = join(ROOT, 'gtfs', 'reports', 'bus', 'okinoshima')
 const FEED_START = '20260101'
 const FEED_END = '20261231'
 const FEED_VERSION = '20260302_20260101-20261231'
-const TOWN_SOURCE_URL = 'https://www.town.okinoshima.shimane.jp/kanko/tounaikoutuujouhou/7990.html'
+const TOWN_SOURCE_URL = getTransportSourceOperation('okinoshima-town').sourceUrl
 const ICHIBATA_SOURCE_URL = 'https://oki.ichibata.co.jp/route-time.html'
 
 const REQUIRED_SOURCES = [

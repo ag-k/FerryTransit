@@ -9,7 +9,7 @@
  *   node scripts/cap-build.mjs ios --dev [--open]  (use development environment)
  */
 
-import { readFileSync, writeFileSync, copyFileSync, existsSync } from 'fs';
+import { readFileSync, writeFileSync, copyFileSync, existsSync, rmSync } from 'fs';
 import { execSync } from 'child_process';
 import { fileURLToPath } from 'url';
 import { dirname, join } from 'path';
@@ -115,6 +115,10 @@ async function main() {
 
     // Run Nuxt generate
     run('CAPACITOR_BUILD=true npm run generate');
+
+    // テスト用HTMLをアプリへ含めず、時刻表データが成果物へ混入していないことを保証
+    rmSync(join(projectRoot, '.output', 'public', 'test-route.html'), { force: true });
+    run('node scripts/assert-no-bundled-timetable.mjs .output/public');
 
     // Sync with Capacitor
     run(`npx cap sync ${platform}`);

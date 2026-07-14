@@ -2,10 +2,8 @@
 
 import { existsSync, readdirSync, readFileSync, statSync } from 'fs'
 import { relative, join } from 'path'
-import { pathToFileURL } from 'url'
-import { cert, initializeApp } from 'firebase-admin/app'
-import { getStorage } from 'firebase-admin/storage'
-import { resolveFirebasePublishTarget } from '../lib/firebase-publish-target.mjs'
+import { createFirebaseStoragePublisher } from '../lib/firebase-storage-publisher.mjs'
+import { createPublishManifest, sha256 } from '../lib/transport-data.mjs'
 
 const ROOT = process.cwd()
 const SOURCE_ROOT = join(ROOT, 'gtfs', 'public-data', 'data')
@@ -36,7 +34,8 @@ const parseArgs = (argv) => {
 }
 
 const args = parseArgs(process.argv.slice(2))
-const { target, bucketName } = resolveFirebasePublishTarget(args)
+const publisher = createFirebaseStoragePublisher(args)
+const { target, bucketName } = publisher
 
 const collectFiles = (dir) => {
   const files = []
@@ -56,17 +55,6 @@ const toStoragePath = (filePath) => {
   return `data/${relative(SOURCE_ROOT, filePath).split(/[\\/]/).join('/')}`
 }
 
-const buildAdminOptions = () => {
-  const options = { storageBucket: bucketName }
-  const credentialPath = process.env.GOOGLE_APPLICATION_CREDENTIALS
-
-  if (credentialPath && existsSync(credentialPath)) {
-    options.credential = cert(JSON.parse(readFileSync(credentialPath, 'utf8')))
-  }
-
-  return options
-}
-
 const main = async () => {
   if (!existsSync(SOURCE_ROOT)) {
     throw new Error(`外部公開データディレクトリが見つかりません: ${SOURCE_ROOT}`)
@@ -82,27 +70,43 @@ const main = async () => {
   console.log(`Firebase Storage bucket: ${bucketName}`)
   console.log(`対象ファイル数: ${files.length}`)
 
+  const objects = files.map(file => {
+    const contents = readFileSync(file)
+    return { file, contents, path: toStoragePath(file), sha256: sha256(contents), bytes: contents.byteLength }
+  })
+  const manifest = createPublishManifest({
+    sourceId: 'gtfs-public-data',
+    environment: target,
+    gitSha: process.env.SOURCE_GIT_SHA,
+    generatedAt: process.env.SOURCE_GIT_DATE || null,
+    objects
+  })
+
   if (args.dryRun) {
-    for (const file of files) {
-      console.log(`[dry-run] ${file} -> ${toStoragePath(file)}`)
-    }
+    for (const object of objects) console.log(`[dry-run] ${object.file} -> ${object.path} sha256=${object.sha256}`)
+    console.log(`[dry-run] manifest -> data/manifests/gtfs-public-data.json objects=${manifest.objects.length}`)
     return
   }
 
-  initializeApp(buildAdminOptions())
-  const bucket = getStorage().bucket()
-
-  for (const file of files) {
-    const destination = toStoragePath(file)
-    await bucket.upload(file, {
-      destination,
-      metadata: {
-        contentType: 'application/json',
-        cacheControl: 'public, max-age=900'
-      }
+  for (const object of objects) {
+    const result = await publisher.publishObject({
+      contents: object.contents,
+      storagePath: object.path,
+      sourceFile: object.file,
+      sourceId: 'gtfs-public-data',
+      backupRoot: 'backups/gtfs-public-data'
     })
-    console.log(`uploaded: ${pathToFileURL(file).href} -> gs://${bucketName}/${destination}`)
+    console.log(`${result.status}: gs://${bucketName}/${object.path} sha256=${result.sha256}${result.backupPath ? ` backup=gs://${bucketName}/${result.backupPath}` : ''}`)
   }
+
+  const manifestContents = Buffer.from(`${JSON.stringify(manifest, null, 2)}\n`)
+  const manifestResult = await publisher.publishObject({
+    contents: manifestContents,
+    storagePath: 'data/manifests/gtfs-public-data.json',
+    sourceId: 'gtfs-public-data-manifest',
+    backupRoot: 'backups/manifests'
+  })
+  console.log(`${manifestResult.status}: gs://${bucketName}/${manifestResult.storagePath} sha256=${manifestResult.sha256}`)
 }
 
 main().catch((error) => {

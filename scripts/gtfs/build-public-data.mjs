@@ -1,84 +1,17 @@
 #!/usr/bin/env node
 
-import { existsSync, mkdirSync, readdirSync, readFileSync, statSync, writeFileSync } from 'fs'
+import { existsSync, readdirSync, readFileSync, statSync } from 'fs'
 import { join } from 'path'
-import Papa from 'papaparse'
+import { BUS_FEED_CONFIGS } from '../generated/bus-feed-config.mjs'
+import { formatGtfsDate, normalizeGtfsTime, readCsvRows, writeJson } from '../lib/transport-data.mjs'
 
 const ROOT = process.cwd()
 const PUBLIC_DATA_TARGET_ROOT = join(ROOT, 'gtfs', 'public-data', 'data')
 const GTFS_TARGET_ROOT = join(PUBLIC_DATA_TARGET_ROOT, 'gtfs')
 const BUS_SEARCH_TARGET_DIR = join(PUBLIC_DATA_TARGET_ROOT, 'bus-search')
 
-const BUS_FEED_CONFIGS = {
-  ama: {
-    stopPrefix: 'BUS_AMA_',
-    operatorId: 'AMA_TOWN',
-    townLabelKey: 'AMA_CHO',
-    tripName: 'AMA_TOWN_BUS',
-    fare: 200
-  },
-  nishinoshima: {
-    stopPrefix: 'BUS_NISHINOSHIMA_',
-    operatorId: 'NISHINOSHIMA_TOWN',
-    townLabelKey: 'NISHINOSHIMA_CHO',
-    tripName: 'NISHINOSHIMA_TOWN_BUS',
-    fare: 200
-  },
-  chibu: {
-    stopPrefix: 'BUS_CHIBU_',
-    operatorId: 'CHIBU_VILLAGE',
-    townLabelKey: 'CHIBU_MURA',
-    tripName: 'CHIBU_VILLAGE_BUS',
-    fare: 100
-  },
-  okinoshima: {
-    stopPrefix: 'BUS_OKINOSHIMA_',
-    operatorId: 'OKINOSHIMA',
-    townLabelKey: 'OKINOSHIMA_CHO',
-    tripName: 'OKINOSHIMA_BUS',
-    fare: 500
-  },
-  ichibata_bus_connection: {
-    stopPrefix: 'BUS_ICHIBATA_CONNECTION_',
-    operatorId: 'ICHIBATA_BUS',
-    townLabelKey: 'MAINLAND',
-    tripName: 'ICHIBATA_BUS_CONNECTION',
-    fare: 1200
-  }
-}
-
-function readCsv(filePath) {
-  if (!existsSync(filePath)) return []
-  const text = readFileSync(filePath, 'utf-8').replace(/^\uFEFF/, '')
-  const parsed = Papa.parse(text, {
-    header: true,
-    skipEmptyLines: true
-  })
-  if (parsed.errors.length > 0) {
-    const first = parsed.errors[0]
-    throw new Error(`${filePath}: ${first.message}`)
-  }
-  return parsed.data.map(trimRow)
-}
-
-function trimRow(row) {
-  return Object.fromEntries(
-    Object.entries(row).map(([key, value]) => [
-      key,
-      typeof value === 'string' ? value.trim() : value
-    ])
-  )
-}
-
-function writeJson(filePath, data) {
-  mkdirSync(join(filePath, '..'), { recursive: true })
-  writeFileSync(filePath, `${JSON.stringify(data, null, 2)}\n`, 'utf-8')
-}
-
-function writeCompactJson(filePath, data) {
-  mkdirSync(join(filePath, '..'), { recursive: true })
-  writeFileSync(filePath, `${JSON.stringify(data)}\n`, 'utf-8')
-}
+const readCsv = (filePath) => existsSync(filePath) ? readCsvRows(filePath) : []
+const writeCompactJson = (filePath, data) => writeJson(filePath, data, { compact: true })
 
 function numberOrNull(value) {
   if (value === undefined || value === null || value === '') return null
@@ -90,12 +23,8 @@ function toBusStopCode(config, stopId) {
   return `${config.stopPrefix}${stopId.replace(/[^a-zA-Z0-9]/g, '_')}`
 }
 
-function formatGtfsDate(value) {
-  return `${value.slice(0, 4)}-${value.slice(4, 6)}-${value.slice(6, 8)}`
-}
-
 function trimSeconds(value) {
-  return String(value || '').slice(0, 5)
+  return normalizeGtfsTime(value) || String(value || '').slice(0, 5)
 }
 
 function activeDaysFromCalendar(row) {

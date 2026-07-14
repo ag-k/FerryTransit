@@ -1,12 +1,9 @@
 #!/usr/bin/env node
 
 import { existsSync, readFileSync } from 'fs'
-import { createHash } from 'crypto'
 import { isAbsolute, join, resolve } from 'path'
-import { pathToFileURL } from 'url'
-import { cert, getApps, initializeApp } from 'firebase-admin/app'
-import { getStorage } from 'firebase-admin/storage'
-import { resolveFirebasePublishTarget } from '../lib/firebase-publish-target.mjs'
+import { createFirebaseStoragePublisher } from '../lib/firebase-storage-publisher.mjs'
+import { sha256 } from '../lib/transport-data.mjs'
 import { summarizeTimetable, validateTimetable } from './build-public-timetable.mjs'
 
 const ROOT = process.cwd()
@@ -55,59 +52,8 @@ for (let i = 2; i < process.argv.length; i++) {
   }
 }
 
-const { target, bucketName } = resolveFirebasePublishTarget(args)
-
-const sha256 = (contents) => createHash('sha256').update(contents).digest('hex')
-
-const buildAdminOptions = () => {
-  const options = { storageBucket: bucketName }
-  const credentialPath = process.env.GOOGLE_APPLICATION_CREDENTIALS
-
-  if (credentialPath && existsSync(credentialPath)) {
-    options.credential = cert(JSON.parse(readFileSync(credentialPath, 'utf8')))
-  }
-
-  return options
-}
-
-const initializeAdmin = () => {
-  if (getApps().length === 0) {
-    initializeApp(buildAdminOptions())
-  }
-  return getStorage().bucket()
-}
-
-const formatBackupTimestampJst = (date) => {
-  const parts = new Intl.DateTimeFormat('ja-JP', {
-    timeZone: 'Asia/Tokyo',
-    year: 'numeric',
-    month: '2-digit',
-    day: '2-digit',
-    hour: '2-digit',
-    minute: '2-digit',
-    second: '2-digit',
-    hour12: false
-  }).formatToParts(date)
-
-  const values = Object.fromEntries(parts.map(part => [part.type, part.value]))
-  return `${values.year}${values.month}${values.day}-${values.hour}${values.minute}${values.second}`
-}
-
-const backupExistingObject = async (bucket, storagePath, contents) => {
-  const backupPath = `backups/timetable/${formatBackupTimestampJst(new Date())}.json`
-  await bucket.file(backupPath).save(contents, {
-    metadata: {
-      contentType: 'application/json',
-      cacheControl: 'private, max-age=0',
-      metadata: {
-        sourcePath: storagePath,
-        backupReason: 'code-managed-timetable-publish'
-      }
-    }
-  })
-
-  return backupPath
-}
+const publisher = createFirebaseStoragePublisher(args)
+const { target, bucketName } = publisher
 
 const readSourceTimetable = (sourceFile) => {
   if (!existsSync(sourceFile)) {
@@ -146,50 +92,22 @@ const main = async () => {
     return
   }
 
-  const bucket = initializeAdmin()
-  const remoteFile = bucket.file(args.storagePath)
-  const [exists] = await remoteFile.exists()
-  let existingContents = null
-  if (exists) {
-    ;[existingContents] = await remoteFile.download()
-    if (sha256(existingContents) === sourceHash) {
-      console.log('uploaded=skipped（公開済みオブジェクトと内容が同一です）')
-      return
-    }
-  }
-
-  const backupPath = existingContents
-    ? await backupExistingObject(bucket, args.storagePath, existingContents)
-    : null
-  if (backupPath) {
-    console.log(`backup=gs://${bucketName}/${backupPath}`)
-  } else {
-    console.log(`backup=なし（既存の ${args.storagePath} がありません）`)
-  }
-
-  await bucket.file(args.storagePath).save(buffer, {
-    metadata: {
-      contentType: 'application/json',
-      cacheControl: 'public, max-age=900',
-      metadata: {
-        source: pathToFileURL(args.sourceFile).href,
-        publisher: 'code-managed-timetable',
-        environment: target,
-        sha256: sourceHash,
-        ...(process.env.SOURCE_GIT_SHA ? { gitSha: process.env.SOURCE_GIT_SHA } : {}),
-        publishedAt: new Date().toISOString()
-      }
-    }
+  const result = await publisher.publishObject({
+    contents: buffer,
+    storagePath: args.storagePath,
+    sourceFile: args.sourceFile,
+    sourceId: 'public-timetable',
+    backupRoot: 'backups/timetable',
+    backupPathFactory: ({ timestamp }) => `backups/timetable/${timestamp}.json`,
+    metadata: { publisher: 'code-managed-timetable' }
   })
-
-  const [uploadedContents] = await remoteFile.download()
-  const uploadedHash = sha256(uploadedContents)
-  if (uploadedHash !== sourceHash) {
-    throw new Error(`公開後のSHA-256が一致しません: local=${sourceHash}, remote=${uploadedHash}`)
+  if (result.status === 'skipped') {
+    console.log('uploaded=skipped（公開済みオブジェクトと内容が同一です）')
+    return
   }
-
+  console.log(result.backupPath ? `backup=gs://${bucketName}/${result.backupPath}` : `backup=なし（既存の ${args.storagePath} がありません）`)
   console.log(`uploaded=gs://${bucketName}/${args.storagePath}`)
-  console.log(`verifiedSha256=${uploadedHash}`)
+  console.log(`verifiedSha256=${result.sha256}`)
 }
 
 main().catch((error) => {

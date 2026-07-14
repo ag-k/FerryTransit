@@ -40,12 +40,12 @@
 
 ```bash
 npm run lint
-npm run typecheck
 npm run test
 npm run test:e2e
 npm run build-prod
 ```
 
+- `npm run typecheck` は任意の補助チェックとし、リリース必須要件および Go/No-Go 判定には含めない。
 - Functions を変更した場合は `npm --prefix src/functions ci` と `npm --prefix src/functions run build` も成功させ、Firebase Emulator で対象フローを確認する。
 - 警告を無条件に無視しない。新規警告、非推奨 API、404、ブラウザコンソールエラー、未処理 Promise rejection は原因を確認し、リリース可否を記録する。
 
@@ -65,6 +65,7 @@ npm run build-prod
 - Android は物理戻るボタン/ジェスチャーで、履歴がある場合は前画面へ、ルート画面では意図どおり終了することを確認する。iOS はスワイプバック、ステータスバー文字色、ノッチ/Dynamic Island 周辺を確認する。
 - iOS は `ferrytransit://` のコールド/ウォーム起動を確認し、Android も deep link を配布対象にする場合は対応する intent で確認する。両 OS で通信切断→復帰、キャッシュ利用、機内モード、日付変更を確認する。設定・お気に入り・履歴が再起動後も保持され、更新インストールでは保持、削除後の再インストールでは期待どおり初期化されることを確認する。
 - アプリビルドでは管理画面が成果物から除外されるため、`/admin` へ遷移できず一般画面が壊れていないことを確認する。WebView 内に開発サーバー URL、デバッグメニュー、テスト用 Firebase/API が残っていないことも確認する。
+- アプリ成果物には時刻表・GTFS・bus-search JSONを同梱しない。`cap-build.mjs` が実行する非同梱チェックを成功させ、データはFirebase Storageから実行時に取得する。
 - iOS は Xcode/端末ログ、Android は Logcat と Play Console の pre-launch report を確認し、起動クラッシュ、ANR、ネイティブプラグイン例外、ネットワーク/SSL エラーがないことを確認する。
 
 ### QA記録とリリース後監視

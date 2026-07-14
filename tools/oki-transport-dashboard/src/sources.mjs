@@ -1,4 +1,6 @@
-export const SOURCES = [
+import { enrichTransportSources } from '../../../config/transport-sources.mjs'
+
+const DASHBOARD_SOURCE_DEFINITIONS = [
   {
     id: 'oki-kisen',
     name: '隠岐汽船',
@@ -151,3 +153,5 @@ export const SOURCES = [
     expectedKeywords: ['隠岐汽船接続バス', '時刻表', '松江', '七類', '境港']
   }
 ]
+
+export const SOURCES = Object.freeze(enrichTransportSources(DASHBOARD_SOURCE_DEFINITIONS))
