@@ -856,38 +856,6 @@ const sortedResults = computed(() => {
     return routes
   }
 
-  // まず出発時刻順にソート（最適化のための準備）
-  routes.sort((a, b) => {
-    const departureDiff = a.departureTime.getTime() - b.departureTime.getTime()
-    if (departureDiff !== 0) {
-      return departureDiff
-    }
-    // 出発時刻が同じ場合は到着時刻の早い順
-    return a.arrivalTime.getTime() - b.arrivalTime.getTime()
-  })
-
-  // 同じ出発時刻でより遅く到着する結果を除外
-  const filteredRoutes: TransitRoute[] = []
-  const departureTimeGroups = new Map<number, TransitRoute[]>()
-
-  // 出発時刻ごとにグループ化
-  for (const route of routes) {
-    const departureTime = route.departureTime.getTime()
-    if (!departureTimeGroups.has(departureTime)) {
-      departureTimeGroups.set(departureTime, [])
-    }
-    departureTimeGroups.get(departureTime)!.push(route)
-  }
-
-  // 各グループから到着時刻が最も早いものだけを残す
-  for (const [, groupRoutes] of departureTimeGroups) {
-    // 到着時刻が最も早いものを選択
-    const bestRoute = groupRoutes.reduce((best, current) => {
-      return current.arrivalTime.getTime() < best.arrivalTime.getTime() ? current : best
-    })
-    filteredRoutes.push(bestRoute)
-  }
-
   // ソートオプションに応じて並び替え
   const getDurationMinutes = (route: TransitRoute): number => {
     return (route.arrivalTime.getTime() - route.departureTime.getTime()) / (1000 * 60)
@@ -933,17 +901,17 @@ const sortedResults = computed(() => {
   }
 
   if (sortOption.value === 'fast') {
-    return filteredRoutes.sort(compareByDuration)
+    return routes.sort(compareByDuration)
   }
   if (sortOption.value === 'cheap') {
-    return filteredRoutes.sort(compareByFare)
+    return routes.sort(compareByFare)
   }
   if (sortOption.value === 'easy') {
-    return filteredRoutes.sort(compareByTransfer)
+    return routes.sort(compareByTransfer)
   }
 
   // おすすめ順でソート
-  return filteredRoutes.sort(compareByRecommended)
+  return routes.sort(compareByRecommended)
 })
 
 const displayedResults = computed(() => {

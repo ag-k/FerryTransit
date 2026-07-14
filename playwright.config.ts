@@ -3,9 +3,11 @@ import { defineConfig, devices } from "@playwright/test";
 const PORT = process.env.PLAYWRIGHT_PORT ?? "3030";
 const HOST = process.env.PLAYWRIGHT_HOST ?? "localhost";
 const baseURL = process.env.PLAYWRIGHT_BASE_URL ?? `http://${HOST}:${PORT}`;
+const staticRoot = process.env.PLAYWRIGHT_STATIC_ROOT;
 
 export default defineConfig({
   testDir: "./src/test/e2e",
+  testIgnore: "**/appstore-screenshots.spec.ts",
   timeout: 60_000,
   expect: {
     timeout: 10_000,
@@ -16,6 +18,7 @@ export default defineConfig({
   use: {
     baseURL,
     locale: "ja-JP",
+    serviceWorkers: "block",
     trace: "on-first-retry",
     screenshot: "only-on-failure",
     video: "retain-on-failure",
@@ -39,19 +42,21 @@ export default defineConfig({
     : {
         // E2E should run without touching ignored .env files (sandbox blocks them).
         // Provide minimal Firebase config via env so the client plugin can initialize.
-        command: [
-          `NUXT_PUBLIC_FIREBASE_API_KEY=test`,
-          `NUXT_PUBLIC_FIREBASE_AUTH_DOMAIN=test`,
-          `NUXT_PUBLIC_FIREBASE_PROJECT_ID=test`,
-          `NUXT_PUBLIC_FIREBASE_STORAGE_BUCKET=test`,
-          `NUXT_PUBLIC_FIREBASE_MESSAGING_SENDER_ID=test`,
-          `NUXT_PUBLIC_FIREBASE_APP_ID=test`,
-          `NUXT_PUBLIC_FIREBASE_MEASUREMENT_ID=`,
-          `NUXT_PUBLIC_FIREBASE_USE_EMULATORS=false`,
-          // Disable Google Maps in E2E (prevents map initialization from crashing tests)
-          `NUXT_PUBLIC_GOOGLE_MAPS_API_KEY=`,
-          `nuxt dev --hostname ${HOST} --port ${PORT}`,
-        ].join(' '),
+        command: staticRoot
+          ? `node scripts/serve-spa.mjs --host ${HOST} --port ${PORT} --root ${staticRoot}`
+          : [
+            `NUXT_PUBLIC_FIREBASE_API_KEY=test`,
+            `NUXT_PUBLIC_FIREBASE_AUTH_DOMAIN=test`,
+            `NUXT_PUBLIC_FIREBASE_PROJECT_ID=test`,
+            `NUXT_PUBLIC_FIREBASE_STORAGE_BUCKET=test`,
+            `NUXT_PUBLIC_FIREBASE_MESSAGING_SENDER_ID=test`,
+            `NUXT_PUBLIC_FIREBASE_APP_ID=test`,
+            `NUXT_PUBLIC_FIREBASE_MEASUREMENT_ID=`,
+            `NUXT_PUBLIC_FIREBASE_USE_EMULATORS=false`,
+            // Disable Google Maps in E2E (prevents map initialization from crashing tests)
+            `NUXT_PUBLIC_GOOGLE_MAPS_API_KEY=`,
+            `nuxt dev --host ${HOST} --port ${PORT}`,
+          ].join(' '),
         url: baseURL,
         reuseExistingServer: !process.env.CI,
         timeout: 120_000,

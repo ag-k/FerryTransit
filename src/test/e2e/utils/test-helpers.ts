@@ -18,6 +18,12 @@ const loadPublicData = async <T = unknown>(relativePath: string): Promise<T> => 
   return JSON.parse(content) as T
 }
 
+const loadGtfsPublicData = async <T = unknown>(relativePath: string): Promise<T> => {
+  const filePath = path.resolve(process.cwd(), 'gtfs', 'public-data', 'data', relativePath)
+  const content = await fs.readFile(filePath, 'utf-8')
+  return JSON.parse(content) as T
+}
+
 type LocaleJson = Record<string, string>
 let jaLocaleCache: LocaleJson | null = null
 
@@ -79,13 +85,19 @@ export const setupPublicPageStubs = async (page: Page, options: StubOptions = {}
     }
   })
 
-  const [timetable, fareMaster, shipStatus, shipStatusKankou, holidays] = await Promise.all([
+  const [timetable, fareMaster, shipStatus, shipStatusKankou, holidays, ...busSearchFiles] = await Promise.all([
     loadJsonFixture('api/timetable.json'),
     loadJsonFixture('api/fare-master.json'),
     loadJsonFixture('api/ship-status.json'),
     loadJsonFixture('api/ship-status-kankou.json'),
-    loadPublicData('data/holidays.json')
+    loadPublicData('data/holidays.json'),
+    ...['ama', 'chibu', 'ichibata_bus_connection', 'nishinoshima', 'okinoshima', 'stops']
+      .map((name) => loadGtfsPublicData(`bus-search/${name}.json`))
   ])
+  const busSearchData = Object.fromEntries(
+    ['ama', 'chibu', 'ichibata_bus_connection', 'nishinoshima', 'okinoshima', 'stops']
+      .map((name, index) => [`${name}.json`, busSearchFiles[index]])
+  )
 
   // 主要データを localStorage に事前投入して Firebase Storage へのアクセスをスキップ
   await page.addInitScript(
@@ -242,6 +254,14 @@ export const setupPublicPageStubs = async (page: Page, options: StubOptions = {}
     await route.fulfill({ json: holidays, headers: { 'access-control-allow-origin': '*' } })
   })
 
+  await page.route('**/data/bus-search/*.json', async (route) => {
+    const name = route.request().url().split('/').pop()?.split('?')[0] ?? ''
+    await route.fulfill({
+      json: busSearchData[name] ?? {},
+      headers: { 'access-control-allow-origin': '*' }
+    })
+  })
+
   const shipStatusApi = options.shipStatusApi ?? 'https://ship.nkk-oki.com/api'
 
   await page.route(`${shipStatusApi.replace(/\/$/, '')}/status`, async (route) => {
@@ -252,25 +272,21 @@ export const setupPublicPageStubs = async (page: Page, options: StubOptions = {}
     await route.fulfill({ json: shipStatusKankou, headers: { 'access-control-allow-origin': '*' } })
   })
 
-  // Firebase Storage エミュレータへのアクセスを許可
-  // エミュレータを使用する場合は、Firebase Storageへのアクセスを許可する
-  // エミュレータが起動していない場合は、モックデータを返す
-  await page.route('**/fare-master.json*', async (route) => {
-    const url = route.request().url()
-    // エミュレータのURLパターン（localhost:9199など）の場合はそのまま通す
-    if (url.includes('localhost') || url.includes('127.0.0.1') || url.includes(':9199')) {
-      await route.continue()
-    } else if (url.includes('firebasestorage.googleapis.com')) {
-      // 本番のFirebase Storageへのアクセスは、エミュレータ経由で処理される可能性があるため許可
-      // エミュレータが起動していない場合は、エミュレータがエラーを返すため、そのまま通す
-      await route.continue()
-    } else {
-      // その他のURLパターン（/data/fare-master.jsonなど）の場合はモックデータを返す
-      await route.fulfill({ json: fareMaster, headers: { 'access-control-allow-origin': '*' } })
-    }
+  await page.route('https://firebasestorage.googleapis.com/**', async (route) => {
+    const decodedUrl = decodeURIComponent(route.request().url())
+    const busSearchName = decodedUrl.match(/data\/bus-search\/([^?&/]+\.json)/)?.[1]
+    const json = decodedUrl.includes('fare-master.json')
+      ? fareMaster
+      : decodedUrl.includes('news.json')
+        ? []
+        : decodedUrl.includes('timetable.json')
+          ? timetable
+          : busSearchName
+            ? busSearchData[busSearchName] ?? {}
+            : {}
+    await route.fulfill({ json, headers: { 'access-control-allow-origin': '*' } })
   })
-  
-  // Firebase Storage エミュレータへの直接アクセスを許可
+
   await page.route('http://localhost:9199/**', async (route) => {
     await route.continue()
   })

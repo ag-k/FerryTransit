@@ -9,7 +9,7 @@ const runTransitSearch = async (page: Page) => {
   await page.locator('input[type="date"]').fill('2025-01-07')
   await page.locator('input[type="time"]').fill('08:00')
 
-  await page.getByRole('button', { name: '検索' }).click()
+  await page.getByRole('button', { name: '検索', exact: true }).click()
 
   // 検索結果が表示されるまで待つ
   await expect(page.getByRole('heading', { level: 3, name: '検索結果' })).toBeVisible({ timeout: 15000 })

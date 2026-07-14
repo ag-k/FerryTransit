@@ -163,7 +163,7 @@ export default defineNuxtConfig({
         "0.0.0",
       releaseDate:
         process.env.NUXT_PUBLIC_RELEASE_DATE ||
-        "2026-02-20",
+        "2026-07-14",
       apiBase:
         process.env.NUXT_PUBLIC_API_BASE ||
         "https://naturebot-lab.com/ferry_transit",

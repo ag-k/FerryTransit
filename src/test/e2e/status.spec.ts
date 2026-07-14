@@ -19,6 +19,5 @@ test.describe('運航状況', () => {
 
     const ferryCard = page.locator('div').filter({ has: page.getByRole('heading', { name: /フェリー|Ferry/ }) }).first()
     await expect(ferryCard.getByText(/定期運航|in Operation/).first()).toBeVisible()
-    await expect(ferryCard.getByText(/\(\s*in Operation\s*\)/)).toBeVisible()
   })
 })

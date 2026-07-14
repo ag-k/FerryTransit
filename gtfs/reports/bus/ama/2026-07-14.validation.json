@@ -1,0 +1,20 @@
+{
+  "ok": true,
+  "checkedAt": "2026-07-14T13:25:59.435Z",
+  "mode": "bus",
+  "id": "ama",
+  "gtfsDir": "/Users/ag/works/FerryTransit/gtfs/current/bus/ama",
+  "summary": {
+    "agencyCount": 1,
+    "routeCount": 10,
+    "stopCount": 36,
+    "tripCount": 396,
+    "stopTimeCount": 7348,
+    "serviceCount": 36,
+    "feedStartDate": "20260102",
+    "feedEndDate": "20261231",
+    "feedVersion": "R8_20251222-1"
+  },
+  "issues": [],
+  "warnings": []
+}

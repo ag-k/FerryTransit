@@ -12,9 +12,6 @@ test.describe('運賃表', () => {
     
     await page.goto('/fare')
 
-    // データが読み込まれるまで待つ
-    await page.waitForLoadState('networkidle')
-    
     await expect(page.getByRole('heading', { level: 2, name: /運賃表|Fare Table/ })).toBeVisible()
     await expect(page.getByText(/フェリーおき|Ferry Oki/)).toBeVisible()
     // 現行UIの代表的な航路グループが表示されること
@@ -55,17 +52,16 @@ test.describe('運賃表', () => {
     
     await page.goto('/fare')
 
-    // データが読み込まれるまで待つ
-    await page.waitForLoadState('networkidle')
-    
-    await page.getByRole('button', { name: /内航船|Local Ferry/ }).click()
+    await expect(page.getByRole('heading', { level: 2, name: /運賃表|Fare Table/ })).toBeVisible()
+
+    await page.getByRole('tab', { name: /内航船|Local Ferry/ }).click()
 
     // タブ切り替え後の表示を待つ
     await page.waitForTimeout(500)
 
     // 島前内航船共通はテーブルヘッダーに表示される（thタグ）
     // 内航船タブがクリックされたことを確認（メインタブにはaria-selected属性がない）
-    const naikoSenTab = page.getByRole('button', { name: /内航船|Local Ferry/ })
+    const naikoSenTab = page.getByRole('tab', { name: /内航船|Local Ferry/ })
     await expect(naikoSenTab).toBeVisible()
     
     // 内航船タブのコンテンツが表示されるまで待つ
@@ -108,9 +104,8 @@ test.describe('運賃表', () => {
     
     await page.goto('/fare')
 
-    // データが読み込まれるまで待つ
-    await page.waitForLoadState('networkidle')
-    
+    await expect(page.getByRole('heading', { level: 2, name: /運賃表|Fare Table/ })).toBeVisible()
+
     // 割引情報の見出しが存在しないこと
     await expect(page.getByRole('heading', { level: 3, name: /割引情報|Discounts/ })).toHaveCount(0)
   })

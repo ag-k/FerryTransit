@@ -26,6 +26,8 @@ logs
 firebase/
 *.serviceAccountKey.json
 *firebase-adminsdk*.json
+*.keystore
+*.jks
 
 # Local env files
 .env

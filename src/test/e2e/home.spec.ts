@@ -26,8 +26,8 @@ test.describe('トップページ', () => {
 
     const endpoints = page.getByTestId('route-endpoints-selector')
     const buttons = endpoints.locator('[data-testid="port-selector-button"]')
-    await expect(buttons.first()).toContainText('西郷(隠岐の島町)')
-    await expect(buttons.nth(1)).toContainText('七類(松江市)')
+    await expect(buttons.first()).toContainText(/西郷.*隠岐の島町/)
+    await expect(buttons.nth(1)).toContainText(/七類.*松江市/)
   })
 
   test('乗換を含むルートを検索ボタンが表示される（島前3島以外）', async ({ page }) => {

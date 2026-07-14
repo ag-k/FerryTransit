@@ -546,23 +546,75 @@ describe('Transit Page', () => {
     expect(searchDate.getDate()).toBe(today.getDate())
   })
 
-  it('filters out routes with same departure time but later arrival', async () => {
+  it('keeps routes with the same departure time as distinct alternatives', async () => {
     const wrapper = createWrapper()
     wrapper.vm.searchResults = buildSampleRoutes()
     await wrapper.vm.$nextTick()
 
-    // 08:00出発のルートが2つある場合、到着が早い方（route-same-departure-early）だけが残る
-    const results = wrapper.vm.sortedResults
-    const route08_00 = results.find((route: TransitRoute) => 
+    const sameDepartureRoutes = wrapper.vm.sortedResults.filter((route: TransitRoute) =>
       route.departureTime.getTime() === new Date('2024-01-01T08:00:00').getTime()
     )
-    
-    expect(route08_00).toBeDefined()
-    expect(route08_00?.segments[0].tripId).toBe('route-same-departure-early')
-    
-    // 到着が遅い方（route-balanced-1）は除外されている
-    const tripIds = results.map((route: TransitRoute) => route.segments[0].tripId)
-    expect(tripIds).not.toContain('route-balanced-1')
+
+    expect(getTripIds(sameDepartureRoutes)).toEqual([
+      'route-same-departure-early',
+      'route-balanced-1'
+    ])
+  })
+
+  it('keeps all BUG-002 transfer alternatives in every sort mode', async () => {
+    const wrapper = createWrapper()
+    const toDate = (time: string): Date => new Date(`2026-07-05T${time}:00+09:00`)
+    const bug002Routes: TransitRoute[] = [
+      {
+        segments: [
+          { tripId: '979', ship: 'FERRY_SHIRASHIMA', departure: 'HONDO_SAKAIMINATO', arrival: 'KURI', departureTime: toDate('14:10'), arrivalTime: toDate('16:35'), status: 0, fare: 3510 },
+          { tripId: '570', ship: 'ISOKAZE', departure: 'KURI', arrival: 'HISHIURA', departureTime: toDate('17:49'), arrivalTime: toDate('18:07'), status: 0, fare: 300 }
+        ],
+        departureTime: toDate('14:10'),
+        arrivalTime: toDate('18:07'),
+        totalFare: 3810,
+        transferCount: 1
+      },
+      {
+        segments: [
+          { tripId: '979-980', ship: 'FERRY_SHIRASHIMA', departure: 'HONDO_SAKAIMINATO', arrival: 'BEPPU', departureTime: toDate('14:10'), arrivalTime: toDate('17:10'), status: 0, fare: 3510 },
+          { tripId: '568', ship: 'ISOKAZE', departure: 'BEPPU', arrival: 'HISHIURA', departureTime: toDate('17:20'), arrivalTime: toDate('17:27'), status: 0, fare: 300 }
+        ],
+        departureTime: toDate('14:10'),
+        arrivalTime: toDate('17:27'),
+        totalFare: 3810,
+        transferCount: 1
+      },
+      {
+        segments: [
+          { tripId: '979-980', ship: 'FERRY_SHIRASHIMA', departure: 'HONDO_SAKAIMINATO', arrival: 'BEPPU', departureTime: toDate('14:10'), arrivalTime: toDate('17:10'), status: 0, fare: 3510 },
+          { tripId: '782', ship: 'FERRY_DOZEN', departure: 'BEPPU', arrival: 'HISHIURA', departureTime: toDate('17:40'), arrivalTime: toDate('17:52'), status: 0, fare: 300 }
+        ],
+        departureTime: toDate('14:10'),
+        arrivalTime: toDate('17:52'),
+        totalFare: 3810,
+        transferCount: 1
+      }
+    ]
+    const expectedSignatures = [
+      'HONDO_SAKAIMINATO->KURI:FERRY_SHIRASHIMA|KURI->HISHIURA:ISOKAZE',
+      'HONDO_SAKAIMINATO->BEPPU:FERRY_SHIRASHIMA|BEPPU->HISHIURA:ISOKAZE',
+      'HONDO_SAKAIMINATO->BEPPU:FERRY_SHIRASHIMA|BEPPU->HISHIURA:FERRY_DOZEN'
+    ].sort()
+
+    wrapper.vm.searchResults = bug002Routes
+
+    for (const sortOption of ['recommended', 'fast', 'cheap', 'easy']) {
+      wrapper.vm.sortOption = sortOption
+      await wrapper.vm.$nextTick()
+
+      const signatures = wrapper.vm.sortedResults
+        .map((route: TransitRoute) => route.segments
+          .map(segment => `${segment.departure}->${segment.arrival}:${segment.ship}`)
+          .join('|'))
+        .sort()
+      expect(signatures).toEqual(expectedSignatures)
+    }
   })
 
   it('sorts routes by shortest duration when fast option is selected', async () => {
@@ -581,9 +633,9 @@ describe('Transit Page', () => {
       expect(current).toBeLessThanOrEqual(next)
     }
     
-    // 同じ出発時刻で到着が遅い結果が除外されていることを確認
+    // 同じ出発時刻の有効な代替経路が維持されていることを確認
     const tripIds = results.map((route: TransitRoute) => route.segments[0].tripId)
-    expect(tripIds).not.toContain('route-balanced-1')
+    expect(tripIds).toContain('route-balanced-1')
   })
 
   it('sorts routes by lowest fare when cheap option is selected', async () => {
@@ -602,9 +654,9 @@ describe('Transit Page', () => {
       expect(current).toBeLessThanOrEqual(next)
     }
     
-    // 同じ出発時刻で到着が遅い結果が除外されていることを確認
+    // 同じ出発時刻の有効な代替経路が維持されていることを確認
     const tripIds = results.map((route: TransitRoute) => route.segments[0].tripId)
-    expect(tripIds).not.toContain('route-balanced-1')
+    expect(tripIds).toContain('route-balanced-1')
   })
 
   it('sorts routes by easiest transfer when easy option is selected', async () => {
@@ -623,9 +675,9 @@ describe('Transit Page', () => {
       expect(current).toBeLessThanOrEqual(next)
     }
     
-    // 同じ出発時刻で到着が遅い結果が除外されていることを確認
+    // 同じ出発時刻の有効な代替経路が維持されていることを確認
     const tripIds = results.map((route: TransitRoute) => route.segments[0].tripId)
-    expect(tripIds).not.toContain('route-balanced-1')
+    expect(tripIds).toContain('route-balanced-1')
   })
 
   it('sorts recommended routes by earliest arrival and latest departure by default', async () => {
@@ -668,9 +720,9 @@ describe('Transit Page', () => {
       expect(current).toBeLessThanOrEqual(next)
     }
     
-    // 同じ出発時刻で到着が遅い結果が除外されていることを確認
+    // 同じ出発時刻の有効な代替経路が維持されていることを確認
     const tripIds = results.map((route: TransitRoute) => route.segments[0].tripId)
-    expect(tripIds).not.toContain('route-balanced-1')
+    expect(tripIds).toContain('route-balanced-1')
   })
 
   describe('Edge cases', () => {
@@ -707,7 +759,7 @@ describe('Transit Page', () => {
       expect(wrapper.vm.sortedResults[0].segments[0].tripId).toBe('single-route')
     })
 
-    it('handles multiple routes with same departure time correctly', async () => {
+    it('keeps multiple routes with the same departure time', async () => {
       const wrapper = createWrapper()
       const toDate = (time: string): Date => new Date(`2024-01-01T${time}:00`)
       
@@ -738,9 +790,7 @@ describe('Transit Page', () => {
       await wrapper.vm.$nextTick()
 
       const results = wrapper.vm.sortedResults
-      // 到着が最も早いもの（route-2）だけが残る
-      expect(results).toHaveLength(1)
-      expect(results[0].segments[0].tripId).toBe('route-2')
+      expect(getTripIds(results)).toEqual(['route-2', 'route-3', 'route-1'])
     })
   })
 
@@ -943,10 +993,10 @@ describe('Transit Page', () => {
       wrapper.vm.sortOption = 'recommended'
       await wrapper.vm.$nextTick()
 
-      // 同一出発時刻の候補は既存の前処理で最早着だけが残る。
       expect(getTripIds(wrapper.vm.sortedResults)).toEqual([
         'latest-departure',
         'same-departure-early-arrival',
+        'same-departure-late-arrival',
         'early-departure'
       ])
     })
@@ -994,7 +1044,11 @@ describe('Transit Page', () => {
         'same-time-expensive-direct',
         'same-time-transfer'
       ])
-      expect(wrapper.vm.sortedResults).toHaveLength(1)
+      expect(getTripIds(wrapper.vm.sortedResults)).toEqual([
+        'same-time-cheap-direct',
+        'same-time-expensive-direct',
+        'same-time-transfer'
+      ])
     })
   })
 })
