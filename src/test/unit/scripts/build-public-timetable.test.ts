@@ -76,11 +76,11 @@ describe("buildPublicTimetable", () => {
     const result = buildPublicTimetable();
 
     expect(result.summary.total).toBeGreaterThan(900);
-    expect(result.summary.byName.JAL_OKI_ITAMI).toBe(6);
+    expect(result.summary.byName.JAL_OKI_ITAMI).toBe(8);
     expect(result.summary.byName.JAL_OKI_IZUMO).toBe(2);
-    expect(result.summary.byName.OKI_AIRPORT_BUS).toBe(16);
-    expect(result.summary.byMode.AIR).toBe(8);
-    expect(result.summary.byMode.BUS).toBe(16);
+    expect(result.summary.byName.OKI_AIRPORT_BUS).toBe(20);
+    expect(result.summary.byMode.AIR).toBe(10);
+    expect(result.summary.byMode.BUS).toBe(20);
   });
 
   it("生成物の便名を置換対象に指定すると既存データを除去してから追加する", () => {

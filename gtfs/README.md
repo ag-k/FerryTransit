@@ -18,8 +18,8 @@ gtfs/
 公開時刻表 `data/timetable.json` は管理画面の Firestore データをマスターにせず、コード管理された次のソースを合成して生成します。
 
 - `timetable.json`: 船の基礎時刻表
-- `gtfs/raw/air/jal_oki_2026_timetable.json`: JAL 隠岐発着便
-- `gtfs/generated/bus/oki_airport_bus_2026_timetable.json`: 隠岐空港連絡バス
+- `gtfs/raw/air/jal_oki_timetable.json`: JAL 隠岐発着便（公式サイトから自動取得）
+- `gtfs/generated/bus/oki_airport_bus_timetable.json`: 隠岐空港連絡バス
 
 合成結果は `gtfs/generated/public/timetable.json` に出力し、Firebase Storage の `data/timetable.json` へ直接公開します。
 
@@ -138,7 +138,13 @@ npm run gtfs:build -- bus ichibata_bus_connection
 npm run gtfs:generate:oki-airport-bus
 ```
 
-入力は `gtfs/raw/air/jal_oki_2026_timetable.json`、出力は `gtfs/generated/bus/oki_airport_bus_2026_timetable.json` です。航空便データを更新した場合は、このコマンドを再実行して生成物も更新してください。
+入力は `gtfs/raw/air/jal_oki_timetable.json`、出力は `gtfs/generated/bus/oki_airport_bus_timetable.json` です。航空便データを更新した場合は、このコマンドを再実行して生成物も更新してください。
+
+JAL公式時刻表の取得と連絡バス・公開時刻表の再生成は次のコマンドでまとめて実行できます。
+
+```bash
+npm run timetable:refresh:jal
+```
 
 生成規則は次の通りです。
 

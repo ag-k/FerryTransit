@@ -17,6 +17,7 @@ docs/
 ├── migration/             # 移行関連ドキュメント
 ├── nuxt/                  # Nuxt3 版のドキュメント
 ├── phase-plans/           # フェーズごとの計画
+├── releases/              # バージョン別のリリースTODO・判定記録
 ├── specs/                 # 機能別仕様書（仕様・設計）
 ├── status-api/            # 運航状況API関連
 ├── tasks/                 # 機能別タスク（TODO・実装チェック）
@@ -43,6 +44,10 @@ docs/
 
 - 仕様検証や検索結果の分析メモ
 
+### リリース管理 (`releases/`)
+
+- バージョン別の必須TODO、QA証跡、Go/No-Go判定
+
 ### 開発・移行・実装 (`development/`, `migration/`, `nuxt/`, `phase-plans/`)
 
 - 開発環境、移行計画、Nuxt3 実装サマリー
@@ -64,10 +69,12 @@ docs/
 1. **新規開発者向け**: `project/CLAUDE.md`
 2. **Firebase/運用**: `operations/`
 3. **仕様・タスク確認**: `specs/` / `tasks/`
-4. **作業履歴の確認**: `work-logs/`
+4. **リリース準備・判定**: `releases/`
+5. **作業履歴の確認**: `work-logs/`
 
 ## 更新履歴
 
+- 2026-07-13: バージョン別リリースTODOの管理場所（`releases/`）を追加
 - 2026-01-27: ドキュメント構成を再整理（運用・障害・レポートを追加）
 - 2025-07-15: お知らせ機能の仕様書（`specs/NEWS_SYSTEM.md`）を追加
 - 2025-07-04: ドキュメントを`docs`ディレクトリに整理

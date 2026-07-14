@@ -6,8 +6,8 @@ import { dirname, join, resolve } from 'path'
 import { pathToFileURL } from 'url'
 
 const ROOT = process.cwd()
-const INPUT_FILE = join(ROOT, 'gtfs', 'raw', 'air', 'jal_oki_2026_timetable.json')
-const OUTPUT_FILE = join(ROOT, 'gtfs', 'generated', 'bus', 'oki_airport_bus_2026_timetable.json')
+const INPUT_FILE = join(ROOT, 'gtfs', 'raw', 'air', 'jal_oki_timetable.json')
+const OUTPUT_FILE = join(ROOT, 'gtfs', 'generated', 'bus', 'oki_airport_bus_timetable.json')
 
 const AIRPORT_OKI = 'AIRPORT_OKI'
 const SAIGO = 'SAIGO'

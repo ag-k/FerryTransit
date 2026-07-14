@@ -16,13 +16,13 @@ export const PUBLIC_TIMETABLE_SOURCES = [
   {
     id: 'jal-oki-air',
     label: 'JAL Oki air timetable',
-    file: 'gtfs/raw/air/jal_oki_2026_timetable.json',
+    file: 'gtfs/raw/air/jal_oki_timetable.json',
     replaceNames: ['JAL_OKI_ITAMI', 'JAL_OKI_IZUMO']
   },
   {
     id: 'oki-airport-bus',
     label: 'Oki airport shuttle bus timetable',
-    file: 'gtfs/generated/bus/oki_airport_bus_2026_timetable.json',
+    file: 'gtfs/generated/bus/oki_airport_bus_timetable.json',
     replaceNames: ['OKI_AIRPORT_BUS']
   }
 ]
