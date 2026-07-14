@@ -1,0 +1,303 @@
+{
+  "source": {
+    "id": "oki-kisen-2026-june",
+    "operator": "隠岐汽船株式会社",
+    "title": "令和8年 6月更新 隠岐汽船航路時刻表",
+    "published_date": "2026-06-16",
+    "url": "https://www.oki-kisen.co.jp/files/original/2026061609272907867fbc0cc.pdf",
+    "download_page": "https://www.oki-kisen.co.jp/download/dl-timetable/29",
+    "sha256": "6398b9b219442937ae56db81d40c4c1852601678309468f708c6d7e302cd806b",
+    "coverage_start": "2026/06/01",
+    "coverage_end": "2027/02/28",
+    "note": "2027年3月以降は公式PDFの掲載範囲外。レインボージェットは2026年12月1日から2027年2月28日まで休航。"
+  },
+  "additional_sources": [
+    {
+      "id": "oki-kisen-2026-original",
+      "operator": "隠岐汽船株式会社",
+      "title": "令和8年 隠岐汽船航路時刻表",
+      "published_date": "2025-12-01",
+      "url": "https://www.oki-kisen.co.jp/files/original/202512011516270384e98a641.pdf",
+      "coverage_start": "2026/01/01",
+      "coverage_end": "2027/02/28",
+      "note": "2026年4月1日から5月31日までを採用。6月1日以降は6月更新版で上書き。配布元URLは現在404だが、公式サイトに索引されたPDF本文と照合済み。"
+    }
+  ],
+  "schedules": [
+    {
+      "id": "ferry-oki-spring",
+      "source_id": "oki-kisen-2026-original",
+      "name": "FERRY_OKI",
+      "start_date": "2026/04/01",
+      "end_date": "2026/05/31",
+      "legs": [
+        ["HONDO_SHICHIRUI", "9:00", "SAIGO", "11:25"],
+        ["SAIGO", "12:05", "HISHIURA", "13:15"],
+        ["HISHIURA", "15:15", "BEPPU", "15:30"],
+        ["BEPPU", "15:45", "HONDO_SHICHIRUI", "17:55"]
+      ]
+    },
+    {
+      "id": "ferry-kuniga-spring",
+      "source_id": "oki-kisen-2026-original",
+      "name": "FERRY_KUNIGA",
+      "start_date": "2026/04/01",
+      "end_date": "2026/05/31",
+      "legs": [
+        ["HONDO_SHICHIRUI", "9:30", "KURI", "11:30"],
+        ["KURI", "11:35", "BEPPU", "12:05"],
+        ["BEPPU", "12:20", "HISHIURA", "12:40"],
+        ["HISHIURA", "12:50", "SAIGO", "14:00"],
+        ["SAIGO", "15:10", "HONDO_SHICHIRUI", "17:35"]
+      ]
+    },
+    {
+      "id": "ferry-shirashima-spring",
+      "source_id": "oki-kisen-2026-original",
+      "name": "FERRY_SHIRASHIMA",
+      "start_date": "2026/04/01",
+      "end_date": "2026/05/31",
+      "legs": [
+        ["SAIGO", "8:30", "HISHIURA", "9:40"],
+        ["HISHIURA", "9:50", "BEPPU", "10:05"],
+        ["BEPPU", "10:20", "KURI", "10:50"],
+        ["KURI", "10:55", "HONDO_SAKAIMINATO", "13:20"],
+        ["HONDO_SAKAIMINATO", "14:25", "BEPPU", "17:05"],
+        ["BEPPU", "17:15", "SAIGO", "18:30"]
+      ]
+    },
+    {
+      "id": "rainbow-april",
+      "source_id": "oki-kisen-2026-original",
+      "name": "RAINBOWJET",
+      "start_date": "2026/04/01",
+      "end_date": "2026/04/30",
+      "legs": [
+        ["BEPPU", "8:00", "HISHIURA", "8:10"],
+        ["HISHIURA", "8:14", "SAIGO", "8:45"],
+        ["SAIGO", "8:54", "HONDO_SHICHIRUI", "10:03"],
+        ["HONDO_SHICHIRUI", "16:50", "SAIGO", "17:59"],
+        ["SAIGO", "18:05", "HISHIURA", "18:36"],
+        ["HISHIURA", "18:39", "BEPPU", "18:49"]
+      ]
+    },
+    {
+      "id": "rainbow-golden-week",
+      "source_id": "oki-kisen-2026-original",
+      "name": "RAINBOWJET",
+      "start_date": "2026/05/01",
+      "end_date": "2026/05/06",
+      "legs": [
+        ["BEPPU", "7:40", "HISHIURA", "7:50"],
+        ["HISHIURA", "7:54", "SAIGO", "8:25"],
+        ["SAIGO", "8:35", "HONDO_SAKAIMINATO", "9:58"],
+        ["HONDO_SAKAIMINATO", "12:00", "SAIGO", "13:23"],
+        ["SAIGO", "13:30", "BEPPU", "14:05"],
+        ["BEPPU", "14:12", "HONDO_SHICHIRUI", "15:12"],
+        ["HONDO_SHICHIRUI", "16:50", "SAIGO", "17:59"],
+        ["SAIGO", "18:05", "HISHIURA", "18:36"],
+        ["HISHIURA", "18:39", "BEPPU", "18:49"]
+      ]
+    },
+    {
+      "id": "rainbow-may-before-maintenance",
+      "source_id": "oki-kisen-2026-original",
+      "name": "RAINBOWJET",
+      "start_date": "2026/05/07",
+      "end_date": "2026/05/24",
+      "legs": [
+        ["BEPPU", "8:00", "HISHIURA", "8:10"],
+        ["HISHIURA", "8:14", "SAIGO", "8:45"],
+        ["SAIGO", "8:54", "HONDO_SHICHIRUI", "10:03"],
+        ["HONDO_SHICHIRUI", "16:50", "SAIGO", "17:59"],
+        ["SAIGO", "18:05", "HISHIURA", "18:36"],
+        ["HISHIURA", "18:39", "BEPPU", "18:49"]
+      ]
+    },
+    {
+      "id": "rainbow-may-after-maintenance",
+      "source_id": "oki-kisen-2026-original",
+      "name": "RAINBOWJET",
+      "start_date": "2026/05/30",
+      "end_date": "2026/05/31",
+      "legs": [
+        ["BEPPU", "8:00", "HISHIURA", "8:10"],
+        ["HISHIURA", "8:14", "SAIGO", "8:45"],
+        ["SAIGO", "8:54", "HONDO_SHICHIRUI", "10:03"],
+        ["HONDO_SHICHIRUI", "16:50", "SAIGO", "17:59"],
+        ["SAIGO", "18:05", "HISHIURA", "18:36"],
+        ["HISHIURA", "18:39", "BEPPU", "18:49"]
+      ]
+    },
+    {
+      "id": "ferry-oki-regular-1",
+      "name": "FERRY_OKI",
+      "start_date": "2026/06/01",
+      "end_date": "2026/08/07",
+      "legs": [
+        ["HONDO_SHICHIRUI", "9:00", "SAIGO", "11:25"],
+        ["SAIGO", "12:00", "HISHIURA", "13:10"],
+        ["HISHIURA", "13:30", "BEPPU", "13:45"],
+        ["BEPPU", "14:00", "SAIGO", "15:10"],
+        ["SAIGO", "15:40", "HONDO_SHICHIRUI", "18:05"]
+      ]
+    },
+    {
+      "id": "ferry-oki-regular-2",
+      "name": "FERRY_OKI",
+      "start_date": "2026/08/17",
+      "end_date": "2027/02/28",
+      "legs": [
+        ["HONDO_SHICHIRUI", "9:00", "SAIGO", "11:25"],
+        ["SAIGO", "12:00", "HISHIURA", "13:10"],
+        ["HISHIURA", "13:30", "BEPPU", "13:45"],
+        ["BEPPU", "14:00", "SAIGO", "15:10"],
+        ["SAIGO", "15:40", "HONDO_SHICHIRUI", "18:05"]
+      ]
+    },
+    {
+      "id": "ferry-shirashima-regular-1",
+      "name": "FERRY_SHIRASHIMA",
+      "start_date": "2026/06/01",
+      "end_date": "2026/08/07",
+      "legs": [
+        ["SAIGO", "8:30", "HISHIURA", "9:40"],
+        ["HISHIURA", "9:50", "BEPPU", "10:05"],
+        ["BEPPU", "10:20", "KURI", "10:50"],
+        ["KURI", "10:55", "HONDO_SAKAIMINATO", "13:20"],
+        ["HONDO_SAKAIMINATO", "14:10", "KURI", "16:35"],
+        ["KURI", "16:40", "BEPPU", "17:10"],
+        ["BEPPU", "17:20", "SAIGO", "18:35"]
+      ]
+    },
+    {
+      "id": "ferry-shirashima-regular-2",
+      "name": "FERRY_SHIRASHIMA",
+      "start_date": "2026/08/17",
+      "end_date": "2027/02/28",
+      "legs": [
+        ["SAIGO", "8:30", "HISHIURA", "9:40"],
+        ["HISHIURA", "9:50", "BEPPU", "10:05"],
+        ["BEPPU", "10:20", "KURI", "10:50"],
+        ["KURI", "10:55", "HONDO_SAKAIMINATO", "13:20"],
+        ["HONDO_SAKAIMINATO", "14:10", "KURI", "16:35"],
+        ["KURI", "16:40", "BEPPU", "17:10"],
+        ["BEPPU", "17:20", "SAIGO", "18:35"]
+      ]
+    },
+    {
+      "id": "ferry-oki-summer",
+      "name": "FERRY_OKI",
+      "start_date": "2026/08/08",
+      "end_date": "2026/08/16",
+      "legs": [
+        ["HONDO_SHICHIRUI", "9:00", "SAIGO", "11:25"],
+        ["SAIGO", "11:55", "HONDO_SHICHIRUI", "14:20"],
+        ["HONDO_SHICHIRUI", "14:45", "SAIGO", "17:10"],
+        ["SAIGO", "17:35", "HONDO_SHICHIRUI", "20:00"]
+      ]
+    },
+    {
+      "id": "ferry-kuniga-summer",
+      "name": "FERRY_KUNIGA",
+      "start_date": "2026/08/08",
+      "end_date": "2026/08/16",
+      "legs": [
+        ["HONDO_SHICHIRUI", "9:30", "KURI", "11:30"],
+        ["KURI", "11:35", "BEPPU", "12:05"],
+        ["BEPPU", "12:20", "HISHIURA", "12:40"],
+        ["HISHIURA", "12:50", "SAIGO", "14:00"],
+        ["SAIGO", "14:20", "HISHIURA", "15:30"],
+        ["HISHIURA", "15:45", "BEPPU", "16:00"],
+        ["BEPPU", "16:15", "HONDO_SHICHIRUI", "18:25"]
+      ]
+    },
+    {
+      "id": "ferry-shirashima-summer",
+      "name": "FERRY_SHIRASHIMA",
+      "start_date": "2026/08/08",
+      "end_date": "2026/08/16",
+      "legs": [
+        ["SAIGO", "8:30", "HISHIURA", "9:40"],
+        ["HISHIURA", "9:50", "BEPPU", "10:05"],
+        ["BEPPU", "10:20", "KURI", "10:50"],
+        ["KURI", "10:55", "HONDO_SAKAIMINATO", "13:20"],
+        ["HONDO_SAKAIMINATO", "14:25", "BEPPU", "17:05"],
+        ["BEPPU", "17:15", "SAIGO", "18:30"]
+      ]
+    },
+    {
+      "id": "rainbow-early-summer",
+      "name": "RAINBOWJET",
+      "start_date": "2026/06/01",
+      "end_date": "2026/08/07",
+      "legs": [
+        ["BEPPU", "8:00", "HISHIURA", "8:10"],
+        ["HISHIURA", "8:14", "SAIGO", "8:45"],
+        ["SAIGO", "8:54", "HONDO_SHICHIRUI", "10:03"],
+        ["HONDO_SHICHIRUI", "16:50", "SAIGO", "17:59"],
+        ["SAIGO", "18:05", "HISHIURA", "18:36"],
+        ["HISHIURA", "18:39", "BEPPU", "18:49"]
+      ]
+    },
+    {
+      "id": "rainbow-late-summer",
+      "name": "RAINBOWJET",
+      "start_date": "2026/08/17",
+      "end_date": "2026/08/31",
+      "legs": [
+        ["BEPPU", "8:00", "HISHIURA", "8:10"],
+        ["HISHIURA", "8:14", "SAIGO", "8:45"],
+        ["SAIGO", "8:54", "HONDO_SHICHIRUI", "10:03"],
+        ["HONDO_SHICHIRUI", "16:50", "SAIGO", "17:59"],
+        ["SAIGO", "18:05", "HISHIURA", "18:36"],
+        ["HISHIURA", "18:39", "BEPPU", "18:49"]
+      ]
+    },
+    {
+      "id": "rainbow-summer-special",
+      "name": "RAINBOWJET",
+      "start_date": "2026/08/08",
+      "end_date": "2026/08/16",
+      "legs": [
+        ["BEPPU", "7:40", "HISHIURA", "7:50"],
+        ["HISHIURA", "7:54", "SAIGO", "8:25"],
+        ["SAIGO", "8:35", "HONDO_SAKAIMINATO", "9:58"],
+        ["HONDO_SAKAIMINATO", "12:00", "SAIGO", "13:23"],
+        ["SAIGO", "13:30", "BEPPU", "14:05"],
+        ["BEPPU", "14:12", "HONDO_SHICHIRUI", "15:12"],
+        ["HONDO_SHICHIRUI", "16:50", "SAIGO", "17:59"],
+        ["SAIGO", "18:05", "HISHIURA", "18:36"],
+        ["HISHIURA", "18:39", "BEPPU", "18:49"]
+      ]
+    },
+    {
+      "id": "rainbow-autumn",
+      "name": "RAINBOWJET",
+      "start_date": "2026/09/01",
+      "end_date": "2026/10/31",
+      "legs": [
+        ["BEPPU", "8:00", "HISHIURA", "8:10"],
+        ["HISHIURA", "8:14", "SAIGO", "8:45"],
+        ["SAIGO", "8:54", "HONDO_SHICHIRUI", "10:03"],
+        ["HONDO_SHICHIRUI", "15:45", "SAIGO", "16:54"],
+        ["SAIGO", "17:00", "HISHIURA", "17:31"],
+        ["HISHIURA", "17:34", "BEPPU", "17:44"]
+      ]
+    },
+    {
+      "id": "rainbow-november",
+      "name": "RAINBOWJET",
+      "start_date": "2026/11/01",
+      "end_date": "2026/11/30",
+      "legs": [
+        ["BEPPU", "8:00", "HISHIURA", "8:10"],
+        ["HISHIURA", "8:14", "SAIGO", "8:45"],
+        ["SAIGO", "8:54", "HONDO_SAKAIMINATO", "10:17"],
+        ["HONDO_SAKAIMINATO", "15:10", "SAIGO", "16:33"],
+        ["SAIGO", "16:39", "HISHIURA", "17:10"],
+        ["HISHIURA", "17:13", "BEPPU", "17:23"]
+      ]
+    }
+  ]
+}
