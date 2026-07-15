@@ -396,5 +396,26 @@ describe('History Store', () => {
       expect(store.history).toHaveLength(1)
       expect(store.history[0].departure).toBe('hongo')
     })
+
+    it('ストレージ内のISO日時を検索時刻としてそのまま復元する', () => {
+      const searchedAt = new Date()
+      const storedTime = '2026-07-04T23:00:00.000Z'
+      mockGetData.mockReturnValue([{
+        id: 'iso-time-id',
+        type: 'route',
+        departure: 'HONDO_SAKAIMINATO',
+        arrival: 'HISHIURA',
+        date: '2026-07-05T00:00:00.000Z',
+        time: storedTime,
+        searchedAt: searchedAt.toISOString(),
+        isArrivalMode: false
+      }])
+
+      const store = useHistoryStore()
+      store.loadFromStorage()
+
+      expect(store.history[0].time).toBeInstanceOf(Date)
+      expect(store.history[0].time?.toISOString()).toBe(storedTime)
+    })
   })
 })

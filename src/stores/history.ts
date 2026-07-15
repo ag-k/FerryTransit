@@ -163,9 +163,10 @@ export const useHistoryStore = defineStore('history', () => {
           if (item.time instanceof Date) {
             convertedTime = new Date(item.time)
           } else if (typeof item.time === 'string') {
-            // 時刻文字列の場合は、今日の日付と組み合わせてDateオブジェクトを作成
+            // HH:mm のみの場合は今日の日付と組み合わせる。
+            // JSON保存されたISO日時は、その日時として復元して時差による時刻変化を防ぐ。
             const today = new Date()
-            const timeMatch = item.time.match(/(\d{1,2}):(\d{2})/)
+            const timeMatch = item.time.match(/^(\d{1,2}):(\d{2})$/)
             if (timeMatch) {
               const [, hours = '0', minutes = '0'] = timeMatch
               convertedTime = new Date(today.getFullYear(), today.getMonth(), today.getDate(), 
