@@ -4,7 +4,7 @@ import { existsSync, readFileSync } from 'fs'
 import { isAbsolute, join, resolve } from 'path'
 import { createFirebaseStoragePublisher } from '../lib/firebase-storage-publisher.mjs'
 import { FIREBASE_STORAGE_BUCKETS } from '../lib/firebase-publish-target.mjs'
-import { createPublishManifest, sha256 } from '../lib/transport-data.mjs'
+import { createPublishManifest, requireReleaseGitSha, sha256 } from '../lib/transport-data.mjs'
 import { summarizeTimetable, validateTimetable } from './build-public-timetable.mjs'
 
 const ROOT = process.cwd()
@@ -86,6 +86,7 @@ const readSourceTimetable = (sourceFile) => {
 }
 
 const main = async () => {
+  if (!args.dryRun) requireReleaseGitSha(process.env.SOURCE_GIT_SHA)
   const { buffer, data } = readSourceTimetable(args.sourceFile)
   const summary = summarizeTimetable(data)
   const sourceHash = sha256(buffer)

@@ -10,14 +10,14 @@ import { getTransportSourceOperation } from '../../config/transport-sources.mjs'
 const { unparse: unparseCsv } = Papa
 
 const ROOT = process.cwd()
-const SOURCE_PDF = join(ROOT, 'gtfs', 'pdf', 'bus', 'ichibata_bus_connection', 'oki_2026_dia.pdf')
-const RAW_DIR = join(ROOT, 'gtfs', 'raw', 'bus', 'ichibata_bus_connection', '2026-04-01')
+const ARCHIVED_SOURCE_PDF = join(ROOT, 'gtfs', 'pdf', 'bus', 'ichibata_bus_connection', 'oki_2026_dia.pdf')
+const RAW_DIR = join(ROOT, 'gtfs', 'raw', 'bus', 'ichibata_bus_connection', '2026-07-18')
 const CURRENT_DIR = join(ROOT, 'gtfs', 'current', 'bus', 'ichibata_bus_connection')
 const REPORT_DIR = join(ROOT, 'gtfs', 'reports', 'bus', 'ichibata_bus_connection')
 
 const FEED_START = '20260401'
 const FEED_END = '20261231'
-const FEED_VERSION = 'oki_2026_dia_20260401-20261231'
+const FEED_VERSION = 'r8_0718_kisen_dia_20260401-20261231'
 const ICHIBATA_SOURCE = getTransportSourceOperation('ichibata-bus-connection')
 const SOURCE_URL = ICHIBATA_SOURCE.sourceUrl
 const SOURCE_PAGE_URL = ICHIBATA_SOURCE.officialUrl
@@ -67,8 +67,8 @@ const ROUTES = [{
   route_id: ROUTE_ID,
   agency_id: AGENCY_ID,
   route_short_name: '松江・七類・境港間時刻表',
-  route_long_name: '一畑バス・隠岐汽船接続バス / 松江・七類・境港間時刻表 / 隠岐汽船連絡バス時刻表 2026年3月から（PDFが表示されます。）',
-  route_desc: '一畑バス・隠岐汽船接続バス / 隠岐汽船連絡バス時刻表 2026年3月から（PDFが表示されます。）',
+  route_long_name: '一畑バス・隠岐汽船接続バス / 松江・七類・境港間時刻表 / 2026年7月18日から（PDFが表示されます。）',
+  route_desc: '一畑バス・隠岐汽船接続バス / 隠岐汽船連絡バス時刻表 2026年7月18日から（PDFが表示されます。）',
   route_type: '3',
   route_url: SOURCE_URL,
   route_color: '00833E',
@@ -122,12 +122,11 @@ const PERIODS = [
     ['18:10', '18:45', '18:50', 'おき 18:05着']
   ]),
   shichirui('20260718_20260807', '20260718', '20260807', [
-    ['07:50', '07:55', '08:30', 'おき 9:00発 / くにが 9:30発'],
+    ['07:50', '07:55', '08:30', 'おき 9:00発'],
     ['15:40', '15:45', '16:20', 'レインボーJ 16:50発']
   ], [
     ['10:03', '10:38', '10:43', 'レインボーJ 10:03着'],
-    ['17:45', '18:20', '18:25', 'くにが 17:35着'],
-    ['18:00', '18:35', '18:40', 'おき 17:55着']
+    ['18:10', '18:45', '18:50', 'おき 18:05着']
   ]),
   shichirui('20260808_20260816', '20260808', '20260816', [
     ['07:50', '07:55', '08:30', 'おき 9:00発 / くにが 9:30発'],
@@ -140,44 +139,23 @@ const PERIODS = [
     ['20:05', '20:40', '20:45', 'おき 20:00着']
   ]),
   shichirui('20260817_20260831', '20260817', '20260831', [
-    ['07:50', '07:55', '08:30', 'おき 9:00発 / くにが 9:30発'],
+    ['07:50', '07:55', '08:30', 'おき 9:00発'],
     ['15:40', '15:45', '16:20', 'レインボーJ 16:50発']
   ], [
     ['10:03', '10:38', '10:43', 'レインボーJ 10:03着'],
-    ['17:45', '18:20', '18:25', 'くにが 17:35着'],
-    ['18:00', '18:35', '18:40', 'おき 17:55着']
+    ['18:10', '18:45', '18:50', 'おき 18:05着']
   ]),
-  shichirui('20260901_20261009', '20260901', '20261009', [
+  shichirui('20260901_20261031', '20260901', '20261031', [
     ['07:50', '07:55', '08:30', 'おき 9:00発'],
     ['14:35', '14:40', '15:15', 'レインボーJ 15:45発']
   ], [
     ['10:03', '10:38', '10:43', 'レインボーJ 10:03着'],
     ['18:10', '18:45', '18:50', 'おき 18:05着']
   ]),
-  shichirui('20261010_20261031', '20261010', '20261031', [
-    ['07:50', '07:55', '08:30', 'おき 9:00発 / くにが 9:30発'],
-    ['14:35', '14:40', '15:15', 'レインボーJ 15:45発']
-  ], [
-    ['10:03', '10:38', '10:43', 'レインボーJ 10:03着'],
-    ['17:45', '18:20', '18:25', 'くにが 17:35着'],
-    ['18:00', '18:35', '18:40', 'おき 17:55着']
-  ]),
-  shichirui('20261101_20261108', '20261101', '20261108', [
-    ['07:50', '07:55', '08:30', 'おき 9:00発 / くにが 9:30発']
-  ], [
-    ['17:45', '18:20', '18:25', 'くにが 17:35着'],
-    ['18:00', '18:35', '18:40', 'おき 17:55着']
-  ]),
-  shichirui('20261109_20261220', '20261109', '20261220', [
+  shichirui('20261101_20261231', '20261101', '20261231', [
     ['07:50', '07:55', '08:30', 'おき 9:00発']
   ], [
     ['18:10', '18:45', '18:50', 'おき 18:05着']
-  ]),
-  shichirui('20261221_20261231', '20261221', '20261231', [
-    ['07:50', '07:55', '08:30', 'おき 9:00発 / くにが 9:30発']
-  ], [
-    ['17:45', '18:20', '18:25', 'くにが 17:35着'],
-    ['18:00', '18:35', '18:40', 'おき 17:55着']
   ]),
   sakaiminato('20260401_20260430', '20260401', '20260430', [
     ['13:15', '13:20', '13:55', 'しらしま 14:25発']
@@ -202,7 +180,7 @@ const PERIODS = [
     ['13:25', '14:00', '14:05', 'しらしま 13:20着']
   ]),
   sakaiminato('20260718_20260807', '20260718', '20260807', [
-    ['13:15', '13:20', '13:55', 'しらしま 14:25発']
+    ['13:00', '13:05', '13:40', 'しらしま 14:10発']
   ], [
     ['13:25', '14:00', '14:05', 'しらしま 13:20着']
   ]),
@@ -213,42 +191,20 @@ const PERIODS = [
     ['09:58', '10:33', '10:38', 'レインボーJ 9:58着'],
     ['13:25', '14:00', '14:05', 'しらしま 13:20着']
   ]),
-  sakaiminato('20260817_20260831', '20260817', '20260831', [
-    ['13:15', '13:20', '13:55', 'しらしま 14:25発']
-  ], [
-    ['13:25', '14:00', '14:05', 'しらしま 13:20着']
-  ]),
-  sakaiminato('20260901_20261009', '20260901', '20261009', [
+  sakaiminato('20260817_20261031', '20260817', '20261031', [
     ['13:00', '13:05', '13:40', 'しらしま 14:10発']
   ], [
     ['13:25', '14:00', '14:05', 'しらしま 13:20着']
   ]),
-  sakaiminato('20261010_20261031', '20261010', '20261031', [
-    ['13:15', '13:20', '13:55', 'しらしま 14:25発']
-  ], [
-    ['13:25', '14:00', '14:05', 'しらしま 13:20着']
-  ]),
-  sakaiminato('20261101_20261108', '20261101', '20261108', [
-    ['13:15', '13:20', '13:55', 'しらしま 14:25発'],
-    ['14:00', '14:05', '14:40', 'レインボーJ 15:10発']
-  ], [
-    ['10:17', '10:52', '10:57', 'レインボーJ 10:17着'],
-    ['13:25', '14:00', '14:05', 'しらしま 13:20着']
-  ]),
-  sakaiminato('20261109_20261130', '20261109', '20261130', [
+  sakaiminato('20261101_20261130', '20261101', '20261130', [
     ['13:00', '13:05', '13:40', 'しらしま 14:10発'],
     ['14:00', '14:05', '14:40', 'レインボーJ 15:10発']
   ], [
     ['10:17', '10:52', '10:57', 'レインボーJ 10:17着'],
     ['13:25', '14:00', '14:05', 'しらしま 13:20着']
   ]),
-  sakaiminato('20261201_20261220', '20261201', '20261220', [
+  sakaiminato('20261201_20261231', '20261201', '20261231', [
     ['13:00', '13:05', '13:40', 'しらしま 14:10発']
-  ], [
-    ['13:25', '14:00', '14:05', 'しらしま 13:20着']
-  ]),
-  sakaiminato('20261221_20261231', '20261221', '20261231', [
-    ['13:15', '13:20', '13:55', 'しらしま 14:25発']
   ], [
     ['13:25', '14:00', '14:05', 'しらしま 13:20着']
   ])
@@ -422,7 +378,7 @@ function withSeconds(value) {
 
 function extractPdfText(pdfPath) {
   const python = process.env.GTFS_PYTHON || 'python3'
-  const result = spawnSync(python, ['-c', `
+  const pythonResult = spawnSync(python, ['-c', `
 from pypdf import PdfReader
 import sys
 reader = PdfReader(sys.argv[1])
@@ -431,22 +387,28 @@ print(reader.pages[0].extract_text(extraction_mode="layout"))
     encoding: 'utf-8',
     maxBuffer: 10 * 1024 * 1024
   })
-  if (result.status !== 0) {
-    throw new Error([
-      'PDF テキスト抽出に失敗しました',
-      result.stderr.trim(),
-      'python3 と pypdf が必要です。別の Python を使う場合は GTFS_PYTHON を指定してください。'
-    ].filter(Boolean).join('\n'))
-  }
-  return result.stdout
+  if (pythonResult.status === 0) return pythonResult.stdout
+
+  const popplerResult = spawnSync('pdftotext', ['-layout', '-f', '1', '-l', '1', pdfPath, '-'], {
+    encoding: 'utf-8',
+    maxBuffer: 10 * 1024 * 1024
+  })
+  if (popplerResult.status === 0) return popplerResult.stdout
+
+  throw new Error([
+    'PDF テキスト抽出に失敗しました',
+    pythonResult.stderr?.trim(),
+    popplerResult.stderr?.trim(),
+    'python3 + pypdf または pdftotext が必要です。別の Python を使う場合は GTFS_PYTHON を指定してください。'
+  ].filter(Boolean).join('\n'))
 }
 
-function assertSourcePdf() {
-  if (!existsSync(SOURCE_PDF)) {
-    throw new Error(`PDF 原本が見つかりません: ${SOURCE_PDF}`)
+function assertArchivedSourcePdf() {
+  if (!existsSync(ARCHIVED_SOURCE_PDF)) {
+    throw new Error(`履歴期間のPDF原本が見つかりません: ${ARCHIVED_SOURCE_PDF}`)
   }
 
-  const text = extractPdfText(SOURCE_PDF).replace(/\s+/g, '')
+  const text = extractPdfText(ARCHIVED_SOURCE_PDF).replace(/\s+/g, '')
   for (const expected of [
     '松江駅⇔七類港',
     '松江駅⇔境港',
@@ -536,7 +498,7 @@ function valueAfter(argv, key) {
 
 function main() {
   const args = parseArgs(process.argv.slice(2))
-  assertSourcePdf()
+  assertArchivedSourcePdf()
 
   const { trips, stopTimes } = writeGtfs(args.outputDir)
   if (args.updateCurrent && resolve(args.outputDir) !== resolve(CURRENT_DIR)) {
@@ -546,7 +508,7 @@ function main() {
   mkdirSync(REPORT_DIR, { recursive: true })
   const report = {
     convertedAt: new Date().toISOString(),
-    sourcePdf: SOURCE_PDF,
+    archivedSourcePdf: ARCHIVED_SOURCE_PDF,
     sourceUrl: SOURCE_URL,
     sourcePageUrl: SOURCE_PAGE_URL,
     outputDir: args.outputDir,
@@ -566,15 +528,15 @@ function main() {
       stopTimes: stopTimes.length
     },
     notes: [
-      '公式PDFの松江駅-七類港、松江駅-境港の接続バス時刻表をGTFSに転記',
-      'PDFの掲出期間は2026年4月1日から2027年2月28日だが、このfeedは2026年内の2026年12月31日までを対象に生成',
+      '2026年4月1日から7月17日は保管済み旧版PDF、7月18日以降は公式r8_0718_kisen_dia.pdfをGTFSに転記',
+      '最新PDFの掲出期間は2026年7月18日から2027年2月28日だが、このfeedは2026年内の2026年12月31日までを対象に生成',
       '隠岐汽船欠航時は接続バスも運休する注記があるが、静的GTFSではリアルタイム運休として表現できないため資料注記として保持',
       '船舶時刻はjp_trip_descに接続船情報として保持し、stop_timesはバス停発着時刻のみを出力',
       '七類港と境港のフェリー/高速船のりば差分はstop_descに保持し、時刻表列名に合わせて各港1停留所として扱う',
       '運賃は松江駅発着の大人片道1,200円を最大運賃としてfare_attributesとbus-searchに保持。附属学園入口/レインボープラザ前発着は公式運賃表で1,100円'
     ]
   }
-  writeFileSync(join(REPORT_DIR, '2026-04-01.conversion.json'), `${JSON.stringify(report, null, 2)}\n`, 'utf-8')
+  writeFileSync(join(REPORT_DIR, '2026-07-18.conversion.json'), `${JSON.stringify(report, null, 2)}\n`, 'utf-8')
 
   console.log(`一畑バス・隠岐汽船接続バス GTFS を生成しました: ${args.outputDir}`)
   if (args.updateCurrent) {

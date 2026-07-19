@@ -14,10 +14,11 @@
       <form class="space-y-6" @submit.prevent="saveNews">
         <div class="grid grid-cols-2 gap-4">
           <div>
-            <label class="block text-sm font-medium text-gray-700 dark:text-gray-300">
+            <label for="news-category" class="block text-sm font-medium text-gray-700 dark:text-gray-300">
               カテゴリー <span class="text-red-500">*</span>
             </label>
             <select
+              id="news-category"
               v-model="formData.category"
               class="mt-1 w-full rounded-md border-[1px] border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white px-3 py-2 focus:border-blue-500 dark:focus:border-blue-400 focus:ring-2 focus:ring-blue-500 focus:ring-opacity-30 transition-colors"
               required
@@ -30,10 +31,11 @@
             </select>
           </div>
           <div>
-            <label class="block text-sm font-medium text-gray-700 dark:text-gray-300">
+            <label for="news-priority" class="block text-sm font-medium text-gray-700 dark:text-gray-300">
               優先度
             </label>
             <select
+              id="news-priority"
               v-model="formData.priority"
               class="mt-1 w-full rounded-md border-[1px] border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white px-3 py-2 focus:border-blue-500 dark:focus:border-blue-400 focus:ring-2 focus:ring-blue-500 focus:ring-opacity-30 transition-colors"
             >
@@ -46,10 +48,11 @@
         </div>
 
         <div>
-          <label class="block text-sm font-medium text-gray-700 dark:text-gray-300">
+          <label for="news-title-ja" class="block text-sm font-medium text-gray-700 dark:text-gray-300">
             タイトル（日本語） <span class="text-red-500">*</span>
           </label>
           <input
+            id="news-title-ja"
             v-model="formData.title"
             type="text"
             class="mt-1 w-full rounded-md border-[1px] border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white px-3 py-2 focus:border-blue-500 dark:focus:border-blue-400 focus:ring-2 focus:ring-blue-500 focus:ring-opacity-30 transition-colors"
@@ -58,10 +61,11 @@
         </div>
 
         <div>
-          <label class="block text-sm font-medium text-gray-700 dark:text-gray-300">
+          <label for="news-title-en" class="block text-sm font-medium text-gray-700 dark:text-gray-300">
             タイトル（英語）
           </label>
           <input
+            id="news-title-en"
             v-model="formData.titleEn"
             type="text"
             class="mt-1 w-full rounded-md border-[1px] border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white px-3 py-2 focus:border-blue-500 dark:focus:border-blue-400 focus:ring-2 focus:ring-blue-500 focus:ring-opacity-30 transition-colors"
@@ -69,10 +73,11 @@
         </div>
 
         <div>
-          <label class="block text-sm font-medium text-gray-700 dark:text-gray-300">
+          <label for="news-content-ja" class="block text-sm font-medium text-gray-700 dark:text-gray-300">
             本文（日本語） <span class="text-red-500">*</span>
           </label>
           <textarea
+            id="news-content-ja"
             v-model="formData.content"
             rows="6"
             class="mt-1 w-full rounded-md border-[1px] border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white px-3 py-2 focus:border-blue-500 dark:focus:border-blue-400 focus:ring-2 focus:ring-blue-500 focus:ring-opacity-30 transition-colors"
@@ -81,10 +86,11 @@
         </div>
 
         <div>
-          <label class="block text-sm font-medium text-gray-700 dark:text-gray-300">
+          <label for="news-content-en" class="block text-sm font-medium text-gray-700 dark:text-gray-300">
             本文（英語）
           </label>
           <textarea
+            id="news-content-en"
             v-model="formData.contentEn"
             rows="6"
             class="mt-1 w-full rounded-md border-[1px] border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white px-3 py-2 focus:border-blue-500 dark:focus:border-blue-400 focus:ring-2 focus:ring-blue-500 focus:ring-opacity-30 transition-colors"
@@ -108,7 +114,7 @@
         </div>
 
         <div v-if="formData.hasDetail">
-          <label class="block text-sm font-medium text-gray-700 dark:text-gray-300">
+          <label for="news-detail-ja" class="block text-sm font-medium text-gray-700 dark:text-gray-300">
             詳細内容（日本語）- Markdown形式
           </label>
           <div class="mt-1">
@@ -117,6 +123,7 @@
                 <span class="text-sm text-gray-600 dark:text-gray-400">Markdown エディタ</span>
               </div>
               <textarea
+                id="news-detail-ja"
                 v-model="formData.detailContent"
                 rows="10"
                 class="w-full p-4 border-0 dark:bg-gray-800 dark:text-white font-mono text-sm focus:ring-0"
@@ -127,7 +134,7 @@
         </div>
 
         <div v-if="formData.hasDetail">
-          <label class="block text-sm font-medium text-gray-700 dark:text-gray-300">
+          <label for="news-detail-en" class="block text-sm font-medium text-gray-700 dark:text-gray-300">
             詳細内容（英語）- Markdown形式
           </label>
           <div class="mt-1">
@@ -136,6 +143,7 @@
                 <span class="text-sm text-gray-600 dark:text-gray-400">Markdown Editor</span>
               </div>
               <textarea
+                id="news-detail-en"
                 v-model="formData.detailContentEn"
                 rows="10"
                 class="w-full p-4 border-0 dark:bg-gray-800 dark:text-white font-mono text-sm focus:ring-0"
@@ -147,10 +155,11 @@
 
         <div class="grid grid-cols-2 gap-4">
           <div>
-            <label class="block text-sm font-medium text-gray-700 dark:text-gray-300">
+            <label for="news-status" class="block text-sm font-medium text-gray-700 dark:text-gray-300">
               公開状態
             </label>
             <select
+              id="news-status"
               v-model="formData.status"
               class="mt-1 w-full rounded-md border-[1px] border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white px-3 py-2 focus:border-blue-500 dark:focus:border-blue-400 focus:ring-2 focus:ring-blue-500 focus:ring-opacity-30 transition-colors"
             >
@@ -161,10 +170,11 @@
             </select>
           </div>
           <div>
-            <label class="block text-sm font-medium text-gray-700 dark:text-gray-300">
+            <label for="news-publish-date" class="block text-sm font-medium text-gray-700 dark:text-gray-300">
               公開日時
             </label>
             <input
+              id="news-publish-date"
               v-model="publishDateString"
               type="datetime-local"
               class="mt-1 w-full rounded-md border-[1px] border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white px-3 py-2 focus:border-blue-500 dark:focus:border-blue-400 focus:ring-2 focus:ring-blue-500 focus:ring-opacity-30 transition-colors"

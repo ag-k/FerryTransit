@@ -30,6 +30,26 @@ describe('PortSelector', () => {
     expect(wrapper.find('[data-testid="port-selector-button"]').exists()).toBe(true)
   })
 
+  it('uses ariaLabel in preference to the shared placeholder', () => {
+    const wrapper = mount(PortSelector, {
+      props: {
+        ...defaultProps,
+        ariaLabel: 'From',
+        placeholder: 'Search locations'
+      },
+      global: {
+        mocks: {
+          $t: (key: string) => key
+        },
+        stubs: {
+          Teleport: true
+        }
+      }
+    })
+
+    expect(wrapper.find('[data-testid="port-selector-button"]').attributes('aria-label')).toBe('From')
+  })
+
   it('displays port options grouped by region', async () => {
     const wrapper = mount(PortSelector, {
       props: defaultProps,

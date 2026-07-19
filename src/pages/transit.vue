@@ -25,7 +25,13 @@
       <div class="grid md:grid-cols-2 gap-3 mb-3">
         <!-- Date Selection -->
         <div>
-          <DatePicker v-model="date" :min-date="today" margin="none" size="compact" />
+          <DatePicker
+            :model-value="date"
+            :min-date="today"
+            :aria-label="$t('DATE')"
+            margin="none"
+            size="compact"
+            @update:model-value="handleTransitDateChange" />
         </div>
 
         <!-- Time Selection -->
@@ -43,6 +49,7 @@ v-model="isArrivalMode"
             </select>
             <input
 :id="timeInputId" v-model="time" type="time"
+              :aria-label="$t(isArrivalMode ? 'ARRIVAL_TIME' : 'DEPARTURE_TIME')"
               class="flex-1 px-3 py-2 border border-l-0 border-gray-300 dark:border-gray-600 rounded-r-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 bg-white dark:bg-white text-gray-900 dark:text-gray-900">
           </div>
         </div>
@@ -535,6 +542,7 @@ import { useHistoryStore } from '@/stores/history'
 import { useFerryStore } from '@/stores/ferry'
 import RouteEndpointsSelector from '@/components/common/RouteEndpointsSelector.vue'
 import DatePicker from '@/components/common/DatePicker.vue'
+import { useTodayRollover } from '@/composables/useTodayRollover'
 import CommonShipModal from '@/components/common/ShipModal.vue'
 import OperationStatusModal from '@/components/common/OperationStatusModal.vue'
 import StatusAlerts from '@/components/common/StatusAlerts.vue'
@@ -819,9 +827,18 @@ if (instance?.proxy) {
   })
 }
 
-// Constants
-const today = new Date()
-today.setHours(0, 0, 0, 0)
+const {
+  today,
+  selectDate: selectTransitDate,
+  selectExplicitDate: selectExplicitTransitDate
+} = useTodayRollover({
+  selectedDate: date,
+  setSelectedDate: value => { date.value = value }
+})
+
+const handleTransitDateChange = (value: Date) => {
+  selectTransitDate(value)
+}
 
 // Computed
 const canSearch = computed(() => {
@@ -965,7 +982,7 @@ function formatHHMM(dt: Date): string {
 
 function clampToMinDateTime(dt: Date): Date {
   // DatePicker の min-date は「今日」なので、今日より前に落ちる場合は今日の 00:00 に丸める
-  const min = new Date(today)
+  const min = new Date(today.value)
   min.setHours(0, 0, 0, 0)
   if (dt.getTime() < min.getTime()) {
     return min
@@ -1222,7 +1239,7 @@ onMounted(() => {
     arrival.value = route.query.arrival as string
   }
   if (route.query.date) {
-    date.value = new Date(route.query.date as string)
+    selectExplicitTransitDate(new Date(route.query.date as string))
   }
   if (route.query.time) {
     time.value = route.query.time as string

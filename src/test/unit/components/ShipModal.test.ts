@@ -80,7 +80,7 @@ describe("ShipModal", () => {
 
     const links = wrapper.findAll("a");
     expect(links.some(link => link.attributes("href") === "https://bus.ichibata.co.jp/oki-kisen/oki-kisen-sichirui/")).toBe(true);
-    expect(links.some(link => link.attributes("href") === "https://bus.ichibata.co.jp/media/oki_2026_dia.pdf")).toBe(true);
+    expect(links.some(link => link.attributes("href") === "https://bus.ichibata.co.jp/media/r8_0718_kisen_dia.pdf")).toBe(true);
   });
 
   it("renders Oki airport shuttle bus details without a ship image", () => {

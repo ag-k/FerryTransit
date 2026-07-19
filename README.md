@@ -116,26 +116,23 @@ npm run dev
 
 ### 開発環境の起動
 
-#### 通常の開発（Firebase エミュレーター使用）
+#### 通常の開発（Portless HTTPS）
 
 ```bash
-cd src
 npm run dev
 ```
 
 このコマンドは以下を実行します：
 
-1. Firebase エミュレーターのセットアップ
-2. スーパー管理者アカウントの自動登録
-3. `portless` 経由で Nuxt 開発サーバーを起動
+1. `.env.local`と開発ツールを確認する`dev:setup`
+2. `portless` 経由で Nuxt 開発サーバーを起動
 
 アプリケーション URL は https://ferry-transit.localhost です。
-従来どおりポート番号付きで起動したい場合は `npm run dev:local` を使用してください。
+Firebase エミュレーターはこのコマンドだけでは起動しません。従来どおりポート番号付きの生のNuxt URLを使用したい場合は、Portless版を停止してから`npm run dev:local`を使用してください。同じリポジトリのNuxt開発サーバーは重複起動できません。
 
 #### 完全な開発環境（エミュレーター＋開発サーバー）
 
 ```bash
-cd src
 npm run dev:full
 ```
 
@@ -170,7 +167,13 @@ npm run firebase:emulators:with-data
 
 #### 管理者アカウント情報
 
-開発環境では以下のスーパー管理者アカウントが自動的に登録されます：
+永続化データを使わず、スーパー管理者を自動登録したエミュレーターだけを起動する場合は、別のターミナルで次を実行します。
+
+```bash
+npm run firebase:emulators:with-admin
+```
+
+このコマンドで以下の開発専用アカウントが登録されます：
 
 - **メールアドレス**: admin@ferry-dev.local
 - **パスワード**: Admin123!

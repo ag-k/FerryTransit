@@ -1,0 +1,104 @@
+<!doctype html>
+<html lang="ja">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="theme-color" content="#0047ab">
+    <title>アプリを利用するための更新が必要です</title>
+    <style>
+      * {
+        box-sizing: border-box;
+      }
+
+      html,
+      body {
+        min-height: 100%;
+        margin: 0;
+      }
+
+      body {
+        padding: 24px;
+        color: #172033;
+        background: #f8fafc;
+        font-family: -apple-system, BlinkMacSystemFont, "Helvetica Neue", Arial, sans-serif;
+        line-height: 1.65;
+      }
+
+      main {
+        text-align: center;
+      }
+
+      .card {
+        width: 100%;
+        max-width: 480px;
+        margin: 0 auto;
+        padding: 32px 24px;
+        border: 1px solid #dbe4f0;
+        border-radius: 16px;
+        background: #fff;
+        box-shadow: 0 8px 24px rgba(15, 23, 42, 0.08);
+      }
+
+      .icon {
+        width: 64px;
+        height: 64px;
+        margin: 0 auto 20px;
+        border-radius: 50%;
+        color: #fff;
+        background: #0047ab;
+        font-size: 36px;
+        font-weight: 700;
+        line-height: 64px;
+      }
+
+      h1 {
+        margin: 0 0 16px;
+        font-size: 24px;
+        line-height: 1.4;
+      }
+
+      p {
+        margin: 0 0 20px;
+      }
+
+      .steps {
+        padding: 16px;
+        border-radius: 10px;
+        text-align: left;
+        background: #eef5ff;
+      }
+
+      .button {
+        display: block;
+        width: 100%;
+        margin-top: 20px;
+        padding: 14px 18px;
+        border-radius: 10px;
+        color: #fff;
+        background: #0047ab;
+        font-weight: 700;
+        text-decoration: none;
+      }
+
+      .english {
+        margin-top: 24px;
+        padding-top: 20px;
+        border-top: 1px solid #dbe4f0;
+        color: #475569;
+        font-size: 14px;
+      }
+    </style>
+  </head>
+  <body>
+    <main>
+      <section class="card" aria-labelledby="update-title">
+        <div class="icon" aria-hidden="true">!</div>
+        <h1 id="update-title">アプリを利用するための更新が必要です</h1>
+        <p>端末の「Android System WebView」が古いため、隠岐航路案内を表示できません。</p>
+        <p class="steps">Google Play ストアで「Android System WebView」を更新した後、このアプリをもう一度起動してください。</p>
+        <a class="button" href="https://play.google.com/store/apps/details?id=com.google.android.webview">Google Play ストアで更新する</a>
+        <p class="english" lang="en">Please update Android System WebView in Google Play, then reopen this app.</p>
+      </section>
+    </main>
+  </body>
+</html>

@@ -123,6 +123,34 @@ describe('AdminFarePage highspeed fare editor', () => {
     expect(modal.text()).toContain('島前〜島後')
     expect(modal.text()).toContain('別府〜菱浦')
     expect(modal.findAll('input[type="number"]')).toHaveLength(12)
+    expect(modal.findAll('input[type="number"]').map(input => input.attributes('id'))).toEqual([
+      'highspeed-fare-0-adult',
+      'highspeed-fare-0-child',
+      'highspeed-fare-0-disabledAdult',
+      'highspeed-fare-0-disabledChild',
+      'highspeed-fare-1-adult',
+      'highspeed-fare-1-child',
+      'highspeed-fare-1-disabledAdult',
+      'highspeed-fare-1-disabledChild',
+      'highspeed-fare-2-adult',
+      'highspeed-fare-2-child',
+      'highspeed-fare-2-disabledAdult',
+      'highspeed-fare-2-disabledChild'
+    ])
+    expect(modal.findAll('label').map(label => label.attributes('for'))).toEqual([
+      'highspeed-fare-0-adult',
+      'highspeed-fare-0-child',
+      'highspeed-fare-0-disabledAdult',
+      'highspeed-fare-0-disabledChild',
+      'highspeed-fare-1-adult',
+      'highspeed-fare-1-child',
+      'highspeed-fare-1-disabledAdult',
+      'highspeed-fare-1-disabledChild',
+      'highspeed-fare-2-adult',
+      'highspeed-fare-2-child',
+      'highspeed-fare-2-disabledAdult',
+      'highspeed-fare-2-disabledChild'
+    ])
 
     await modal.find('[data-test="submit-modal"]').trigger('submit')
     await flushPromises()
@@ -159,5 +187,48 @@ describe('AdminFarePage highspeed fare editor', () => {
         })
       })
     ])
+  })
+})
+
+describe('AdminFarePage ferry fare editor', () => {
+  beforeEach(() => {
+    vi.clearAllMocks()
+    vi.stubGlobal('useNuxtApp', () => ({ $toast: mockToast }))
+    mockGetCollection.mockImplementation((collectionName: string) => {
+      if (collectionName === 'fareVersions') {
+        return Promise.resolve([{
+          id: 'ferry-version-2026',
+          vesselType: 'ferry',
+          name: '2026年6月1日改定',
+          effectiveFrom: '2026-06-01'
+        }])
+      }
+      return Promise.resolve([])
+    })
+    mockGetDocument.mockResolvedValue(null)
+    mockBatchWrite.mockResolvedValue(undefined)
+  })
+
+  it('2等運賃を大人運賃として保存し、小人運賃を10円単位で切り上げる', async () => {
+    const wrapper = mountPage()
+    await flushPromises()
+    await clickButtonByText(wrapper, '料金編集')
+
+    const modal = wrapper.find('[data-test="form-modal-stub"]')
+    const inputs = modal.findAll('input[type="number"]')
+    expect(inputs).toHaveLength(80)
+    await inputs[0]!.setValue('3870')
+    await modal.find('[data-test="submit-modal"]').trigger('submit')
+    await flushPromises()
+
+    const operations = mockBatchWrite.mock.calls[0]?.[0]
+    expect(operations[0].data).toMatchObject({
+      adult: 3870,
+      child: 1940,
+      fares: {
+        adult: 3870,
+        child: 1940
+      }
+    })
   })
 })

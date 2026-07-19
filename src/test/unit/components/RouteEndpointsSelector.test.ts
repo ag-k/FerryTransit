@@ -7,6 +7,7 @@ const PortSelectorStub = defineComponent({
   name: 'PortSelector',
   props: [
     'modelValue',
+    'ariaLabel',
     'placeholder',
     'disabled',
     'disabledPorts',
@@ -55,6 +56,14 @@ describe('RouteEndpointsSelector', () => {
     // 経由は未実装のためデフォルトでは非表示
     expect(wrapper.find('[data-testid="route-endpoints-add-via"]').exists()).toBe(false)
     expect(wrapper.find('button[aria-label="Reverse route"]').exists()).toBe(true)
+  })
+
+  it('passes distinct accessible names to the endpoint selectors', () => {
+    const wrapper = mountComponent()
+    const stubs = wrapper.findAllComponents(PortSelectorStub)
+
+    expect(stubs[0].props('ariaLabel')).toBe('_FROM')
+    expect(stubs[1].props('ariaLabel')).toBe('_TO')
   })
 
   it('emits update:departure when departure selector updates', () => {

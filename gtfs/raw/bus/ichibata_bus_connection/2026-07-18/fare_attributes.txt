@@ -1,0 +1,2 @@
+fare_id,price,currency_type,payment_method,transfers,agency_id
+ICHIBATA_CONNECTION_MAX_ADULT,1200,JPY,0,0,agency_ichibata_bus_connection_a97e48aa

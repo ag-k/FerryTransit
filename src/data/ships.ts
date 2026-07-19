@@ -86,7 +86,7 @@ export const SHIP_DETAILS: Record<ShipId, ShipDetails> = {
     },
     stops: ['松江駅', '附属学園入口', 'レインボープラザ前', '七類港', '境港'],
     sourceUrl: 'https://bus.ichibata.co.jp/oki-kisen/oki-kisen-sichirui/',
-    timetableUrl: 'https://bus.ichibata.co.jp/media/oki_2026_dia.pdf'
+    timetableUrl: 'https://bus.ichibata.co.jp/media/r8_0718_kisen_dia.pdf'
   },
   OKI_AIRPORT_BUS: {
     operatorKey: 'OKI_ICHIBATA',

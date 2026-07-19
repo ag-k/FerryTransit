@@ -253,6 +253,64 @@ describe("Ferry Store", () => {
       expect(store.shipStatus.dozen?.hasAlert).toBe(false);
       expect(store.shipStatus.ferry).toBeTruthy();
       expect(store.shipStatus.ferry?.hasAlert).toBe(false);
+      const statusCacheCall = (localStorage.setItem as any).mock.calls.find(
+        ([key]: [string]) => key === "shipStatusCache"
+      );
+      expect(JSON.parse(statusCacheCall?.[1] || "null")).toMatchObject({
+        isokaze: { status: 0, hasAlert: false },
+        dozen: { status: 0, hasAlert: false },
+        ferry: { ferryState: "定期運航", hasAlert: false },
+      });
+      expect(localStorage.setItem).toHaveBeenCalledWith(
+        "shipStatusFetchTime",
+        expect.any(String)
+      );
+    });
+
+    it("should restore cached ship status when the API is offline", async () => {
+      const store = useFerryStore();
+      const cachedAt = "2026-07-19T06:30:00.000Z";
+
+      const cachedStatus = JSON.stringify({
+        isokaze: { ...mockShipStatus, status: 0, hasAlert: false },
+        dozen: { ...mockShipStatus, status: 0, hasAlert: false },
+        ferry: {
+          ...mockFerryStatus,
+          ferryState: "定期運航",
+          fastFerryState: "定期運航",
+          hasAlert: false,
+        },
+        kunigaKankou: null,
+      });
+      (localStorage.getItem as any).mockImplementation((key: string) => {
+        if (key === "shipStatusCache") return cachedStatus;
+        if (key === "shipStatusFetchTime") return cachedAt;
+        return null;
+      });
+      (global.$fetch as any).mockRejectedValue(new Error("offline"));
+
+      await store.fetchShipStatus();
+
+      expect(store.shipStatus.isokaze?.status).toBe(0);
+      expect(store.shipStatus.dozen?.hasAlert).toBe(false);
+      expect(store.shipStatus.ferry?.ferryState).toBe("定期運航");
+      expect(store.lastFetchTime?.toISOString()).toBe(cachedAt);
+      expect(store.error).toBe("LOAD_STATUS_ERROR");
+    });
+
+    it("should ignore a corrupt ship status cache when the API is offline", async () => {
+      const store = useFerryStore();
+      (localStorage.getItem as any).mockImplementation((key: string) => {
+        return key === "shipStatusCache" ? "{invalid-json" : null;
+      });
+      (global.$fetch as any).mockRejectedValue(new Error("offline"));
+
+      await store.fetchShipStatus();
+
+      expect(store.shipStatus.isokaze).toBeNull();
+      expect(store.shipStatus.dozen).toBeNull();
+      expect(store.shipStatus.ferry).toBeNull();
+      expect(store.error).toBe("LOAD_STATUS_ERROR");
     });
 
     it("should set departure and arrival", () => {

@@ -218,9 +218,7 @@ describe('useNews', () => {
       expect(error.value).toBeNull()
     })
 
-    // FIXME: The current Vitest config does not define import.meta.client, so this
-    // client-only Storage refresh branch is unreachable from this test file alone.
-    it.skip('fetches news from Firebase Storage and caches the response', async () => {
+    it('fetches news from Firebase Storage and caches the response', async () => {
       const fetchMock = stubFetch(createJsonResponse(mockNewsData))
       const { newsList, isLoading, error, fetchNews } = useNews()
 
@@ -241,9 +239,7 @@ describe('useNews', () => {
       expect(error.value).toBeNull()
     })
 
-    // FIXME: The current Vitest config does not define import.meta.client, so this
-    // client-only Storage refresh branch is unreachable from this test file alone.
-    it.skip('clears news without setting an error when Storage returns 404', async () => {
+    it('clears news without setting an error when Storage returns 404', async () => {
       stubFetch(createJsonResponse({ message: 'Not found' }, 404))
       const { newsList, error, fetchNews } = useNews()
 
@@ -251,11 +247,10 @@ describe('useNews', () => {
 
       expect(newsList.value).toEqual([])
       expect(error.value).toBeNull()
+      expect(localStorageMock.getItem('ferry_news_cache')).toBe('[]')
     })
 
-    // FIXME: The current Vitest config does not define import.meta.client, so the
-    // cache read branch is unreachable from this test file alone.
-    it.skip('loads valid cached news before any Storage refresh', async () => {
+    it('falls back to valid cached news when the Storage refresh fails', async () => {
       setCachedNews(cachedNewsData)
       const fetchMock = stubFetch(new Error('Network error'))
       const { newsList, error, fetchNews } = useNews()
@@ -264,12 +259,10 @@ describe('useNews', () => {
 
       expect(newsList.value).toEqual(cachedNewsData)
       expect(error.value).toBeNull()
-      expect(fetchMock).not.toHaveBeenCalled()
+      expect(fetchMock).toHaveBeenCalledOnce()
     })
 
-    // FIXME: The current Vitest config does not define import.meta.client, so this
-    // client-only Storage error branch is unreachable from this test file alone.
-    it.skip('sets an error when Storage fetch fails and no valid cache exists', async () => {
+    it('sets an error when Storage fetch fails and no cache exists', async () => {
       stubFetch(new Error('Network error'))
       const { newsList, error, isLoading, fetchNews } = useNews()
 
@@ -280,17 +273,27 @@ describe('useNews', () => {
       expect(isLoading.value).toBe(false)
     })
 
-    // FIXME: The current Vitest config does not define import.meta.client, so the
-    // cache read branch is unreachable from this test file alone.
-    it.skip('ignores expired cached news', async () => {
+    it('falls back to expired cached news when Storage is unavailable', async () => {
       setCachedNews(cachedNewsData, Date.now() - 31 * 60 * 1000)
-      stubFetch(createJsonResponse([], 404))
+      stubFetch(new Error('Network error'))
+      const { newsList, error, fetchNews } = useNews()
+
+      await fetchNews()
+
+      expect(newsList.value).toEqual(cachedNewsData)
+      expect(error.value).toBeNull()
+    })
+
+    it('replaces expired cached news with an empty successful response', async () => {
+      setCachedNews(cachedNewsData, Date.now() - 31 * 60 * 1000)
+      stubFetch(createJsonResponse([]))
       const { newsList, error, fetchNews } = useNews()
 
       await fetchNews()
 
       expect(newsList.value).toEqual([])
       expect(error.value).toBeNull()
+      expect(localStorageMock.getItem('ferry_news_cache')).toBe('[]')
     })
   })
 

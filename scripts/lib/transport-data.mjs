@@ -46,6 +46,13 @@ export const normalizeGtfsTime = (value, { includeSeconds = false } = {}) => {
 
 export const sha256 = (contents) => createHash('sha256').update(contents).digest('hex')
 
+export function requireReleaseGitSha(value, label = 'SOURCE_GIT_SHA') {
+  if (!/^[a-f0-9]{40}$/.test(String(value || ''))) {
+    throw new Error(`${label}には40桁のGitコミットSHAが必要です`)
+  }
+  return value
+}
+
 export function writeJson(filePath, data, { compact = false } = {}) {
   mkdirSync(dirname(filePath), { recursive: true })
   const json = compact ? JSON.stringify(data) : JSON.stringify(data, null, 2)

@@ -990,9 +990,9 @@
     "timepoint": 1
   },
   {
-    "tripId": "ICHIBATA_SHICHIRUI_20260718_IN_1745_02",
-    "arrivalTime": "17:45:00",
-    "departureTime": "17:45:00",
+    "tripId": "ICHIBATA_SHICHIRUI_20260718_IN_1810_02",
+    "arrivalTime": "18:10:00",
+    "departureTime": "18:10:00",
     "stopId": "shichirui_port",
     "stopSequence": 1,
     "headsign": "",
@@ -1001,9 +1001,9 @@
     "timepoint": 1
   },
   {
-    "tripId": "ICHIBATA_SHICHIRUI_20260718_IN_1745_02",
-    "arrivalTime": "18:20:00",
-    "departureTime": "18:20:00",
+    "tripId": "ICHIBATA_SHICHIRUI_20260718_IN_1810_02",
+    "arrivalTime": "18:45:00",
+    "departureTime": "18:45:00",
     "stopId": "rainbow_plaza_mae",
     "stopSequence": 2,
     "headsign": "",
@@ -1012,42 +1012,9 @@
     "timepoint": 1
   },
   {
-    "tripId": "ICHIBATA_SHICHIRUI_20260718_IN_1745_02",
-    "arrivalTime": "18:25:00",
-    "departureTime": "18:25:00",
-    "stopId": "matsue_station",
-    "stopSequence": 3,
-    "headsign": "",
-    "pickupType": null,
-    "dropOffType": null,
-    "timepoint": 1
-  },
-  {
-    "tripId": "ICHIBATA_SHICHIRUI_20260718_IN_1800_03",
-    "arrivalTime": "18:00:00",
-    "departureTime": "18:00:00",
-    "stopId": "shichirui_port",
-    "stopSequence": 1,
-    "headsign": "",
-    "pickupType": null,
-    "dropOffType": null,
-    "timepoint": 1
-  },
-  {
-    "tripId": "ICHIBATA_SHICHIRUI_20260718_IN_1800_03",
-    "arrivalTime": "18:35:00",
-    "departureTime": "18:35:00",
-    "stopId": "rainbow_plaza_mae",
-    "stopSequence": 2,
-    "headsign": "",
-    "pickupType": null,
-    "dropOffType": null,
-    "timepoint": 1
-  },
-  {
-    "tripId": "ICHIBATA_SHICHIRUI_20260718_IN_1800_03",
-    "arrivalTime": "18:40:00",
-    "departureTime": "18:40:00",
+    "tripId": "ICHIBATA_SHICHIRUI_20260718_IN_1810_02",
+    "arrivalTime": "18:50:00",
+    "departureTime": "18:50:00",
     "stopId": "matsue_station",
     "stopSequence": 3,
     "headsign": "",
@@ -1386,9 +1353,9 @@
     "timepoint": 1
   },
   {
-    "tripId": "ICHIBATA_SHICHIRUI_20260817_IN_1745_02",
-    "arrivalTime": "17:45:00",
-    "departureTime": "17:45:00",
+    "tripId": "ICHIBATA_SHICHIRUI_20260817_IN_1810_02",
+    "arrivalTime": "18:10:00",
+    "departureTime": "18:10:00",
     "stopId": "shichirui_port",
     "stopSequence": 1,
     "headsign": "",
@@ -1397,9 +1364,9 @@
     "timepoint": 1
   },
   {
-    "tripId": "ICHIBATA_SHICHIRUI_20260817_IN_1745_02",
-    "arrivalTime": "18:20:00",
-    "departureTime": "18:20:00",
+    "tripId": "ICHIBATA_SHICHIRUI_20260817_IN_1810_02",
+    "arrivalTime": "18:45:00",
+    "departureTime": "18:45:00",
     "stopId": "rainbow_plaza_mae",
     "stopSequence": 2,
     "headsign": "",
@@ -1408,42 +1375,9 @@
     "timepoint": 1
   },
   {
-    "tripId": "ICHIBATA_SHICHIRUI_20260817_IN_1745_02",
-    "arrivalTime": "18:25:00",
-    "departureTime": "18:25:00",
-    "stopId": "matsue_station",
-    "stopSequence": 3,
-    "headsign": "",
-    "pickupType": null,
-    "dropOffType": null,
-    "timepoint": 1
-  },
-  {
-    "tripId": "ICHIBATA_SHICHIRUI_20260817_IN_1800_03",
-    "arrivalTime": "18:00:00",
-    "departureTime": "18:00:00",
-    "stopId": "shichirui_port",
-    "stopSequence": 1,
-    "headsign": "",
-    "pickupType": null,
-    "dropOffType": null,
-    "timepoint": 1
-  },
-  {
-    "tripId": "ICHIBATA_SHICHIRUI_20260817_IN_1800_03",
-    "arrivalTime": "18:35:00",
-    "departureTime": "18:35:00",
-    "stopId": "rainbow_plaza_mae",
-    "stopSequence": 2,
-    "headsign": "",
-    "pickupType": null,
-    "dropOffType": null,
-    "timepoint": 1
-  },
-  {
-    "tripId": "ICHIBATA_SHICHIRUI_20260817_IN_1800_03",
-    "arrivalTime": "18:40:00",
-    "departureTime": "18:40:00",
+    "tripId": "ICHIBATA_SHICHIRUI_20260817_IN_1810_02",
+    "arrivalTime": "18:50:00",
+    "departureTime": "18:50:00",
     "stopId": "matsue_station",
     "stopSequence": 3,
     "headsign": "",
@@ -1584,171 +1518,6 @@
     "timepoint": 1
   },
   {
-    "tripId": "ICHIBATA_SHICHIRUI_20261010_OUT_0750_01",
-    "arrivalTime": "07:50:00",
-    "departureTime": "07:50:00",
-    "stopId": "matsue_station",
-    "stopSequence": 1,
-    "headsign": "",
-    "pickupType": null,
-    "dropOffType": null,
-    "timepoint": 1
-  },
-  {
-    "tripId": "ICHIBATA_SHICHIRUI_20261010_OUT_0750_01",
-    "arrivalTime": "07:55:00",
-    "departureTime": "07:55:00",
-    "stopId": "fuzoku_gakuen_iriguchi",
-    "stopSequence": 2,
-    "headsign": "",
-    "pickupType": null,
-    "dropOffType": null,
-    "timepoint": 1
-  },
-  {
-    "tripId": "ICHIBATA_SHICHIRUI_20261010_OUT_0750_01",
-    "arrivalTime": "08:30:00",
-    "departureTime": "08:30:00",
-    "stopId": "shichirui_port",
-    "stopSequence": 3,
-    "headsign": "",
-    "pickupType": null,
-    "dropOffType": null,
-    "timepoint": 1
-  },
-  {
-    "tripId": "ICHIBATA_SHICHIRUI_20261010_OUT_1435_02",
-    "arrivalTime": "14:35:00",
-    "departureTime": "14:35:00",
-    "stopId": "matsue_station",
-    "stopSequence": 1,
-    "headsign": "",
-    "pickupType": null,
-    "dropOffType": null,
-    "timepoint": 1
-  },
-  {
-    "tripId": "ICHIBATA_SHICHIRUI_20261010_OUT_1435_02",
-    "arrivalTime": "14:40:00",
-    "departureTime": "14:40:00",
-    "stopId": "fuzoku_gakuen_iriguchi",
-    "stopSequence": 2,
-    "headsign": "",
-    "pickupType": null,
-    "dropOffType": null,
-    "timepoint": 1
-  },
-  {
-    "tripId": "ICHIBATA_SHICHIRUI_20261010_OUT_1435_02",
-    "arrivalTime": "15:15:00",
-    "departureTime": "15:15:00",
-    "stopId": "shichirui_port",
-    "stopSequence": 3,
-    "headsign": "",
-    "pickupType": null,
-    "dropOffType": null,
-    "timepoint": 1
-  },
-  {
-    "tripId": "ICHIBATA_SHICHIRUI_20261010_IN_1003_01",
-    "arrivalTime": "10:03:00",
-    "departureTime": "10:03:00",
-    "stopId": "shichirui_port",
-    "stopSequence": 1,
-    "headsign": "",
-    "pickupType": null,
-    "dropOffType": null,
-    "timepoint": 1
-  },
-  {
-    "tripId": "ICHIBATA_SHICHIRUI_20261010_IN_1003_01",
-    "arrivalTime": "10:38:00",
-    "departureTime": "10:38:00",
-    "stopId": "rainbow_plaza_mae",
-    "stopSequence": 2,
-    "headsign": "",
-    "pickupType": null,
-    "dropOffType": null,
-    "timepoint": 1
-  },
-  {
-    "tripId": "ICHIBATA_SHICHIRUI_20261010_IN_1003_01",
-    "arrivalTime": "10:43:00",
-    "departureTime": "10:43:00",
-    "stopId": "matsue_station",
-    "stopSequence": 3,
-    "headsign": "",
-    "pickupType": null,
-    "dropOffType": null,
-    "timepoint": 1
-  },
-  {
-    "tripId": "ICHIBATA_SHICHIRUI_20261010_IN_1745_02",
-    "arrivalTime": "17:45:00",
-    "departureTime": "17:45:00",
-    "stopId": "shichirui_port",
-    "stopSequence": 1,
-    "headsign": "",
-    "pickupType": null,
-    "dropOffType": null,
-    "timepoint": 1
-  },
-  {
-    "tripId": "ICHIBATA_SHICHIRUI_20261010_IN_1745_02",
-    "arrivalTime": "18:20:00",
-    "departureTime": "18:20:00",
-    "stopId": "rainbow_plaza_mae",
-    "stopSequence": 2,
-    "headsign": "",
-    "pickupType": null,
-    "dropOffType": null,
-    "timepoint": 1
-  },
-  {
-    "tripId": "ICHIBATA_SHICHIRUI_20261010_IN_1745_02",
-    "arrivalTime": "18:25:00",
-    "departureTime": "18:25:00",
-    "stopId": "matsue_station",
-    "stopSequence": 3,
-    "headsign": "",
-    "pickupType": null,
-    "dropOffType": null,
-    "timepoint": 1
-  },
-  {
-    "tripId": "ICHIBATA_SHICHIRUI_20261010_IN_1800_03",
-    "arrivalTime": "18:00:00",
-    "departureTime": "18:00:00",
-    "stopId": "shichirui_port",
-    "stopSequence": 1,
-    "headsign": "",
-    "pickupType": null,
-    "dropOffType": null,
-    "timepoint": 1
-  },
-  {
-    "tripId": "ICHIBATA_SHICHIRUI_20261010_IN_1800_03",
-    "arrivalTime": "18:35:00",
-    "departureTime": "18:35:00",
-    "stopId": "rainbow_plaza_mae",
-    "stopSequence": 2,
-    "headsign": "",
-    "pickupType": null,
-    "dropOffType": null,
-    "timepoint": 1
-  },
-  {
-    "tripId": "ICHIBATA_SHICHIRUI_20261010_IN_1800_03",
-    "arrivalTime": "18:40:00",
-    "departureTime": "18:40:00",
-    "stopId": "matsue_station",
-    "stopSequence": 3,
-    "headsign": "",
-    "pickupType": null,
-    "dropOffType": null,
-    "timepoint": 1
-  },
-  {
     "tripId": "ICHIBATA_SHICHIRUI_20261101_OUT_0750_01",
     "arrivalTime": "07:50:00",
     "departureTime": "07:50:00",
@@ -1782,106 +1551,7 @@
     "timepoint": 1
   },
   {
-    "tripId": "ICHIBATA_SHICHIRUI_20261101_IN_1745_01",
-    "arrivalTime": "17:45:00",
-    "departureTime": "17:45:00",
-    "stopId": "shichirui_port",
-    "stopSequence": 1,
-    "headsign": "",
-    "pickupType": null,
-    "dropOffType": null,
-    "timepoint": 1
-  },
-  {
-    "tripId": "ICHIBATA_SHICHIRUI_20261101_IN_1745_01",
-    "arrivalTime": "18:20:00",
-    "departureTime": "18:20:00",
-    "stopId": "rainbow_plaza_mae",
-    "stopSequence": 2,
-    "headsign": "",
-    "pickupType": null,
-    "dropOffType": null,
-    "timepoint": 1
-  },
-  {
-    "tripId": "ICHIBATA_SHICHIRUI_20261101_IN_1745_01",
-    "arrivalTime": "18:25:00",
-    "departureTime": "18:25:00",
-    "stopId": "matsue_station",
-    "stopSequence": 3,
-    "headsign": "",
-    "pickupType": null,
-    "dropOffType": null,
-    "timepoint": 1
-  },
-  {
-    "tripId": "ICHIBATA_SHICHIRUI_20261101_IN_1800_02",
-    "arrivalTime": "18:00:00",
-    "departureTime": "18:00:00",
-    "stopId": "shichirui_port",
-    "stopSequence": 1,
-    "headsign": "",
-    "pickupType": null,
-    "dropOffType": null,
-    "timepoint": 1
-  },
-  {
-    "tripId": "ICHIBATA_SHICHIRUI_20261101_IN_1800_02",
-    "arrivalTime": "18:35:00",
-    "departureTime": "18:35:00",
-    "stopId": "rainbow_plaza_mae",
-    "stopSequence": 2,
-    "headsign": "",
-    "pickupType": null,
-    "dropOffType": null,
-    "timepoint": 1
-  },
-  {
-    "tripId": "ICHIBATA_SHICHIRUI_20261101_IN_1800_02",
-    "arrivalTime": "18:40:00",
-    "departureTime": "18:40:00",
-    "stopId": "matsue_station",
-    "stopSequence": 3,
-    "headsign": "",
-    "pickupType": null,
-    "dropOffType": null,
-    "timepoint": 1
-  },
-  {
-    "tripId": "ICHIBATA_SHICHIRUI_20261109_OUT_0750_01",
-    "arrivalTime": "07:50:00",
-    "departureTime": "07:50:00",
-    "stopId": "matsue_station",
-    "stopSequence": 1,
-    "headsign": "",
-    "pickupType": null,
-    "dropOffType": null,
-    "timepoint": 1
-  },
-  {
-    "tripId": "ICHIBATA_SHICHIRUI_20261109_OUT_0750_01",
-    "arrivalTime": "07:55:00",
-    "departureTime": "07:55:00",
-    "stopId": "fuzoku_gakuen_iriguchi",
-    "stopSequence": 2,
-    "headsign": "",
-    "pickupType": null,
-    "dropOffType": null,
-    "timepoint": 1
-  },
-  {
-    "tripId": "ICHIBATA_SHICHIRUI_20261109_OUT_0750_01",
-    "arrivalTime": "08:30:00",
-    "departureTime": "08:30:00",
-    "stopId": "shichirui_port",
-    "stopSequence": 3,
-    "headsign": "",
-    "pickupType": null,
-    "dropOffType": null,
-    "timepoint": 1
-  },
-  {
-    "tripId": "ICHIBATA_SHICHIRUI_20261109_IN_1810_01",
+    "tripId": "ICHIBATA_SHICHIRUI_20261101_IN_1810_01",
     "arrivalTime": "18:10:00",
     "departureTime": "18:10:00",
     "stopId": "shichirui_port",
@@ -1892,7 +1562,7 @@
     "timepoint": 1
   },
   {
-    "tripId": "ICHIBATA_SHICHIRUI_20261109_IN_1810_01",
+    "tripId": "ICHIBATA_SHICHIRUI_20261101_IN_1810_01",
     "arrivalTime": "18:45:00",
     "departureTime": "18:45:00",
     "stopId": "rainbow_plaza_mae",
@@ -1903,108 +1573,9 @@
     "timepoint": 1
   },
   {
-    "tripId": "ICHIBATA_SHICHIRUI_20261109_IN_1810_01",
+    "tripId": "ICHIBATA_SHICHIRUI_20261101_IN_1810_01",
     "arrivalTime": "18:50:00",
     "departureTime": "18:50:00",
-    "stopId": "matsue_station",
-    "stopSequence": 3,
-    "headsign": "",
-    "pickupType": null,
-    "dropOffType": null,
-    "timepoint": 1
-  },
-  {
-    "tripId": "ICHIBATA_SHICHIRUI_20261221_OUT_0750_01",
-    "arrivalTime": "07:50:00",
-    "departureTime": "07:50:00",
-    "stopId": "matsue_station",
-    "stopSequence": 1,
-    "headsign": "",
-    "pickupType": null,
-    "dropOffType": null,
-    "timepoint": 1
-  },
-  {
-    "tripId": "ICHIBATA_SHICHIRUI_20261221_OUT_0750_01",
-    "arrivalTime": "07:55:00",
-    "departureTime": "07:55:00",
-    "stopId": "fuzoku_gakuen_iriguchi",
-    "stopSequence": 2,
-    "headsign": "",
-    "pickupType": null,
-    "dropOffType": null,
-    "timepoint": 1
-  },
-  {
-    "tripId": "ICHIBATA_SHICHIRUI_20261221_OUT_0750_01",
-    "arrivalTime": "08:30:00",
-    "departureTime": "08:30:00",
-    "stopId": "shichirui_port",
-    "stopSequence": 3,
-    "headsign": "",
-    "pickupType": null,
-    "dropOffType": null,
-    "timepoint": 1
-  },
-  {
-    "tripId": "ICHIBATA_SHICHIRUI_20261221_IN_1745_01",
-    "arrivalTime": "17:45:00",
-    "departureTime": "17:45:00",
-    "stopId": "shichirui_port",
-    "stopSequence": 1,
-    "headsign": "",
-    "pickupType": null,
-    "dropOffType": null,
-    "timepoint": 1
-  },
-  {
-    "tripId": "ICHIBATA_SHICHIRUI_20261221_IN_1745_01",
-    "arrivalTime": "18:20:00",
-    "departureTime": "18:20:00",
-    "stopId": "rainbow_plaza_mae",
-    "stopSequence": 2,
-    "headsign": "",
-    "pickupType": null,
-    "dropOffType": null,
-    "timepoint": 1
-  },
-  {
-    "tripId": "ICHIBATA_SHICHIRUI_20261221_IN_1745_01",
-    "arrivalTime": "18:25:00",
-    "departureTime": "18:25:00",
-    "stopId": "matsue_station",
-    "stopSequence": 3,
-    "headsign": "",
-    "pickupType": null,
-    "dropOffType": null,
-    "timepoint": 1
-  },
-  {
-    "tripId": "ICHIBATA_SHICHIRUI_20261221_IN_1800_02",
-    "arrivalTime": "18:00:00",
-    "departureTime": "18:00:00",
-    "stopId": "shichirui_port",
-    "stopSequence": 1,
-    "headsign": "",
-    "pickupType": null,
-    "dropOffType": null,
-    "timepoint": 1
-  },
-  {
-    "tripId": "ICHIBATA_SHICHIRUI_20261221_IN_1800_02",
-    "arrivalTime": "18:35:00",
-    "departureTime": "18:35:00",
-    "stopId": "rainbow_plaza_mae",
-    "stopSequence": 2,
-    "headsign": "",
-    "pickupType": null,
-    "dropOffType": null,
-    "timepoint": 1
-  },
-  {
-    "tripId": "ICHIBATA_SHICHIRUI_20261221_IN_1800_02",
-    "arrivalTime": "18:40:00",
-    "departureTime": "18:40:00",
     "stopId": "matsue_station",
     "stopSequence": 3,
     "headsign": "",
@@ -2343,9 +1914,9 @@
     "timepoint": 1
   },
   {
-    "tripId": "ICHIBATA_SAKAIMINATO_20260718_OUT_1315_01",
-    "arrivalTime": "13:15:00",
-    "departureTime": "13:15:00",
+    "tripId": "ICHIBATA_SAKAIMINATO_20260718_OUT_1300_01",
+    "arrivalTime": "13:00:00",
+    "departureTime": "13:00:00",
     "stopId": "matsue_station",
     "stopSequence": 1,
     "headsign": "",
@@ -2354,9 +1925,9 @@
     "timepoint": 1
   },
   {
-    "tripId": "ICHIBATA_SAKAIMINATO_20260718_OUT_1315_01",
-    "arrivalTime": "13:20:00",
-    "departureTime": "13:20:00",
+    "tripId": "ICHIBATA_SAKAIMINATO_20260718_OUT_1300_01",
+    "arrivalTime": "13:05:00",
+    "departureTime": "13:05:00",
     "stopId": "fuzoku_gakuen_iriguchi",
     "stopSequence": 2,
     "headsign": "",
@@ -2365,9 +1936,9 @@
     "timepoint": 1
   },
   {
-    "tripId": "ICHIBATA_SAKAIMINATO_20260718_OUT_1315_01",
-    "arrivalTime": "13:55:00",
-    "departureTime": "13:55:00",
+    "tripId": "ICHIBATA_SAKAIMINATO_20260718_OUT_1300_01",
+    "arrivalTime": "13:40:00",
+    "departureTime": "13:40:00",
     "stopId": "sakaiminato_port",
     "stopSequence": 3,
     "headsign": "",
@@ -2541,73 +2112,7 @@
     "timepoint": 1
   },
   {
-    "tripId": "ICHIBATA_SAKAIMINATO_20260817_OUT_1315_01",
-    "arrivalTime": "13:15:00",
-    "departureTime": "13:15:00",
-    "stopId": "matsue_station",
-    "stopSequence": 1,
-    "headsign": "",
-    "pickupType": null,
-    "dropOffType": null,
-    "timepoint": 1
-  },
-  {
-    "tripId": "ICHIBATA_SAKAIMINATO_20260817_OUT_1315_01",
-    "arrivalTime": "13:20:00",
-    "departureTime": "13:20:00",
-    "stopId": "fuzoku_gakuen_iriguchi",
-    "stopSequence": 2,
-    "headsign": "",
-    "pickupType": null,
-    "dropOffType": null,
-    "timepoint": 1
-  },
-  {
-    "tripId": "ICHIBATA_SAKAIMINATO_20260817_OUT_1315_01",
-    "arrivalTime": "13:55:00",
-    "departureTime": "13:55:00",
-    "stopId": "sakaiminato_port",
-    "stopSequence": 3,
-    "headsign": "",
-    "pickupType": null,
-    "dropOffType": null,
-    "timepoint": 1
-  },
-  {
-    "tripId": "ICHIBATA_SAKAIMINATO_20260817_IN_1325_01",
-    "arrivalTime": "13:25:00",
-    "departureTime": "13:25:00",
-    "stopId": "sakaiminato_port",
-    "stopSequence": 1,
-    "headsign": "",
-    "pickupType": null,
-    "dropOffType": null,
-    "timepoint": 1
-  },
-  {
-    "tripId": "ICHIBATA_SAKAIMINATO_20260817_IN_1325_01",
-    "arrivalTime": "14:00:00",
-    "departureTime": "14:00:00",
-    "stopId": "rainbow_plaza_mae",
-    "stopSequence": 2,
-    "headsign": "",
-    "pickupType": null,
-    "dropOffType": null,
-    "timepoint": 1
-  },
-  {
-    "tripId": "ICHIBATA_SAKAIMINATO_20260817_IN_1325_01",
-    "arrivalTime": "14:05:00",
-    "departureTime": "14:05:00",
-    "stopId": "matsue_station",
-    "stopSequence": 3,
-    "headsign": "",
-    "pickupType": null,
-    "dropOffType": null,
-    "timepoint": 1
-  },
-  {
-    "tripId": "ICHIBATA_SAKAIMINATO_20260901_OUT_1300_01",
+    "tripId": "ICHIBATA_SAKAIMINATO_20260817_OUT_1300_01",
     "arrivalTime": "13:00:00",
     "departureTime": "13:00:00",
     "stopId": "matsue_station",
@@ -2618,7 +2123,7 @@
     "timepoint": 1
   },
   {
-    "tripId": "ICHIBATA_SAKAIMINATO_20260901_OUT_1300_01",
+    "tripId": "ICHIBATA_SAKAIMINATO_20260817_OUT_1300_01",
     "arrivalTime": "13:05:00",
     "departureTime": "13:05:00",
     "stopId": "fuzoku_gakuen_iriguchi",
@@ -2629,7 +2134,7 @@
     "timepoint": 1
   },
   {
-    "tripId": "ICHIBATA_SAKAIMINATO_20260901_OUT_1300_01",
+    "tripId": "ICHIBATA_SAKAIMINATO_20260817_OUT_1300_01",
     "arrivalTime": "13:40:00",
     "departureTime": "13:40:00",
     "stopId": "sakaiminato_port",
@@ -2640,7 +2145,7 @@
     "timepoint": 1
   },
   {
-    "tripId": "ICHIBATA_SAKAIMINATO_20260901_IN_1325_01",
+    "tripId": "ICHIBATA_SAKAIMINATO_20260817_IN_1325_01",
     "arrivalTime": "13:25:00",
     "departureTime": "13:25:00",
     "stopId": "sakaiminato_port",
@@ -2651,7 +2156,7 @@
     "timepoint": 1
   },
   {
-    "tripId": "ICHIBATA_SAKAIMINATO_20260901_IN_1325_01",
+    "tripId": "ICHIBATA_SAKAIMINATO_20260817_IN_1325_01",
     "arrivalTime": "14:00:00",
     "departureTime": "14:00:00",
     "stopId": "rainbow_plaza_mae",
@@ -2662,7 +2167,7 @@
     "timepoint": 1
   },
   {
-    "tripId": "ICHIBATA_SAKAIMINATO_20260901_IN_1325_01",
+    "tripId": "ICHIBATA_SAKAIMINATO_20260817_IN_1325_01",
     "arrivalTime": "14:05:00",
     "departureTime": "14:05:00",
     "stopId": "matsue_station",
@@ -2673,9 +2178,9 @@
     "timepoint": 1
   },
   {
-    "tripId": "ICHIBATA_SAKAIMINATO_20261010_OUT_1315_01",
-    "arrivalTime": "13:15:00",
-    "departureTime": "13:15:00",
+    "tripId": "ICHIBATA_SAKAIMINATO_20261101_OUT_1300_01",
+    "arrivalTime": "13:00:00",
+    "departureTime": "13:00:00",
     "stopId": "matsue_station",
     "stopSequence": 1,
     "headsign": "",
@@ -2684,9 +2189,9 @@
     "timepoint": 1
   },
   {
-    "tripId": "ICHIBATA_SAKAIMINATO_20261010_OUT_1315_01",
-    "arrivalTime": "13:20:00",
-    "departureTime": "13:20:00",
+    "tripId": "ICHIBATA_SAKAIMINATO_20261101_OUT_1300_01",
+    "arrivalTime": "13:05:00",
+    "departureTime": "13:05:00",
     "stopId": "fuzoku_gakuen_iriguchi",
     "stopSequence": 2,
     "headsign": "",
@@ -2695,75 +2200,9 @@
     "timepoint": 1
   },
   {
-    "tripId": "ICHIBATA_SAKAIMINATO_20261010_OUT_1315_01",
-    "arrivalTime": "13:55:00",
-    "departureTime": "13:55:00",
-    "stopId": "sakaiminato_port",
-    "stopSequence": 3,
-    "headsign": "",
-    "pickupType": null,
-    "dropOffType": null,
-    "timepoint": 1
-  },
-  {
-    "tripId": "ICHIBATA_SAKAIMINATO_20261010_IN_1325_01",
-    "arrivalTime": "13:25:00",
-    "departureTime": "13:25:00",
-    "stopId": "sakaiminato_port",
-    "stopSequence": 1,
-    "headsign": "",
-    "pickupType": null,
-    "dropOffType": null,
-    "timepoint": 1
-  },
-  {
-    "tripId": "ICHIBATA_SAKAIMINATO_20261010_IN_1325_01",
-    "arrivalTime": "14:00:00",
-    "departureTime": "14:00:00",
-    "stopId": "rainbow_plaza_mae",
-    "stopSequence": 2,
-    "headsign": "",
-    "pickupType": null,
-    "dropOffType": null,
-    "timepoint": 1
-  },
-  {
-    "tripId": "ICHIBATA_SAKAIMINATO_20261010_IN_1325_01",
-    "arrivalTime": "14:05:00",
-    "departureTime": "14:05:00",
-    "stopId": "matsue_station",
-    "stopSequence": 3,
-    "headsign": "",
-    "pickupType": null,
-    "dropOffType": null,
-    "timepoint": 1
-  },
-  {
-    "tripId": "ICHIBATA_SAKAIMINATO_20261101_OUT_1315_01",
-    "arrivalTime": "13:15:00",
-    "departureTime": "13:15:00",
-    "stopId": "matsue_station",
-    "stopSequence": 1,
-    "headsign": "",
-    "pickupType": null,
-    "dropOffType": null,
-    "timepoint": 1
-  },
-  {
-    "tripId": "ICHIBATA_SAKAIMINATO_20261101_OUT_1315_01",
-    "arrivalTime": "13:20:00",
-    "departureTime": "13:20:00",
-    "stopId": "fuzoku_gakuen_iriguchi",
-    "stopSequence": 2,
-    "headsign": "",
-    "pickupType": null,
-    "dropOffType": null,
-    "timepoint": 1
-  },
-  {
-    "tripId": "ICHIBATA_SAKAIMINATO_20261101_OUT_1315_01",
-    "arrivalTime": "13:55:00",
-    "departureTime": "13:55:00",
+    "tripId": "ICHIBATA_SAKAIMINATO_20261101_OUT_1300_01",
+    "arrivalTime": "13:40:00",
+    "departureTime": "13:40:00",
     "stopId": "sakaiminato_port",
     "stopSequence": 3,
     "headsign": "",
@@ -2871,138 +2310,6 @@
     "timepoint": 1
   },
   {
-    "tripId": "ICHIBATA_SAKAIMINATO_20261109_OUT_1300_01",
-    "arrivalTime": "13:00:00",
-    "departureTime": "13:00:00",
-    "stopId": "matsue_station",
-    "stopSequence": 1,
-    "headsign": "",
-    "pickupType": null,
-    "dropOffType": null,
-    "timepoint": 1
-  },
-  {
-    "tripId": "ICHIBATA_SAKAIMINATO_20261109_OUT_1300_01",
-    "arrivalTime": "13:05:00",
-    "departureTime": "13:05:00",
-    "stopId": "fuzoku_gakuen_iriguchi",
-    "stopSequence": 2,
-    "headsign": "",
-    "pickupType": null,
-    "dropOffType": null,
-    "timepoint": 1
-  },
-  {
-    "tripId": "ICHIBATA_SAKAIMINATO_20261109_OUT_1300_01",
-    "arrivalTime": "13:40:00",
-    "departureTime": "13:40:00",
-    "stopId": "sakaiminato_port",
-    "stopSequence": 3,
-    "headsign": "",
-    "pickupType": null,
-    "dropOffType": null,
-    "timepoint": 1
-  },
-  {
-    "tripId": "ICHIBATA_SAKAIMINATO_20261109_OUT_1400_02",
-    "arrivalTime": "14:00:00",
-    "departureTime": "14:00:00",
-    "stopId": "matsue_station",
-    "stopSequence": 1,
-    "headsign": "",
-    "pickupType": null,
-    "dropOffType": null,
-    "timepoint": 1
-  },
-  {
-    "tripId": "ICHIBATA_SAKAIMINATO_20261109_OUT_1400_02",
-    "arrivalTime": "14:05:00",
-    "departureTime": "14:05:00",
-    "stopId": "fuzoku_gakuen_iriguchi",
-    "stopSequence": 2,
-    "headsign": "",
-    "pickupType": null,
-    "dropOffType": null,
-    "timepoint": 1
-  },
-  {
-    "tripId": "ICHIBATA_SAKAIMINATO_20261109_OUT_1400_02",
-    "arrivalTime": "14:40:00",
-    "departureTime": "14:40:00",
-    "stopId": "sakaiminato_port",
-    "stopSequence": 3,
-    "headsign": "",
-    "pickupType": null,
-    "dropOffType": null,
-    "timepoint": 1
-  },
-  {
-    "tripId": "ICHIBATA_SAKAIMINATO_20261109_IN_1017_01",
-    "arrivalTime": "10:17:00",
-    "departureTime": "10:17:00",
-    "stopId": "sakaiminato_port",
-    "stopSequence": 1,
-    "headsign": "",
-    "pickupType": null,
-    "dropOffType": null,
-    "timepoint": 1
-  },
-  {
-    "tripId": "ICHIBATA_SAKAIMINATO_20261109_IN_1017_01",
-    "arrivalTime": "10:52:00",
-    "departureTime": "10:52:00",
-    "stopId": "rainbow_plaza_mae",
-    "stopSequence": 2,
-    "headsign": "",
-    "pickupType": null,
-    "dropOffType": null,
-    "timepoint": 1
-  },
-  {
-    "tripId": "ICHIBATA_SAKAIMINATO_20261109_IN_1017_01",
-    "arrivalTime": "10:57:00",
-    "departureTime": "10:57:00",
-    "stopId": "matsue_station",
-    "stopSequence": 3,
-    "headsign": "",
-    "pickupType": null,
-    "dropOffType": null,
-    "timepoint": 1
-  },
-  {
-    "tripId": "ICHIBATA_SAKAIMINATO_20261109_IN_1325_02",
-    "arrivalTime": "13:25:00",
-    "departureTime": "13:25:00",
-    "stopId": "sakaiminato_port",
-    "stopSequence": 1,
-    "headsign": "",
-    "pickupType": null,
-    "dropOffType": null,
-    "timepoint": 1
-  },
-  {
-    "tripId": "ICHIBATA_SAKAIMINATO_20261109_IN_1325_02",
-    "arrivalTime": "14:00:00",
-    "departureTime": "14:00:00",
-    "stopId": "rainbow_plaza_mae",
-    "stopSequence": 2,
-    "headsign": "",
-    "pickupType": null,
-    "dropOffType": null,
-    "timepoint": 1
-  },
-  {
-    "tripId": "ICHIBATA_SAKAIMINATO_20261109_IN_1325_02",
-    "arrivalTime": "14:05:00",
-    "departureTime": "14:05:00",
-    "stopId": "matsue_station",
-    "stopSequence": 3,
-    "headsign": "",
-    "pickupType": null,
-    "dropOffType": null,
-    "timepoint": 1
-  },
-  {
     "tripId": "ICHIBATA_SAKAIMINATO_20261201_OUT_1300_01",
     "arrivalTime": "13:00:00",
     "departureTime": "13:00:00",
@@ -3059,72 +2366,6 @@
   },
   {
     "tripId": "ICHIBATA_SAKAIMINATO_20261201_IN_1325_01",
-    "arrivalTime": "14:05:00",
-    "departureTime": "14:05:00",
-    "stopId": "matsue_station",
-    "stopSequence": 3,
-    "headsign": "",
-    "pickupType": null,
-    "dropOffType": null,
-    "timepoint": 1
-  },
-  {
-    "tripId": "ICHIBATA_SAKAIMINATO_20261221_OUT_1315_01",
-    "arrivalTime": "13:15:00",
-    "departureTime": "13:15:00",
-    "stopId": "matsue_station",
-    "stopSequence": 1,
-    "headsign": "",
-    "pickupType": null,
-    "dropOffType": null,
-    "timepoint": 1
-  },
-  {
-    "tripId": "ICHIBATA_SAKAIMINATO_20261221_OUT_1315_01",
-    "arrivalTime": "13:20:00",
-    "departureTime": "13:20:00",
-    "stopId": "fuzoku_gakuen_iriguchi",
-    "stopSequence": 2,
-    "headsign": "",
-    "pickupType": null,
-    "dropOffType": null,
-    "timepoint": 1
-  },
-  {
-    "tripId": "ICHIBATA_SAKAIMINATO_20261221_OUT_1315_01",
-    "arrivalTime": "13:55:00",
-    "departureTime": "13:55:00",
-    "stopId": "sakaiminato_port",
-    "stopSequence": 3,
-    "headsign": "",
-    "pickupType": null,
-    "dropOffType": null,
-    "timepoint": 1
-  },
-  {
-    "tripId": "ICHIBATA_SAKAIMINATO_20261221_IN_1325_01",
-    "arrivalTime": "13:25:00",
-    "departureTime": "13:25:00",
-    "stopId": "sakaiminato_port",
-    "stopSequence": 1,
-    "headsign": "",
-    "pickupType": null,
-    "dropOffType": null,
-    "timepoint": 1
-  },
-  {
-    "tripId": "ICHIBATA_SAKAIMINATO_20261221_IN_1325_01",
-    "arrivalTime": "14:00:00",
-    "departureTime": "14:00:00",
-    "stopId": "rainbow_plaza_mae",
-    "stopSequence": 2,
-    "headsign": "",
-    "pickupType": null,
-    "dropOffType": null,
-    "timepoint": 1
-  },
-  {
-    "tripId": "ICHIBATA_SAKAIMINATO_20261221_IN_1325_01",
     "arrivalTime": "14:05:00",
     "departureTime": "14:05:00",
     "stopId": "matsue_station",

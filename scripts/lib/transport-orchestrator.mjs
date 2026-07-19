@@ -104,7 +104,14 @@ export function runTransportPipeline({
       results.push({ stage, command: command.label, status: 'dry-run' })
       continue
     }
-    const result = runner(command.executable, command.args, { cwd: root, stdio: 'inherit', env: process.env })
+    const result = runner(command.executable, command.args, {
+      cwd: root,
+      stdio: 'inherit',
+      env: {
+        ...process.env,
+        ...(gitSha ? { SOURCE_GIT_SHA: gitSha } : {})
+      }
+    })
     if (result.error) throw result.error
     if (result.status !== 0) throw new Error(`${stage} に失敗しました: ${command.label} (exit=${result.status})`)
     results.push({ stage, command: command.label, status: 'completed' })

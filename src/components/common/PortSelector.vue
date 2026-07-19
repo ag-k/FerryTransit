@@ -7,7 +7,7 @@
     <!-- Button (opens modal) -->
     <button :id="buttonId" type="button" data-testid="port-selector-button"
       class="w-full px-3 py-2 border border-app-border rounded-md text-left bg-app-surface text-app-fg focus:outline-none focus:ring-2 focus:ring-app-primary-2 focus:border-app-primary-2 disabled:bg-app-surface-2 disabled:text-app-muted disabled:cursor-not-allowed flex items-center justify-between gap-3"
-      :disabled="disabled" :aria-label="label || placeholder || $t('SELECT')" :aria-haspopup="'dialog'"
+      :disabled="disabled" :aria-label="ariaLabel || label || placeholder || $t('SELECT')" :aria-haspopup="'dialog'"
       :aria-expanded="isOpen ? 'true' : 'false'" @click="open">
       <span class="min-w-0">
         <span v-if="modelValue" class="text-app-fg flex items-center gap-2 min-w-0">
@@ -229,6 +229,7 @@ import { getPortBadgeClass } from '@/utils/portBadges'
 interface Props {
   modelValue: string
   label?: string
+  ariaLabel?: string
   placeholder?: string
   hint?: string
   disabled?: boolean
@@ -244,6 +245,7 @@ interface Props {
 }
 
 const props = withDefaults(defineProps<Props>(), {
+  ariaLabel: '',
   disabled: false,
   allowedLocationType: 'ALL',
   showTransportTabs: false,

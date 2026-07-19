@@ -7,22 +7,21 @@
 import { initializeApp } from 'firebase-admin/app'
 import { getAuth } from 'firebase-admin/auth'
 import { getFirestore } from 'firebase-admin/firestore'
+import { configureAdminEmulatorEnv } from './emulator-config.mjs'
+
+const { hosts } = configureAdminEmulatorEnv()
 
 // Initialize Firebase Admin for emulator
 initializeApp({
   projectId: 'oki-ferryguide'
 })
 
-// Set emulator hosts
-process.env.FIREBASE_AUTH_EMULATOR_HOST = 'localhost:9099'
-process.env.FIRESTORE_EMULATOR_HOST = 'localhost:8095'
-
 const auth = getAuth()
 const db = getFirestore()
 
 async function testAdminRegistration() {
   try {
-    console.log('🔍 Testing super admin registration...\n')
+    console.log(`🔍 Testing super admin registration (${hosts.auth}, ${hosts.firestore})...\n`)
 
     // Check if user exists in Auth
     try {

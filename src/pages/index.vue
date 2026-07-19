@@ -149,7 +149,12 @@
             <span>{{ getLocationDisplayName(arrival) }}</span>
           </p>
         </div>
-        <FavoriteButton v-if="departure && arrival" :type="'route'" :route="{ departure, arrival }"
+        <FavoriteButton v-if="departure && arrival" :type="'route'" :route="{
+          departure,
+          arrival,
+          withCar,
+          ...(withCar ? { vehicleLengthMeters } : {})
+        }"
           class="text-white hover:text-yellow-300" />
       </div>
       <ClientOnly>
@@ -258,14 +263,11 @@
                             d="M8.982 1.566a1.13 1.13 0 0 0-1.96 0L.165 13.233c-.457.778.091 1.767.98 1.767h13.713c.889 0 1.438-.99.98-1.767L8.982 1.566zM8 5c.535 0 .954.462.9.995l-.35 3.507a.552.552 0 0 1-1.1 0L7.1 5.995A.905.905 0 0 1 8 5zm.002 6a1 1 0 1 1 0 2 1 1 0 0 1 0-2z" />
                         </svg>
                       </button>
-                      <a v-if="normalizeTransportMode(trip.mode) === 'FERRY'" href="#"
+                      <a href="#" data-test="transport-details-link"
                         class="text-app-primary dark:text-white hover:underline font-medium inline-block py-1 -my-1 px-2 -mx-2 touch-manipulation"
                         @click.prevent="showShipInfo(trip.name)">
                         {{ getTripTransportLabel(trip) }}
                       </a>
-                      <span v-else class="font-medium inline-block py-1 -my-1 px-2 -mx-2">
-                        {{ getTripTransportLabel(trip) }}
-                      </span>
                     </div>
                     <p v-if="formatTripMeta(trip)" class="text-xs text-app-muted mt-1">
                       {{ formatTripMeta(trip) }}
@@ -352,9 +354,10 @@ import SecondaryButton from '@/components/common/SecondaryButton.vue'
 import TransportModeFilter from '@/components/common/TransportModeFilter.vue'
 import ToggleSwitch from '@/components/common/ToggleSwitch.vue'
 import LocationTypeIcon from '@/components/common/LocationTypeIcon.vue'
-import { formatDateYmdJst, getJstDateParts, getTodayJstMidnight } from '@/utils/jstDate'
+import { formatDateYmdJst, getJstDateParts } from '@/utils/jstDate'
 import { getPortMapZoom } from '@/utils/portMapZoom'
 import { getLocationTypeForCode, loadBusTripsForRoute } from '@/utils/gtfsBusTimetable'
+import { useTodayRollover } from '@/composables/useTodayRollover'
 import type { LocationType, TransportMode, Trip } from '@/types'
 import type { BusStopLocation } from '@/utils/gtfsBusTimetable'
 import {
@@ -405,7 +408,14 @@ const vehicleLengthOptions = VEHICLE_LENGTH_OPTIONS
 const directBusTimetable = ref<Trip[]>([])
 let directBusTimetableRequestId = 0
 
-const today = getTodayJstMidnight()
+const {
+  today,
+  selectDate: selectTimetableDate,
+  selectExplicitDate: selectExplicitTimetableDate
+} = useTodayRollover({
+  selectedDate,
+  setSelectedDate: date => ferryStore.setSelectedDate(date)
+})
 
 // Computed properties
 const selectedDateString = computed(() => {
@@ -457,7 +467,7 @@ const arrivalLabelParts = computed(() => getPortLabelParts(arrival.value))
 
 const todayString = computed(() => {
   // JST基準で本日の日付を取得（海外端末でも常にJST）
-  return formatDateYmdJst(new Date())
+  return formatDateYmdJst(today.value)
 })
 
 type TransportModeFilterValue = TransportMode | 'ALL'
@@ -471,6 +481,19 @@ const transportModeOptions = computed<TransportMode[]>(() => ['FERRY', 'BUS', 'A
 
 const selectedTransportMode = ref<TransportModeFilterValue>('FERRY')
 
+const isRouteCompatibleWithMode = (mode: TransportModeFilterValue, locations: string[]): boolean => {
+  if (mode === 'ALL' || locations.length === 0) return true
+
+  const locationTypes = locations.map(locationId => getLocationTypeForCode(locationId))
+  if (mode === 'FERRY') return locationTypes.every(type => type === 'PORT')
+  if (mode === 'AIR') return locationTypes.every(type => type === 'AIRPORT')
+
+  // 島内バスに加え、空港連絡バスや港連絡バスは
+  // STOP / PORT / AIRPORT をまたぐ。同種別の港間・空港間は船・航空を優先する。
+  if (locations.length < 2) return true
+  return locationTypes.includes('STOP') || new Set(locationTypes).size > 1
+}
+
 watch(transportModeOptions, (options) => {
   if (!options.length) {
     selectedTransportMode.value = 'ALL'
@@ -482,15 +505,25 @@ watch(transportModeOptions, (options) => {
 })
 
 const preferredTransportModeForRoute = computed<TransportMode>(() => {
-  const hasAirport = [departure.value, arrival.value].some(locationId => {
-    return getLocationTypeForCode(locationId) === 'AIRPORT'
-  })
-  if (hasAirport) return 'AIR'
+  const selectedLocations = [departure.value, arrival.value].filter(Boolean)
 
-  const hasStop = [departure.value, arrival.value].some(locationId => {
-    return getLocationTypeForCode(locationId) === 'STOP'
-  })
-  return hasStop ? 'BUS' : 'FERRY'
+  // モードタブの明示選択で互換性のない経路をクリアした直後は、
+  // 空の経路からFERRYへ戻さずユーザーの選択を維持する。
+  if (selectedLocations.length === 0) {
+    return selectedTransportMode.value === 'ALL' ? 'FERRY' : selectedTransportMode.value
+  }
+
+  if (
+    selectedTransportMode.value !== 'ALL' &&
+    isRouteCompatibleWithMode(selectedTransportMode.value, selectedLocations)
+  ) {
+    return selectedTransportMode.value
+  }
+
+  const locationTypes = selectedLocations.map(locationId => getLocationTypeForCode(locationId))
+  if (locationTypes.includes('STOP') || new Set(locationTypes).size > 1) return 'BUS'
+  if (locationTypes.every(type => type === 'AIRPORT')) return 'AIR'
+  return 'FERRY'
 })
 
 watch([preferredTransportModeForRoute, transportModeOptions], ([preferredMode, options]) => {
@@ -499,8 +532,8 @@ watch([preferredTransportModeForRoute, transportModeOptions], ([preferredMode, o
   }
 }, { immediate: true })
 
-const selectedLocationType = computed<LocationType>(() => {
-  if (selectedTransportMode.value === 'BUS') return 'STOP'
+const selectedLocationType = computed<LocationType | 'ALL'>(() => {
+  if (selectedTransportMode.value === 'BUS') return 'ALL'
   if (selectedTransportMode.value === 'AIR') return 'AIRPORT'
   return 'PORT'
 })
@@ -724,7 +757,15 @@ watch(selectedTransportMode, (mode) => {
     withCar.value = false
   }
 
-  const allowedType = mode === 'BUS' ? 'STOP' : mode === 'AIR' ? 'AIRPORT' : 'PORT'
+  const selectedLocations = [departure.value, arrival.value].filter(Boolean)
+  if (mode === 'BUS' && !isRouteCompatibleWithMode(mode, selectedLocations)) {
+    ferryStore.setDeparture('')
+    ferryStore.setArrival('')
+    return
+  }
+
+  const allowedType = mode === 'AIR' ? 'AIRPORT' : 'PORT'
+  if (mode === 'BUS') return
   if (departure.value && getLocationTypeForCode(departure.value) !== allowedType) {
     ferryStore.setDeparture('')
   }
@@ -755,7 +796,7 @@ const showTransferSearchButton = computed(() => {
 
 // Methods
 const handleDateChange = (newDate: Date) => {
-  ferryStore.setSelectedDate(newDate)
+  selectTimetableDate(newDate)
 
   // Add to search history if route is selected
   if (departure.value && arrival.value) {
@@ -1097,7 +1138,7 @@ onMounted(async () => {
       month >= 1 && month <= 12 &&
       day >= 1 && day <= 31
     ) {
-      ferryStore.setSelectedDate(new Date(year, month - 1, day))
+      selectExplicitTimetableDate(new Date(year, month - 1, day))
     }
   }
 

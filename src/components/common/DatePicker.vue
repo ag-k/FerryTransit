@@ -10,6 +10,7 @@
         :min="minDateString"
         :max="maxDateString"
         :disabled="disabled"
+        :aria-label="ariaLabel || undefined"
         @change="handleChange"
       >
       <button 
@@ -32,6 +33,7 @@ import { formatDateYmdJst, getTodayJstMidnight, parseYmdAsJstMidnight } from '@/
 interface Props {
   modelValue: Date
   label?: string
+  ariaLabel?: string
   hint?: string
   minDate?: Date
   maxDate?: Date
@@ -42,6 +44,7 @@ interface Props {
 }
 
 const props = withDefaults(defineProps<Props>(), {
+  ariaLabel: '',
   disabled: false,
   showTodayButton: true,
   margin: 'normal',

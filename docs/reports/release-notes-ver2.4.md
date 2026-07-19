@@ -20,7 +20,7 @@
 
 ### 基盤・品質改善
 
-- Node.js 22、Nuxt 4.4.8、Vue 3.5.39、Capacitor 7.6.7を含む依存関係を更新しました。
+- Node.js 22、Nuxt 4.4.8、Vue 3.5.39、Capacitor 7.6.8を含む依存関係を更新しました。
 - Androidの戻る操作、システムナビゲーションバー、セーフエリア、地図タッチ操作を改善しました。
 - 経路検索、GTFS、運賃、公開処理、管理画面を含む回帰テストを拡充しました。
 
@@ -44,6 +44,6 @@
 
 ### Platform and Quality Improvements
 
-- Updated the platform to Node.js 22, Nuxt 4.4.8, Vue 3.5.39, and Capacitor 7.6.7.
+- Updated the platform to Node.js 22, Nuxt 4.4.8, Vue 3.5.39, and Capacitor 7.6.8.
 - Improved Android back navigation, system navigation styling, safe-area handling, and map touch interaction.
 - Expanded regression coverage for route search, GTFS, fares, publishing, and administration flows.

@@ -297,4 +297,33 @@ describe('fare.vue', () => {
     expect(mockFormatCurrency).toHaveBeenCalledWith(3520)
     expect(mockFormatCurrency).toHaveBeenCalledWith(8800)
   })
+
+  it('船・バスタブを切り替え、町村別バス運賃を表示する', async () => {
+    const wrapper = mount(Fare, {
+      global: {
+        mocks: {
+          $t: mockT
+        }
+      }
+    })
+
+    const busTransportTab = wrapper.findAll('[role="tab"]')
+      .find(tab => tab.text() === 'TRANSPORT_MODES.BUS')
+    expect(busTransportTab).toBeDefined()
+    await busTransportTab!.trigger('click')
+
+    expect(busTransportTab!.attributes('aria-selected')).toBe('true')
+    const busTabs = wrapper.findAll('[aria-controls="fare-tabpanel-bus"]')
+    expect(busTabs).toHaveLength(7)
+
+    const nishinoshimaTab = busTabs.find(tab => tab.text() === 'NISHINOSHIMA_TOWN_BUS')
+    expect(nishinoshimaTab).toBeDefined()
+    await nishinoshimaTab!.trigger('click')
+
+    expect(nishinoshimaTab!.attributes('aria-selected')).toBe('true')
+    const busPanel = wrapper.get('#fare-tabpanel-bus')
+    expect(busPanel.text()).toContain('NISHINOSHIMA_TOWN_BUS')
+    expect(busPanel.text()).toContain('BUS_FLAT_FARE')
+    expect(busPanel.text()).toContain('¥200')
+  })
 })

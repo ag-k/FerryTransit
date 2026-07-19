@@ -3,6 +3,8 @@ export interface FavoriteRoute {
   id: string
   departure: string
   arrival: string
+  withCar?: boolean
+  vehicleLengthMeters?: number
   nickname?: string
   createdAt: Date
   sortOrder: number
@@ -28,7 +30,12 @@ export interface FavoriteStore {
   favoriteRoutesByOrder: FavoriteRoute[]
   favoritePortsByRecent: FavoritePort[]
   favoritePortsByOrder: FavoritePort[]
-  isFavoriteRoute: (departure: string, arrival: string) => boolean
+  isFavoriteRoute: (
+    departure: string,
+    arrival: string,
+    withCar?: boolean,
+    vehicleLengthMeters?: number
+  ) => boolean
   isFavoritePort: (portCode: string) => boolean
   getFavoriteRoute: (id: string) => FavoriteRoute | undefined
   getFavoritePort: (id: string) => FavoritePort | undefined

@@ -42,6 +42,8 @@ const formatDateLocal = (date: Date): string => {
 
 const TIMETABLE_STORAGE_PATH = "data/timetable.json";
 const TIMETABLE_CACHE_KEY = "rawTimetable";
+const SHIP_STATUS_CACHE_KEY = "shipStatusCache";
+const SHIP_STATUS_FETCH_TIME_KEY = "shipStatusFetchTime";
 const NATIVE_STORAGE_SDK_TIMEOUT_MS = 5000;
 const NORMAL_FERRY_OPERATION_STATES = new Set(["定期運航", "通常運航"]);
 
@@ -791,8 +793,52 @@ export const useFerryStore = defineStore("ferry", () => {
 
       // 臨時便を時刻表データに追加
       processExtraShips();
+
+      const hasStatusData = Object.values(shipStatus.value).some((status) => status !== null);
+      if (typeof localStorage !== "undefined" && hasStatusData) {
+        const fetchedAt = new Date();
+        lastFetchTime.value = fetchedAt;
+        localStorage.setItem(SHIP_STATUS_CACHE_KEY, JSON.stringify(shipStatus.value));
+        localStorage.setItem(SHIP_STATUS_FETCH_TIME_KEY, fetchedAt.toISOString());
+      }
     } catch (e) {
       error.value = "LOAD_STATUS_ERROR";
+
+      if (typeof localStorage !== "undefined") {
+        try {
+          const cachedValue = localStorage.getItem(SHIP_STATUS_CACHE_KEY);
+          if (cachedValue) {
+            const cached = JSON.parse(cachedValue) as Partial<ShipStatusStoreState>;
+            const hasCachedStatus = cached && typeof cached === "object" && [
+              "isokaze",
+              "dozen",
+              "ferry",
+              "kunigaKankou",
+            ].some((key) => key in cached);
+
+            if (hasCachedStatus) {
+              shipStatus.value = {
+                isokaze: cached.isokaze ?? null,
+                dozen: cached.dozen ?? null,
+                ferry: cached.ferry ?? null,
+                kunigaKankou: cached.kunigaKankou ?? null,
+              };
+
+              const cachedTime = localStorage.getItem(SHIP_STATUS_FETCH_TIME_KEY);
+              if (cachedTime) {
+                const parsedTime = new Date(cachedTime);
+                if (!Number.isNaN(parsedTime.getTime())) {
+                  lastFetchTime.value = parsedTime;
+                }
+              }
+
+              processExtraShips();
+            }
+          }
+        } catch {
+          // 壊れたキャッシュは無視して、運航状況なしの状態を維持する
+        }
+      }
     } finally {
       isLoading.value = false;
     }

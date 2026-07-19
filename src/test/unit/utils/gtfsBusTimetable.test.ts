@@ -1,5 +1,6 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest'
 import {
+  buildBusTripsForRoute,
   buildBusRouteValiditySummaries,
   clearBusSearchFeedCacheForTests,
   getAllPortConnectedBusStopCodes,
@@ -35,6 +36,7 @@ import {
   toNishinoshimaBusStopCode,
   toOkinoshimaBusStopCode
 } from '@/utils/gtfsBusTimetable'
+import type { BusSearchFeed } from '@/utils/gtfsBusTimetable'
 import type { Trip } from '@/types'
 
 const storageDataUrl = (path: string): string => {
@@ -1099,6 +1101,61 @@ describe('gtfsBusTimetable', () => {
       '2026-01-05'
     )
     expect(removedDateResult).toEqual([])
+  })
+
+  it('compact feedに同一便が重複していても検索結果は1件にする', () => {
+    const duplicateTrip = {
+      tripId: 'trip_1',
+      routeId: 'R8_AMA',
+      serviceId: 'svc_daily',
+      headsign: '隠岐汽船乗り場',
+      shortName: '海士島線',
+      stops: [
+        ['BUS_AMA_100_01', '08:00', '08:00'],
+        ['BUS_AMA_126_01', '08:20', '08:20']
+      ]
+    } as BusSearchFeed['trips'][number]
+    const feed: BusSearchFeed = {
+      version: 1,
+      feedId: 'ama',
+      generatedAt: '2026-07-16T00:00:00.000Z',
+      operatorId: 'AMA_TOWN',
+      townLabelKey: 'AMA_CHO',
+      tripName: 'AMA_TOWN_BUS',
+      fare: 200,
+      routes: {
+        R8_AMA: { shortName: '海士島線', longName: '海士島線' }
+      },
+      stops: [
+        ['BUS_AMA_100_01', '豊田', 36.105471, 133.125968],
+        ['BUS_AMA_126_01', '隠岐汽船乗り場', 36.105058, 133.076744]
+      ],
+      services: {
+        svc_daily: {
+          startDate: '2026-01-01',
+          endDate: '2026-12-31',
+          activeDays: [0, 1, 2, 3, 4, 5, 6]
+        }
+      },
+      trips: [duplicateTrip, { ...duplicateTrip }],
+      departuresByStop: {
+        BUS_AMA_100_01: [[0, 0], [1, 0]]
+      }
+    }
+
+    const result = buildBusTripsForRoute(
+      feed,
+      'BUS_AMA_100_01',
+      'BUS_AMA_126_01',
+      '2026-07-16'
+    )
+
+    expect(result).toHaveLength(1)
+    expect(result[0]).toMatchObject({
+      departureTime: '08:00',
+      arrivalTime: '08:20',
+      via: '海士島線'
+    })
   })
 
   it('bus-searchデータから一畑バス接続便の候補を生成する', async () => {

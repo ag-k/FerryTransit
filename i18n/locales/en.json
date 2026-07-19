@@ -206,6 +206,8 @@
   "LOAD_STATUS_ERROR": "Failed to get ships status. Please check the network connection status.",
   "NO_RESULT_ERROR": "No Routes have been found.",
   "FARE_TABLE": "Fare Table",
+  "FARE_VERSION_CURRENT": "Current version",
+  "FARE_VERSION_REVISED": "Revised {date}",
   "LOADING": "Loading",
   "PASSENGER_FARE": "Passenger Fares",
   "PASSENGER_CATEGORY_ADULT": "Adult",

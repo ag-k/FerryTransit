@@ -40,7 +40,7 @@
             </svg>
           </span>
 
-          <span class="mt-0.5 truncate w-full text-center text-[11px] leading-tight font-medium">
+          <span class="mt-0.5 flex min-h-7 w-full items-start justify-center whitespace-normal px-0.5 text-center text-[10px] leading-tight font-medium sm:text-[11px]">
             {{ $t(item.label) }}
           </span>
 

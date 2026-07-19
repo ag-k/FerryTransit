@@ -8,8 +8,10 @@
 import { spawn } from 'child_process'
 import { setTimeout as sleep } from 'timers/promises'
 import net from 'net'
+import { readEmulatorConfig } from './emulator-config.mjs'
 
 const projectRoot = process.cwd()
+const { ports, hosts } = readEmulatorConfig(projectRoot)
 
 console.log('🚀 Starting Firebase emulator setup...\n')
 
@@ -57,8 +59,8 @@ const emulatorProcess = spawn('firebase', ['emulators:start'], {
 
 // Wait for emulators to be ready by checking ports
 console.log('⏳ Waiting for emulators to start...')
-const firestoreReady = await isPortOpen(8095)
-const authReady = await isPortOpen(9099)
+const firestoreReady = await isPortOpen(ports.firestore)
+const authReady = await isPortOpen(ports.auth)
 
 if (!firestoreReady || !authReady) {
   console.log('❌ Emulators failed to start properly')
@@ -78,8 +80,8 @@ try {
     env: {
       ...process.env,
       GOOGLE_APPLICATION_CREDENTIALS: '', // Use emulator mode
-      FIREBASE_AUTH_EMULATOR_HOST: 'localhost:9099',
-      FIRESTORE_EMULATOR_HOST: 'localhost:8095'
+      FIREBASE_AUTH_EMULATOR_HOST: hosts.auth,
+      FIRESTORE_EMULATOR_HOST: hosts.firestore
     }
   })
   console.log('✅ Super admin registered successfully')
@@ -114,8 +116,8 @@ try {
     cwd: projectRoot,
     env: {
       ...process.env,
-      FIREBASE_AUTH_EMULATOR_HOST: 'localhost:9099',
-      FIRESTORE_EMULATOR_HOST: 'localhost:8095'
+      FIREBASE_AUTH_EMULATOR_HOST: hosts.auth,
+      FIRESTORE_EMULATOR_HOST: hosts.firestore
     }
   })
   console.log('✅ Fare data imported successfully')
@@ -133,9 +135,9 @@ try {
     cwd: projectRoot,
     env: {
       ...process.env,
-      FIREBASE_AUTH_EMULATOR_HOST: 'localhost:9099',
-      FIRESTORE_EMULATOR_HOST: 'localhost:8095',
-      FIREBASE_STORAGE_EMULATOR_HOST: 'localhost:9199'
+      FIREBASE_AUTH_EMULATOR_HOST: hosts.auth,
+      FIRESTORE_EMULATOR_HOST: hosts.firestore,
+      FIREBASE_STORAGE_EMULATOR_HOST: hosts.storage
     }
   })
   console.log('✅ Fare data uploaded to Storage successfully')
@@ -153,9 +155,9 @@ try {
     cwd: projectRoot,
     env: {
       ...process.env,
-      FIREBASE_AUTH_EMULATOR_HOST: 'localhost:9099',
-      FIRESTORE_EMULATOR_HOST: 'localhost:8095',
-      FIREBASE_STORAGE_EMULATOR_HOST: 'localhost:9199'
+      FIREBASE_AUTH_EMULATOR_HOST: hosts.auth,
+      FIRESTORE_EMULATOR_HOST: hosts.firestore,
+      FIREBASE_STORAGE_EMULATOR_HOST: hosts.storage
     }
   })
   console.log('✅ Timetable data uploaded to Storage successfully')

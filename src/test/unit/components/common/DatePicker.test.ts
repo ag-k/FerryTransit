@@ -52,6 +52,23 @@ describe("DatePicker", () => {
     expect((input.element as HTMLInputElement).value).toBe("2025-06-28");
   });
 
+  it("uses the provided accessible name without adding a visible label", () => {
+    const wrapper = mount(DatePicker, {
+      props: {
+        modelValue: parseYmdAsJstMidnight("2025-06-28"),
+        ariaLabel: "Date",
+      },
+      global: {
+        mocks: {
+          $t: (key: string) => key,
+        },
+      },
+    });
+
+    expect(wrapper.find("label").exists()).toBe(false);
+    expect(wrapper.find('input[type="date"]').attributes("aria-label")).toBe("Date");
+  });
+
   it("emits update:modelValue when date is changed", async () => {
     const date = parseYmdAsJstMidnight("2025-06-28");
     const wrapper = mount(DatePicker, {

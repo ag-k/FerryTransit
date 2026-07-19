@@ -50,4 +50,20 @@ describe('transport orchestrator', () => {
     expect(() => runTransportPipeline({ sourceId: 'jal-oki-flights', stages: ['publish'], target: 'prod', root: resolve('.'), dryRun: true }))
       .toThrow('transport:promote')
   })
+
+  it('指定したGit SHAを公開コマンドへ環境変数で引き渡す', () => {
+    const gitSha = 'a'.repeat(40)
+    const runner = vi.fn(() => ({ status: 0 }))
+    runTransportPipeline({
+      sourceId: 'ama-town',
+      stages: ['publish'],
+      target: 'dev',
+      gitSha,
+      root: resolve('.'),
+      runner
+    })
+    expect(runner).toHaveBeenCalledWith('npm', expect.any(Array), expect.objectContaining({
+      env: expect.objectContaining({ SOURCE_GIT_SHA: gitSha })
+    }))
+  })
 })

@@ -106,7 +106,7 @@ flowchart LR
 3. 内容をレビューし、採用するデータを `gtfs/current/{mode}/{id}/` に置く。
 4. `npm run gtfs:validate -- {mode} {id}` で基本項目、参照整合性、フィード期間を検証し、`gtfs/reports/` に記録する。
 5. `npm run gtfs:build -- {mode} {id}` でアプリ向けJSONを `gtfs/public-data/data/` に生成する。
-6. `npm run transport:publish -- --source <source-id> --target dev` で `data/gtfs/**` と `data/bus-search/**` へ公開する。本番はdev manifestから昇格する。
+6. `npm run transport:publish -- --source <source-id> --target dev --git-sha <commit-sha>` で `data/gtfs/**` と `data/bus-search/**` へ公開する。本番はdev manifestから昇格する。
 
 `gtfs:upload` は各オブジェクトの変更前バックアップ、公開後SHA-256検証を共通公開モジュールで行い、最後に `data/manifests/gtfs-public-data.json` を公開する。manifestには公開対象パス、ハッシュ、サイズ、環境、Git SHAを記録する。
 
@@ -124,7 +124,7 @@ flowchart LR
 
 `npm run timetable:build` は、JAL JSONから空港連絡バスをメモリ上で生成し、船・JAL・空港連絡バスを1回で検証・出力する。`npm run timetable:build:dry-run` は同じ処理を行うが、管理対象ファイルへ書き込まない。
 
-`npm run transport:publish -- --source jal-oki-flights --target dev` は生成済み公開時刻表を再ビルドせず、検証、既存データとの差分確認、バックアップ、アップロード、manifest生成、アップロード後のSHA-256検証だけを行う。本番への直接publishは拒否し、dev manifestから昇格する。
+`npm run transport:publish -- --source jal-oki-flights --target dev --git-sha <commit-sha>` は生成済み公開時刻表を再ビルドせず、検証、既存データとの差分確認、バックアップ、アップロード、manifest生成、アップロード後のSHA-256検証だけを行う。本番への直接publishは拒否し、dev manifestから昇格する。
 
 ### 3. JAL定期更新
 
@@ -257,8 +257,8 @@ flowchart LR
 | `transport:acquire --source jal_oki` | 公式ソースの取得と正規化 | rawのみ | なし |
 | `transport:check --scope timetable` | 入力・生成結果の検証 | レポートまたは一時領域のみ | なし |
 | `transport:build --scope timetable` | 依存順に1回だけ生成 | generatedのみ | なし |
-| `transport:publish --scope timetable --target dev` | 既存成果物のハッシュ確認、バックアップ、公開 | manifestのみ | あり |
-| `transport:update --source jal_oki --target dev` | 上記コマンドを順序どおり呼ぶオーケストレータ | 各段階の規則に従う | 最終段階のみ |
+| `transport:publish --scope timetable --target dev --git-sha <commit-sha>` | 既存成果物のハッシュ確認、バックアップ、公開 | manifestのみ | あり |
+| `transport:update --source jal_oki --target dev --git-sha <commit-sha>` | 上記コマンドを順序どおり呼ぶオーケストレータ | 各段階の規則に従う | 最終段階のみ |
 
 公開処理は成果物を再ビルドしない。ビルド時に入力ファイル、Git SHA、生成日時、件数、SHA-256等をmanifestへ記録し、公開時と公開後の確認に使う。
 
@@ -314,12 +314,13 @@ Phase 3の共通CLIは次のとおり。`transport:update` はdev専用で、pro
 npm run transport:acquire -- --source jal-oki-flights
 npm run transport:check -- --source jal-oki-flights
 npm run transport:build -- --source jal-oki-flights
-npm run transport:publish -- --source jal-oki-flights --target dev
+npm run transport:publish -- --source jal-oki-flights --target dev --git-sha <commit-sha>
 npm run transport:smoke -- --source jal-oki-flights --target dev --git-sha <commit-sha>
-npm run transport:update -- --source jal-oki-flights --target dev
+npm run transport:update -- --source jal-oki-flights --target dev --git-sha <commit-sha>
 ```
 
 本番昇格はdevに公開済みの実体を再利用し、manifest内の環境、Git SHA、全オブジェクトのSHA-256・サイズを照合してから実行する。
+devへの実公開にも40桁のGit SHAが必須で、オーケストレータは`--git-sha`を`SOURCE_GIT_SHA`として公開処理へ渡す。SHAなしのmanifestはprod昇格不能になるため生成を拒否する。
 
 ```bash
 npm run transport:promote -- \

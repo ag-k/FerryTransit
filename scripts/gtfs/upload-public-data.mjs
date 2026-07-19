@@ -4,7 +4,7 @@ import { existsSync, readdirSync, readFileSync, statSync } from 'fs'
 import { relative, join } from 'path'
 import { createFirebaseStoragePublisher } from '../lib/firebase-storage-publisher.mjs'
 import { FIREBASE_STORAGE_BUCKETS } from '../lib/firebase-publish-target.mjs'
-import { createPublishManifest, sha256 } from '../lib/transport-data.mjs'
+import { createPublishManifest, requireReleaseGitSha, sha256 } from '../lib/transport-data.mjs'
 
 const ROOT = process.cwd()
 const SOURCE_ROOT = join(ROOT, 'gtfs', 'public-data', 'data')
@@ -68,6 +68,7 @@ const main = async () => {
   if (files.length === 0) {
     throw new Error(`アップロード対象ファイルがありません: ${SOURCE_ROOT}`)
   }
+  if (!args.dryRun) requireReleaseGitSha(process.env.SOURCE_GIT_SHA)
 
   console.log(`GTFS公開データ: ${SOURCE_ROOT}`)
   console.log(`公開環境: ${target}`)

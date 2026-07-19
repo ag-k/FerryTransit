@@ -335,9 +335,14 @@ v-if="!editingHighspeedFares.length"
             </div>
             <div class="grid grid-cols-1 gap-3 md:grid-cols-2 xl:grid-cols-4">
               <div v-for="field in HIGHSPEED_FARE_FIELDS" :key="field.key">
-                <label class="text-xs text-gray-500">{{ field.label }}</label>
+                <label
+                  :for="`highspeed-fare-${index}-${field.key}`"
+                  class="text-xs text-gray-500">
+                  {{ field.label }}
+                </label>
                 <input
-v-model.number="fare[field.key]" type="number" min="0"
+                  :id="`highspeed-fare-${index}-${field.key}`"
+                  v-model.number="fare[field.key]" type="number" min="0"
                   class="w-full rounded-md border border-gray-300 dark:border-gray-600 dark:bg-gray-700 focus:border-blue-500 dark:focus:border-blue-400 focus:ring-2 focus:ring-blue-500 focus:ring-opacity-30 transition-colors">
               </div>
             </div>
@@ -789,6 +794,7 @@ import FormModal from '~/components/admin/FormModal.vue'
 import ToggleSwitch from '~/components/common/ToggleSwitch.vue'
 import { createLogger } from '~/utils/logger'
 import { roundUpToTen } from '~/utils/currency'
+import currentOkiKisenFares from '~/data/okiKisenFares20260601.json'
 import PrimaryButton from '@/components/common/PrimaryButton.vue'
 import SecondaryButton from '@/components/common/SecondaryButton.vue'
 import {
@@ -2110,128 +2116,17 @@ const setDefaultData = () => {
       seatClass: Partial<Record<SeatClassKey, number>>
       vehicle: Partial<Record<VehicleSizeKey, number>>
     }
-  > = {
-    'hondo-oki': {
-      adult: 3520,
-      child: 1760,
-      seatClass: {
-        class2: 3510,
-        class2Special: 4520,
-        class1: 6360,
-        classSpecial: 7930,
-        specialRoom: 8890
-      },
-      vehicle: {
-        under3m: 13750,
-        under4m: 18260,
-        under5m: 22870,
-        under6m: 27390,
-        under7m: 35530,
-        under8m: 40700,
-        under9m: 45760,
-        under10m: 50820,
-        under11m: 55870,
-        under12m: 60940,
-        over12mPer1m: 5070
+  > = Object.fromEntries(
+    Object.entries(currentOkiKisenFares.categories).map(([categoryId, values]) => [
+      categoryId,
+      {
+        adult: values.seatClass.class2,
+        child: roundUpToTen(values.seatClass.class2 / 2),
+        seatClass: values.seatClass,
+        vehicle: values.vehicle
       }
-    },
-    'dozen-dogo': {
-      adult: 1540,
-      child: 770,
-      seatClass: {
-        class2: 1600,
-        class2Special: 2120,
-        class1: 2910,
-        classSpecial: 3630,
-        specialRoom: 4120
-      },
-      vehicle: {
-        under3m: 5600,
-        under4m: 7470,
-        under5m: 9360,
-        under6m: 11220,
-        under7m: 13200,
-        under8m: 15180,
-        under9m: 17060,
-        under10m: 18920,
-        under11m: 20800,
-        under12m: 22660,
-        over12mPer1m: 1880
-      }
-    },
-    'beppu-hishiura': {
-      adult: 410,
-      child: 205,
-      seatClass: {
-        class2: 410,
-        class2Special: 630,
-        class1: 650,
-        classSpecial: 830,
-        specialRoom: 1150
-      },
-      vehicle: {
-        under3m: 950,
-        under4m: 1260,
-        under5m: 1590,
-        under6m: 1900,
-        under7m: 2230,
-        under8m: 2560,
-        under9m: 2870,
-        under10m: 3200,
-        under11m: 3510,
-        under12m: 3810,
-        over12mPer1m: 310
-      }
-    },
-    'hishiura-kuri': {
-      adult: 780,
-      child: 390,
-      seatClass: {
-        class2: 780,
-        class2Special: 1040,
-        class1: 1390,
-        classSpecial: 1730,
-        specialRoom: 2040
-      },
-      vehicle: {
-        under3m: 950,
-        under4m: 1260,
-        under5m: 1590,
-        under6m: 1900,
-        under7m: 2230,
-        under8m: 2560,
-        under9m: 2870,
-        under10m: 3200,
-        under11m: 3510,
-        under12m: 3810,
-        over12mPer1m: 310
-      }
-    },
-    'kuri-beppu': {
-      adult: 780,
-      child: 390,
-      seatClass: {
-        class2: 780,
-        class2Special: 1040,
-        class1: 1390,
-        classSpecial: 1730,
-        specialRoom: 2040
-      },
-      vehicle: {
-        under3m: 950,
-        under4m: 1260,
-        under5m: 1590,
-        under6m: 1900,
-        under7m: 2230,
-        under8m: 2560,
-        under9m: 2870,
-        under10m: 3200,
-        under11m: 3510,
-        under12m: 3810,
-        over12mPer1m: 310
-      }
-    }
-  }
+    ])
+  )
 
   const defaultCategories = FERRY_CATEGORY_DEFINITIONS.map(def => {
     const record = createEmptyCategoryRecord(def)
@@ -2323,7 +2218,7 @@ const saveFareData = async () => {
         category.routeIds.forEach(routeId => {
           const metadata = ROUTE_METADATA[routeId]
           const targetDocId = category.docIds[routeId] ?? buildFareDocId(versionId, routeId)
-          const adult = pickNumber(category.seatClass.second)
+          const adult = pickNumber(category.seatClass.class2)
           const child = calculateChildFare(adult)
           const disabledAdult = pickNumber(category.disabledAdult)
           const disabledChild = disabledAdult ? calculateChildFare(disabledAdult) : null

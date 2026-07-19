@@ -39,8 +39,8 @@ push後の公開だけを再実行する場合は、workflow_dispatchの `publis
 npm run transport:update -- --source jal-oki-flights --target dev --dry-run
 npm run transport:check -- --source jal-oki-flights
 npm run transport:build -- --source jal-oki-flights
-npm run transport:publish -- --source jal-oki-flights --target dev
-npm run transport:smoke -- --source jal-oki-flights --target dev
+npm run transport:publish -- --source jal-oki-flights --target dev --git-sha <commit-sha>
+npm run transport:smoke -- --source jal-oki-flights --target dev --git-sha <commit-sha>
 ```
 
 prodへは直接publishせず、リリースQAとGo承認後にdevの `data/manifests/public-timetable.json` とリリースコミットSHAを指定して `transport:promote` を実行する。

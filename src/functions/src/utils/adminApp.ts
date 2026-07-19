@@ -24,11 +24,14 @@ export const ensureAdminApp = () => {
 
   if (process.env.FUNCTIONS_EMULATOR === 'true') {
     try {
+      const firestoreEmulatorHost = process.env.FIRESTORE_EMULATOR_HOST ||
+        `127.0.0.1:${process.env.NUXT_PUBLIC_FIRESTORE_EMULATOR_PORT || '8751'}`
+      process.env.FIRESTORE_EMULATOR_HOST = firestoreEmulatorHost
       admin.firestore().settings({
-        host: 'localhost:8095',
+        host: firestoreEmulatorHost,
         ssl: false
       })
-      console.info('🔥 Functions: Connected to Firestore emulator on localhost:8095')
+      console.info(`🔥 Functions: Connected to Firestore emulator on ${firestoreEmulatorHost}`)
     } catch (error) {
       console.warn('⚠️ Functions: Firestore emulator connection failed:', error)
     }

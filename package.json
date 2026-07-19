@@ -16,7 +16,7 @@
     "dev:full": "concurrently -k --kill-others-on-fail --kill-signal SIGINT --names \"emulators,portless\" \"npm run firebase:emulators:with-data\" \"npm run dev\"",
     "dev:full:local": "concurrently -k --kill-others-on-fail --kill-signal SIGINT --names \"emulators,nuxt\" \"npm run firebase:emulators:with-data\" \"npm run dev:local\"",
     "pregenerate": "npm run gtfs:config:generate",
-    "generate": "nuxt generate",
+    "generate": "nuxt generate && node scripts/generate-service-worker.mjs",
     "preview": "nuxt preview",
     "postinstall": "nuxt prepare",
     "test": "vitest --run",
@@ -30,6 +30,7 @@
     "test:helpers": "vitest run src/test/unit/api/helpers.test.ts",
     "test:all": "vitest run src/test/unit/api/ src/test/integration/",
     "test:e2e": "playwright test",
+    "test:e2e:prod": "PLAYWRIGHT_STATIC_ROOT=.output/public PLAYWRIGHT_PORT=3031 playwright test",
     "test:e2e:ui": "playwright test --ui",
     "test:e2e:appstore-screenshots": "APPSTORE_STATIC_ROOT=.output/public APPSTORE_SCREENSHOT_DIR=output/appstore-screenshots/ios-6.7-ja playwright test -c playwright.appstore.config.ts src/test/e2e/appstore-screenshots.spec.ts --workers=1",
     "lint": "eslint src",
@@ -58,10 +59,10 @@
     "cap:ios:appstore-screenshots": "node scripts/capture-ios-simulator-screenshots.mjs",
     "build-prod": "run-s build-prod:firebase build-prod:build",
     "build-prod:firebase": "firebase use prod",
-    "build-prod:build": "NODE_ENV=production nuxt generate --dotenv .env.production",
+    "build-prod:build": "NODE_ENV=production nuxt generate --dotenv .env.production && node scripts/generate-service-worker.mjs",
     "build-dev": "run-s build-dev:firebase build-dev:build",
     "build-dev:firebase": "firebase use dev",
-    "build-dev:build": "NODE_ENV=development nuxt generate --dotenv .env.development",
+    "build-dev:build": "NODE_ENV=development nuxt generate --dotenv .env.development && node scripts/generate-service-worker.mjs",
     "deploy-prod": "run-s build-prod deploy:only",
     "deploy-prod:hosting": "run-s build-prod:build firebase:deploy:hosting",
     "deploy-dev": "run-s build-dev deploy:only:dev",
@@ -94,7 +95,8 @@
     "transport:update": "node scripts/transport/orchestrate.mjs update",
     "transport:check:timetable": "node scripts/transport/check-timetable.mjs",
     "transport:smoke:storage": "node scripts/transport/smoke-storage.mjs",
-    "transport:promote": "node scripts/transport/promote.mjs"
+    "transport:promote": "node scripts/transport/promote.mjs",
+    "fare:promote:prod": "node scripts/fare/promote-dev-fare-to-prod.mjs"
   },
   "portless": {
     "name": "ferry-transit",
@@ -175,6 +177,9 @@
     "lodash": "4.18.1",
     "minimatch": "^10.2.1",
     "nanotar": "^0.3.0",
+    "@google-cloud/firestore": {
+      "google-gax": "^4.6.1"
+    },
     "google-gax": "^5.0.6",
     "http-proxy-agent": "^9.0.0",
     "protobufjs": "^7.6.4",

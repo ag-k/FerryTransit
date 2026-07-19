@@ -734,11 +734,12 @@ import { watch, nextTick } from 'vue'
 import type { FareVersion } from '@/types/fare'
 import { roundUpToTen } from '@/utils/currency'
 import { mapHighspeedToCanonicalRoute, normalizeRouteId } from '@/utils/fareRoutes'
+import { formatFareVersionLabel } from '@/utils/fareVersionLabel'
 
 // Composables
 const { formatCurrency, getAllFares } = useFareDisplay()
 const fareStore = process.client ? useFareStore() : null
-const { t, te } = useI18n({ useScope: 'global' })
+const { t, te, locale } = useI18n({ useScope: 'global' })
 
 // State
 const activeTransport = ref<'ship' | 'bus'>('ship')
@@ -927,12 +928,7 @@ const localVersion = computed<FareVersion | null>(() =>
 )
 
 const formatVersionLabel = (version: FareVersion | null): string => {
-  if (!version) return ''
-  const label = version.name || '現行版'
-  if (version.effectiveFrom === '1970-01-01') {
-    return label
-  }
-  return `${label}`
+  return formatFareVersionLabel(version, locale.value, (key, params) => t(key, params))
 }
 
 const activeVersionLabel = computed(() => {

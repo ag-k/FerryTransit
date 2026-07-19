@@ -3,10 +3,11 @@ import { resolve } from 'node:path'
 import { pathToFileURL } from 'node:url'
 
 const moduleUrl = pathToFileURL(resolve('scripts/lib/transport-data.mjs')).href
-const { createPublishManifest, formatGtfsDate, normalizeGtfsTime, sha256 } = await import(moduleUrl) as {
+const { createPublishManifest, formatGtfsDate, normalizeGtfsTime, requireReleaseGitSha, sha256 } = await import(moduleUrl) as {
   formatGtfsDate: (value: string) => string | null
   normalizeGtfsTime: (value: string, options?: { includeSeconds?: boolean }) => string | null
   sha256: (contents: string | Buffer) => string
+  requireReleaseGitSha: (value?: string) => string
   createPublishManifest: (options: {
     sourceId: string
     environment: string
@@ -42,5 +43,12 @@ describe('transport-data', () => {
       gitSha: 'abc',
       objects: [{ path: 'data/a.json' }, { path: 'data/z.json' }]
     })
+  })
+
+  it('公開用Git SHAは40桁の16進数だけを受理する', () => {
+    const sha = 'a'.repeat(40)
+    expect(requireReleaseGitSha(sha)).toBe(sha)
+    expect(() => requireReleaseGitSha()).toThrow('40桁')
+    expect(() => requireReleaseGitSha('abc')).toThrow('40桁')
   })
 })

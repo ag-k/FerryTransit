@@ -1295,16 +1295,46 @@ const handleFileSelect = (event: Event) => {
   }
 }
 
+const parseCSVLine = (line: string): string[] => {
+  const values: string[] = []
+  let current = ''
+  let quoted = false
+
+  for (let index = 0; index < line.length; index++) {
+    const character = line[index]
+    if (character === '"') {
+      if (quoted && line[index + 1] === '"') {
+        current += '"'
+        index += 1
+      } else {
+        quoted = !quoted
+      }
+      continue
+    }
+
+    if (character === ',' && !quoted) {
+      values.push(current.trim())
+      current = ''
+      continue
+    }
+
+    current += character
+  }
+
+  values.push(current.trim())
+  return values
+}
+
 const importCSVFile = async (file: File) => {
   try {
     const text = await file.text()
     const lines = text.split('\n').filter(line => line.trim())
-    const headers = (lines[0] ?? '').split(',').map(h => h.trim())
+    const headers = parseCSVLine(lines[0] ?? '')
 
     const operations = []
 
     for (let i = 1; i < lines.length; i++) {
-      const values = (lines[i] ?? '').split(',').map(v => v.trim())
+      const values = parseCSVLine(lines[i] ?? '')
       const row: Partial<AdminTimetableForm> & { status?: number } = {}
       let status = 0
 

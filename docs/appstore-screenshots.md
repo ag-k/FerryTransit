@@ -78,3 +78,4 @@ npm run cap:ios:appstore-screenshots
   - `APPSTORE_TIMETABLE_JSON_PATH`（既定: `timetable.json`）
   - `IOS_SIM_SKIP_CAP_BUILD=1`
   - `IOS_SIM_SKIP_XCODEBUILD=1`
+  - `IOS_SIM_SKIP_XCODE_CLEAN=1`（通常は依存更新後の古いDerivedData混在を防ぐためクリーンビルド）

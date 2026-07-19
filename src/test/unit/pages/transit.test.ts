@@ -237,6 +237,16 @@ describe('Transit Page', () => {
     expect(wrapper.find('h2').text()).toBe('TRANSIT')
   })
 
+  it('provides accessible names for date and time inputs', async () => {
+    const wrapper = createWrapper()
+
+    expect(wrapper.findComponent({ name: 'DatePicker' }).props('ariaLabel')).toBe('DATE')
+    expect(wrapper.find('input[type="time"]').attributes('aria-label')).toBe('DEPARTURE_TIME')
+
+    await wrapper.find('select[aria-label="TIME"]').setValue('true')
+    expect(wrapper.find('input[type="time"]').attributes('aria-label')).toBe('ARRIVAL_TIME')
+  })
+
   it('shows vehicle length select when car boarding is enabled', async () => {
     const wrapper = createWrapper()
     await flushPromises()
@@ -389,6 +399,9 @@ describe('Transit Page', () => {
     await wrapper.vm.$nextTick()
 
     expect(wrapper.find('[data-testid="route-badge-cancelled"]').exists()).toBe(true)
+    expect(wrapper.find('[data-test="cancel-status-icon"]').classes()).toEqual(
+      expect.arrayContaining(['hover:bg-red-50', 'hover:ring-red-300', 'focus-visible:ring-red-500'])
+    )
   })
 
   it('shows CHANGED badge in result header when the route includes a changed segment', async () => {

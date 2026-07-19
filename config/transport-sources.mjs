@@ -30,7 +30,7 @@ export const TRANSPORT_SOURCE_OPERATIONS = Object.freeze({
   }),
   'ichibata-bus-connection': Object.freeze({
     id: 'ichibata-bus-connection', sourceType: 'gtfs', officialUrl: 'https://bus.ichibata.co.jp/oki-kisen/oki-kisen-sichirui/',
-    sourceUrl: 'https://bus.ichibata.co.jp/media/oki_2026_dia.pdf',
+    sourceUrl: 'https://bus.ichibata.co.jp/media/r8_0718_kisen_dia.pdf',
     feedId: 'ichibata_bus_connection', conversionTask: 'npm run gtfs:convert:ichibata:2026', conversionArgs: ['--current']
   })
 })

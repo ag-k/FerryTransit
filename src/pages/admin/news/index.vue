@@ -13,6 +13,7 @@
       <div class="flex flex-col sm:flex-row gap-3">
         <select
           v-model="filterCategory"
+          aria-label="カテゴリーで絞り込む"
           class="w-full sm:w-auto rounded-md border border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white focus:border-blue-500 dark:focus:border-blue-400 focus:ring-2 focus:ring-blue-500 focus:ring-opacity-30 transition-colors px-3 py-2"
         >
           <option value="">すべてのカテゴリー</option>
@@ -23,6 +24,7 @@
         </select>
         <select
           v-model="filterStatus"
+          aria-label="公開状態で絞り込む"
           class="w-full sm:w-auto rounded-md border border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white focus:border-blue-500 dark:focus:border-blue-400 focus:ring-2 focus:ring-blue-500 focus:ring-opacity-30 transition-colors px-3 py-2"
         >
           <option value="">すべての状態</option>
@@ -291,6 +293,14 @@ const formatDateTime = (date: Date | Timestamp) => {
   return date.toLocaleString('ja-JP')
 }
 
+const normalizePublishDate = (date: News['publishDate'] | Timestamp): Date | null => {
+  if (date instanceof Timestamp) return date.toDate()
+  if (date instanceof Date) return date
+
+  const parsedDate = new Date(date)
+  return Number.isNaN(parsedDate.getTime()) ? null : parsedDate
+}
+
 const previewNews = (news: News & { id: string }) => {
   previewData.value = news
   showPreviewModal.value = true
@@ -350,8 +360,10 @@ const updateNewsStatus = async () => {
   const updates: Array<{ id: string; data: Partial<News> }> = []
 
   for (const news of newsList.value) {
+    const publishDate = normalizePublishDate(news.publishDate)
+
     // 予約投稿の公開処理
-    if (news.status === 'scheduled' && news.publishDate instanceof Date && news.publishDate <= now) {
+    if (news.status === 'scheduled' && publishDate && publishDate <= now) {
       updates.push({
         id: news.id,
         data: { status: 'published' }

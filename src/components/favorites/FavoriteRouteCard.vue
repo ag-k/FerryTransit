@@ -74,6 +74,13 @@
         >
           {{ routeDetailText }}
         </p>
+        <p
+          v-if="withCar"
+          data-testid="favorite-vehicle-condition"
+          class="mt-1 text-xs leading-snug text-gray-500 dark:text-gray-400"
+        >
+          {{ $t('VIA_CAR') }} / {{ vehicleLengthLabel }}
+        </p>
       </div>
     </div>
 
@@ -87,10 +94,7 @@
         class="flex-1"
         :to="{
           path: localePath('/'),
-          query: {
-            departure: departure,
-            arrival: arrival
-          }
+          query: favoriteSearchQuery
         }"
       >
         <svg
@@ -114,10 +118,7 @@
         class="flex-1"
         :to="{
           path: localePath('/transit'),
-          query: {
-            departure: departure,
-            arrival: arrival
-          }
+          query: favoriteSearchQuery
         }"
       >
         <svg
@@ -184,10 +185,17 @@ import ConfirmDialog from '~/components/ui/ConfirmDialog.vue'
 import { createLogger } from '~/utils/logger'
 import PortBadges from '@/components/common/PortBadges.vue'
 import { loadBusRouteLabelsForStops, type BusRouteLabel } from '@/utils/gtfsBusTimetable'
+import {
+  DEFAULT_VEHICLE_LENGTH_METERS,
+  getVehicleLengthLabelKey,
+  normalizeVehicleLengthMeters
+} from '@/utils/vehicleFare'
 
 interface Props {
   departure: string
   arrival: string
+  withCar?: boolean
+  vehicleLengthMeters?: number
   lastSearchDate?: string
 }
 
@@ -291,6 +299,28 @@ const routeDetailText = computed(() => routeLabels.value
   .filter(Boolean)
   .join(' / '))
 
+const normalizedVehicleLength = computed(() => normalizeVehicleLengthMeters(
+  props.vehicleLengthMeters ?? DEFAULT_VEHICLE_LENGTH_METERS
+))
+
+const vehicleLengthLabel = computed(() => {
+  const key = getVehicleLengthLabelKey(normalizedVehicleLength.value)
+  return key
+    ? t(key)
+    : t('VEHICLE_LENGTH_METERS', { meters: normalizedVehicleLength.value })
+})
+
+const favoriteSearchQuery = computed(() => ({
+  departure: props.departure,
+  arrival: props.arrival,
+  ...(props.withCar
+    ? {
+        withCar: '1',
+        vehicleLengthMeters: String(normalizedVehicleLength.value)
+      }
+    : {})
+}))
+
 const loadRouteLabels = async () => {
   if (!ferryStore?.isStopLocation?.(props.departure) || !ferryStore?.isStopLocation?.(props.arrival)) {
     routeLabels.value = []
@@ -324,7 +354,10 @@ const handleDelete = () => {
   
   // お気に入りルートを検索
   const favoriteRoute = favoriteStore.routes.find(r => 
-    r.departure === props.departure && r.arrival === props.arrival
+    r.departure === props.departure &&
+    r.arrival === props.arrival &&
+    Boolean(r.withCar) === Boolean(props.withCar) &&
+    (!props.withCar || (r.vehicleLengthMeters ?? 5) === normalizedVehicleLength.value)
   )
   
   if (favoriteRoute) {

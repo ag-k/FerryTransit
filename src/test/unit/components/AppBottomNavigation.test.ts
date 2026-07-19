@@ -34,6 +34,21 @@ describe('AppBottomNavigation', () => {
     expect(wrapper.find('[data-testid="bottom-nav-item-SETTINGS"]').exists()).toBe(true)
   })
 
+  it('allows long navigation labels to wrap instead of truncating them', () => {
+    const wrapper = mount(AppBottomNavigation, {
+      global: {
+        mocks: {
+          $t: (key: string) => key === 'STATUS' ? 'Service Status' : key
+        }
+      }
+    })
+
+    const statusLabel = wrapper.find('[data-testid="bottom-nav-item-STATUS"] span:nth-of-type(2)')
+    expect(statusLabel.text()).toBe('Service Status')
+    expect(statusLabel.classes()).toContain('whitespace-normal')
+    expect(statusLabel.classes()).not.toContain('truncate')
+  })
+
   it('sets aria-current on active item (supports locale-prefixed route)', () => {
     global.useRoute = vi.fn(() => ({
       path: '/en/transit',

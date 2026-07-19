@@ -226,7 +226,7 @@ import {
   type BusRouteValiditySummary
 } from '@/utils/gtfsBusTimetable'
 import {
-  buildTransportTimetableValidityRows,
+  buildAvailableTransportTimetableValidityRows,
   normalizeTimetableValidityDate,
   type TimetableValidityRow,
   type TimetableValiditySource
@@ -293,7 +293,7 @@ const timetableValidityRows = computed<TimetableValidityRow[]>(() => {
     })
   }
 
-  return buildTransportTimetableValidityRows(sources, locale.value)
+  return buildAvailableTransportTimetableValidityRows(sources, locale.value)
 })
 
 const formatModeLabel = (mode: TransportMode): string => {

@@ -108,7 +108,7 @@
     "end_date": "20260831"
   },
   {
-    "service_id": "service_shichirui_20260901_20261009",
+    "service_id": "service_shichirui_20260901_20261031",
     "monday": "1",
     "tuesday": "1",
     "wednesday": "1",
@@ -117,22 +117,10 @@
     "saturday": "1",
     "sunday": "1",
     "start_date": "20260901",
-    "end_date": "20261009"
-  },
-  {
-    "service_id": "service_shichirui_20261010_20261031",
-    "monday": "1",
-    "tuesday": "1",
-    "wednesday": "1",
-    "thursday": "1",
-    "friday": "1",
-    "saturday": "1",
-    "sunday": "1",
-    "start_date": "20261010",
     "end_date": "20261031"
   },
   {
-    "service_id": "service_shichirui_20261101_20261108",
+    "service_id": "service_shichirui_20261101_20261231",
     "monday": "1",
     "tuesday": "1",
     "wednesday": "1",
@@ -141,30 +129,6 @@
     "saturday": "1",
     "sunday": "1",
     "start_date": "20261101",
-    "end_date": "20261108"
-  },
-  {
-    "service_id": "service_shichirui_20261109_20261220",
-    "monday": "1",
-    "tuesday": "1",
-    "wednesday": "1",
-    "thursday": "1",
-    "friday": "1",
-    "saturday": "1",
-    "sunday": "1",
-    "start_date": "20261109",
-    "end_date": "20261220"
-  },
-  {
-    "service_id": "service_shichirui_20261221_20261231",
-    "monday": "1",
-    "tuesday": "1",
-    "wednesday": "1",
-    "thursday": "1",
-    "friday": "1",
-    "saturday": "1",
-    "sunday": "1",
-    "start_date": "20261221",
     "end_date": "20261231"
   },
   {
@@ -240,7 +204,7 @@
     "end_date": "20260816"
   },
   {
-    "service_id": "service_sakaiminato_20260817_20260831",
+    "service_id": "service_sakaiminato_20260817_20261031",
     "monday": "1",
     "tuesday": "1",
     "wednesday": "1",
@@ -249,34 +213,10 @@
     "saturday": "1",
     "sunday": "1",
     "start_date": "20260817",
-    "end_date": "20260831"
-  },
-  {
-    "service_id": "service_sakaiminato_20260901_20261009",
-    "monday": "1",
-    "tuesday": "1",
-    "wednesday": "1",
-    "thursday": "1",
-    "friday": "1",
-    "saturday": "1",
-    "sunday": "1",
-    "start_date": "20260901",
-    "end_date": "20261009"
-  },
-  {
-    "service_id": "service_sakaiminato_20261010_20261031",
-    "monday": "1",
-    "tuesday": "1",
-    "wednesday": "1",
-    "thursday": "1",
-    "friday": "1",
-    "saturday": "1",
-    "sunday": "1",
-    "start_date": "20261010",
     "end_date": "20261031"
   },
   {
-    "service_id": "service_sakaiminato_20261101_20261108",
+    "service_id": "service_sakaiminato_20261101_20261130",
     "monday": "1",
     "tuesday": "1",
     "wednesday": "1",
@@ -285,22 +225,10 @@
     "saturday": "1",
     "sunday": "1",
     "start_date": "20261101",
-    "end_date": "20261108"
-  },
-  {
-    "service_id": "service_sakaiminato_20261109_20261130",
-    "monday": "1",
-    "tuesday": "1",
-    "wednesday": "1",
-    "thursday": "1",
-    "friday": "1",
-    "saturday": "1",
-    "sunday": "1",
-    "start_date": "20261109",
     "end_date": "20261130"
   },
   {
-    "service_id": "service_sakaiminato_20261201_20261220",
+    "service_id": "service_sakaiminato_20261201_20261231",
     "monday": "1",
     "tuesday": "1",
     "wednesday": "1",
@@ -309,18 +237,6 @@
     "saturday": "1",
     "sunday": "1",
     "start_date": "20261201",
-    "end_date": "20261220"
-  },
-  {
-    "service_id": "service_sakaiminato_20261221_20261231",
-    "monday": "1",
-    "tuesday": "1",
-    "wednesday": "1",
-    "thursday": "1",
-    "friday": "1",
-    "saturday": "1",
-    "sunday": "1",
-    "start_date": "20261221",
     "end_date": "20261231"
   }
 ]

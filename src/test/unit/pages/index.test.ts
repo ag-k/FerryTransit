@@ -55,7 +55,7 @@ const mockHistoryStore = {
 };
 
 const mockFareStore = {
-  fareMaster: null,
+  fareMaster: null as any,
   getFareByRoute: vi.fn(),
   loadFareMaster: vi.fn().mockResolvedValue(undefined),
 };
@@ -139,7 +139,9 @@ const mountIndexPage = () =>
           emits: ["update:departure", "update:arrival", "reverse"],
         },
         FavoriteButton: {
+          name: "FavoriteButton",
           template: '<button data-test="favorite-button">Favorite</button>',
+          props: ["type", "route", "port"],
         },
         FerryMap: {
           template: '<div data-test="ferry-map" :data-transport-mode="transportMode" :data-bus-stop-count="busStops.length">FerryMap</div>',
@@ -153,7 +155,8 @@ const mountIndexPage = () =>
           props: ["name"],
         },
         CommonShipModal: {
-          template: '<div v-if="visible" data-test="ship-modal">Modal</div>',
+          name: "CommonShipModal",
+          template: '<div v-if="visible" data-test="ship-modal" :data-ship-id="shipId">Modal</div>',
           props: ["visible", "title", "type", "shipId", "portId", "portZoom", "content"],
           emits: ["update:visible"],
         },
@@ -188,6 +191,9 @@ describe("IndexPage (時刻表ページ)", () => {
     mockUseFerryData.isLoading.value = false;
     mockUseFerryData.error.value = null;
     mockFerryStore.busStopLocations = {};
+    mockFareStore.fareMaster = null;
+    mockFareStore.getFareByRoute.mockReset();
+    mockFareStore.loadFareMaster.mockResolvedValue(undefined);
     mockRouter.push.mockReset();
     vi.clearAllMocks();
     mockGtfsBusTimetable.getLocationTypeForCode.mockImplementation((value?: string) =>
@@ -463,6 +469,61 @@ describe("IndexPage (時刻表ページ)", () => {
         vehicleLengthMeters: 7,
       }));
     });
+
+    it("選択日の航路運賃から車長別の車両運賃を表示する", async () => {
+      const selectedDate = new Date("2026-07-16T00:00:00+09:00");
+      mockUseFerryData.departure.value = "HONDO_SHICHIRUI";
+      mockUseFerryData.arrival.value = "SAIGO";
+      mockUseFerryData.selectedDate.value = selectedDate;
+      mockUseFerryData.filteredTimetable.value = [{
+        tripId: 1001,
+        startDate: "2026-01-01",
+        endDate: "2026-12-31",
+        name: "FERRY_OKI",
+        mode: "FERRY",
+        departure: "HONDO_SHICHIRUI",
+        departureTime: "09:00",
+        arrival: "SAIGO",
+        arrivalTime: "11:25",
+        status: 0,
+        price: 3870,
+      }] as any;
+      mockFareStore.fareMaster = { versions: [] };
+      mockFareStore.getFareByRoute.mockReturnValue({
+        id: "hondo_shichirui-saigo",
+        departure: "HONDO_SHICHIRUI",
+        arrival: "SAIGO",
+        fares: {
+          adult: 3870,
+          child: 1940,
+          vehicle: { under7m: 35530 },
+        },
+        vesselType: "ferry",
+      });
+
+      const wrapper = mountIndexPage();
+      await flushPromises();
+      const vm = wrapper.vm as typeof wrapper.vm & {
+        withCar: boolean
+        vehicleLengthMeters: number
+      };
+      vm.withCar = true;
+      vm.vehicleLengthMeters = 7;
+      await wrapper.vm.$nextTick();
+
+      expect(wrapper.text()).toContain("VEHICLE_FARE_WITH_DRIVER: ¥35,530");
+      expect(mockFareStore.getFareByRoute).toHaveBeenCalledWith(
+        "HONDO_SHICHIRUI",
+        "SAIGO",
+        { date: selectedDate, vesselType: "ferry" }
+      );
+      expect(wrapper.findComponent({ name: "FavoriteButton" }).props("route")).toEqual({
+        departure: "HONDO_SHICHIRUI",
+        arrival: "SAIGO",
+        withCar: true,
+        vehicleLengthMeters: 7,
+      });
+    });
   });
 
   describe("時刻表ヘッダーのサマリー表示", () => {
@@ -643,6 +704,50 @@ describe("IndexPage (時刻表ページ)", () => {
       expect(wrapper.text()).not.toContain("FERRY_OKI");
     });
 
+    it("バスと航空の交通機関名から公式情報モーダルを開ける", async () => {
+      mockUseFerryData.timetableData.value = [
+        {
+          tripId: 7000001,
+          startDate: "2026-03-29",
+          endDate: "2026-10-24",
+          name: "OKI_AIRPORT_BUS",
+          mode: "BUS",
+          departure: "AIRPORT_OKI",
+          departureTime: "14:50",
+          arrival: "SAIGO",
+          arrivalTime: "15:00",
+          status: 0,
+        },
+        {
+          tripId: 8000001,
+          startDate: "2026-03-29",
+          endDate: "2026-10-24",
+          name: "JAL_OKI_ITAMI",
+          mode: "AIR",
+          vehicleId: "JAL2331",
+          departure: "AIRPORT_ITAMI",
+          departureTime: "13:45",
+          arrival: "AIRPORT_OKI",
+          arrivalTime: "14:35",
+          status: 0,
+        },
+      ] as any;
+      mockUseFerryData.filteredTimetable.value = mockUseFerryData.timetableData.value as any;
+
+      const wrapper = mountIndexPage();
+      await flushPromises();
+      const tabs = wrapper.findAll('[role="tab"]');
+
+      await tabs[1]!.trigger("click");
+      await wrapper.find('[data-test="transport-details-link"]').trigger("click");
+      expect(wrapper.find('[data-test="ship-modal"]').attributes("data-ship-id")).toBe("OKI_AIRPORT_BUS");
+
+      await wrapper.findComponent({ name: "CommonShipModal" }).vm.$emit("update:visible", false);
+      await tabs[2]!.trigger("click");
+      await wrapper.find('[data-test="transport-details-link"]').trigger("click");
+      expect(wrapper.find('[data-test="ship-modal"]').attributes("data-ship-id")).toBe("JAL_OKI_ITAMI");
+    });
+
     it("停留所間の時刻表ではbus-searchの直行バス便を表示する", async () => {
       mockUseFerryData.selectedDate.value = new Date("2026-05-26T00:00:00+09:00");
       mockUseFerryData.departure.value = "BUS_AMA_115_01";
@@ -718,12 +823,72 @@ describe("IndexPage (時刻表ページ)", () => {
       expect(tabs[1]).toBeTruthy();
       await tabs[1]!.trigger("click");
 
-      expect(form().props("allowedLocationType")).toBe("STOP");
+      expect(form().props("allowedLocationType")).toBe("ALL");
 
       expect(tabs[2]).toBeTruthy();
       await tabs[2]!.trigger("click");
 
       expect(form().props("allowedLocationType")).toBe("AIRPORT");
+    });
+
+    it("既存の航空経路からバスへ切り替えて経路がクリアされてもバス選択を維持する", async () => {
+      mockGtfsBusTimetable.getLocationTypeForCode.mockImplementation((value?: string) => {
+        if (typeof value === "string" && value.startsWith("AIRPORT_")) return "AIRPORT";
+        if (typeof value === "string" && value.startsWith("BUS_")) return "STOP";
+        return "PORT";
+      });
+      mockFerryStore.departure.value = "AIRPORT_OKI";
+      mockFerryStore.arrival.value = "AIRPORT_ITAMI";
+      mockUseFerryData.departure.value = "AIRPORT_OKI";
+      mockUseFerryData.arrival.value = "AIRPORT_ITAMI";
+
+      const wrapper = mountIndexPage();
+      await flushPromises();
+
+      const tabs = wrapper.findAll('[role="tab"]');
+      expect(tabs[2]!.attributes("aria-selected")).toBe("true");
+
+      await tabs[1]!.trigger("click");
+      await flushPromises();
+
+      expect(mockFerryStore.setDeparture).toHaveBeenCalledWith("");
+      expect(mockFerryStore.setArrival).toHaveBeenCalledWith("");
+      expect(tabs[1]!.attributes("aria-selected")).toBe("true");
+    });
+
+    it("空港と港を結ぶ空港連絡バスの発着地とバスタブを保持する", async () => {
+      mockGtfsBusTimetable.getLocationTypeForCode.mockImplementation((value?: string) => {
+        if (typeof value === "string" && value.startsWith("AIRPORT_")) return "AIRPORT";
+        if (typeof value === "string" && value.startsWith("BUS_")) return "STOP";
+        return "PORT";
+      });
+      mockFerryStore.departure.value = "AIRPORT_OKI";
+      mockFerryStore.arrival.value = "SAIGO";
+      mockUseFerryData.departure.value = "AIRPORT_OKI";
+      mockUseFerryData.arrival.value = "SAIGO";
+      mockUseFerryData.filteredTimetable.value = [{
+        tripId: 8100001,
+        startDate: "2026-03-29",
+        endDate: "2026-10-24",
+        name: "OKI_AIRPORT_BUS",
+        mode: "BUS",
+        departure: "AIRPORT_OKI",
+        departureTime: "14:50",
+        arrival: "SAIGO",
+        arrivalTime: "15:00",
+        status: 0,
+      }] as any;
+
+      const wrapper = mountIndexPage();
+      await flushPromises();
+
+      const tabs = wrapper.findAll('[role="tab"]');
+      expect(tabs[1]!.attributes("aria-selected")).toBe("true");
+      expect(wrapper.findComponent({ name: "TimetableForm" }).props("allowedLocationType")).toBe("ALL");
+      expect(mockFerryStore.setDeparture).not.toHaveBeenCalledWith("");
+      expect(mockFerryStore.setArrival).not.toHaveBeenCalledWith("");
+      expect(wrapper.text()).toContain("隠岐空港連絡バス");
+      expect(wrapper.text()).toContain("14:50");
     });
   });
 

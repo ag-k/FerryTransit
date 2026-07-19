@@ -4,13 +4,15 @@ import { Storage } from '@google-cloud/storage';
 import fs from 'fs';
 import path from 'path';
 import { fileURLToPath } from 'url';
+import { readEmulatorConfig } from './emulator-config.mjs';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
+const { hosts } = readEmulatorConfig(path.join(__dirname, '..'));
 
 // エミュレータに接続
 const storage = new Storage({
-  apiEndpoint: 'http://localhost:9199',
+  apiEndpoint: `http://${hosts.storage}`,
   projectId: 'oki-ferryguide'
 });
 

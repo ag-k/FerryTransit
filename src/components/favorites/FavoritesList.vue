@@ -24,6 +24,8 @@
               <FavoriteRouteCard
                 :departure="element.departure"
                 :arrival="element.arrival"
+                :with-car="element.withCar"
+                :vehicle-length-meters="element.vehicleLengthMeters"
                 :last-search-date="element.lastSearchDate"
               />
             </div>
@@ -39,6 +41,8 @@
           :key="route.id"
           :departure="route.departure"
           :arrival="route.arrival"
+          :with-car="route.withCar"
+          :vehicle-length-meters="route.vehicleLengthMeters"
           :last-search-date="route.lastSearchDate"
         />
       </div>
@@ -164,12 +168,12 @@ const favoritePorts = computed({
 const updateRouteOrder = () => {
   if (!favoriteStore) return
   const ids = favoriteRoutes.value.map(r => r.id)
-  favoriteStore.reorderRoutes(ids)
+  favoriteStore.reorderFavoriteRoutes(ids)
 }
 
 const updatePortOrder = () => {
   if (!favoriteStore) return
   const ids = favoritePorts.value.map(p => p.id)
-  favoriteStore.reorderPorts(ids)
+  favoriteStore.reorderFavoritePorts(ids)
 }
 </script>

@@ -112,6 +112,43 @@ describe('FavoriteRouteCard', () => {
     })
   })
 
+  it('車両条件を表示し、時刻表と乗換案内のqueryへ引き継ぐ', () => {
+    const wrapper = mount(FavoriteRouteCard, {
+      props: {
+        departure: 'HONDO_SHICHIRUI',
+        arrival: 'SAIGO',
+        withCar: true,
+        vehicleLengthMeters: 7
+      },
+      global: {
+        stubs: {
+          NuxtLink: NuxtLinkStub,
+          FavoriteButton: { template: '<button />' },
+          ConfirmDialog: { template: '<div />', props: ['isOpen'] }
+        },
+        config: {
+          globalProperties: {
+            $t: (key: string) => key
+          }
+        }
+      }
+    })
+
+    expect(wrapper.get('[data-testid="favorite-vehicle-condition"]').text())
+      .toBe('VIA_CAR / VEHICLE_SIZE_UNDER_7M')
+
+    const links = wrapper.findAllComponents(NuxtLinkStub)
+    expect(links).toHaveLength(2)
+    for (const link of links) {
+      expect((link.props('to') as any).query).toEqual({
+        departure: 'HONDO_SHICHIRUI',
+        arrival: 'SAIGO',
+        withCar: '1',
+        vehicleLengthMeters: '7'
+      })
+    }
+  })
+
   it('港IDが ports データに無い場合でも i18n 表示にフォールバックする（HONDO）', () => {
     const wrapper = mount(FavoriteRouteCard, {
       props: {

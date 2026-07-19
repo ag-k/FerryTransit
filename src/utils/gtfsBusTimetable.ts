@@ -813,7 +813,7 @@ export const buildBusTripsForRoute = (
     }
   }
 
-  return busTrips
+  return dedupeBusTrips(busTrips)
 }
 
 const buildBusTripFromStopPair = (
@@ -880,11 +880,16 @@ const dedupeBusTrips = (trips: Trip[]): Trip[] => {
 
   for (const trip of trips) {
     const key = [
-      trip.tripId,
+      trip.mode,
+      trip.operatorId,
+      trip.name,
+      trip.vehicleId,
+      trip.serviceId,
       trip.departure,
       trip.departureTime,
       trip.arrival,
-      trip.arrivalTime
+      trip.arrivalTime,
+      trip.via
     ].join('|')
     if (seen.has(key)) continue
     seen.add(key)

@@ -2,6 +2,74 @@
 
 ## 📋 未解決の障害
 
+### 🔴 BUG-007: iOSのコールド起動ディープリンクが対象画面へ遷移しない
+
+**報告日**: 2026年7月19日
+**優先度**: 🔥 高
+**ステータス**: 🧪 検証中
+
+#### 問題の内容
+iOS 26.5 Simulatorのproduction Release版で、起動中のアプリへ`ferrytransit://status`を渡すウォーム起動は運航状況へ遷移する一方、アプリを終了してから`ferrytransit://transit`でコールド起動すると時刻表トップに留まった。URL Schemeの確認ダイアログとアプリ起動までは成功するため、従来の確認では画面遷移の失敗を検出できていなかった。
+
+#### 原因
+JS側は`appUrlOpen`と`App.getLaunchUrl()`でURLを受け取っていたが、コールド起動ではWebViewとNuxt Routerの初期化順序によりイベントを取りこぼす場合があった。さらにiOSの`AppDelegate`は`didFinishLaunchingWithOptions`の起動URLをCapacitorの`ApplicationDelegateProxy`へ明示的に渡しておらず、ネイティブ側のフォールバックもなかった。
+
+#### 解決方法
+- JS側のディープリンク解析を`src/utils/deepLink.ts`へ分離し、`router.isReady()`完了後に`router.replace()`するよう修正
+- iOSのコールド起動URLを`ApplicationDelegateProxy`へ転送
+- URL受信時にネイティブWebViewへ遅延フォールバックを設定し、JS側が既に同一パスへ遷移済みなら再読み込みしないよう制御
+- URL形式とRouter準備順序の回帰テスト9件を追加
+
+#### 修正後検証（2026年7月19日）
+iOS 26.5のiPhone 17 Pro Simulatorへproduction Release版を再ビルド・インストールし、アプリ終了後の`ferrytransit://transit`が乗換案内へ、起動中の`ferrytransit://status`が運航状況へ遷移することを画面で確認した。全体テストは94 files・893 passed・1 skipped、lintは0 errors・既存warning 66件、`npm run cap:ios:build`とRelease Simulator buildは成功した。
+
+直近ログにはクラッシュ、Capacitorプラグイン例外、SSLエラーはなかった。iOS 26 Simulator由来のWebKit/Accessibilityログと、将来`UIScene`ライフサイクルが必須になる旨の既存警告は別途確認した。TestFlight配布版の実機でコールド/ウォーム起動とスワイプバックを再確認するため、ステータスは検証中を維持する。
+
+---
+
+### 🔴 BUG-006: 公開運賃版の新旧レコード重複で旧運賃・誤った車両運賃が表示される
+
+**報告日**: 2026年7月19日
+**優先度**: 🔥 高
+**ステータス**: ✅ 解決済み
+
+#### 問題の内容
+dev公開版の料金表で、隠岐汽船の2026年6月1日改定運賃が一部旧値のまま表示されていた。本土〜隠岐2等は公式3,870円に対して3,510円、別府〜菱浦2等は440円に対して410円だった。また、菱浦〜来居・来居〜別府の車両運賃が、より安い別府〜菱浦の値を誤用していた。
+
+#### 原因
+同じ有効版に旧・新のフェリー運賃レコード32件が混在し、公開画面のルート選択で旧レコードが先に採用されていた。管理画面はカテゴリ単位のフォールバックと方向別レコードを併用するため、既存版への保存だけでは重複を解消できなかった。加えて、保存処理が大人運賃を`category.seatClass.second`から取得しており、正しい`class2`を参照しないため、再公開JSONの`adult`/`child`が`null`になっていた。
+
+#### 解決方法
+- 更新前のStorage `data/fare-master.json`を`data/backups/fare-master-before-v2.4-20260719.json`へ保存
+- 旧版と紐づく32件を管理画面の正式な版削除処理で除去
+- 公式の旅客5区間×5等級、車両5区間×11区分から新しい2026年6月1日改定版を作成し、20方向レコードへ正規化
+- 大人運賃の参照を`category.seatClass.class2`へ修正し、小人運賃の10円単位切上げとともに回帰テストを追加
+- 公式値を`src/data/okiKisenFares20260601.json`へ単一ソース化し、管理画面フォールバックとテストで共有
+
+#### dev公開版での再検証（2026年7月19日）
+公開JSONの有効フェリー版は20件・20ユニーク方向で、`adult`/`child`の`null`は0件。通常Chromeで本土〜隠岐3,870/4,990/7,000/8,730/9,790円、菱浦〜来居・来居〜別府860/1,150/1,530/1,910/2,260円、両区間の車両1,520〜6,340円・12m超520円を確認し、公開画面のconsole error/warningは0件だった。
+
+#### production実データ確認（2026年7月19日）
+Pixel Tablet / Android 14のproductionアセット入りAPKで料金表を確認したところ、本土―隠岐2等3,510円、特別2等4,520円などの旧額が表示された。production Storageの`data/fare-master.json`（86,676 bytes、SHA-256 `6ba20b4cad3fbcfa61c0803e3fa880c91248f56571b325b9a7e438ba96176842`）を読み取り確認すると、有効フェリー版`7WWM8cmN6oIaRdANefxf`に32件・20ユニーク方向が残り、本土―隠岐に旧3,510円と新3,870円が重複していた。dev修正はproductionへ未昇格であり、prodデータを変更せずNo-Go要因として記録した。
+
+同日、`npm run fare:promote:prod -- --check-backend`で書き込みなしの認証付きpreflightを実施した。dev Storageの有効版20件とトップレベル20件が公式5区間の旅客・車両運賃に完全一致し、正規化指紋`036000ef9b35efecb27aaac83aefe1e0ff3e8a739e3ab5a740c8370dd4166483`で一致した。prodはStorageとFirestoreがともに32件であること、Storage generation `1780475546999564`、昇格候補が20件・20方向でdevと同じ指紋になることを確認した。専用昇格処理は未知引数と承認フラグなしの実行を拒否し、世代一致条件、更新前のローカル/prod Storageバックアップ、Firestore失敗時復元、更新後の両データストア再検証を備える。
+
+#### production反映・解決確認（2026年7月19日）
+
+明示承認後、`npm run fare:promote:prod -- --execute --approve-prod`でprod昇格を実行した。初回は更新前バックアップ`data/backups/fare-master-before-v2.4-promotion-2026-07-19T12-52-57-028Z.json`の作成後、`@google-cloud/firestore@7.11.6`が要求する`google-gax` 4系をリポジトリ全体overrideの5系が置換していたため、Firestore commit開始時に`ERR_PACKAGE_PATH_NOT_EXPORTED`で停止した。直後の認証付きpreflightでFirestore 32件、Storage generation `1780475546999564`がともに更新前のままであり、部分反映がないことを確認した。
+
+Firestore配下だけ`google-gax@4.6.1`を使う限定overrideへ修正し、fallback API解決と回帰テストを確認して再実行した。更新前データはローカル`output/releases/v2.4/fare-prod-backup-2026-07-19T12-55-34-578Z.json`とprod Storage `data/backups/fare-master-before-v2.4-promotion-2026-07-19T12-55-34-578Z.json`へ保存済み。反映後は次を独立に確認した。
+
+- prod StorageとFirestoreがともに20件、20ユニーク方向
+- 有効版ID`7WWM8cmN6oIaRdANefxf`と適用開始日`2026-06-01`を維持
+- Storage generation `1784465735731904`、正規化指紋`036000ef9b35efecb27aaac83aefe1e0ff3e8a739e3ab5a740c8370dd4166483`
+- ストア版アプリと同じクエリ追加なし公開URLがHTTP 200。本土〜西郷2等3,870円、島前〜島後1,760円、別府〜菱浦440円、菱浦〜来居・来居〜別府860円を返す
+- `ver2.2`・`ver2.3`・v2.4作業版の運賃Store、表示Composable、型、ルート正規化コードが同一Git blobで、公開JSONの既存契約を維持
+
+以上により、既存ストア版とのデータ互換性を維持したままproductionの誤運賃を解消したため、BUG-006を解決済みとする。既に起動中またはオフラインの端末は旧キャッシュを保持する場合があるため、オンラインでのコールド起動時に更新される。
+
+---
+
 ### 🔴 BUG-005: 検索履歴の時刻が再読み込み後に変わる
 
 **報告日**: 2026年7月15日
@@ -177,6 +245,107 @@ resume 分岐は、resumeTrips のいずれかが「`via` が本土、かつ出�
 dev Storageの実時刻表1,068件を一時的なローカルStorage Emulatorへ読み込み、通常Chromeで境港→菱浦（2026-07-05、08:00発）を再確認しました。17:27着（別府・いそかぜ）、17:52着（別府・フェリーどうぜん）、18:07着（来居・いそかぜ）の3件が表示され、全4ソートモードで3件が維持されることを確認しました。
 
 `npm run lint` は0 errors（既存warning 66件）、`npm run test` は80 files・811 passed・6 skippedです。リリースSHA固定後のdev公開版再確認を残すため、ステータスは検証中を維持します。
+
+---
+
+### 🔴 BUG-008: 英語表示のAndroidトップ画面で戻る操作がアプリを終了しない
+
+**報告日**: 2026年7月19日
+**優先度**: 🔥 高
+**ステータス**: 🧪 検証中
+
+#### 問題の内容
+Android 16エミュレータの英語表示で時刻表トップから戻る操作を行うと、Launcherへ終了せず、履歴上の直前画面へ戻る。
+
+#### 原因
+`src/plugins/capacitor.client.ts` のルート判定が `path === '/'` のみだった。i18nの英語トップは `/en`（末尾スラッシュ付きの場合は `/en/`）になるため、ルート画面でも `router.back()` が実行されていた。
+
+#### 修正と検証
+ロケールなしの `/` に加え、`/en`、`/ja`、末尾スラッシュ付きのロケールルートをトップとして判定する `isAppRootPath` を追加した。非ルート画面を誤判定しない回帰テストも追加した。
+
+productionアセットを同期したdebug署名APKをPixel 9 / Android 16（API 36）エミュレータへ導入し、履歴ありでは乗換案内から運航状況へ戻ること、英語トップではLauncherへ終了することを確認した。`npm run test`は95 files・903 passed・1 skipped、`npm run lint`は0 errors・既存warning 66件。Google Play内部テスト配布版の実機確認を残すため、ステータスは検証中とする。
+
+---
+
+### 🔴 BUG-009: Androidオフライン再起動後に直近の運航状況が消える
+
+**報告日**: 2026年7月19日
+**優先度**: 🔥 高
+**ステータス**: 🧪 検証中
+
+#### 問題の内容
+Android 16エミュレータでオンラインの運航状況を確認後、機内モードにしてアプリを強制終了・再起動すると、最終更新時刻は残る一方で、隠岐汽船と島前内航船が「運航情報なし」になる。
+
+#### 原因
+時刻表にはlocalStorageフォールバックがあったが、`fetchShipStatus`はAPI成功時の運航状況を永続化しておらず、新しいWebViewプロセスではストア初期値の`null`から復元できなかった。
+
+#### 修正と検証
+API取得に成功して1件以上の運航状況がある場合だけ、全運航状況と取得時刻をlocalStorageへ保存するようにした。API失敗時は直近キャッシュを復元し、壊れたJSONや有効な状態を含まないキャッシュは無視する。復元後も臨時便反映処理を実行する。
+
+productionアセット入りdebug署名APKを上書き導入し、Pixel 9 / Android 16（API 36）でオンラインの定期運航・波高1.0mを取得後、機内モードでプロセスを再起動した。修正版では同じ運航状況と更新時刻が表示された。通信復元と更新インストール後の英語設定保持も確認した。`npm run test`は95 files・905 passed・1 skipped、`npm run lint`は0 errors・既存warning 66件。Google Play内部テスト配布版の実機確認を残すため、ステータスは検証中とする。
+
+---
+
+### 🔴 BUG-010: Android API 23の初期WebViewで起動後に白画面になる
+
+**報告日**: 2026年7月19日
+**優先度**: 🔥 高
+**ステータス**: 🧪 検証中
+
+#### 問題の内容
+Android 6.0（API 23）の公式Google APIs arm64-v8aイメージへproductionアセット入りAPKを導入すると、起動後にステータスバーとナビゲーションバー以外が白画面になる。
+
+#### 原因
+公式API 23イメージの初期Android System WebViewは44.0.2403.117で、Capacitor 7.6.7の既定最低版60を下回る。Capacitorログに`System WebView is not supported`、アプリHTMLのインラインスクリプトに`Uncaught SyntaxError: Unexpected token =>`が記録され、Nuxtアプリの初期化前に停止していた。
+
+#### 修正と検証
+Capacitorの`server.errorPath`へ、スクリプトを含まないES5互換の`unsupported-webview.html`を設定した。最低版未満では通常アプリを読み込まず、日本語・英語でAndroid System WebViewの更新手順とGoogle Playへのリンクを表示する。更新済みWebViewの通常端末には影響しない。
+
+productionアセットを同期したdebug署名APKを同じAPI 23専用エミュレータへ上書き導入し、白画面が更新案内へ置き換わること、アクセシビリティツリーに見出し・説明・更新リンクが現れること、更新ボタンから端末の外部ブラウザでAndroid System WebViewのGoogle Playページを開けることを確認した。対象回帰テスト2件、`npm run cap:android:build`、`:app:assembleDebug`は成功。Google Play内部テスト配布版、実機、WebView更新後のAPI 23で主要機能確認を残すため、ステータスは検証中とする。
+
+---
+
+### ⚠️ BUG-011: CapacitorアプリでWeb用Service Workerが登録され未処理エラーになる
+
+**報告日**: 2026年7月19日
+**優先度**: ⚠️ 中
+**ステータス**: 🧪 検証中
+
+#### 問題の内容
+Pixel Tablet / Android 14のproductionアセット入りAPKを起動すると、WebViewログに`Uncaught (in promise) TypeError: Failed to execute 'addAll' on 'Cache': Request failed`が記録された。画面は表示できるが、Web向けアプリシェルキャッシュがCapacitor内でも登録され、更新後の古いアセット介入や不要なキャッシュ保持につながる。
+
+#### 原因
+`service-worker.client.ts`がHTTP(S)環境だけを登録条件にしており、`https://localhost`で動くCapacitor WebViewをホストWeb版と区別していなかった。
+
+#### 修正と検証
+`Capacitor.isNativePlatform()`ではService Workerを新規登録せず、過去のAPK上書きで残り得る登録を解除し、`ferry-transit-shell-*`キャッシュだけを削除するようにした。無関係なCache Storageは削除しない。ホストWeb版のHTTPS登録条件は維持した。
+
+回帰テスト5件、lint（0 errors・既存warning 66件）、production生成・Android同期、`:app:assembleDebug`が成功した。修正版を同じPixel Tabletへ上書きし、FerryTransitプロセスログにService Worker・`addAll`・未処理Promiseエラーがないこと、DevTools Protocolで`registrations: []`、`cacheNames: []`を直接確認した。Google Play内部テスト配布版での最終確認を残すため、ステータスは検証中とする。
+
+---
+
+### 🔴 BUG-012: バックグラウンド中の日付変更後も「本日」が前日のまま残る
+
+**報告日**: 2026年7月19日
+**優先度**: 🔥 高
+**ステータス**: 🧪 検証中
+
+#### 問題の内容
+Androidアプリで時刻表の既定日「本日」を表示したままバックグラウンドへ移動し、端末日付を翌日に進めて復帰すると、JavaScriptの現在日は翌日になっている一方、日付入力と時刻表見出しは前日のまま残った。乗換案内にも同じ固定日処理があり、日をまたいでアプリを使うと前日の便を検索する可能性があった。
+
+#### 原因
+時刻表と乗換案内の`today`が画面初期化時の`Date`として固定され、Capacitorの`appStateChange`やブラウザの`visibilitychange`/`focus`で再評価されていなかった。時刻表の`todayString`も依存値のないcomputed内で`new Date()`を生成していたため、同じマウント中はキャッシュされていた。
+
+#### 解決方法
+- JST基準の当日をリアクティブに管理する`useTodayRollover`を追加
+- Capacitorのアクティブ復帰、ブラウザの可視化・フォーカス時に日付境界を再確認
+- 既定の「本日」を表示中の場合だけ翌日へ追随し、URLやDatePickerで明示選択した過去・将来日は保持
+- 時刻表と乗換案内の両画面で共通処理を利用し、日付選択下限も翌日に更新
+
+#### 再検証（2026年7月19日）
+Pixel 3a / Android 14の専用AVDで端末日付を手動変更した。修正前は7月20→21の復帰後も入力と見出しが7月20のままだった。修正版productionアセット入りdebug APKでは、時刻表が7月21→22、乗換案内が7月23→24へ復帰時に追随した。一方、時刻表で明示選択した7月24は端末日付を7月22→23へ進めても保持された。自動時刻を復元し、最終ログにクラッシュ・ANR・SSL・Capacitor例外・未処理例外はなかった。
+
+共通処理の回帰テスト3件を追加し、全体99 files・915 passed・1 skipped、lint 0 errors・既存warning 66件、production Android同期とdebug APK生成に成功した。Google Play内部テスト配布版の実機で最終確認するため、ステータスは検証中を維持する。
 
 ---
 

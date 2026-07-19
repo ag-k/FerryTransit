@@ -47,7 +47,7 @@ import { useI18n } from 'vue-i18n'
 import HistoryItem from './HistoryItem.vue'
 import type { SearchHistoryItem } from '~/types/history'
 import { createLogger } from '~/utils/logger'
-import { DEFAULT_VEHICLE_LENGTH_METERS } from '@/utils/vehicleFare'
+import { buildHistorySearchQuery } from '@/utils/historySearch'
 
 const router = useRouter()
 const historyStore = process.client ? useHistoryStore() : null
@@ -142,24 +142,9 @@ const groupedHistory = computed(() => {
 })
 
 const handleSearch = (history: SearchHistoryItem) => {
-  // 検索履歴から再検索する場合は、元の検索日時（searchedAt）を使用
-  const searchedAtDate = new Date(history.searchedAt)
-
   router.push({
     path: localePath('/transit'),
-    query: {
-      departure: history.departure,
-      arrival: history.arrival,
-      date: history.date ? new Date(history.date).toISOString().slice(0, 10) : undefined,
-      time: history.time ? new Date(history.time).toTimeString().slice(0, 5) : undefined,
-      isArrivalMode: history.isArrivalMode ? '1' : '0',
-      ...(history.withCar ? {
-        withCar: '1',
-        vehicleLengthMeters: String(history.vehicleLengthMeters ?? DEFAULT_VEHICLE_LENGTH_METERS)
-      } : {}),
-      // 検索履歴の日時を使用（ISO形式で渡す）
-      searchedAt: searchedAtDate.toISOString()
-    }
+    query: buildHistorySearchQuery(history)
   })
 }
 

@@ -1,0 +1,6 @@
+stop_id,stop_code,stop_name,stop_desc,stop_lat,stop_lon,zone_id,stop_url,location_type,parent_station,platform_code
+matsue_station,matsue_station,松江駅,松江駅前バスターミナル9番のりば,35.464361,133.06285,,,0,,
+fuzoku_gakuen_iriguchi,fuzoku_gakuen_iriguchi,附属学園入口,松江駅発の接続バス経由停留所,35.47946100000006,133.063467,,,0,,
+rainbow_plaza_mae,rainbow_plaza_mae,レインボープラザ前,松江駅行き接続バス経由停留所,35.48044134431981,133.06465342327292,,,0,,
+shichirui_port,shichirui_port,七類港,フェリーはフェリーターミナル正面バス停、高速船は接岸岸壁そば,35.57113300000003,133.23002099999997,,,0,,
+sakaiminato_port,sakaiminato_port,境港,フェリーはJR境港駅前バスのりば、高速船は接岸岸壁そば,35.54510346994129,133.22338314132912,,,0,,

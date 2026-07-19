@@ -1,22 +1,22 @@
 {
   "id": "ichibata_bus_connection",
   "mode": "bus",
-  "generatedAt": "2026-07-02T13:08:53.430Z",
+  "generatedAt": "2026-07-19T05:49:39.824Z",
   "feed": {
     "publisherName": "一畑バス株式会社",
     "publisherUrl": "https://bus.ichibata.co.jp/oki-kisen/oki-kisen-sichirui/",
     "lang": "ja",
     "startDate": "20260401",
     "endDate": "20261231",
-    "version": "oki_2026_dia_20260401-20261231"
+    "version": "r8_0718_kisen_dia_20260401-20261231"
   },
   "counts": {
     "agencies": 1,
     "routes": 1,
     "stops": 5,
-    "trips": 95,
-    "stopTimes": 285,
-    "calendarServices": 27,
+    "trips": 72,
+    "stopTimes": 216,
+    "calendarServices": 20,
     "calendarDates": 0
   }
 }

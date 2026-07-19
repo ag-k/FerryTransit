@@ -15,6 +15,7 @@
         <PortSelector
           v-model="departureProxy"
           class="route-endpoints__selector"
+          :aria-label="$t('_FROM')"
           :placeholder="$t('UI.SEARCH_LOCATION_PLACEHOLDER')"
           :disabled="disabled"
           :disabled-ports="disabledDeparturePorts"
@@ -92,6 +93,7 @@
         <PortSelector
           v-model="arrivalProxy"
           class="route-endpoints__selector"
+          :aria-label="$t('_TO')"
           :placeholder="$t('UI.SEARCH_LOCATION_PLACEHOLDER')"
           :disabled="disabled"
           :disabled-ports="disabledArrivalPorts"
