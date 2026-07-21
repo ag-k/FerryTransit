@@ -306,7 +306,7 @@ Gitへのpush後に公開が失敗した場合は、同じコミットの成果�
 - [x] `acquire → validate → build → publish → smoke` を `transport:*` オーケストレータで実行する。
 - [x] ダッシュボードはsource IDとタスクIDを使って同じ `transport:*` CLIを呼び、独自の事業者別コマンド対応表を廃止する。
 - [x] source監視とJALデータ更新の名称・責務を分離する。source監視CIは現時点では追加せず、ローカルレビュー補助のままとする。
-- [x] devからprodへの昇格を、リリースコミットSHAとdev Storage上のmanifestを指定する `transport:promote` へ変更する。
+- [x] devからprodへの昇格を、データ公開元コミットSHAとdev Storage上のmanifestを指定する `transport:promote` へ変更する。
 
 Phase 3の共通CLIは次のとおり。`transport:update` はdev専用で、prodへの直接公開を拒否する。
 
@@ -319,7 +319,8 @@ npm run transport:smoke -- --source jal-oki-flights --target dev --git-sha <comm
 npm run transport:update -- --source jal-oki-flights --target dev --git-sha <commit-sha>
 ```
 
-本番昇格はdevに公開済みの実体を再利用し、manifest内の環境、Git SHA、全オブジェクトのSHA-256・サイズを照合してから実行する。
+本番昇格はdevに公開済みの実体を再利用し、manifest内の環境、Git SHA、全オブジェクトのSHA-256・サイズを照合してから実行する。ここで指定するGit SHAはアプリのリリースコミットである必要はなく、公開データ一式を特定できるデータ公開元コミットとする。時刻表・GTFS・bus-searchはアプリのバイナリ公開と独立して更新できる。
+
 devへの実公開にも40桁のGit SHAが必須で、オーケストレータは`--git-sha`を`SOURCE_GIT_SHA`として公開処理へ渡す。SHAなしのmanifestはprod昇格不能になるため生成を拒否する。
 
 ```bash
@@ -327,7 +328,7 @@ npm run transport:promote -- \
   --from dev \
   --target prod \
   --manifest data/manifests/public-timetable.json \
-  --git-sha <release-commit-sha> \
+  --git-sha <data-source-commit-sha> \
   --approve-prod
 ```
 
@@ -343,7 +344,7 @@ npm run transport:promote -- \
 - devに記録されたGit SHA・manifest・Storage公開物のハッシュが一致する。
 - 管理画面、Cloud Functions、旧スクリプトから `data/timetable.json` を上書きできない。
 - ダッシュボード停止中でもJAL定期更新が実行され、ダッシュボード起動だけでは公開データが変わらない。
-- 本番公開は[バージョン別リリースTODO](../releases/README.md)のQAとGo承認を通過する。
+- 本番データ公開はデータ差分のレビュー、dev manifest/smoke、本番変更承認、prod manifest/smokeを通過する。アプリのバージョン別リリースQAとGo承認は、データ公開とは独立して管理する。
 
 ## 関連資料
 
