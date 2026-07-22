@@ -118,6 +118,8 @@ Always confirm final service decisions, fares, and special services with the rel
 
 格納先は`output/google-play-screenshots/android-tablet-{ja,en}`。全10枚は2560×1600のRGBA PNGで、破損とハッシュ重複がないことを確認済み。About画像の生成中に、機能説明が船中心の旧文言だったことを検出し、日英とも船・バス・航空対応へ修正した。対象回帰テスト2件、lint、production Android同期、debug APK生成に成功し、修正版画像を目視確認した。撮影に使った最終APKのSHA-256は`aa206a56279da64019769c3d1e7b73f7c976b31ffefa341ee415ef72655289dc`。
 
+`npm run google-play:assets:verify`は、アイコン1件・携帯電話8件・タブレット10件について、所定のディレクトリとファイル名、PNG構造、寸法、8-bit RGBA、内容重複、アイコンの1MB上限を一括検査する。2026-07-23に提出用実データ19件で成功し、正常系、破損PNG、余分なPNG、重複画像を含む回帰テスト5件も成功した。DriveからPlay Consoleへ登録する直前と、画像を差し替えた後に再実行する。
+
 登録後に言語、表示順、トリミング、端末枠、文字切れをPlay Consoleのプレビューで確認する。
 
 ## 提出前チェック
@@ -127,6 +129,7 @@ Always confirm final service decisions, fares, and special services with the rel
 - [ ] アイコン候補をPlay Consoleへ登録し、動的マスクと警告消失を確認する。
 - [x] 日英の携帯電話用画像を各4枚生成する。
 - [x] 日英のタブレット用画像を各5枚生成する。
+- [x] `npm run google-play:assets:verify`で提出用19件のファイル名・PNG構造・寸法・RGBA・重複・アイコン容量を検証する。
 - [x] Play Console受け渡し用Driveフォルダへアイコン・携帯電話・タブレット画像計19枚をアップロードし、件数・MIME・非0サイズを読み戻す。
 - [ ] 携帯電話画像をPlay Consoleへ登録してプレビューを確認する。
 - [ ] タブレット画像の7インチ・10インチ欄への掲載方針を確定し、登録する。
