@@ -49,3 +49,20 @@ describe('Capacitor build privacy configuration', () => {
     )
   })
 })
+
+describe('Android release SDK configuration', () => {
+  it('targets Android 16 with a compatible Android Gradle plugin', () => {
+    const variables = readFileSync(
+      resolve(process.cwd(), 'android/variables.gradle'),
+      'utf8'
+    )
+    const build = readFileSync(
+      resolve(process.cwd(), 'android/build.gradle'),
+      'utf8'
+    )
+
+    expect(variables).toMatch(/compileSdkVersion\s*=\s*36/)
+    expect(variables).toMatch(/targetSdkVersion\s*=\s*36/)
+    expect(build).toContain("com.android.tools.build:gradle:8.9.1")
+  })
+})

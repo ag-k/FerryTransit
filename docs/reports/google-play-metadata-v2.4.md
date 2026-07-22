@@ -8,12 +8,13 @@ Google Play Consoleへv2.4を登録する際の転記・確認用ドラフト。
 - デフォルトのストア掲載情報（英語・米国）と日本語の掲載情報は公開中。
 - 現在の説明はフェリー中心で、v2.4のバス・航空・運航状況・運賃・オフライン対応を十分に説明していない。
 - アプリアイコンは登録済みだが、「新しい仕様に従っていません」という警告が表示される。v2.4提出前に新仕様へ適合した画像へ更新し、警告消失を確認する。
+- ローカルの512pxアイコンを内容変更なしで`output/google-play-assets/app-icon-512.png`へ準備した。512×512、8-bit RGBA PNG、62,986 bytes、角丸・外部シャドウなし、SHA-256 `dea3cf6c28a86e80f86b3d261899ac5d89b29baaf00c6cb386b821022a4e771a`。Play Consoleへ登録後に動的マスクのプレビューと警告消失を確認する。
 - 携帯電話スクリーンショットはPlay Console上では日英各2枚。ローカルではv2.4用の日英各4枚（1080×2220）を生成済みで、Google Playが案内する各言語4枚以上を満たす。
 - 7インチ・10インチタブレットのスクリーンショットはPlay Console上では未登録。Pixel Tablet / Android 14の横向き日英各5枚（2560×1600）を生成済み。10インチ欄へ登録し、7インチ欄は同画像の受理可否と表示品質をPlay Consoleで確認する。
 - カテゴリは「地図、ナビ」で、アプリ内容と整合する。
 - ウェブサイトは旧`http://naturebot-lab.com/`のため、`https://transit.oki-digilab.com/`へ更新する。
 - 連絡先メールは`koyama@naturebot-lab.com`。現在の運用窓口として有効か、リリース責任者が確認する。
-- 2026年8月31日までに対象APIレベルを更新する必要があるという警告がある。v2.4のローカル成果物はtargetSdk 35であるため、最新AABアップロード後に警告の対象と解消状態を再確認する。
+- [Google Playの対象API要件](https://support.google.com/googleplay/android-developer/answer/11926878)により、2026年8月31日以降の通常アプリ更新はAndroid 16（API 36）以上が必要。監査時のv2.4はtargetSdk 35だったため、compileSdk / targetSdkを36、API 36の公式最小要件に合わせてAGPを8.9.1へ更新した。生成APKからtargetSdk 36、minSdk 23、versionCode 24000、v2.4を確認し、Android 16でスモーク済み。最新AABアップロード後にPlay Consoleの警告消失を確認する。
 
 ## 共通設定案
 
@@ -101,12 +102,14 @@ Always confirm final service decisions, fares, and special services with the rel
 ## 提出前チェック
 
 - [ ] 日英の説明文を転記し、文字数とプレビューを確認する。
-- [ ] 新仕様のアイコンへ更新し、警告が消えることを確認する。
+- [x] 新仕様向けの512×512 PNGアイコン候補を準備・検証する。
+- [ ] アイコン候補をPlay Consoleへ登録し、動的マスクと警告消失を確認する。
 - [x] 日英の携帯電話用画像を各4枚生成する。
 - [x] 日英のタブレット用画像を各5枚生成する。
 - [ ] 携帯電話画像をPlay Consoleへ登録してプレビューを確認する。
 - [ ] タブレット画像の7インチ・10インチ欄への掲載方針を確定し、登録する。
 - [ ] ウェブサイト、プライバシーポリシーURL、連絡先メールを確認する。
-- [ ] 最新AAB登録後に対象APIレベル警告の解消状態を確認する。
+- [x] Android設定とローカルAPKをtargetSdk 36へ更新する。
+- [ ] targetSdk 36の最新AAB登録後に対象APIレベル警告の解消状態を確認する。
 - [ ] データセーフティ回答と実装・プライバシーポリシーを最終照合する。
 - [ ] 内部テスト、リリース前レポート、Android Vitalsを確認する。
