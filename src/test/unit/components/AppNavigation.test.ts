@@ -23,6 +23,11 @@ describe('AppNavigation', () => {
   beforeEach(() => {
     fetchNewsMock.mockReset().mockResolvedValue(undefined)
 
+    Object.defineProperty(document, 'visibilityState', {
+      value: 'visible',
+      configurable: true
+    })
+
     // make it "mobile"
     Object.defineProperty(window, 'innerWidth', { value: 390, configurable: true })
 
@@ -36,6 +41,7 @@ describe('AppNavigation', () => {
 
   afterEach(() => {
     vi.useRealTimers()
+    delete (document as Document & { visibilityState?: DocumentVisibilityState }).visibilityState
   })
 
   it('shows icons in the overlay menu items when opened on mobile', async () => {
@@ -107,5 +113,93 @@ describe('AppNavigation', () => {
     vi.advanceTimersByTime(60 * 1000)
     await flushPromises()
     expect(fetchNewsMock).toHaveBeenCalledTimes(3)
+  })
+
+  it('refreshes news on focus, visibility recovery, and network recovery', async () => {
+    vi.useFakeTimers()
+    const wrapper = mount(AppNavigation, {
+      global: {
+        stubs: {
+          NuxtLink: {
+            props: ['to'],
+            template: '<a :href="to"><slot /></a>'
+          }
+        },
+        mocks: {
+          $t: (key: string) => key
+        }
+      }
+    })
+    await flushPromises()
+
+    expect(fetchNewsMock).toHaveBeenCalledTimes(1)
+
+    window.dispatchEvent(new Event('focus'))
+    await flushPromises()
+    expect(fetchNewsMock).toHaveBeenCalledTimes(2)
+
+    window.dispatchEvent(new Event('online'))
+    await flushPromises()
+    expect(fetchNewsMock).toHaveBeenCalledTimes(3)
+
+    Object.defineProperty(document, 'visibilityState', {
+      value: 'hidden',
+      configurable: true
+    })
+    document.dispatchEvent(new Event('visibilitychange'))
+    window.dispatchEvent(new Event('focus'))
+    vi.advanceTimersByTime(60 * 1000)
+    await flushPromises()
+    expect(fetchNewsMock).toHaveBeenCalledTimes(3)
+
+    Object.defineProperty(document, 'visibilityState', {
+      value: 'visible',
+      configurable: true
+    })
+    document.dispatchEvent(new Event('visibilitychange'))
+    await flushPromises()
+    expect(fetchNewsMock).toHaveBeenCalledTimes(4)
+
+    wrapper.unmount()
+  })
+
+  it('shares an in-flight news request across simultaneous refresh events', async () => {
+    let resolveFetch: (() => void) | undefined
+    fetchNewsMock.mockImplementation(() => new Promise<void>((resolve) => {
+      resolveFetch = resolve
+    }))
+
+    const wrapper = mount(AppNavigation, {
+      global: {
+        stubs: {
+          NuxtLink: {
+            props: ['to'],
+            template: '<a :href="to"><slot /></a>'
+          }
+        },
+        mocks: {
+          $t: (key: string) => key
+        }
+      }
+    })
+    await Promise.resolve()
+
+    expect(fetchNewsMock).toHaveBeenCalledTimes(1)
+
+    window.dispatchEvent(new Event(APP_RESUME_EVENT))
+    window.dispatchEvent(new Event('focus'))
+    window.dispatchEvent(new Event('online'))
+    document.dispatchEvent(new Event('visibilitychange'))
+    await Promise.resolve()
+    expect(fetchNewsMock).toHaveBeenCalledTimes(1)
+
+    resolveFetch?.()
+    await flushPromises()
+
+    window.dispatchEvent(new Event('focus'))
+    await Promise.resolve()
+    expect(fetchNewsMock).toHaveBeenCalledTimes(2)
+
+    wrapper.unmount()
   })
 })
