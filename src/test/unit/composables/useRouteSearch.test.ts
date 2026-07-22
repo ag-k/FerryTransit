@@ -1,4 +1,6 @@
 import { describe, it, expect, beforeEach, vi } from "vitest";
+import { readFileSync } from "node:fs";
+import { resolve } from "node:path";
 import { setActivePinia, createPinia } from "pinia";
 import { useRouteSearch } from "@/composables/useRouteSearch";
 import { useFerryStore } from "@/stores/ferry";
@@ -43,6 +45,28 @@ const createTestFerryTrip = (trip: TestFerryTrip): Trip => ({
   status: 0,
   ...trip,
 });
+
+const loadCanonicalTripsByName = (name: string): Trip[] => {
+  const timetable = JSON.parse(
+    readFileSync(resolve(process.cwd(), "timetable.json"), "utf-8")
+  ) as Array<Record<string, unknown>>;
+
+  return timetable
+    .filter((trip) => trip.name === name)
+    .map((trip) => ({
+      tripId: Number(trip.trip_id),
+      nextId: trip.next_id ? Number(trip.next_id) : undefined,
+      startDate: String(trip.start_date),
+      endDate: String(trip.end_date),
+      name: String(trip.name),
+      mode: "FERRY",
+      departure: String(trip.departure),
+      departureTime: String(trip.departure_time),
+      arrival: String(trip.arrival),
+      arrivalTime: String(trip.arrival_time),
+      status: Number(trip.status ?? 0),
+    })) as Trip[];
+};
 
 const createRainbowJetMainlandDetourTrips = (): Trip[] => [
   createTestFerryTrip({
@@ -449,6 +473,52 @@ describe("useRouteSearch", () => {
   });
 
   describe("searchRoutes", () => {
+    it("should find Isokaze routes from the canonical timetable on 2026-07-22", async () => {
+      const store = useFerryStore();
+      store.timetableData = loadCanonicalTripsByName("ISOKAZE");
+
+      const { searchRoutes } = useRouteSearch();
+      const results = await searchRoutes(
+        "BEPPU",
+        "KURI",
+        new Date(2026, 6, 22),
+        "07:00",
+        false
+      );
+
+      expect(results.some((route) =>
+        route.segments.length === 1 &&
+        route.segments[0].ship === "ISOKAZE" &&
+        route.segments[0].departureTime.getHours() === 7 &&
+        route.segments[0].departureTime.getMinutes() === 46 &&
+        route.segments[0].arrivalTime.getHours() === 8 &&
+        route.segments[0].arrivalTime.getMinutes() === 3
+      )).toBe(true);
+    });
+
+    it("should find Ferry Dozen routes from the canonical timetable on 2026-07-22", async () => {
+      const store = useFerryStore();
+      store.timetableData = loadCanonicalTripsByName("FERRY_DOZEN");
+
+      const { searchRoutes } = useRouteSearch();
+      const results = await searchRoutes(
+        "BEPPU",
+        "HISHIURA",
+        new Date(2026, 6, 22),
+        "13:00",
+        false
+      );
+
+      expect(results.some((route) =>
+        route.segments.length === 1 &&
+        route.segments[0].ship === "FERRY_DOZEN" &&
+        route.segments[0].departureTime.getHours() === 13 &&
+        route.segments[0].departureTime.getMinutes() === 15 &&
+        route.segments[0].arrivalTime.getHours() === 13 &&
+        route.segments[0].arrivalTime.getMinutes() === 27
+      )).toBe(true);
+    });
+
     it("should find direct routes", async () => {
       const store = useFerryStore();
       store.timetableData = mockTrips;
