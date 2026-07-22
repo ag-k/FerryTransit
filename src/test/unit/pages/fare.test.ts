@@ -273,6 +273,9 @@ describe('fare.vue', () => {
     expect(wrapper.text()).toContain('VEHICLE_SIZE_UNDER_3M')
     expect(wrapper.text()).toContain('VEHICLE_SIZE_UNDER_6M')
     expect(wrapper.text()).toContain('VEHICLE_SIZE_OVER_12M_PER_1M')
+    expect(wrapper.get('a[href="https://www.okikankou.com/fee_detail/"]').classes()).toContain('min-h-12')
+    expect(wrapper.findAll('a[href="https://www.oki-kisen.co.jp/fare/"]')
+      .every(link => link.classes().includes('min-h-12'))).toBe(true)
 
     // Notes section is handled within individual tables; ensure stored notes remain accessible
     expect(mockFareStore.loadFareMaster).toHaveBeenCalled()

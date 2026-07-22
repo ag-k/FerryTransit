@@ -424,7 +424,7 @@
         <div class="mt-4 text-center">
           <a
             href="https://www.oki-kisen.co.jp/fare/" target="_blank" rel="noopener noreferrer"
-            class="inline-flex items-center px-4 py-2 bg-app-primary hover:bg-app-primary-2 text-white text-sm font-medium rounded-lg transition-colors duration-200">
+            class="inline-flex min-h-12 items-center px-4 py-2 bg-app-primary hover:bg-app-primary-2 text-white text-sm font-medium rounded-lg transition-colors duration-200">
             {{ $t('FARE_DETAILS') }}
             <svg class="ml-2 w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path
@@ -598,7 +598,7 @@
         <div class="mt-4 text-center">
           <a
             href="https://www.okikankou.com/fee_detail/" target="_blank" rel="noopener noreferrer"
-            class="inline-flex items-center px-4 py-2 bg-app-primary hover:bg-app-primary-2 text-white text-sm font-medium rounded-lg transition-colors duration-200">
+            class="inline-flex min-h-12 items-center px-4 py-2 bg-app-primary hover:bg-app-primary-2 text-white text-sm font-medium rounded-lg transition-colors duration-200">
             {{ $t('INNER_ISLAND_FARE_DETAILS') }}
             <svg class="ml-2 w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path
@@ -753,7 +753,7 @@
         <div class="mt-4 text-center">
           <a
             href="https://www.oki-kisen.co.jp/fare/" target="_blank" rel="noopener noreferrer"
-            class="inline-flex items-center px-4 py-2 bg-app-primary hover:bg-app-primary-2 text-white text-sm font-medium rounded-lg transition-colors duration-200">
+            class="inline-flex min-h-12 items-center px-4 py-2 bg-app-primary hover:bg-app-primary-2 text-white text-sm font-medium rounded-lg transition-colors duration-200">
             {{ $t('FARE_DETAILS') }}
             <svg class="ml-2 w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path

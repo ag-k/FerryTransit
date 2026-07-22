@@ -125,6 +125,11 @@ describe('NewsCard', () => {
       expect(pinnedIcon.exists()).toBe(true)
     })
 
+    it('詳細ボタンに48px以上のタッチ領域を確保する', () => {
+      const wrapper = createWrapper()
+      expect(wrapper.get('button').classes()).toContain('min-h-12')
+    })
+
   })
 
   describe('カテゴリー別スタイリング', () => {

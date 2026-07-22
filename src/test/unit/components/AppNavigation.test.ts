@@ -5,6 +5,7 @@ import AppNavigation from '@/components/AppNavigation.vue'
 import { APP_RESUME_EVENT } from '@/composables/useTodayRollover'
 
 const fetchNewsMock = vi.hoisted(() => vi.fn())
+const publishedNewsMock = vi.hoisted(() => ({ value: [] as Array<Record<string, unknown>> }))
 
 vi.mock('~/composables/useAndroidNavigation', () => ({
   useAndroidNavigation: () => ({
@@ -14,7 +15,7 @@ vi.mock('~/composables/useAndroidNavigation', () => ({
 
 vi.mock('~/composables/useNews', () => ({
   useNews: () => ({
-    publishedNews: ref([]),
+    publishedNews: { value: publishedNewsMock.value },
     fetchNews: fetchNewsMock
   })
 }))
@@ -22,6 +23,7 @@ vi.mock('~/composables/useNews', () => ({
 describe('AppNavigation', () => {
   beforeEach(() => {
     fetchNewsMock.mockReset().mockResolvedValue(undefined)
+    publishedNewsMock.value = []
 
     Object.defineProperty(document, 'visibilityState', {
       value: 'visible',
@@ -37,6 +39,45 @@ describe('AppNavigation', () => {
       params: {},
       query: {}
     }))
+  })
+
+  it('announcements provide 48px touch targets', async () => {
+    publishedNewsMock.value = [
+      {
+        id: 'news-1',
+        title: { ja: '最新のお知らせ', en: 'Latest news' },
+        publishDate: '2026-07-23T00:00:00+09:00'
+      },
+      {
+        id: 'news-2',
+        title: { ja: '過去のお知らせ', en: 'Older news' },
+        publishDate: '2026-07-22T00:00:00+09:00'
+      }
+    ]
+
+    const wrapper = mount(AppNavigation, {
+      global: {
+        stubs: {
+          NuxtLink: {
+            props: ['to'],
+            template: '<a :href="to"><slot /></a>'
+          }
+        },
+        mocks: { $t: (key: string) => key }
+      }
+    })
+
+    expect(wrapper.get('[data-testid="app-nav-latest-news-link"]').classes()).toContain('min-h-12')
+    const expandButton = wrapper.get('[data-testid="app-nav-news-expand"]')
+    expect(expandButton.classes()).toEqual(expect.arrayContaining(['min-h-12', 'min-w-12']))
+
+    await expandButton.trigger('click')
+    const olderLink = wrapper.findAll('a').find(link => link.text().includes('過去のお知らせ'))
+    expect(olderLink?.classes()).toContain('min-h-12')
+    const allNewsLink = wrapper.findAll('a').find(link => link.text().includes('news.viewAll'))
+    expect(allNewsLink?.classes()).toContain('min-h-12')
+
+    wrapper.unmount()
   })
 
   afterEach(() => {

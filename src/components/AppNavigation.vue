@@ -194,7 +194,8 @@
           <div class="flex-1 min-w-0">
             <div class="flex items-center justify-between">
               <NuxtLink :to="localePath(`/news/${latestNews[0].id}`)"
-                class="group flex items-center space-x-2 flex-1 min-w-0">
+                data-testid="app-nav-latest-news-link"
+                class="group flex min-h-12 items-center space-x-2 flex-1 min-w-0">
                 <span class="text-xs text-gray-500 dark:text-gray-300 flex-shrink-0">
                   {{ formatDate(latestNews[0].publishDate) }}
                 </span>
@@ -206,7 +207,8 @@
 
               <!-- Accordion button on the same line -->
               <button v-if="latestNews.length > 1" @click="newsExpanded = !newsExpanded"
-                class="flex items-center text-xs text-blue-700 dark:text-blue-400 hover:text-blue-800 dark:hover:text-blue-300 transition-colors ml-2 flex-shrink-0">
+                data-testid="app-nav-news-expand"
+                class="flex min-h-12 min-w-12 items-center justify-center text-xs text-blue-700 dark:text-blue-400 hover:text-blue-800 dark:hover:text-blue-300 transition-colors ml-2 flex-shrink-0">
                 <svg class="w-3 h-3 sm:w-4 sm:h-4 mr-0.5 sm:mr-1 transform transition-transform"
                   :class="{ 'rotate-90': newsExpanded }" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path>
@@ -221,7 +223,7 @@
             <div v-show="newsExpanded"
               class="mt-1 sm:mt-2 space-y-1 border-t border-yellow-200 dark:border-gray-700 pt-1 sm:pt-2">
               <NuxtLink v-for="item in latestNews.slice(1, 4)" :key="item.id" :to="localePath(`/news/${item.id}`)"
-                class="block group">
+                class="group flex min-h-12 items-center">
                 <div class="flex items-center space-x-2">
                   <span class="text-xs text-gray-500 dark:text-gray-300 flex-shrink-0">
                     {{ formatDate(item.publishDate) }}
@@ -235,7 +237,7 @@
 
               <!-- Link to all news -->
               <NuxtLink :to="localePath('/news')"
-                class="inline-flex items-center text-xs text-blue-700 dark:text-blue-400 hover:text-blue-800 dark:hover:text-blue-300 transition-colors mt-1 sm:mt-2">
+                class="inline-flex min-h-12 items-center text-xs text-blue-700 dark:text-blue-400 hover:text-blue-800 dark:hover:text-blue-300 transition-colors mt-1 sm:mt-2">
                 {{ $t('news.viewAll') }}
                 <svg class="w-3 h-3 ml-0.5 sm:ml-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path>
