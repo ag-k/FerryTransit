@@ -13,7 +13,7 @@
 ### 管理・データ運用の改善
 
 - 船、バス、航空の時刻表データ管理を複数交通モードに対応しました。
-- ニュース保存後の公開処理と、公開失敗時の通知を改善しました。
+- お知らせ保存後の公開処理と公開失敗時の通知を改善し、アプリ復帰・再表示・通信回復時と前面表示中に最新のお知らせを自動取得するようにしました。
 - GTFS原本、変換結果、検証レポート、公開データを分離し、生成手順を再現可能にしました。
 - 公開時刻表を単一の処理で合成・配信し、公開先の指定、差分スキップ、バックアップ、ハッシュ検証、manifest、devからprodへの昇格確認を追加しました。
 - JAL時刻表の取得・検証・更新と定期実行の仕組みを追加しました。
@@ -37,7 +37,7 @@
 ### Administration and Data Operations
 
 - Extended timetable administration to support ferry, bus, and air transport data.
-- Improved automatic news publishing and failure notifications after saving.
+- Improved automatic news publishing and failure notifications, and added automatic refreshes when the app resumes, regains focus or connectivity, and while it remains in the foreground.
 - Separated GTFS source data, conversions, validation reports, and public artifacts for reproducible generation.
 - Consolidated public timetable building and publishing with explicit targets, change detection, backups, hash verification, manifests, and guarded dev-to-production promotion.
 - Added automated retrieval, validation, and scheduled updates for JAL timetable data.
