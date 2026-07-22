@@ -3,6 +3,11 @@ import { mount } from '@vue/test-utils'
 import PrimaryButton from '@/components/common/PrimaryButton.vue'
 
 describe('PrimaryButton', () => {
+  it('モバイルでも48px以上のタッチ領域を確保する', () => {
+    const wrapper = mount(PrimaryButton, { slots: { default: 'OK' } })
+    expect(wrapper.classes()).toContain('min-h-12')
+  })
+
   it('button としてクリックイベントを emit する', async () => {
     const wrapper = mount(PrimaryButton, { slots: { default: 'OK' } })
     await wrapper.trigger('click')

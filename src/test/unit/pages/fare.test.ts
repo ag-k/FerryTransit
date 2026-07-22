@@ -310,6 +310,7 @@ describe('fare.vue', () => {
     const busTransportTab = wrapper.findAll('[role="tab"]')
       .find(tab => tab.text() === 'TRANSPORT_MODES.BUS')
     expect(busTransportTab).toBeDefined()
+    expect(wrapper.findAll('[role="tab"]').every(tab => tab.classes().includes('min-h-12'))).toBe(true)
     await busTransportTab!.trigger('click')
 
     expect(busTransportTab!.attributes('aria-selected')).toBe('true')

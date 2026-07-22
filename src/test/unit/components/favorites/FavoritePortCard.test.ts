@@ -56,6 +56,23 @@ describe('FavoritePortCard', () => {
     global.useLocalePath = vi.fn(() => (path: string) => path)
   })
 
+  it('削除ボタンに48px以上のタッチ領域を確保する', () => {
+    const wrapper = mount(FavoritePortCard, {
+      props: { portId: 'SAIGO', portCode: 'SAIGO' },
+      global: {
+        stubs: {
+          FavoriteButton: { template: '<button />' },
+          ConfirmDialog: { template: '<div />', props: ['isOpen'] }
+        },
+        config: { globalProperties: { $t: (key: string) => key } }
+      }
+    })
+
+    const removeButton = wrapper.findAll('button')
+      .find(button => button.text().includes('favorites.remove'))
+    expect(removeButton?.classes()).toContain('min-h-12')
+  })
+
   it('「時刻表を見る」ボタンは / に遷移する（departureだけ付与）', async () => {
     const wrapper = mount(FavoritePortCard, {
       props: {

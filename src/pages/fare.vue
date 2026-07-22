@@ -26,7 +26,7 @@
           <button
             v-for="mode in transportTabs" :key="mode.id" type="button" role="tab"
             :aria-selected="activeTransport === mode.id" :tabindex="activeTransport === mode.id ? 0 : -1" :class="[
-              'select-none rounded-lg px-4 py-2 text-sm font-medium transition-colors',
+              'min-h-12 select-none rounded-lg px-4 py-2 text-sm font-medium transition-colors',
               'focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 focus-visible:ring-offset-2 dark:focus-visible:ring-offset-gray-900',
               activeTransport === mode.id
                 ? 'bg-app-primary text-white'
@@ -42,7 +42,7 @@
             v-for="tab in shipTabs" :id="`fare-tab-${tab.id}`" :key="tab.id" type="button" role="tab"
             :aria-controls="`fare-tabpanel-${tab.id}`" :aria-selected="activeTab === tab.id"
             :tabindex="activeTab === tab.id ? 0 : -1" :class="[
-              'flex-shrink-0 select-none whitespace-nowrap rounded-t-lg px-4 py-2 text-sm font-medium transition-colors',
+              'min-h-12 flex-shrink-0 select-none whitespace-nowrap rounded-t-lg px-4 py-2 text-sm font-medium transition-colors',
               'focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 focus-visible:ring-offset-2 dark:focus-visible:ring-offset-gray-900',
               activeTab === tab.id
                 ? 'bg-app-surface-2 text-app-primary dark:text-white border-b-2 border-app-primary-2'
@@ -58,7 +58,7 @@
             v-for="row in busFareRows" :id="`fare-tab-bus-${row.id}`" :key="row.id" type="button" role="tab"
             aria-controls="fare-tabpanel-bus" :aria-selected="activeBusFareId === row.id"
             :tabindex="activeBusFareId === row.id ? 0 : -1" :class="[
-              'flex-shrink-0 select-none whitespace-nowrap rounded-t-lg px-4 py-2 text-sm font-medium transition-colors',
+              'min-h-12 flex-shrink-0 select-none whitespace-nowrap rounded-t-lg px-4 py-2 text-sm font-medium transition-colors',
               'focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 focus-visible:ring-offset-2 dark:focus-visible:ring-offset-gray-900',
               activeBusFareId === row.id
                 ? 'bg-app-surface-2 text-app-primary dark:text-white border-b-2 border-app-primary-2'
@@ -149,7 +149,7 @@
                 okiKisenPassengerActiveCategory === category.id
                   ? 'bg-app-primary text-white border border-app-primary'
                   : 'bg-white text-gray-700 dark:bg-gray-800 dark:text-gray-200 border border-gray-300 dark:border-gray-600',
-                'px-3 py-1.5 rounded-full text-sm font-medium transition-colors'
+                'min-h-12 px-3 py-1.5 rounded-full text-sm font-medium transition-colors'
               ]" type="button" role="tab" :aria-selected="okiKisenPassengerActiveCategory === category.id"
                 @click="okiKisenPassengerActiveCategory = category.id">
                 {{ translateLabel(category.labelKey, category.fallback) }}
@@ -161,7 +161,7 @@
                 okiKisenActiveSeatClass === seatClass.key
                   ? 'bg-app-primary text-white border border-app-primary'
                   : 'bg-white text-gray-700 dark:bg-gray-800 dark:text-gray-200 border border-gray-300 dark:border-gray-600',
-                'px-3 py-1.5 rounded-full text-sm font-medium transition-colors'
+                'min-h-12 px-3 py-1.5 rounded-full text-sm font-medium transition-colors'
               ]" type="button" role="tab" :aria-selected="okiKisenActiveSeatClass === seatClass.key"
                 @click="okiKisenActiveSeatClass = seatClass.key">
                 {{ $t(seatClass.nameKey) }}
@@ -290,7 +290,7 @@
               okiKisenVehicleActiveRoute === group.id
                 ? 'bg-app-primary text-white border border-app-primary'
                 : 'bg-white text-gray-700 dark:bg-gray-800 dark:text-gray-200 border border-gray-300 dark:border-gray-600',
-              'px-3 py-1.5 rounded-full text-sm font-medium transition-colors'
+              'min-h-12 px-3 py-1.5 rounded-full text-sm font-medium transition-colors'
             ]" type="button" role="tab" :aria-selected="okiKisenVehicleActiveRoute === group.id"
               @click="okiKisenVehicleActiveRoute = group.id">
               {{ translateLabel(group.labelKey) }}

@@ -172,6 +172,7 @@ describe('News Index Page', () => {
       
       const filterButtons = wrapper.findAll('.category-filter button')
       expect(filterButtons).toHaveLength(5) // すべて + 4カテゴリー
+      expect(filterButtons.every(button => button.classes().includes('min-h-12'))).toBe(true)
     })
 
     it('すべてのカテゴリーボタンがデフォルトで選択されている', () => {
@@ -216,6 +217,9 @@ describe('News Index Page', () => {
       
       const pagination = wrapper.find('.pagination')
       expect(pagination.exists()).toBe(true)
+      expect(pagination.findAll('button').every(button => (
+        button.classes().includes('min-h-12') && button.classes().includes('min-w-12')
+      ))).toBe(true)
     })
 
     it('次のページボタンをクリックすると次のページが表示される', async () => {

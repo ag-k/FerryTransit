@@ -25,7 +25,7 @@ xmlns="http://www.w3.org/2000/svg" width="48" height="48" fill="currentColor"
           <p class="text-gray-600 dark:text-gray-300 mb-4">{{ $t('TIMETABLE_DESC') }}</p>
           <NuxtLink
 :to="localePath('/')"
-            class="inline-block px-6 py-2 font-semibold text-white rounded bg-app-primary hover:bg-app-primary-2 focus:outline-none focus-visible:ring-2 focus-visible:ring-app-primary/60 focus-visible:ring-offset-2 focus-visible:ring-offset-app-bg transition-all shadow-sm hover:shadow-md">
+            class="inline-flex min-h-12 items-center px-6 py-2 font-semibold text-white rounded bg-app-primary hover:bg-app-primary-2 focus:outline-none focus-visible:ring-2 focus-visible:ring-app-primary/60 focus-visible:ring-offset-2 focus-visible:ring-offset-app-bg transition-all shadow-sm hover:shadow-md">
             {{ $t('VIEW_TIMETABLE') }}
           </NuxtLink>
         </div>
@@ -47,7 +47,7 @@ fill-rule="evenodd"
           <p class="text-gray-600 dark:text-gray-300 mb-4">{{ $t('TRANSIT_DESC') }}</p>
           <NuxtLink
 :to="localePath('/transit')"
-            class="inline-block px-6 py-2 font-semibold text-white rounded bg-app-primary hover:bg-app-primary-2 focus:outline-none focus-visible:ring-2 focus-visible:ring-app-primary/60 focus-visible:ring-offset-2 focus-visible:ring-offset-app-bg transition-all shadow-sm hover:shadow-md">
+            class="inline-flex min-h-12 items-center px-6 py-2 font-semibold text-white rounded bg-app-primary hover:bg-app-primary-2 focus:outline-none focus-visible:ring-2 focus-visible:ring-app-primary/60 focus-visible:ring-offset-2 focus-visible:ring-offset-app-bg transition-all shadow-sm hover:shadow-md">
             {{ $t('SEARCH_ROUTES') }}
           </NuxtLink>
         </div>
@@ -69,7 +69,7 @@ xmlns="http://www.w3.org/2000/svg" width="48" height="48" fill="currentColor"
           <p class="text-gray-600 dark:text-gray-300 mb-4">{{ $t('STATUS_DESC') }}</p>
           <NuxtLink
 :to="localePath('/status')"
-            class="inline-block px-6 py-2 font-semibold text-white rounded bg-app-primary hover:bg-app-primary-2 focus:outline-none focus-visible:ring-2 focus-visible:ring-app-primary/60 focus-visible:ring-offset-2 focus-visible:ring-offset-app-bg transition-all shadow-sm hover:shadow-md">
+            class="inline-flex min-h-12 items-center px-6 py-2 font-semibold text-white rounded bg-app-primary hover:bg-app-primary-2 focus:outline-none focus-visible:ring-2 focus-visible:ring-app-primary/60 focus-visible:ring-offset-2 focus-visible:ring-offset-app-bg transition-all shadow-sm hover:shadow-md">
             {{ $t('CHECK_STATUS') }}
           </NuxtLink>
         </div>

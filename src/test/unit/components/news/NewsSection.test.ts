@@ -162,6 +162,7 @@ describe('NewsSection', () => {
       const viewAllLink = wrapper.find('a')
       expect(viewAllLink.exists()).toBe(true)
       expect(viewAllLink.text()).toBe('すべて見る')
+      expect(viewAllLink.classes()).toEqual(expect.arrayContaining(['inline-flex', 'min-h-12']))
     })
   })
 

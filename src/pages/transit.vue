@@ -40,7 +40,7 @@
           <div class="flex">
             <select
 v-model="isArrivalMode"
-              class="px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-l-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:text-white"
+              class="min-h-12 px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-l-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:text-white"
               style="min-width: 140px"
               :aria-label="$t('TIME')"
             >
@@ -50,7 +50,7 @@ v-model="isArrivalMode"
             <input
 :id="timeInputId" v-model="time" type="time"
               :aria-label="$t(isArrivalMode ? 'ARRIVAL_TIME' : 'DEPARTURE_TIME')"
-              class="flex-1 px-3 py-2 border border-l-0 border-gray-300 dark:border-gray-600 rounded-r-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 bg-white dark:bg-white text-gray-900 dark:text-gray-900">
+              class="min-h-12 flex-1 px-3 py-2 border border-l-0 border-gray-300 dark:border-gray-600 rounded-r-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 bg-white dark:bg-white text-gray-900 dark:text-gray-900">
           </div>
         </div>
       </div>
@@ -71,7 +71,7 @@ v-model="isArrivalMode"
             :id="vehicleLengthSelectId"
             v-model.number="vehicleLengthMeters"
             data-testid="transit-vehicle-length-select"
-            class="w-full px-3 py-2 text-sm border border-gray-300 dark:border-gray-600 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 bg-white dark:bg-gray-700 dark:text-white"
+            class="min-h-12 w-full px-3 py-2 text-sm border border-gray-300 dark:border-gray-600 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 bg-white dark:bg-gray-700 dark:text-white"
           >
             <option v-for="length in vehicleLengthOptions" :key="length" :value="length">
               {{ formatVehicleLengthOptionLabel(length) }}
@@ -114,7 +114,7 @@ stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
               <select
                 :id="sortSelectId"
                 v-model="sortOption"
-                class="w-full px-3 py-2 text-sm font-medium rounded-md border border-app-primary text-app-primary bg-app-surface dark:bg-slate-700 dark:text-white dark:border-slate-500 transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-app-primary/60"
+                class="min-h-12 w-full px-3 py-2 text-sm font-medium rounded-md border border-app-primary text-app-primary bg-app-surface dark:bg-slate-700 dark:text-white dark:border-slate-500 transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-app-primary/60"
               >
                 <option v-for="option in sortOptions" :key="option.value" :value="option.value">
                   {{ $t(option.labelKey) }}
@@ -125,7 +125,7 @@ stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
               <button
 v-for="option in sortOptions" :key="option.value" type="button" role="tab"
                 :aria-selected="sortOption === option.value"
-                class="px-3 py-2 text-sm font-medium rounded-md border transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-app-primary/60 flex items-center justify-center"
+                class="min-h-12 px-3 py-2 text-sm font-medium rounded-md border transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-app-primary/60 flex items-center justify-center"
                 :class="sortOption === option.value
                   ? 'bg-app-primary text-white border-app-primary shadow-sm'
                   : 'border-app-primary text-app-primary bg-app-surface dark:bg-slate-700 dark:text-white dark:border-slate-500 hover:bg-app-primary/10 dark:hover:bg-slate-600'"

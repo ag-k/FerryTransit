@@ -242,6 +242,8 @@ describe('Transit Page', () => {
 
     expect(wrapper.findComponent({ name: 'DatePicker' }).props('ariaLabel')).toBe('DATE')
     expect(wrapper.find('input[type="time"]').attributes('aria-label')).toBe('DEPARTURE_TIME')
+    expect(wrapper.find('select[aria-label="TIME"]').classes()).toContain('min-h-12')
+    expect(wrapper.find('input[type="time"]').classes()).toContain('min-h-12')
 
     await wrapper.find('select[aria-label="TIME"]').setValue('true')
     expect(wrapper.find('input[type="time"]').attributes('aria-label')).toBe('ARRIVAL_TIME')
@@ -260,6 +262,7 @@ describe('Transit Page', () => {
     const select = wrapper.find('[data-testid="transit-vehicle-length-select"]')
     expect(select.exists()).toBe(true)
     expect((select.element as HTMLSelectElement).value).toBe('5')
+    expect(select.classes()).toContain('min-h-12')
   })
 
   it('initializes car boarding options from URL query and passes them to search', async () => {

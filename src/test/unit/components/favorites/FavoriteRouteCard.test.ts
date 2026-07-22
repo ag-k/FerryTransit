@@ -81,6 +81,24 @@ describe('FavoriteRouteCard', () => {
     global.useLocalePath = vi.fn(() => (path: string) => path)
   })
 
+  it('削除ボタンに48px以上のタッチ領域を確保する', () => {
+    const wrapper = mount(FavoriteRouteCard, {
+      props: { departure: 'HONDO_SHICHIRUI', arrival: 'SAIGO' },
+      global: {
+        stubs: {
+          NuxtLink: NuxtLinkStub,
+          FavoriteButton: { template: '<button />' },
+          ConfirmDialog: { template: '<div />', props: ['isOpen'] }
+        },
+        config: { globalProperties: { $t: (key: string) => key } }
+      }
+    })
+
+    const removeButton = wrapper.get('button[aria-label="favorites.remove"]')
+    expect(removeButton.classes()).toContain('min-h-12')
+    expect(removeButton.classes()).toContain('min-w-12')
+  })
+
   it('「時刻表」リンクは / に遷移する（queryはdeparture/arrivalを維持）', () => {
     const wrapper = mount(FavoriteRouteCard, {
       props: {
