@@ -58,6 +58,7 @@
     "cap:assert:no-timetable": "node scripts/assert-no-bundled-timetable.mjs .output/public",
     "cap:ios:appstore-screenshots": "node scripts/capture-ios-simulator-screenshots.mjs",
     "google-play:assets:verify": "node scripts/verify-google-play-assets.mjs",
+    "release:config:verify": "node scripts/verify-release-config.mjs",
     "build-prod": "run-s build-prod:firebase build-prod:build",
     "build-prod:firebase": "node scripts/assert-firebase-project-alias.mjs .env.production prod default",
     "build-prod:build": "NODE_ENV=production nuxt generate --dotenv .env.production && node scripts/generate-service-worker.mjs",
