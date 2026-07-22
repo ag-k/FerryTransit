@@ -21,6 +21,12 @@ const config: CapacitorConfig = {
       keystorePath: undefined,
       keystoreAlias: undefined
     }
+  },
+  plugins: {
+    SplashScreen: {
+      // Webアプリ初期化前の自動非表示とJS側hide()の競合を避ける。
+      launchAutoHide: false
+    }
   }
 };
 

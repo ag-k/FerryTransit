@@ -51,6 +51,23 @@ describe('transport orchestrator', () => {
       .toThrow('transport:promote')
   })
 
+  it('promote後のprod smokeは読み取り専用で許可する', () => {
+    const runner = vi.fn(() => ({ status: 0 }))
+    const result = runTransportPipeline({
+      sourceId: 'jal-oki-flights',
+      stages: ['smoke'],
+      target: 'prod',
+      gitSha: 'a'.repeat(40),
+      root: resolve('.'),
+      runner
+    })
+
+    expect(runner).toHaveBeenCalledOnce()
+    expect(result.results).toEqual([
+      expect.objectContaining({ stage: 'smoke', status: 'completed' })
+    ])
+  })
+
   it('指定したGit SHAを公開コマンドへ環境変数で引き渡す', () => {
     const gitSha = 'a'.repeat(40)
     const runner = vi.fn(() => ({ status: 0 }))

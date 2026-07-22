@@ -1,7 +1,10 @@
-import { describe, it, expect, beforeEach, vi } from 'vitest'
-import { mount } from '@vue/test-utils'
+import { afterEach, describe, it, expect, beforeEach, vi } from 'vitest'
+import { flushPromises, mount } from '@vue/test-utils'
 import { ref } from 'vue'
 import AppNavigation from '@/components/AppNavigation.vue'
+import { APP_RESUME_EVENT } from '@/composables/useTodayRollover'
+
+const fetchNewsMock = vi.hoisted(() => vi.fn())
 
 vi.mock('~/composables/useAndroidNavigation', () => ({
   useAndroidNavigation: () => ({
@@ -12,12 +15,14 @@ vi.mock('~/composables/useAndroidNavigation', () => ({
 vi.mock('~/composables/useNews', () => ({
   useNews: () => ({
     publishedNews: ref([]),
-    fetchNews: vi.fn().mockResolvedValue(undefined)
+    fetchNews: fetchNewsMock
   })
 }))
 
 describe('AppNavigation', () => {
   beforeEach(() => {
+    fetchNewsMock.mockReset().mockResolvedValue(undefined)
+
     // make it "mobile"
     Object.defineProperty(window, 'innerWidth', { value: 390, configurable: true })
 
@@ -27,6 +32,10 @@ describe('AppNavigation', () => {
       params: {},
       query: {}
     }))
+  })
+
+  afterEach(() => {
+    vi.useRealTimers()
   })
 
   it('shows icons in the overlay menu items when opened on mobile', async () => {
@@ -62,5 +71,41 @@ describe('AppNavigation', () => {
     expect(wrapper.find('[data-testid="app-nav-language-segment"]').exists()).toBe(true)
     expect(wrapper.find('[data-testid="app-nav-lang-ja"]').exists()).toBe(true)
     expect(wrapper.find('[data-testid="app-nav-lang-en"]').exists()).toBe(true)
+
+    wrapper.unmount()
+  })
+
+  it('refreshes news on app resume and while the app remains visible', async () => {
+    vi.useFakeTimers()
+    const wrapper = mount(AppNavigation, {
+      global: {
+        stubs: {
+          NuxtLink: {
+            props: ['to'],
+            template: '<a :href="to"><slot /></a>'
+          }
+        },
+        mocks: {
+          $t: (key: string) => key
+        }
+      }
+    })
+    await flushPromises()
+
+    expect(fetchNewsMock).toHaveBeenCalledTimes(1)
+
+    window.dispatchEvent(new Event(APP_RESUME_EVENT))
+    await flushPromises()
+    expect(fetchNewsMock).toHaveBeenCalledTimes(2)
+
+    vi.advanceTimersByTime(60 * 1000)
+    await flushPromises()
+    expect(fetchNewsMock).toHaveBeenCalledTimes(3)
+
+    wrapper.unmount()
+    window.dispatchEvent(new Event(APP_RESUME_EVENT))
+    vi.advanceTimersByTime(60 * 1000)
+    await flushPromises()
+    expect(fetchNewsMock).toHaveBeenCalledTimes(3)
   })
 })

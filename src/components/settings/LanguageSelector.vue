@@ -26,11 +26,15 @@
 
 <script setup lang="ts">
 import { useI18n } from 'vue-i18n'
+import { savePreferredLocale, type SupportedLocale } from '@/utils/userPreferences'
 
 const { locale: currentLocale, locales } = useI18n()
 const switchLocalePath = useSwitchLocalePath()
 
 const switchLocale = (code: string) => {
+  if (typeof window !== 'undefined' && (code === 'ja' || code === 'en')) {
+    savePreferredLocale(localStorage, code as SupportedLocale)
+  }
   navigateTo(switchLocalePath(code))
 }
 </script>

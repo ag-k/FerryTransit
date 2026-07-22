@@ -36,6 +36,9 @@ export const useNews = () => {
             {
               method: "GET",
               mode: "cors",
+              // 運休・障害のお知らせは緊急性が高いため、WebViewやブラウザの
+              // HTTPキャッシュを使わず、公開中のStorageオブジェクトを再検証する。
+              cache: "no-store",
             }
           );
 

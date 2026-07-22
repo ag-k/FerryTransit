@@ -101,7 +101,74 @@ export const setupPublicPageStubs = async (page: Page, options: StubOptions = {}
 
   // 主要データを localStorage に事前投入して Firebase Storage へのアクセスをスキップ
   await page.addInitScript(
-    ({ timetableData, fareData, initialDeparture, initialArrival }) => {
+    ({
+      timetableData,
+      fareData,
+      shipStatusData,
+      shipStatusKankouData,
+      holidaysData,
+      busData,
+      initialDeparture,
+      initialArrival
+    }) => {
+      const originalFetch = window.fetch.bind(window)
+      try {
+        Object.defineProperty(navigator, 'serviceWorker', {
+          configurable: true,
+          value: {
+            register: () => Promise.resolve({ scope: '/', unregister: () => Promise.resolve(true) }),
+            getRegistrations: () => Promise.resolve([])
+          }
+        })
+      } catch {
+        // Playwright can expose a non-configurable ServiceWorker container.
+      }
+      const jsonResponse = (data: unknown) => new Response(JSON.stringify(data), {
+        status: 200,
+        headers: {
+          'access-control-allow-origin': '*',
+          'content-type': 'application/json'
+        }
+      })
+
+      window.fetch = (input, init) => {
+        const url = typeof input === 'string'
+          ? input
+          : input instanceof URL
+            ? input.href
+            : input.url
+        const decodedUrl = decodeURIComponent(url)
+        const busSearchName = decodedUrl.match(/data\/bus-search\/([^?&/]+\.json)/)?.[1]
+
+        if (busSearchName) return Promise.resolve(jsonResponse(busData[busSearchName] ?? {}))
+        if (decodedUrl.includes('fare-master.json')) return Promise.resolve(jsonResponse(fareData))
+        if (decodedUrl.includes('holidays.json')) return Promise.resolve(jsonResponse(holidaysData))
+        if (decodedUrl.includes('timetable.json') || decodedUrl.endsWith('/api/timetable')) {
+          return Promise.resolve(jsonResponse(timetableData))
+        }
+        if (decodedUrl.endsWith('/status-kankou')) return Promise.resolve(jsonResponse(shipStatusKankouData))
+        if (decodedUrl.endsWith('/status')) return Promise.resolve(jsonResponse(shipStatusData))
+        if (decodedUrl.includes('firebase.googleapis.com/v1alpha/projects/-/apps/')) {
+          return Promise.resolve(jsonResponse({
+            projectId: 'test',
+            appId: 'test',
+            storageBucket: 'test',
+            apiKey: 'test',
+            authDomain: 'test',
+            messagingSenderId: 'test',
+            measurementId: ''
+          }))
+        }
+        if (decodedUrl.endsWith('/sw.js') && (init?.method === 'HEAD' || input instanceof Request && input.method === 'HEAD')) {
+          return Promise.resolve(new Response(null, {
+            status: 200,
+            headers: { 'content-type': 'application/javascript' }
+          }))
+        }
+
+        return originalFetch(input, init)
+      }
+
       try {
         Object.defineProperty(navigator, 'language', { value: 'ja-JP', configurable: true })
         Object.defineProperty(navigator, 'languages', { value: ['ja-JP'], configurable: true })
@@ -161,6 +228,10 @@ export const setupPublicPageStubs = async (page: Page, options: StubOptions = {}
     {
       timetableData: timetable,
       fareData: fareMaster,
+      shipStatusData: shipStatus,
+      shipStatusKankouData: shipStatusKankou,
+      holidaysData: holidays,
+      busData: busSearchData,
       initialDeparture: options.initialDeparture,
       initialArrival: options.initialArrival
     }

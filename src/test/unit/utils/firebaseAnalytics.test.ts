@@ -25,4 +25,13 @@ describe('resolveFirebaseAnalyticsMeasurementId', () => {
       useEmulators: true
     })).toBe('')
   })
+
+  it('Capacitorアプリでは端末識別子を収集するFirebase Analyticsを無効化する', () => {
+    expect(resolveFirebaseAnalyticsMeasurementId({
+      projectId: 'oki-ferryguide',
+      measurementId: 'G-PRODUCTION',
+      useEmulators: false,
+      isCapacitorBuild: true
+    })).toBe('')
+  })
 })

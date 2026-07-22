@@ -9,6 +9,9 @@ const createBucket = (initial?: Buffer) => {
   let remote = initial
   const backups = new Map<string, Buffer>()
   const save = vi.fn(async (contents: Buffer) => { remote = Buffer.from(contents) })
+  const saveBackup = vi.fn(async (contents: Buffer, _options?: unknown) => {
+    backups.set('backups/test/example.json', Buffer.from(contents))
+  })
   const bucket = {
     file(path: string) {
       if (path === 'data/example.json') {
@@ -19,11 +22,14 @@ const createBucket = (initial?: Buffer) => {
         }
       }
       return {
-        save: async (contents: Buffer) => { backups.set(path, Buffer.from(contents)) }
+        save: async (contents: Buffer, options?: unknown) => {
+          backups.set(path, Buffer.from(contents))
+          await saveBackup(contents, options)
+        }
       }
     }
   }
-  return { bucket, save, backups }
+  return { bucket, save, saveBackup, backups }
 }
 
 describe('firebase storage publisher', () => {
@@ -48,6 +54,14 @@ describe('firebase storage publisher', () => {
     expect(result.status).toBe('uploaded')
     expect(result.backupPath).toBe('backups/test/example.json')
     expect(fake.backups.get('backups/test/example.json')?.toString()).toBe('{"old":true}')
+    expect(fake.save).toHaveBeenCalledWith(
+      Buffer.from('{"new":true}'),
+      expect.objectContaining({ resumable: false })
+    )
+    expect(fake.saveBackup).toHaveBeenCalledWith(
+      Buffer.from('{"old":true}'),
+      expect.objectContaining({ resumable: false })
+    )
     expect(result.sha256).toMatch(/^[a-f0-9]{64}$/)
   })
 

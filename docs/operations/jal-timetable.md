@@ -27,7 +27,51 @@ npm run timetable:refresh:jal
 6. `transport:publish` で同じ生成JSONとGit SHA付きmanifestをdevへ公開する
 7. `transport:smoke` でmanifest、Git SHA、公開物のSHA-256・サイズを照合する
 
-GitHub ActionsのRepository secretに、dev用サービスアカウントJSONを `FIREBASE_SERVICE_ACCOUNT_DEV` という名前で登録する。Storageオブジェクトの読み書き権限が必要。
+GitHub ActionsからGoogle Cloudへは、長期鍵やRepository secretを保存せずWorkload Identity Federationで認証する。workflowは次の固定リソースだけを使用する。
+
+- Workload Identity Pool: `projects/218069572477/locations/global/workloadIdentityPools/github-actions`
+- Provider: `ferrytransit`
+- Service Account: `jal-timetable-publisher@oki-ferryguide-dev.iam.gserviceaccount.com`
+- Provider条件: `assertion.repository == "ag-k/FerryTransit"`、`assertion.ref == "refs/heads/master"`、`assertion.workflow_ref == "ag-k/FerryTransit/.github/workflows/update-jal-timetable.yml@refs/heads/master"`
+- Storage権限: devバケット `oki-ferryguide-dev.firebasestorage.app` に対する `roles/storage.objectAdmin` のみ
+
+サービスアカウント鍵JSONと`FIREBASE_SERVICE_ACCOUNT_DEV` secretは作成しない。GitHub OIDCの`id-token: write`は、公開が必要なjob内で`google-github-actions/auth@v3`が短期資格情報を取得するためだけに使う。本番プロジェクト・本番Storageへの権限は付与しない。
+
+### 初回WIF構成
+
+2026-07-22の読み取り専用監査では、上記Service Account、Pool、Providerはいずれも未作成だった。構成担当者の明示承認後に次を1回だけ実行する。ProviderはGitHubの共通issuerを使うため、リポジトリ、default branch、workflowファイルの3条件をすべて満たすOIDC tokenだけを受け付ける。
+
+```bash
+gcloud iam service-accounts create jal-timetable-publisher \
+  --project=oki-ferryguide-dev \
+  --display-name="JAL timetable dev publisher"
+
+gcloud iam workload-identity-pools create github-actions \
+  --project=oki-ferryguide-dev \
+  --location=global \
+  --display-name="GitHub Actions"
+
+gcloud iam workload-identity-pools providers create-oidc ferrytransit \
+  --project=oki-ferryguide-dev \
+  --location=global \
+  --workload-identity-pool=github-actions \
+  --issuer-uri="https://token.actions.githubusercontent.com" \
+  --attribute-mapping="google.subject=assertion.sub,attribute.repository=assertion.repository" \
+  --attribute-condition="assertion.repository == 'ag-k/FerryTransit' && assertion.ref == 'refs/heads/master' && assertion.workflow_ref == 'ag-k/FerryTransit/.github/workflows/update-jal-timetable.yml@refs/heads/master'"
+
+gcloud iam service-accounts add-iam-policy-binding \
+  jal-timetable-publisher@oki-ferryguide-dev.iam.gserviceaccount.com \
+  --project=oki-ferryguide-dev \
+  --role=roles/iam.workloadIdentityUser \
+  --member="principalSet://iam.googleapis.com/projects/218069572477/locations/global/workloadIdentityPools/github-actions/attribute.repository/ag-k/FerryTransit"
+
+gcloud storage buckets add-iam-policy-binding \
+  gs://oki-ferryguide-dev.firebasestorage.app \
+  --role=roles/storage.objectAdmin \
+  --member="serviceAccount:jal-timetable-publisher@oki-ferryguide-dev.iam.gserviceaccount.com"
+```
+
+構成後は各リソースのIAMを読み返し、サービスアカウント鍵が0件であること、本番project/bucketに同サービスアカウントの権限がないことを確認してから、default branchの`publish_existing`を実行する。
 
 workflowのスケジュール実行はGitHubのdefault branchにある定義が使われる。default branchが `master` のため、このworkflow自体は `master` にも反映する必要がある。処理対象と自動コミット先は常に `dev` ブランチ。
 

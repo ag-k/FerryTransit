@@ -6,6 +6,7 @@ import { getAnalytics, isSupported } from 'firebase/analytics'
 import { getFunctions, connectFunctionsEmulator } from 'firebase/functions'
 import { createLogger } from '~/utils/logger'
 import { resolveFirebaseAnalyticsMeasurementId } from '~/utils/firebaseAnalytics'
+import { isBrowserTestMode } from '~/utils/testMode'
 
 let db: ReturnType<typeof getFirestore>
 
@@ -50,7 +51,8 @@ export default defineNuxtPlugin({
   const analyticsMeasurementId = resolveFirebaseAnalyticsMeasurementId({
     projectId: config.public.firebase.projectId,
     measurementId: config.public.firebase.measurementId,
-    useEmulators: config.public.firebase.useEmulators
+    useEmulators: config.public.firebase.useEmulators,
+    isCapacitorBuild: __CAPACITOR_BUILD__
   })
 
   const firebaseConfig = {
@@ -108,7 +110,8 @@ export default defineNuxtPlugin({
   
   // Initialize Analytics only in browser
   let analytics = null
-  if (process.client && analyticsMeasurementId) {
+  const isTestMode = process.client && isBrowserTestMode()
+  if (process.client && analyticsMeasurementId && !isTestMode) {
     try {
       const supported = await isSupported()
       if (supported) {

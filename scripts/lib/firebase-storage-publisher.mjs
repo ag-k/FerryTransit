@@ -64,11 +64,13 @@ export function createFirebaseStoragePublisher(options = {}, dependencies = {}) 
         ? backupPathFactory({ timestamp, storagePath })
         : posix.join(backupRoot, timestamp, storagePath)
       await getBucket().file(backupPath).save(existingContents, {
+        resumable: false,
         metadata: { contentType: 'application/json', cacheControl: 'private, max-age=0', metadata: { sourcePath: storagePath } }
       })
     }
 
     await remoteFile.save(buffer, {
+      resumable: false,
       metadata: {
         contentType: 'application/json',
         cacheControl,

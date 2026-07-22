@@ -92,7 +92,7 @@ export function runTransportPipeline({
   if ((stages.includes('publish') || stages.includes('smoke')) && !target) {
     throw new Error('publish/smoke には --target dev|prod の明示が必要です')
   }
-  if (target === 'prod') {
+  if (target === 'prod' && stages.some(stage => stage !== 'smoke')) {
     throw new Error('prodへの公開はtransport:promoteだけが実行できます')
   }
 

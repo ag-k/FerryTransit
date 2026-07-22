@@ -251,7 +251,9 @@
 <script setup lang="ts">
 import { useNews } from '~/composables/useNews'
 import { useAndroidNavigation } from '~/composables/useAndroidNavigation'
+import { APP_RESUME_EVENT } from '~/composables/useTodayRollover'
 import { Capacitor } from '@capacitor/core'
+import { savePreferredLocale, type SupportedLocale } from '@/utils/userPreferences'
 
 const { locale, locales, t } = useI18n()
 const route = useRoute()
@@ -486,6 +488,34 @@ const newsExpanded = ref(false)
 
 // News composable
 const { publishedNews, fetchNews } = useNews()
+const newsRefreshIntervalMs = 60 * 1000
+let newsRefreshIntervalId: number | undefined
+let newsRefreshPromise: Promise<void> | null = null
+
+const refreshNews = async () => {
+  if (newsRefreshPromise) return newsRefreshPromise
+
+  newsRefreshPromise = fetchNews().finally(() => {
+    newsRefreshPromise = null
+  })
+  return newsRefreshPromise
+}
+
+const triggerNewsRefresh = () => {
+  void refreshNews()
+}
+
+const refreshNewsIfVisible = () => {
+  if (document.visibilityState === 'visible') {
+    triggerNewsRefresh()
+  }
+}
+
+const handleNewsVisibilityChange = () => {
+  if (document.visibilityState === 'visible') {
+    triggerNewsRefresh()
+  }
+}
 
 // Current locale name
 const currentLocaleName = computed(() => {
@@ -530,6 +560,9 @@ const toggleLangMenu = () => {
 
 // Switch locale
 const switchLocale = (code: string) => {
+  if (typeof window !== 'undefined' && (code === 'ja' || code === 'en')) {
+    savePreferredLocale(localStorage, code as SupportedLocale)
+  }
   navigateTo(switchLocalePath(code))
   langMenuOpen.value = false
   menuOpen.value = false
@@ -578,8 +611,15 @@ watch(menuOpen, (open) => {
 let handleClickOutside: ((e: MouseEvent | TouchEvent) => void) | null = null
 
 onMounted(async () => {
+  // 起動済みのアプリでも、復帰・通信回復・表示継続時に最新のお知らせへ更新する。
+  window.addEventListener(APP_RESUME_EVENT, triggerNewsRefresh)
+  window.addEventListener('focus', refreshNewsIfVisible)
+  window.addEventListener('online', triggerNewsRefresh)
+  document.addEventListener('visibilitychange', handleNewsVisibilityChange)
+  newsRefreshIntervalId = window.setInterval(refreshNewsIfVisible, newsRefreshIntervalMs)
+
   // お知らせデータを取得
-  await fetchNews()
+  await refreshNews()
 
   handleClickOutside = (event: MouseEvent | TouchEvent) => {
     const target = event.target as HTMLElement
@@ -605,6 +645,14 @@ onUnmounted(() => {
   }
   window.removeEventListener('keydown', onKeydown)
   window.removeEventListener('resize', updateIsMobile)
+  window.removeEventListener(APP_RESUME_EVENT, triggerNewsRefresh)
+  window.removeEventListener('focus', refreshNewsIfVisible)
+  window.removeEventListener('online', triggerNewsRefresh)
+  document.removeEventListener('visibilitychange', handleNewsVisibilityChange)
+  if (newsRefreshIntervalId !== undefined) {
+    window.clearInterval(newsRefreshIntervalId)
+    newsRefreshIntervalId = undefined
+  }
   // Ensure body scroll is restored
   document.body.style.overflow = ''
 })

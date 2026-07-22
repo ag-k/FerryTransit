@@ -184,7 +184,9 @@ export default defineNuxtConfig({
         messagingSenderId:
           process.env.NUXT_PUBLIC_FIREBASE_MESSAGING_SENDER_ID || "",
         appId: process.env.NUXT_PUBLIC_FIREBASE_APP_ID || "",
-        measurementId: process.env.NUXT_PUBLIC_FIREBASE_MEASUREMENT_ID || "",
+        measurementId: isCapacitorBuild
+          ? ""
+          : process.env.NUXT_PUBLIC_FIREBASE_MEASUREMENT_ID || "",
         useEmulators: isProductionBuild
           ? false
           : parseBooleanEnv(process.env.NUXT_PUBLIC_FIREBASE_USE_EMULATORS),

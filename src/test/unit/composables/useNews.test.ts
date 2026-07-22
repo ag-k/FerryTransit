@@ -230,13 +230,29 @@ describe('useNews', () => {
       )
       expect(fetchMock).toHaveBeenCalledWith(storageNewsUrl, {
         method: 'GET',
-        mode: 'cors'
+        mode: 'cors',
+        cache: 'no-store'
       })
       expect(newsList.value).toEqual(mockNewsData)
       expect(localStorageMock.getItem('ferry_news_cache')).toBe(JSON.stringify(mockNewsData))
       expect(localStorageMock.getItem('ferry_news_cache_time')).not.toBeNull()
       expect(isLoading.value).toBe(false)
       expect(error.value).toBeNull()
+    })
+
+    it('replaces an earlier empty response when a later refresh returns published news', async () => {
+      const fetchMock = vi.fn()
+        .mockResolvedValueOnce(createJsonResponse([]))
+        .mockResolvedValueOnce(createJsonResponse(mockNewsData))
+      vi.stubGlobal('fetch', fetchMock)
+      const { newsList, fetchNews } = useNews()
+
+      await fetchNews()
+      expect(newsList.value).toEqual([])
+
+      await fetchNews()
+      expect(newsList.value).toEqual(mockNewsData)
+      expect(fetchMock).toHaveBeenCalledTimes(2)
     })
 
     it('clears news without setting an error when Storage returns 404', async () => {

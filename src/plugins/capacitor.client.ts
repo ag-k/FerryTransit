@@ -6,7 +6,7 @@ import { storeToRefs } from 'pinia'
 import { useUIStore } from '@/stores/ui'
 import { createLogger } from '~/utils/logger'
 import { navigateToDeepLink, parseDeepLinkPath } from '~/utils/deepLink'
-import { isAppRootPath } from '~/utils/nativeNavigation'
+import { isAppRootPath, isIOSBackSwipe, type SwipeCoordinates } from '~/utils/nativeNavigation'
 import { APP_RESUME_EVENT } from '~/composables/useTodayRollover'
 
 export default defineNuxtPlugin(() => {
@@ -101,12 +101,11 @@ export default defineNuxtPlugin(() => {
       })
     }
     
-    // スプラッシュスクリーンを3秒後に非表示
-    setTimeout(() => {
-      SplashScreen.hide().catch(error => {
-        logger.error('Failed to hide splash screen', error)
-      })
-    }, 3000)
+    // Nuxtのクライアント初期化完了後に一度だけ非表示にする。
+    // capacitor.config.tsで自動非表示を止め、タイムアウトとの競合を防ぐ。
+    SplashScreen.hide().catch(error => {
+      logger.error('Failed to hide splash screen', error)
+    })
 
     // バックボタンの処理（Android）
     if (Capacitor.getPlatform() === 'android') {
@@ -117,6 +116,38 @@ export default defineNuxtPlugin(() => {
           router.back()
         }
       })
+    } else if (Capacitor.getPlatform() === 'ios') {
+      let swipeStart: Pick<SwipeCoordinates, 'startX' | 'startY'> | null = null
+
+      document.addEventListener('touchstart', (event) => {
+        if (event.touches.length !== 1) {
+          swipeStart = null
+          return
+        }
+
+        const touch = event.touches[0]
+        swipeStart = { startX: touch.clientX, startY: touch.clientY }
+      }, { passive: true })
+
+      document.addEventListener('touchend', (event) => {
+        const start = swipeStart
+        swipeStart = null
+        if (!start || event.changedTouches.length !== 1) return
+        if (isAppRootPath(router.currentRoute.value.path)) return
+
+        const touch = event.changedTouches[0]
+        if (isIOSBackSwipe({
+          ...start,
+          endX: touch.clientX,
+          endY: touch.clientY
+        })) {
+          router.back()
+        }
+      }, { passive: true })
+
+      document.addEventListener('touchcancel', () => {
+        swipeStart = null
+      }, { passive: true })
     }
 
     // ディープリンクで画面遷移（例: ferrytransit://app/transit?...）

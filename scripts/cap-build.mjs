@@ -114,7 +114,9 @@ async function main() {
     ensureNpmOptionalDeps();
 
     // Run Nuxt generate
-    run('CAPACITOR_BUILD=true npm run generate');
+    // Mobile builds use the anonymous aggregate Firestore counters only.
+    // Keep the Google Analytics measurement ID out of the generated WebView assets.
+    run('CAPACITOR_BUILD=true NUXT_PUBLIC_FIREBASE_MEASUREMENT_ID= npm run generate');
 
     // テスト用HTMLをアプリへ含めず、時刻表データが成果物へ混入していないことを保証
     rmSync(join(projectRoot, '.output', 'public', 'test-route.html'), { force: true });
