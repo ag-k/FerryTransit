@@ -16,6 +16,7 @@ Google Play Consoleへv2.4を登録する際の転記・確認用ドラフト。
 - 連絡先メールは`koyama@naturebot-lab.com`。現在の運用窓口として有効か、リリース責任者が確認する。
 - [Google Playの対象API要件](https://support.google.com/googleplay/android-developer/answer/11926878)により、2026年8月31日以降の通常アプリ更新はAndroid 16（API 36）以上が必要。監査時のv2.4はtargetSdk 35だったため、compileSdk / targetSdkを36、API 36の公式最小要件に合わせてAGPを8.9.1へ更新した。生成APKからtargetSdk 36、minSdk 23、versionCode 24000、v2.4を確認し、Android 16でスモーク済み。最新AABアップロード後にPlay Consoleの警告消失を確認する。
 - 「アプリのコンテンツ > データ セーフティ」は2025-11-01更新の公開回答で、対象データを収集・共有しない旨になっている。一方、v2.4実装はモバイルでもFirestoreへ日別・月別・時間別のページ閲覧回数と、出発地・到着地・検索日時別の検索回数を送信する。ユーザーID、端末ID、セッションID、ページパスは保存せず共有集計ドキュメントを直接加算する実装だが、アプリ外への送信自体はGoogle Playの「収集」に該当し得る。また、プライバシーポリシーも同統計情報を収集対象として明記しているため、現在のPlay回答とは不整合がある。保存・公開は行わず、下記の修正案をリリース責任者確認待ちとした。
+- Play Consoleのデータセーフティ「プレビュー」を再確認し、「データ収集は申告されていません」「第三者と共有されるデータはありません」と表示されること、プライバシーポリシーURLが`https://transit.oki-digilab.com/privacy`であることを確認した。ステップ2の実回答も「対象になる種類のユーザーデータを収集または共有しますか？」が「いいえ」のままであり、上記の実装・ポリシーとの不整合を画面上で再現した。回答は変更・保存していない。
 
 ## データセーフティ回答案
 
@@ -128,7 +129,8 @@ Always confirm final service decisions, fares, and special services with the rel
 - [ ] 携帯電話画像をPlay Consoleへ登録してプレビューを確認する。
 - [ ] タブレット画像の7インチ・10インチ欄への掲載方針を確定し、登録する。
 - [x] ウェブサイトを`https://transit.oki-digilab.com/`へ更新し、即時公開の成功を確認する。
-- [ ] プライバシーポリシーURLと連絡先メールを最終確認する。
+- [x] データセーフティのプライバシーポリシーURLが`https://transit.oki-digilab.com/privacy`であることをプレビューで確認する。
+- [ ] 連絡先メール`koyama@naturebot-lab.com`が現在の運用窓口として有効か、リリース責任者が確認する。
 - [x] Android設定とローカルAPKをtargetSdk 36へ更新する。
 - [ ] targetSdk 36の最新AAB登録後に対象APIレベル警告の解消状態を確認する。
 - [ ] データセーフティを上記回答案へ更新し、実装・プライバシーポリシーとの一致、プレビュー、公開状態を最終確認する。
