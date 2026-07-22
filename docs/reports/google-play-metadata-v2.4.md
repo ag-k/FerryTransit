@@ -15,6 +15,25 @@ Google Play Consoleへv2.4を登録する際の転記・確認用ドラフト。
 - ウェブサイトは旧`http://naturebot-lab.com/`のため、`https://transit.oki-digilab.com/`へ更新する。
 - 連絡先メールは`koyama@naturebot-lab.com`。現在の運用窓口として有効か、リリース責任者が確認する。
 - [Google Playの対象API要件](https://support.google.com/googleplay/android-developer/answer/11926878)により、2026年8月31日以降の通常アプリ更新はAndroid 16（API 36）以上が必要。監査時のv2.4はtargetSdk 35だったため、compileSdk / targetSdkを36、API 36の公式最小要件に合わせてAGPを8.9.1へ更新した。生成APKからtargetSdk 36、minSdk 23、versionCode 24000、v2.4を確認し、Android 16でスモーク済み。最新AABアップロード後にPlay Consoleの警告消失を確認する。
+- 「アプリのコンテンツ > データ セーフティ」は2025-11-01更新の公開回答で、対象データを収集・共有しない旨になっている。一方、v2.4実装はモバイルでもFirestoreへ日別・月別・時間別のページ閲覧回数と、出発地・到着地・検索日時別の検索回数を送信する。ユーザーID、端末ID、セッションID、ページパスは保存せず共有集計ドキュメントを直接加算する実装だが、アプリ外への送信自体はGoogle Playの「収集」に該当し得る。また、プライバシーポリシーも同統計情報を収集対象として明記しているため、現在のPlay回答とは不整合がある。保存・公開は行わず、下記の修正案をリリース責任者確認待ちとした。
+
+## データセーフティ回答案
+
+[Google Playのデータセーフティ定義](https://support.google.com/googleplay/android-developer/answer/10787469)は、アプリまたはSDKが端末外へデータを送信することを「収集」とし、サービスプロバイダへの転送は一定条件下で「共有」から除外する。[FirebaseのPlayデータ開示ガイド](https://firebase.google.com/docs/android/play-data-disclosure)も、Cloud Firestoreへ送信する利用定義データは開発者が用途に応じて申告する必要があるとしている。
+
+実装とポリシーに対する保守的な回答案は次のとおり。Play Consoleの実際の設問とプレビューで最終確認し、必要なら法務・プライバシー責任者の判断を得てから保存する。
+
+- データを収集する: `はい`
+- データを共有する: `いいえ`（Firebaseはアプリ提供のためのサービスプロバイダとして利用し、第三者広告・販売・横断トラッキング用途なし）
+- データの種類: `アプリのアクティビティ > アプリ内の操作`（ページ閲覧の集計）、`アプリのアクティビティ > アプリ内検索履歴`（出発地・到着地・検索日時別の集計）
+- 目的: `分析`
+- 必須 / 任意: `必須`（現行UIに個別オプトアウトなし）
+- 一時的な処理: `いいえ`（日別・月別・時間別の集計値をFirestoreへ保存）
+- ユーザーへの関連付け: `いいえ`（ユーザーID、端末ID、セッションIDを保存せず、共有集計ドキュメントを直接加算）
+- 転送時暗号化: `はい`
+- 削除リクエスト: 個人に関連付けたデータを保持しないため個別削除できないことを、Play Consoleの選択肢とポリシー文言で確認する
+
+Cloud Firestore SDKが自動収集するFirebase User Agent（OSバージョン、端末名・モデル等）はFirebaseの説明上ユーザー・端末識別子へリンクされない。ただし、上記アプリ定義データとは別にPlay Consoleの質問へ該当するかを、最新AABのSDK構成で最終確認する。
 
 ## 共通設定案
 
@@ -111,5 +130,5 @@ Always confirm final service decisions, fares, and special services with the rel
 - [ ] ウェブサイト、プライバシーポリシーURL、連絡先メールを確認する。
 - [x] Android設定とローカルAPKをtargetSdk 36へ更新する。
 - [ ] targetSdk 36の最新AAB登録後に対象APIレベル警告の解消状態を確認する。
-- [ ] データセーフティ回答と実装・プライバシーポリシーを最終照合する。
+- [ ] データセーフティを上記回答案へ更新し、実装・プライバシーポリシーとの一致、プレビュー、公開状態を最終確認する。
 - [ ] 内部テスト、リリース前レポート、Android Vitalsを確認する。
