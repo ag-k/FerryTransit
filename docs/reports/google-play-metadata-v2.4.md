@@ -11,6 +11,7 @@ Google Play Consoleへv2.4を登録する際の転記・確認用ドラフト。
 - ローカルの512pxアイコンを内容変更なしで`output/google-play-assets/app-icon-512.png`へ準備した。512×512、8-bit RGBA PNG、62,986 bytes、角丸・外部シャドウなし、SHA-256 `dea3cf6c28a86e80f86b3d261899ac5d89b29baaf00c6cb386b821022a4e771a`。Play Consoleへ登録後に動的マスクのプレビューと警告消失を確認する。
 - 携帯電話スクリーンショットはPlay Console上では日英各2枚。ローカルではv2.4用の日英各4枚（1080×2220）を生成済みで、Google Playが案内する各言語4枚以上を満たす。
 - 7インチ・10インチタブレットのスクリーンショットはPlay Console上では未登録。Pixel Tablet / Android 14の横向き日英各5枚（2560×1600）を生成済み。10インチ欄へ登録し、7インチ欄は同画像の受理可否と表示品質をPlay Consoleで確認する。
+- Chrome拡張からのローカルファイル選択が許可されなかったため、Google Driveの専用フォルダ[`FerryTransit v2.4 Play Assets`](https://drive.google.com/drive/folders/1ll5SI6uDaHpAqmIq4mrUg3bTq9K13wZx)へ、アイコン1枚、携帯電話画像8枚、タブレット画像10枚の計19 PNGを言語・端末種別付きの名前でアップロードした。Drive APIで全19件の`image/png`、ファイル名、非0サイズを読み戻し、欠落0件を確認した。Play Consoleの「Driveから追加」は`ag.aeg.age@gmail.com`へのDrive読み取りOAuth承認画面まで到達したが、新しいアカウント権限付与は自動承認せず保留した。
 - カテゴリは「地図、ナビ」で、アプリ内容と整合する。
 - ウェブサイトは旧`http://naturebot-lab.com/`から`https://transit.oki-digilab.com/`へ更新し、Play Consoleの「変更内容が公開されました」を確認した。通常1時間以内にストアへ反映される案内だった。
 - 連絡先メールは`koyama@naturebot-lab.com`。現在の運用窓口として有効か、リリース責任者が確認する。
@@ -126,6 +127,7 @@ Always confirm final service decisions, fares, and special services with the rel
 - [ ] アイコン候補をPlay Consoleへ登録し、動的マスクと警告消失を確認する。
 - [x] 日英の携帯電話用画像を各4枚生成する。
 - [x] 日英のタブレット用画像を各5枚生成する。
+- [x] Play Console受け渡し用Driveフォルダへアイコン・携帯電話・タブレット画像計19枚をアップロードし、件数・MIME・非0サイズを読み戻す。
 - [ ] 携帯電話画像をPlay Consoleへ登録してプレビューを確認する。
 - [ ] タブレット画像の7インチ・10インチ欄への掲載方針を確定し、登録する。
 - [x] ウェブサイトを`https://transit.oki-digilab.com/`へ更新し、即時公開の成功を確認する。
