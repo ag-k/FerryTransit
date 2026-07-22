@@ -9,6 +9,8 @@ const workflow = readFileSync(
 
 describe('JAL timetable workflow authentication', () => {
   it('uses short-lived GitHub OIDC credentials for the dedicated dev publisher', () => {
+    expect(workflow).toContain('uses: actions/checkout@v7')
+    expect(workflow).toContain('uses: actions/setup-node@v7')
     expect(workflow).toContain('id-token: write')
     expect(workflow).toContain('uses: google-github-actions/auth@v3')
     expect(workflow).toContain(
