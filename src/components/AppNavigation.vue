@@ -20,10 +20,11 @@
 
     <div
       class="w-full pl-[calc(16px+env(safe-area-inset-left))] pr-[env(safe-area-inset-right)] lg:pr-[calc(16px+env(safe-area-inset-right))]">
-      <div class="flex items-center justify-between h-[44px] lg:h-auto lg:py-4">
+      <div class="flex items-center justify-between h-12 lg:h-auto lg:py-4">
         <div class="flex items-center">
           <NuxtLink
-            class="text-base sm:text-xl font-medium hover:opacity-80 transition-opacity flex items-center h-full py-0 flex-1 lg:flex-none lg:py-2"
+            class="text-base sm:text-xl font-medium hover:opacity-80 transition-opacity flex min-h-12 items-center py-0 flex-1 lg:flex-none lg:py-2"
+            data-testid="app-home-link"
             :to="localePath('/')">
             <span class="hidden lg:inline font-bold">{{ $t('TITLE') }}</span>
             <span class="lg:hidden flex items-center">
@@ -34,7 +35,7 @@
         </div>
 
         <button
-          class="lg:hidden relative min-w-[44px] min-h-[44px] p-2 rounded hover:bg-white/10 dark:hover:bg-white/5 transition-colors z-50 touch-manipulation flex items-center justify-center ml-auto"
+          class="lg:hidden relative min-w-12 min-h-12 p-2 rounded hover:bg-white/10 dark:hover:bg-white/5 transition-colors z-50 touch-manipulation flex items-center justify-center ml-auto"
           type="button"
           aria-controls="navbarNav"
           :aria-expanded="menuOpen"
@@ -116,7 +117,7 @@
                 v-for="lng in locales"
                 :key="lng.code"
                 type="button"
-                class="flex-1 px-3 py-2 rounded-md text-sm font-medium transition-colors touch-manipulation"
+                class="flex-1 min-h-12 px-3 py-2 rounded-md text-sm font-medium transition-colors touch-manipulation"
                 :class="lng.code === locale
                   ? 'bg-app-surface text-app-primary dark:text-white shadow'
                   : 'text-app-muted hover:bg-app-surface/60'"
@@ -282,7 +283,7 @@ const totalTopPadding = computed(() => {
   return Math.max(safeArea, androidStatus, 8) // デスクトップでは最低8pxを確保
 })
 
-const mobileHeaderHeight = 44
+const mobileHeaderHeight = 48
 const navPaddingTop = computed(() => {
   if (isIOSNative.value) return 'env(safe-area-inset-top)'
   return `${totalTopPadding.value}px`

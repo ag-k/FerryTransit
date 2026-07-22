@@ -995,6 +995,12 @@ onUnmounted(() => {
   background: rgba(255, 255, 255, 0.92);
 }
 
+.map-container :deep(.leaflet-control-zoom a) {
+  width: 48px;
+  height: 48px;
+  line-height: 48px;
+}
+
 .map-container :deep(.ferry-map-stop-popup) {
   min-width: 180px;
   color: #0f172a;
@@ -1119,7 +1125,11 @@ onUnmounted(() => {
 }
 
 .map-container :deep(.ferry-map-port-label__button) {
-  display: block;
+  display: flex;
+  min-width: 48px;
+  min-height: 48px;
+  align-items: center;
+  justify-content: center;
   padding: 4px 10px;
   border: 0;
   background: transparent;

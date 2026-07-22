@@ -85,6 +85,12 @@ describe('RouteEndpointsSelector', () => {
 
     expect(wrapper.find('[data-testid="route-endpoints-clear-departure"]').exists()).toBe(true)
     expect(wrapper.find('[data-testid="route-endpoints-clear-arrival"]').exists()).toBe(true)
+    expect(wrapper.find('[data-testid="route-endpoints-clear-departure"]').classes()).toEqual(
+      expect.arrayContaining(['min-h-12', 'min-w-12'])
+    )
+    expect(wrapper.find('[data-testid="route-endpoints-clear-arrival"]').classes()).toEqual(
+      expect.arrayContaining(['min-h-12', 'min-w-12'])
+    )
 
     await wrapper.find('[data-testid="route-endpoints-clear-departure"]').trigger('click')
     expect(wrapper.emitted('update:departure')).toBeTruthy()
@@ -110,7 +116,9 @@ describe('RouteEndpointsSelector', () => {
 
   it('emits reverse when swap button is clicked', async () => {
     const wrapper = mountComponent()
-    await wrapper.find('button[aria-label="Reverse route"]').trigger('click')
+    const reverseButton = wrapper.find('button[aria-label="Reverse route"]')
+    expect(reverseButton.classes()).toEqual(expect.arrayContaining(['min-h-12', 'min-w-12']))
+    await reverseButton.trigger('click')
     expect(wrapper.emitted('reverse')).toBeTruthy()
   })
 

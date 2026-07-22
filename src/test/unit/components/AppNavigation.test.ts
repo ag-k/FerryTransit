@@ -61,6 +61,8 @@ describe('AppNavigation', () => {
 
     const button = wrapper.find('button[aria-controls="navbarNav"]')
     expect(button.exists()).toBe(true)
+    expect(button.classes()).toEqual(expect.arrayContaining(['min-h-12', 'min-w-12']))
+    expect(wrapper.find('[data-testid="app-home-link"]').classes()).toContain('min-h-12')
 
     await button.trigger('click')
 
@@ -77,6 +79,8 @@ describe('AppNavigation', () => {
     expect(wrapper.find('[data-testid="app-nav-language-segment"]').exists()).toBe(true)
     expect(wrapper.find('[data-testid="app-nav-lang-ja"]').exists()).toBe(true)
     expect(wrapper.find('[data-testid="app-nav-lang-en"]').exists()).toBe(true)
+    expect(wrapper.find('[data-testid="app-nav-lang-ja"]').classes()).toContain('min-h-12')
+    expect(wrapper.find('[data-testid="app-nav-lang-en"]').classes()).toContain('min-h-12')
 
     wrapper.unmount()
   })

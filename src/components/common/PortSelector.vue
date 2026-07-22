@@ -6,7 +6,7 @@
 
     <!-- Button (opens modal) -->
     <button :id="buttonId" type="button" data-testid="port-selector-button"
-      class="w-full px-3 py-2 border border-app-border rounded-md text-left bg-app-surface text-app-fg focus:outline-none focus:ring-2 focus:ring-app-primary-2 focus:border-app-primary-2 disabled:bg-app-surface-2 disabled:text-app-muted disabled:cursor-not-allowed flex items-center justify-between gap-3"
+      class="w-full min-h-12 px-3 py-2 border border-app-border rounded-md text-left bg-app-surface text-app-fg focus:outline-none focus:ring-2 focus:ring-app-primary-2 focus:border-app-primary-2 disabled:bg-app-surface-2 disabled:text-app-muted disabled:cursor-not-allowed flex items-center justify-between gap-3"
       :disabled="disabled" :aria-label="ariaLabel || label || placeholder || $t('SELECT')" :aria-haspopup="'dialog'"
       :aria-expanded="isOpen ? 'true' : 'false'" @click="open">
       <span class="min-w-0">
@@ -74,7 +74,7 @@
                     role="tab"
                     data-testid="port-selector-transport-tab"
                     :aria-selected="selectedTransportTab === tab.key ? 'true' : 'false'"
-                    class="inline-flex items-center justify-center gap-2 rounded-md border px-3 py-2 text-sm font-semibold transition-colors focus:outline-none focus:ring-2 focus:ring-app-primary-2"
+                    class="inline-flex min-h-12 items-center justify-center gap-2 rounded-md border px-3 py-2 text-sm font-semibold transition-colors focus:outline-none focus:ring-2 focus:ring-app-primary-2"
                     :class="[
                       selectedTransportTab === tab.key
                         ? 'bg-app-primary text-white border-app-primary'
@@ -103,7 +103,7 @@
                   <button
                     v-if="searchQuery"
                     type="button"
-                    class="absolute right-2 top-1/2 -translate-y-1/2 rounded-md p-2 text-app-muted hover:bg-app-surface-2 hover:text-app-fg"
+                    class="absolute right-0 top-1/2 min-h-12 min-w-12 -translate-y-1/2 rounded-md text-app-muted hover:bg-app-surface-2 hover:text-app-fg flex items-center justify-center"
                     :aria-label="$t('CLEAR')"
                     @click="searchQuery = ''"
                   >
@@ -139,7 +139,7 @@
                     data-testid="bus-stop-town-tabs">
                     <button v-for="tab in visibleBusStopTownTabs" :key="tab.key" type="button" role="tab"
                       data-testid="bus-stop-town-tab" :aria-selected="tab.key === currentBusStopTownKey ? 'true' : 'false'"
-                      class="px-3 py-2 rounded-md border text-sm font-semibold transition-colors focus:outline-none focus:ring-2 focus:ring-app-primary-2"
+                      class="min-h-12 px-3 py-2 rounded-md border text-sm font-semibold transition-colors focus:outline-none focus:ring-2 focus:ring-app-primary-2"
                       :class="[
                         tab.key === 'MAINLAND' ? 'col-span-2' : '',
                         getBusStopTownTabClass(tab)
@@ -161,7 +161,7 @@
                         role="tab"
                         data-testid="bus-stop-route-tab"
                         :aria-selected="activeBusStopRouteKey === null ? 'true' : 'false'"
-                        class="rounded-full border px-3 py-1.5 text-xs font-semibold transition-colors focus:outline-none focus:ring-2 focus:ring-app-primary-2"
+                        class="min-h-12 rounded-full border px-3 py-1.5 text-xs font-semibold transition-colors focus:outline-none focus:ring-2 focus:ring-app-primary-2"
                         :class="activeBusStopRouteKey === null
                           ? 'bg-app-primary text-white border-app-primary'
                           : 'bg-app-surface text-app-fg border-app-border hover:bg-app-surface-2'"
@@ -176,7 +176,7 @@
                         role="tab"
                         data-testid="bus-stop-route-tab"
                         :aria-selected="routeFilter.key === activeBusStopRouteKey ? 'true' : 'false'"
-                        class="rounded-full border px-3 py-1.5 text-xs font-semibold transition-colors focus:outline-none focus:ring-2 focus:ring-app-primary-2"
+                        class="min-h-12 rounded-full border px-3 py-1.5 text-xs font-semibold transition-colors focus:outline-none focus:ring-2 focus:ring-app-primary-2"
                         :class="routeFilter.key === activeBusStopRouteKey
                           ? 'bg-app-primary text-white border-app-primary'
                           : 'bg-app-surface text-app-fg border-app-border hover:bg-app-surface-2'"

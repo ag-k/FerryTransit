@@ -31,7 +31,7 @@
         <button
           v-if="departureProxy && !disabled"
           type="button"
-          class="absolute right-2 top-1/2 -translate-y-1/2 p-2 rounded-md text-app-muted hover:text-app-fg hover:bg-app-surface-2 transition-colors touch-manipulation"
+          class="absolute right-0 top-1/2 min-h-12 min-w-12 -translate-y-1/2 rounded-md text-app-muted hover:text-app-fg hover:bg-app-surface-2 transition-colors touch-manipulation flex items-center justify-center"
           :aria-label="$t('CLEAR')"
           :title="$t('CLEAR')"
           data-testid="route-endpoints-clear-departure"
@@ -56,7 +56,7 @@
       <button
         v-if="showVia"
         type="button"
-        class="px-3 py-2 text-sm font-medium text-app-primary hover:underline disabled:opacity-50 disabled:cursor-not-allowed"
+        class="min-h-12 px-3 py-2 text-sm font-medium text-app-primary hover:underline disabled:opacity-50 disabled:cursor-not-allowed"
         :disabled="disabled"
         data-testid="route-endpoints-add-via"
         @click="$emit('addVia')"
@@ -66,7 +66,7 @@
 
       <button
         type="button"
-        class="p-3 text-base text-app-primary dark:text-white hover:bg-app-surface-2 transition-colors touch-manipulation"
+        class="min-h-12 min-w-12 p-3 text-base text-app-primary dark:text-white hover:bg-app-surface-2 transition-colors touch-manipulation flex items-center justify-center"
         title="出発地と到着地を入れ替え"
         aria-label="Reverse route"
         :disabled="disabled"
@@ -109,7 +109,7 @@
         <button
           v-if="arrivalProxy && !disabled"
           type="button"
-          class="absolute right-2 top-1/2 -translate-y-1/2 p-2 rounded-md text-app-muted hover:text-app-fg hover:bg-app-surface-2 transition-colors touch-manipulation"
+          class="absolute right-0 top-1/2 min-h-12 min-w-12 -translate-y-1/2 rounded-md text-app-muted hover:text-app-fg hover:bg-app-surface-2 transition-colors touch-manipulation flex items-center justify-center"
           :aria-label="$t('CLEAR')"
           :title="$t('CLEAR')"
           data-testid="route-endpoints-clear-arrival"
@@ -240,8 +240,8 @@ watch(
   border-radius: 0 !important;
   background: transparent !important;
   /* 右側にクリア(✗)ボタン領域を確保 */
-  padding: 0.75rem 2.75rem 0.75rem 0.75rem !important;
-  min-height: 44px;
+  padding: 0.75rem 3rem 0.75rem 0.75rem !important;
+  min-height: 48px;
 }
 
 .route-endpoints__selector :deep([data-testid="port-selector-button"] .port-selector__caret) {

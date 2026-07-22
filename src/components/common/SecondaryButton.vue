@@ -61,7 +61,7 @@ const componentAttrs = computed(() => {
 
 const buttonClasses = computed(() => {
   const base =
-    'inline-flex items-center justify-center gap-2 font-medium rounded-lg border border-app-border/70 bg-app-surface text-app-fg shadow-sm ring-1 ring-black/5 dark:ring-white/10 focus:outline-none focus-visible:ring-2 focus-visible:ring-app-primary/40 focus-visible:ring-offset-2 focus-visible:ring-offset-app-bg transition active:scale-[0.98] disabled:opacity-50 disabled:cursor-not-allowed disabled:active:scale-100'
+    'inline-flex min-h-12 items-center justify-center gap-2 font-medium rounded-lg border border-app-border/70 bg-app-surface text-app-fg shadow-sm ring-1 ring-black/5 dark:ring-white/10 focus:outline-none focus-visible:ring-2 focus-visible:ring-app-primary/40 focus-visible:ring-offset-2 focus-visible:ring-offset-app-bg transition active:scale-[0.98] disabled:opacity-50 disabled:cursor-not-allowed disabled:active:scale-100'
 
   const tone = 'hover:bg-app-surface-2'
 

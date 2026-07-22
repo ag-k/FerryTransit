@@ -24,7 +24,7 @@
       <footer class="mt-auto py-3 bg-app-surface/70 border-t border-app-border/60">
         <div class="container mx-auto px-4">
           <p class="text-app-muted text-center mb-0">
-            Powered by <a href="https://oki-digilab.com/" target="_blank" class="text-app-primary-2 hover:text-app-primary">隠岐デジタルラボ</a>
+            Powered by <a href="https://oki-digilab.com/" target="_blank" class="inline-flex min-h-12 items-center px-2 -mx-2 text-app-primary-2 hover:text-app-primary">隠岐デジタルラボ</a>
           </p>
         </div>
       </footer>

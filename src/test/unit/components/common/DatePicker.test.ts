@@ -34,6 +34,8 @@ describe("DatePicker", () => {
     expect(wrapper.find("label").text()).toBe("Select Date");
     expect(wrapper.find('input[type="date"]').exists()).toBe(true);
     expect(wrapper.find("button").text()).toBe("TODAY");
+    expect(wrapper.find('input[type="date"]').classes()).toContain("min-h-12");
+    expect(wrapper.find("button").classes()).toContain("min-h-12");
   });
 
   it("displays the correct date value", () => {

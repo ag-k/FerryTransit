@@ -27,7 +27,9 @@ describe('PortSelector', () => {
       }
     })
 
-    expect(wrapper.find('[data-testid="port-selector-button"]').exists()).toBe(true)
+    const selectorButton = wrapper.find('[data-testid="port-selector-button"]')
+    expect(selectorButton.exists()).toBe(true)
+    expect(selectorButton.classes()).toContain('min-h-12')
   })
 
   it('uses ariaLabel in preference to the shared placeholder', () => {

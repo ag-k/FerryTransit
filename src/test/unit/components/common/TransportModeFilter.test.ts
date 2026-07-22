@@ -20,6 +20,7 @@ describe('TransportModeFilter', () => {
     expect(tabs).toHaveLength(3)
     expect(tabs.map(tab => tab.text())).toEqual(['FERRY', 'BUS', 'AIR'])
     expect(tabs[0]!.attributes('aria-selected')).toBe('true')
+    expect(tabs.every(tab => tab.classes().includes('min-h-12'))).toBe(true)
 
     await tabs[1]!.trigger('click')
     expect(wrapper.emitted('update:modelValue')).toEqual([['BUS']])
