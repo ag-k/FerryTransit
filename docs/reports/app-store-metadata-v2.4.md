@@ -120,6 +120,8 @@ Oki,ferry,bus,flight,timetable,route,transit,Shimane,Japan,travel
 
 格納先は`output/appstore-screenshots/ios-sim-*`。App Store Connectへ登録後、端末種別・言語・表示順が意図どおりであることをプレビューで確認する。
 
+`npm run app-store:assets:verify`は、提出用4ディレクトリの計12枚について、所定のファイル名、PNG構造・CRC、寸法、8-bit RGBA、内容重複を一括検査する。2026-07-23に提出用実データ12件で成功し、正常系、余分なPNG、寸法不一致、重複画像を含む回帰テスト4件も成功した。`output/appstore-screenshots/ios-6.7-ja`はWeb E2Eで生成した日本語だけの旧撮影物であり、App Store提出対象には含めない。App Store Connectへ登録する直前と、画像を差し替えた後に再実行する。
+
 登録順は各言語・端末とも次の3枚とする。
 
 1. `01_timetable.png`

@@ -4,44 +4,30 @@ import { resolve } from 'node:path'
 import { pathToFileURL } from 'node:url'
 import { inspectPng } from './lib/png-inspection.mjs'
 
-export { inspectPng } from './lib/png-inspection.mjs'
+const SCREENSHOT_FILES = ['01_timetable.png', '02_transit.png', '03_status.png']
 
-export const GOOGLE_PLAY_ASSET_GROUPS = [
-  {
-    label: 'アプリアイコン',
-    directory: 'output/google-play-assets',
-    files: ['app-icon-512.png'],
-    width: 512,
-    height: 512,
-    maxBytes: 1024 * 1024,
-  },
+export const APP_STORE_ASSET_GROUPS = [
   ...['ja', 'en'].map(locale => ({
-    label: `携帯電話 (${locale})`,
-    directory: `output/google-play-screenshots/android-phone-${locale}`,
-    files: ['01_timetable.png', '02_transit.png', '03_status.png', '04_fare.png'],
-    width: 1080,
-    height: 2220,
+    label: `iPhone 6.7-inch (${locale})`,
+    directory: `output/appstore-screenshots/ios-sim-6.7-${locale}`,
+    files: SCREENSHOT_FILES,
+    width: 1320,
+    height: 2868,
   })),
   ...['ja', 'en'].map(locale => ({
-    label: `タブレット (${locale})`,
-    directory: `output/google-play-screenshots/android-tablet-${locale}`,
-    files: [
-      '01_timetable.png',
-      '02_transit.png',
-      '03_status.png',
-      '04_fare.png',
-      '05_about.png',
-    ],
-    width: 2560,
-    height: 1600,
+    label: `iPad 13-inch (${locale})`,
+    directory: `output/appstore-screenshots/ios-sim-ipad-13-${locale}`,
+    files: SCREENSHOT_FILES,
+    width: 2064,
+    height: 2752,
   })),
 ]
 
-export async function verifyGooglePlayAssets({ rootDir = process.cwd() } = {}) {
+export async function verifyAppStoreAssets({ rootDir = process.cwd() } = {}) {
   const verified = []
   const hashes = new Map()
 
-  for (const group of GOOGLE_PLAY_ASSET_GROUPS) {
+  for (const group of APP_STORE_ASSET_GROUPS) {
     const directory = resolve(rootDir, group.directory)
     const actualPngFiles = (await readdir(directory))
       .filter(name => name.toLowerCase().endsWith('.png'))
@@ -70,9 +56,6 @@ export async function verifyGooglePlayAssets({ rootDir = process.cwd() } = {}) {
           `${label}: 8-bit RGBA PNGではありません（bitDepth=${png.bitDepth}, colorType=${png.colorType}）`,
         )
       }
-      if (group.maxBytes && fileStat.size > group.maxBytes) {
-        throw new Error(`${label}: ファイルサイズが上限${group.maxBytes} bytesを超えています`)
-      }
 
       const sha256 = createHash('sha256').update(buffer).digest('hex')
       const duplicate = hashes.get(sha256)
@@ -95,17 +78,18 @@ export async function verifyGooglePlayAssets({ rootDir = process.cwd() } = {}) {
 }
 
 async function main() {
-  const verified = await verifyGooglePlayAssets()
+  const verified = await verifyAppStoreAssets()
   const counts = new Map()
   for (const asset of verified) {
     counts.set(asset.group, (counts.get(asset.group) ?? 0) + 1)
   }
 
-  const lines = [`Google Play提出画像 ${verified.length}件を検証しました。`]
+  const lines = [`App Store提出画像 ${verified.length}件を検証しました。`]
   for (const [group, count] of counts) {
     lines.push(`- ${group}: ${count}件`)
   }
-  lines.push('PNG構造、ファイル名、寸法、8-bit RGBA、重複、アイコン容量: OK')
+  lines.push('PNG構造・CRC、ファイル名、寸法、8-bit RGBA、内容重複: OK')
+  lines.push('提出対象外: output/appstore-screenshots/ios-6.7-ja')
   process.stdout.write(`${lines.join('\n')}\n`)
 }
 
