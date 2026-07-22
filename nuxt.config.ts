@@ -1,5 +1,7 @@
 // https://nuxt.com/docs/api/configuration/nuxt-config
 
+import { resolveFirebaseEmulatorRuntimeConfig } from "./src/config/firebaseRuntimeConfig";
+
 const parseBooleanEnv = (value?: string) => {
   if (!value) {
     return false;
@@ -190,22 +192,10 @@ export default defineNuxtConfig({
         useEmulators: isProductionBuild
           ? false
           : parseBooleanEnv(process.env.NUXT_PUBLIC_FIREBASE_USE_EMULATORS),
-        emulatorHost:
-          process.env.NUXT_PUBLIC_FIREBASE_EMULATOR_HOST || "localhost",
-        ports: {
-          firestore: parseInt(
-            process.env.NUXT_PUBLIC_FIRESTORE_EMULATOR_PORT || "8751"
-          ),
-          auth: parseInt(
-            process.env.NUXT_PUBLIC_FIREBASE_AUTH_EMULATOR_PORT || "9099"
-          ),
-          storage: parseInt(
-            process.env.NUXT_PUBLIC_FIREBASE_STORAGE_EMULATOR_PORT || "9199"
-          ),
-          functions: parseInt(
-            process.env.NUXT_PUBLIC_FIREBASE_FUNCTIONS_EMULATOR_PORT || "55002"
-          ),
-        },
+        ...resolveFirebaseEmulatorRuntimeConfig({
+          isProductionBuild,
+          env: process.env,
+        }),
       },
     },
   },

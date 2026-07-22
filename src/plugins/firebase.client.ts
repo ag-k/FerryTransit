@@ -91,6 +91,10 @@ export default defineNuxtPlugin({
     try {
       const host = config.public.firebase.emulatorHost
       const ports = config.public.firebase.ports
+
+      if (!host || !ports) {
+        throw new Error('Firebase emulator configuration is missing')
+      }
       
       // Connect to Firestore emulator
       connectFirestoreEmulator(db, host, ports.firestore)
