@@ -125,6 +125,7 @@ Always confirm final service decisions, fares, and special services with the rel
 ## 提出前チェック
 
 - [x] 日英の説明文を転記し、文字数と入力内容を確認して未公開保存する（公開プレビューと審査送信は最終提出時に再確認）。
+- [x] `npm run store:metadata:verify`でApp Store / Google Playの日英文面の文字数・bytes上限と必須URL記載を検証する。
 - [x] 新仕様向けの512×512 PNGアイコン候補を準備・検証する。
 - [ ] アイコン候補をPlay Consoleへ登録し、動的マスクと警告消失を確認する。
 - [x] 日英の携帯電話用画像を各4枚生成する。

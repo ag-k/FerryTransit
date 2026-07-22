@@ -33,8 +33,10 @@ App Store Connectへ保存するプライバシー回答案は次のとおり。
 - プライバシーポリシーURL: `https://transit.oki-digilab.com/privacy`
 - Copyright: `© 2026 Oki Digital Lab, LLC`
 
-2026-07-20の公開版監査では、App Store掲載中の旧プライバシーポリシーURL
-`https://naturebot-lab.com/ferry_transit/privacy_policy.html` はサイトトップへ301リダイレクトされた。v2.4登録時に上記の`/privacy`へ更新する。
+2026-07-20の公開版監査では、App Store掲載中だった旧プライバシーポリシーURL
+`https://naturebot-lab.com/ferry_transit/privacy_policy.html` はサイトトップへ301リダイレクトされた。2026-07-21にApp Store Connectのv2.4メタデータを上記の`/privacy`へ更新済み。2026-07-23にもサポート・マーケティングURLと`/privacy`がHTTPSでHTTP 200、旧URLが新サイトトップへ301であることを再確認した。
+
+`npm run store:metadata:verify`は、App Storeの日英サブタイトル、説明、キーワード、新機能と、Google Playの日英短文・詳細説明の文字数・bytes上限、両文書のサポート・マーケティング・プライバシーURL記載を一括検査する。2026-07-23に現在のドラフトで成功し、上限超過を拒否する回帰テストを含む3件も成功した。
 
 ## 日本語
 

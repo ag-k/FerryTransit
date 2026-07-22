@@ -60,6 +60,7 @@
     "app-store:assets:verify": "node scripts/verify-app-store-assets.mjs",
     "google-play:assets:verify": "node scripts/verify-google-play-assets.mjs",
     "release:config:verify": "node scripts/verify-release-config.mjs",
+    "store:metadata:verify": "node scripts/verify-store-metadata.mjs",
     "build-prod": "run-s build-prod:firebase build-prod:build",
     "build-prod:firebase": "node scripts/assert-firebase-project-alias.mjs .env.production prod default",
     "build-prod:build": "NODE_ENV=production nuxt generate --dotenv .env.production && node scripts/generate-service-worker.mjs",
