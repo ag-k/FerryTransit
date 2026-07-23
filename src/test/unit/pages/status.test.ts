@@ -230,6 +230,11 @@ describe('StatusPage', () => {
     }).toString()
     expect(link.attributes('href')).toBe(`https://translate.google.com/?${expectedQuery}`)
     expect(link.attributes('target')).toBe('_blank')
+    expect(link.classes()).toEqual(expect.arrayContaining([
+      'min-h-12',
+      'items-center',
+      'px-2'
+    ]))
   })
 
   it('日本語ロケールではフェリー本文のGoogle翻訳リンクを表示しない', async () => {

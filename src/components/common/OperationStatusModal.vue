@@ -84,7 +84,7 @@
                         :href="buildGoogleTranslateUrl(shipStatus.ferry.ferryComment)"
                         target="_blank"
                         rel="noopener noreferrer"
-                        class="mt-2 inline-flex text-xs font-medium text-blue-700 underline decoration-blue-300 underline-offset-2 transition-colors hover:text-blue-800 dark:text-blue-300 dark:hover:text-blue-200"
+                        class="-mx-2 mt-2 inline-flex min-h-12 items-center px-2 text-xs font-medium text-blue-700 underline decoration-blue-300 underline-offset-2 transition-colors hover:text-blue-800 dark:text-blue-300 dark:hover:text-blue-200"
                       >
                         {{ $t('OPEN_IN_GOOGLE_TRANSLATE') }}
                       </a>
@@ -119,7 +119,7 @@
                         :href="buildGoogleTranslateUrl(shipStatus.ferry.fastFerryComment)"
                         target="_blank"
                         rel="noopener noreferrer"
-                        class="mt-2 inline-flex text-xs font-medium text-blue-700 underline decoration-blue-300 underline-offset-2 transition-colors hover:text-blue-800 dark:text-blue-300 dark:hover:text-blue-200"
+                        class="-mx-2 mt-2 inline-flex min-h-12 items-center px-2 text-xs font-medium text-blue-700 underline decoration-blue-300 underline-offset-2 transition-colors hover:text-blue-800 dark:text-blue-300 dark:hover:text-blue-200"
                       >
                         {{ $t('OPEN_IN_GOOGLE_TRANSLATE') }}
                       </a>
