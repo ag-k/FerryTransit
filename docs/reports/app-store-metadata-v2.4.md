@@ -120,9 +120,9 @@ Oki,ferry,bus,flight,timetable,route,transit,Shimane,Japan,travel
 - iPad 13-inch: 2064 x 2752、日英各3枚
 - 対象画面: 時刻表、乗換案内、運航状況
 
-格納先は`output/appstore-screenshots/ios-sim-*`。App Store Connectへ登録後、端末種別・言語・表示順が意図どおりであることをプレビューで確認する。
+格納先は`output/appstore-screenshots/ios-sim-*`。2026-07-23にApp Store Connectのv2.4提出画面で、英語（米国）・日本語ともiPhone 3枚、iPad 3枚（各`3/10`）、計12枚が登録済みであることを確認した。提出用1320×2868画像はApp Store Connect上では「6.9インチ」、2064×2752画像は「13インチ」と表示され、両言語・両端末で`01_timetable.png`、`02_transit.png`、`03_status.png`の順になっている。確認時点では審査送信・公開は行っていない。
 
-`npm run app-store:assets:verify`は、提出用4ディレクトリの計12枚について、所定のファイル名、PNG構造・CRC、寸法、8-bit RGBA、内容重複を一括検査する。2026-07-23に提出用実データ12件で成功し、正常系、余分なPNG、寸法不一致、重複画像を含む回帰テスト4件も成功した。`output/appstore-screenshots/ios-6.7-ja`はWeb E2Eで生成した日本語だけの旧撮影物であり、App Store提出対象には含めない。App Store Connectへ登録する直前と、画像を差し替えた後に再実行する。
+`npm run app-store:assets:verify`は、提出用4ディレクトリの計12枚について、所定のファイル名、PNG構造・CRC、寸法、8-bit RGBA、内容重複を一括検査する。2026-07-23に提出用実データ12件で成功し、正常系、余分なPNG、寸法不一致、重複画像を含む回帰テスト4件も成功した。`output/appstore-screenshots/ios-6.7-ja`はWeb E2Eで生成した日本語だけの旧撮影物であり、App Store提出対象には含めない。画像を差し替えた場合は再実行し、App Store Connect上の登録内容も再確認する。
 
 登録順は各言語・端末とも次の3枚とする。
 
