@@ -13,6 +13,35 @@ AndroidのRelease AABは、Git管理外のアップロード鍵を環境変数�
 
 4項目の一部だけが設定されている場合、またはkeystoreが存在しない場合はGradle設定時に失敗する。`bundleRelease`と`assembleRelease`は4項目が揃わない限り実行を拒否し、未署名成果物を誤って提出しない。
 
+## macOSキーチェーンから読み込む
+
+パスワードを次のサービス名でmacOSキーチェーンへ保存済みの場合、補助スクリプトを現在のzshへ`source`して4環境変数を設定できる。
+
+- `FerryTransit Android Keystore Password`
+- `FerryTransit Android Key Password`
+
+```zsh
+cd /Users/ag/works/FerryTransit
+source scripts/load-android-release-signing-env.zsh
+```
+
+スクリプトには、ローテーション後のアップロード鍵のパス`$HOME/Library/Application Support/FerryTransit/keys/ferrytransit-upload-2026.jks`とalias`ferrytransit-upload-2026`を固定している。証明書SHA-256がPlay Console登録値`8C:21:56:FE:E6:89:B3:59:0A:06:CB:44:4F:D6:4B:D2:1E:FD:02:67:F3:E9:1D:3F:D6:DE:4B:11:B3:31:C5:90`と一致することを確認済み。スクリプトを通常実行すると、子プロセス内で環境変数が消えてしまうため拒否される。現在のシェルへ設定するため、必ず`source`を使用する。
+
+設定結果は秘密値を表示せずに確認する。
+
+```zsh
+for name in \
+  FERRYTRANSIT_ANDROID_KEYSTORE_PATH \
+  FERRYTRANSIT_ANDROID_KEYSTORE_PASSWORD \
+  FERRYTRANSIT_ANDROID_KEY_ALIAS \
+  FERRYTRANSIT_ANDROID_KEY_PASSWORD
+do
+  [[ -n "${(P)name}" ]] && echo "$name: 設定済み" || echo "$name: 未設定"
+done
+```
+
+読み込みは現在のシェルだけに有効で、ターミナルを閉じると消える。パスワードを`.zshrc`、`.env*`、コマンドライン引数、リポジトリ内ファイルへ保存しない。
+
 ## 生成と検証
 
 秘密値を安全なシークレット管理から現在のシェルへ設定した後、次を実行する。
