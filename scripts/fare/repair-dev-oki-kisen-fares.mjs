@@ -16,19 +16,22 @@ const useGcloudUserAuth = process.argv.includes('--gcloud-user-auth')
 const rootDir = join(dirname(fileURLToPath(import.meta.url)), '..', '..')
 const sourcePath = join(rootDir, 'src', 'data', 'okiKisenFares20260601.json')
 const source = JSON.parse(await readFile(sourcePath, 'utf8'))
+const serviceAccount = process.env.FIREBASE_SERVICE_ACCOUNT
+  ? JSON.parse(process.env.FIREBASE_SERVICE_ACCOUNT)
+  : null
 
 const categoryDefinitions = {
   'hondo-oki': {
     label: '本土〜隠岐',
     routes: {
-      'hondo-saigo': ['HONDO_SHICHIRUI', 'SAIGO'],
-      'saigo-hondo': ['SAIGO', 'HONDO_SHICHIRUI'],
-      'hondo-beppu': ['HONDO_SHICHIRUI', 'BEPPU'],
-      'beppu-hondo': ['BEPPU', 'HONDO_SHICHIRUI'],
-      'hondo-hishiura': ['HONDO_SHICHIRUI', 'HISHIURA'],
-      'hishiura-hondo': ['HISHIURA', 'HONDO_SHICHIRUI'],
-      'hondo-kuri': ['HONDO_SHICHIRUI', 'KURI'],
-      'kuri-hondo': ['KURI', 'HONDO_SHICHIRUI']
+      'hondo-saigo': ['HONDO', 'SAIGO'],
+      'saigo-hondo': ['SAIGO', 'HONDO'],
+      'hondo-beppu': ['HONDO', 'BEPPU'],
+      'beppu-hondo': ['BEPPU', 'HONDO'],
+      'hondo-hishiura': ['HONDO', 'HISHIURA'],
+      'hishiura-hondo': ['HISHIURA', 'HONDO'],
+      'hondo-kuri': ['HONDO', 'KURI'],
+      'kuri-hondo': ['KURI', 'HONDO']
     }
   },
   'dozen-dogo': {
@@ -153,7 +156,9 @@ const toFirestoreFields = data =>
   Object.fromEntries(Object.entries(data).map(([key, value]) => [key, toFirestoreValue(value)]))
 
 admin.initializeApp({
-  credential: admin.credential.applicationDefault(),
+  credential: serviceAccount
+    ? admin.credential.cert(serviceAccount)
+    : admin.credential.applicationDefault(),
   projectId: PROJECT_ID,
   storageBucket: STORAGE_BUCKET
 })
@@ -241,7 +246,8 @@ const firestoreHeaders = useGcloudUserAuth
   ? { Authorization: `Bearer ${execFileSync('gcloud', ['auth', 'print-access-token'], { encoding: 'utf8' }).trim()}` }
   : await (await new GoogleAuth({
       projectId: PROJECT_ID,
-      scopes: ['https://www.googleapis.com/auth/cloud-platform']
+      scopes: ['https://www.googleapis.com/auth/cloud-platform'],
+      ...(serviceAccount ? { credentials: serviceAccount } : {})
     }).getClient()).getRequestHeaders()
 const documentRoot = `projects/${PROJECT_ID}/databases/(default)/documents/fares`
 const commitResponse = await fetch(

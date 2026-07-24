@@ -1,6 +1,6 @@
 import { createHash } from 'node:crypto'
 
-const MAINLAND = new Set(['HONDO', 'HONDO_SHICHIRUI'])
+const MAINLAND = new Set(['HONDO'])
 const DOZEN = new Set(['BEPPU', 'HISHIURA', 'KURI'])
 const samePair = (departure, arrival, left, right) =>
   (departure === left && arrival === right) || (departure === right && arrival === left)

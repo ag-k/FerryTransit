@@ -19,6 +19,9 @@ const checkBackend = execute || process.argv.includes('--check-backend')
 if (execute && !process.argv.includes('--approve-prod')) throw new Error('prod書き込みには --approve-prod が必要です')
 const rootDir = join(dirname(fileURLToPath(import.meta.url)), '..', '..')
 const source = JSON.parse(await readFile(join(rootDir, 'src/data/okiKisenFares20260601.json'), 'utf8'))
+const serviceAccount = process.env.FIREBASE_SERVICE_ACCOUNT
+  ? JSON.parse(process.env.FIREBASE_SERVICE_ACCOUNT)
+  : null
 const DEV_BUCKET = 'oki-ferryguide-dev.firebasestorage.app'
 const PROD_BUCKET = 'oki-ferryguide.firebasestorage.app'
 const OBJECT = 'data/fare-master.json'
@@ -56,7 +59,13 @@ if (candidateValidation.errors.length) throw new Error(candidateValidation.error
 console.log(`prod candidate: fares=20, routes=20, fingerprint=${candidateValidation.fingerprint}`)
 if (!checkBackend) { console.log('dry-run complete; prodは変更していません'); process.exit(0) }
 
-admin.initializeApp({ credential: admin.credential.applicationDefault(), projectId: 'oki-ferryguide', storageBucket: PROD_BUCKET })
+admin.initializeApp({
+  credential: serviceAccount
+    ? admin.credential.cert(serviceAccount)
+    : admin.credential.applicationDefault(),
+  projectId: 'oki-ferryguide',
+  storageBucket: PROD_BUCKET
+})
 const db = admin.firestore()
 db.settings({ ignoreUndefinedProperties: true })
 const bucket = admin.storage().bucket()

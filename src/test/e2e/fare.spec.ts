@@ -21,7 +21,7 @@ test.describe('運賃表', () => {
     await page.waitForTimeout(1000)
     
     // formatCurrency uses Intl.NumberFormat which may produce different currency symbols
-    // Test data has 3360 yen for HONDO_SHICHIRUI-SAIGO route
+    // Test data has 3360 yen for HONDO-SAIGO route
     // Check if any fare amount is displayed (more flexible)
     // デスクトップ表示のテーブルから料金を確認（hidden md:block）
     const fareCell = page.locator('.hidden.md\\:block td').filter({ hasText: /[￥¥]?\s*\d+[,，]?\d*/ }).first()

@@ -327,6 +327,34 @@ vi.mock("@/stores/fare", () => ({
           arrival: "KURI",
           fares: { adult: 3520, child: 1760 },
         },
+        {
+          id: "hishiura-hondo",
+          departure: "HISHIURA",
+          arrival: "HONDO",
+          fares: {
+            adult: 3870,
+            child: 1940,
+            vehicle: {
+              under3m: 13750,
+              under4m: 18260,
+              under5m: 22870,
+              under6m: 27390,
+              under7m: 35530,
+              under8m: 40700,
+              under9m: 45760,
+              under10m: 50820,
+              under11m: 55870,
+              under12m: 60940,
+              over12mPer1m: 5070,
+            },
+          },
+        },
+        {
+          id: "kuri-hondo",
+          departure: "KURI",
+          arrival: "HONDO",
+          fares: { adult: 3870, child: 1940 },
+        },
       ],
       innerIslandFare: {
         adult: 300,
@@ -418,6 +446,34 @@ vi.mock("@/stores/fare", () => ({
           departure: "HONDO",
           arrival: "KURI",
           fares: { adult: 3520, child: 1760 },
+        },
+        {
+          id: "hishiura-hondo",
+          departure: "HISHIURA",
+          arrival: "HONDO",
+          fares: {
+            adult: 3870,
+            child: 1940,
+            vehicle: {
+              under3m: 13750,
+              under4m: 18260,
+              under5m: 22870,
+              under6m: 27390,
+              under7m: 35530,
+              under8m: 40700,
+              under9m: 45760,
+              under10m: 50820,
+              under11m: 55870,
+              under12m: 60940,
+              over12mPer1m: 5070,
+            },
+          },
+        },
+        {
+          id: "kuri-hondo",
+          departure: "KURI",
+          arrival: "HONDO",
+          fares: { adult: 3870, child: 1940 },
         },
       ];
       return routes.find(
@@ -3174,6 +3230,99 @@ describe("useRouteSearch", () => {
         (r) => r.segments[0].ship === "FERRY_SHIRASHIMA"
       );
       expect(ferryRoute?.totalFare).toBe(1540); // From fare master data
+    });
+
+    it("should calculate Sakaiminato fares for direct and transfer Ferry Shirashima routes", async () => {
+      const store = useFerryStore();
+      store.timetableData = [
+        createTestFerryTrip({
+          tripId: 100,
+          name: "FERRY_SHIRASHIMA",
+          departure: "HISHIURA",
+          departureTime: "09:50",
+          arrival: "HONDO_SAKAIMINATO",
+          arrivalTime: "13:20",
+        }),
+        createTestFerryTrip({
+          tripId: 101,
+          name: "ISOKAZE",
+          departure: "HISHIURA",
+          departureTime: "10:11",
+          arrival: "KURI",
+          arrivalTime: "10:29",
+        }),
+        createTestFerryTrip({
+          tripId: 102,
+          name: "FERRY_SHIRASHIMA",
+          departure: "KURI",
+          departureTime: "10:55",
+          arrival: "HONDO_SAKAIMINATO",
+          arrivalTime: "13:20",
+        }),
+      ];
+
+      const { searchRoutes } = useRouteSearch();
+      const results = await searchRoutes(
+        "HISHIURA",
+        "HONDO",
+        new Date("2026-07-24T00:00:00+09:00"),
+        "05:00",
+        false
+      );
+
+      const directRoute = results.find(
+        (route) =>
+          route.segments.length === 1 &&
+          route.segments[0]?.ship === "FERRY_SHIRASHIMA"
+      );
+      const transferRoute = results.find(
+        (route) =>
+          route.segments.length === 2 &&
+          route.segments[0]?.ship === "ISOKAZE" &&
+          route.segments[1]?.ship === "FERRY_SHIRASHIMA"
+      );
+
+      expect(directRoute?.segments[0]?.fare).toBe(3870);
+      expect(directRoute?.totalFare).toBe(3870);
+      expect(transferRoute?.segments.map((segment) => segment.fare)).toEqual([
+        300,
+        3870,
+      ]);
+      expect(transferRoute?.totalFare).toBe(4170);
+    });
+
+    it("should calculate Sakaiminato vehicle fare for Ferry Shirashima", async () => {
+      const store = useFerryStore();
+      store.timetableData = [
+        createTestFerryTrip({
+          tripId: 103,
+          name: "FERRY_SHIRASHIMA",
+          departure: "HISHIURA",
+          departureTime: "09:50",
+          arrival: "HONDO_SAKAIMINATO",
+          arrivalTime: "13:20",
+        }),
+      ];
+
+      const { searchRoutes } = useRouteSearch();
+      const results = await searchRoutes(
+        "HISHIURA",
+        "HONDO_SAKAIMINATO",
+        new Date("2026-07-24T00:00:00+09:00"),
+        "05:00",
+        false,
+        true,
+        5
+      );
+
+      expect(results).toHaveLength(1);
+      expect(results[0]?.segments[0]).toMatchObject({
+        ship: "FERRY_SHIRASHIMA",
+        fare: 22870,
+        passengerFare: 3870,
+        vehicleFare: 22870,
+      });
+      expect(results[0]?.totalFare).toBe(22870);
     });
 
     it("should calculate correct fares for regular ferry (FERRY_KUNIGA)", async () => {

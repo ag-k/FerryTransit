@@ -164,7 +164,7 @@ describe('useFareStore', () => {
       ])
 
       expect(routes[0]).toMatchObject({
-        departure: 'HONDO_SHICHIRUI',
+        departure: 'HONDO',
         arrival: 'SAIGO',
         vesselType: 'ferry',
         versionId: 'legacy-v1',
@@ -439,6 +439,109 @@ describe('useFareStore', () => {
       expect(fareStore.getFareByRoute('UNKNOWN_DEP', 'UNKNOWN_ARR', {
         vesselType: 'ferry'
       })).toBeUndefined()
+    })
+
+    it('uses canonical HONDO fares for both mainland ports and generic mainland routes', async () => {
+      const mainlandVehicleFare = vehicleFare(13000)
+      const islandPorts = ['BEPPU', 'HISHIURA', 'KURI', 'SAIGO']
+      const fares = islandPorts.flatMap((port) => [
+        {
+          route: `${port.toLowerCase()}-hondo`,
+          departure: port,
+          arrival: 'HONDO',
+          adult: 3870,
+          child: 1940,
+          vehicle: mainlandVehicleFare
+        },
+        {
+          route: `hondo-${port.toLowerCase()}`,
+          departure: 'HONDO',
+          arrival: port,
+          adult: 3870,
+          child: 1940,
+          vehicle: mainlandVehicleFare
+        }
+      ])
+      const fareStore = await loadStoreWith(createFareMaster({
+        versions: [
+          {
+            id: 'ferry-2026-06',
+            vesselType: 'ferry',
+            name: '2026年6月1日改定',
+            effectiveFrom: '2026-06-01',
+            fares
+          }
+        ]
+      }))
+      const date = new Date('2026-07-24T00:00:00+09:00')
+
+      islandPorts.forEach((port) => {
+        expect(fareStore.getFareByRoute(port, 'HONDO_SAKAIMINATO', {
+          date,
+          vesselType: 'ferry'
+        })).toMatchObject({
+          departure: port,
+          arrival: 'HONDO',
+          fares: { adult: 3870 }
+        })
+        expect(fareStore.getFareByRoute('HONDO_SAKAIMINATO', port, {
+          date,
+          vesselType: 'ferry'
+        })).toMatchObject({
+          departure: 'HONDO',
+          arrival: port,
+          fares: { adult: 3870 }
+        })
+        expect(fareStore.getFareByRoute(port, 'HONDO', {
+          date,
+          vesselType: 'ferry'
+        })?.fares?.adult).toBe(3870)
+      })
+
+      expect(
+        fareStore.getFareByRoute('HISHIURA', 'HONDO_SAKAIMINATO', {
+          date,
+          vesselType: 'ferry'
+        })?.fares?.vehicle
+      ).toEqual(mainlandVehicleFare)
+    })
+
+    it('normalizes legacy concrete mainland fare records to HONDO when loading', async () => {
+      const fareStore = await loadStoreWith(createFareMaster({
+        versions: [
+          {
+            id: 'legacy-mainland',
+            vesselType: 'ferry',
+            name: '旧本土港コード',
+            effectiveFrom: '2024-01-01',
+            routes: [
+              {
+                id: 'legacy-shichirui',
+                departure: 'HISHIURA',
+                arrival: 'HONDO_SHICHIRUI',
+                fares: routeFare(3870)
+              },
+              {
+                id: 'legacy-sakaiminato',
+                departure: 'HONDO_SAKAIMINATO',
+                arrival: 'KURI',
+                fares: routeFare(3870)
+              }
+            ]
+          }
+        ]
+      }))
+
+      expect(fareStore.fareMaster?.versions?.[0]?.routes).toEqual([
+        expect.objectContaining({ departure: 'HISHIURA', arrival: 'HONDO' }),
+        expect.objectContaining({ departure: 'HONDO', arrival: 'KURI' })
+      ])
+      expect(fareStore.getFareByRoute('HISHIURA', 'HONDO_SAKAIMINATO', {
+        vesselType: 'ferry'
+      })?.fares?.adult).toBe(3870)
+      expect(fareStore.getFareByRoute('HONDO_SHICHIRUI', 'KURI', {
+        vesselType: 'ferry'
+      })?.fares?.adult).toBe(3870)
     })
 
     it('returns local direct fares before inner-island fallback fares', async () => {

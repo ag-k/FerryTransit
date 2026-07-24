@@ -498,6 +498,85 @@ describe("Ferry Store", () => {
       expect(extraTrip?.departureTime).toBe("10:15");
     });
 
+    it("keeps scheduled Rainbow Jet trips when clearing extra ships", async () => {
+      const store = useFerryStore();
+      store.selectedDate = new Date("2026-07-24T00:00:00+09:00");
+      store.timetableData = [
+        {
+          tripId: 1000,
+          startDate: "2026-07-24",
+          endDate: "2026-07-24",
+          name: "ISOKAZE",
+          departure: "BEPPU",
+          departureTime: "07:00",
+          arrival: "HISHIURA",
+          arrivalTime: "07:10",
+          status: 4,
+        },
+        {
+          tripId: 1007,
+          nextId: 1008,
+          startDate: "2026-06-01",
+          endDate: "2026-08-07",
+          name: "RAINBOWJET",
+          departure: "HISHIURA",
+          departureTime: "08:14",
+          arrival: "SAIGO",
+          arrivalTime: "08:45",
+          status: 0,
+        },
+        {
+          tripId: 1008,
+          startDate: "2026-06-01",
+          endDate: "2026-08-07",
+          name: "RAINBOWJET",
+          departure: "SAIGO",
+          departureTime: "08:54",
+          arrival: "HONDO_SHICHIRUI",
+          arrivalTime: "10:03",
+          status: 0,
+        },
+      ];
+
+      (global.$fetch as any).mockImplementation((url: string) => {
+        if (url.includes("/status-kankou")) {
+          return Promise.resolve(null);
+        }
+        return Promise.resolve([null, null, null]);
+      });
+
+      await store.fetchShipStatus();
+
+      expect(
+        store.timetableData.find(
+          (trip) => trip.tripId === 1000 && trip.name === "ISOKAZE"
+        )
+      ).toBeUndefined();
+      expect(
+        store.timetableData
+          .filter((trip) => trip.name === "RAINBOWJET")
+          .map((trip) => ({
+            tripId: trip.tripId,
+            nextId: trip.nextId,
+            departure: trip.departure,
+            arrival: trip.arrival,
+          }))
+      ).toEqual([
+        {
+          tripId: 1007,
+          nextId: 1008,
+          departure: "HISHIURA",
+          arrival: "SAIGO",
+        },
+        {
+          tripId: 1008,
+          nextId: undefined,
+          departure: "SAIGO",
+          arrival: "HONDO_SHICHIRUI",
+        },
+      ]);
+    });
+
     it("handles null ship states gracefully", async () => {
       const store = useFerryStore();
       store.timetableData = [];

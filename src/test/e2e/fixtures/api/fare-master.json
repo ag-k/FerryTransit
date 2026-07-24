@@ -19,7 +19,7 @@
   "routes": [
     {
       "id": "hondo-saigo",
-      "departure": "HONDO_SHICHIRUI",
+      "departure": "HONDO",
       "arrival": "SAIGO",
       "fares": {
         "adult": 3360,
@@ -49,7 +49,7 @@
     {
       "id": "saigo-hondo",
       "departure": "SAIGO",
-      "arrival": "HONDO_SHICHIRUI",
+      "arrival": "HONDO",
       "fares": {
         "adult": 3360,
         "child": 1680,

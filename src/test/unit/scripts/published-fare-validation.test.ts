@@ -3,7 +3,7 @@ import source from '../../../data/okiKisenFares20260601.json'
 import { validatePublishedFerryFares } from '../../../../scripts/fare/lib/published-fare-validation.mjs'
 
 const categories = {
-  'hondo-oki': [['HONDO_SHICHIRUI', 'SAIGO'], ['HONDO_SHICHIRUI', 'BEPPU'], ['HONDO_SHICHIRUI', 'HISHIURA'], ['HONDO_SHICHIRUI', 'KURI']],
+  'hondo-oki': [['HONDO', 'SAIGO'], ['HONDO', 'BEPPU'], ['HONDO', 'HISHIURA'], ['HONDO', 'KURI']],
   'dozen-dogo': [['SAIGO', 'BEPPU'], ['SAIGO', 'HISHIURA'], ['SAIGO', 'KURI']],
   'beppu-hishiura': [['BEPPU', 'HISHIURA']],
   'hishiura-kuri': [['HISHIURA', 'KURI']],
@@ -33,4 +33,16 @@ describe('validatePublishedFerryFares', () => {
     expect(errors).toContain('route重複')
     expect(errors).toContain('adult=3510')
   })
+  it.each(['HONDO_SHICHIRUI', 'HONDO_SAKAIMINATO'])(
+    '具体的な本土港コード %s を公開運賃として拒否する',
+    (mainlandPort) => {
+      const legacy = validFares.map(fare => ({
+        ...fare,
+        departure: fare.departure === 'HONDO' ? mainlandPort : fare.departure,
+        arrival: fare.arrival === 'HONDO' ? mainlandPort : fare.arrival
+      }))
+      expect(validatePublishedFerryFares(legacy, source).errors.join('\n'))
+        .toContain('未定義区間')
+    }
+  )
 })

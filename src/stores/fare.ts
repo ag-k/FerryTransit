@@ -19,6 +19,12 @@ const DEFAULT_VERSION_ID = 'default-fare-version'
 const DEFAULT_EFFECTIVE_FROM = '1970-01-01'
 
 const vesselTypes: VesselType[] = ['ferry', 'highspeed', 'local']
+const CANONICAL_FERRY_MAINLAND_PORT = 'HONDO'
+
+const normalizeFerryMainlandPort = (port: string): string =>
+  port === 'HONDO_SHICHIRUI' || port === 'HONDO_SAKAIMINATO'
+    ? CANONICAL_FERRY_MAINLAND_PORT
+    : port
 
 const toDate = (value: string): Date => {
   // ISO8601日付を日時型へ変換。無効な値の場合は1970-01-01扱い。
@@ -143,12 +149,21 @@ const normalizeVersion = (version: FareVersion & { fares?: any[] }): FareVersion
       ? version.routes
       : convertFaresToRoutes(version)
 
-  const normalizedRoutes = baseRoutes.map((route) => ({
-    ...route,
-    vesselType: route.vesselType ?? version.vesselType,
-    versionId: route.versionId ?? version.id,
-    versionEffectiveFrom: route.versionEffectiveFrom ?? version.effectiveFrom
-  }))
+  const normalizedRoutes = baseRoutes.map((route) => {
+    const vesselType = route.vesselType ?? version.vesselType
+    return {
+      ...route,
+      departure: vesselType === 'ferry'
+        ? normalizeFerryMainlandPort(route.departure)
+        : route.departure,
+      arrival: vesselType === 'ferry'
+        ? normalizeFerryMainlandPort(route.arrival)
+        : route.arrival,
+      vesselType,
+      versionId: route.versionId ?? version.id,
+      versionEffectiveFrom: route.versionEffectiveFrom ?? version.effectiveFrom
+    }
+  })
 
   return {
     ...version,
@@ -163,6 +178,8 @@ const fallbackVersion = (routes: FareRoute[] = []): FareVersion => ({
   effectiveFrom: DEFAULT_EFFECTIVE_FROM,
   routes: routes.map(route => ({
     ...route,
+    departure: normalizeFerryMainlandPort(route.departure),
+    arrival: normalizeFerryMainlandPort(route.arrival),
     vesselType: route.vesselType ?? 'ferry',
     versionId: DEFAULT_VERSION_ID,
     versionEffectiveFrom: DEFAULT_EFFECTIVE_FROM
@@ -309,11 +326,17 @@ export const useFareStore = defineStore('fare', () => {
       const searchRoutes = allRoutes.filter(route => (route.vesselType ?? vesselType) === vesselType)
       const departureUpper = departure.toUpperCase()
       const arrivalUpper = arrival.toUpperCase()
+      const fareDeparture = vesselType === 'ferry'
+        ? normalizeFerryMainlandPort(departureUpper)
+        : departureUpper
+      const fareArrival = vesselType === 'ferry'
+        ? normalizeFerryMainlandPort(arrivalUpper)
+        : arrivalUpper
 
       const directMatch = searchRoutes.find(
         route =>
-          route.departure === departureUpper &&
-          route.arrival === arrivalUpper
+          route.departure === fareDeparture &&
+          route.arrival === fareArrival
       )
       if (directMatch) {
         return directMatch
