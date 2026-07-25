@@ -323,7 +323,7 @@ productionアセットを同期したdebug署名APKを同じAPI 23専用エミ�
 
 **報告日**: 2026年7月19日
 **優先度**: ⚠️ 中
-**ステータス**: 🧪 検証中
+**ステータス**: ✅ 解決済み
 
 #### 問題の内容
 Pixel Tablet / Android 14のproductionアセット入りAPKを起動すると、WebViewログに`Uncaught (in promise) TypeError: Failed to execute 'addAll' on 'Cache': Request failed`が記録された。画面は表示できるが、Web向けアプリシェルキャッシュがCapacitor内でも登録され、更新後の古いアセット介入や不要なキャッシュ保持につながる。
@@ -334,7 +334,9 @@ Pixel Tablet / Android 14のproductionアセット入りAPKを起動すると、
 #### 修正と検証
 `Capacitor.isNativePlatform()`ではService Workerを新規登録せず、過去のAPK上書きで残り得る登録を解除し、`ferry-transit-shell-*`キャッシュだけを削除するようにした。無関係なCache Storageは削除しない。ホストWeb版のHTTPS登録条件は維持した。
 
-回帰テスト5件、lint（0 errors・既存warning 66件）、production生成・Android同期、`:app:assembleDebug`が成功した。修正版を同じPixel Tabletへ上書きし、FerryTransitプロセスログにService Worker・`addAll`・未処理Promiseエラーがないこと、DevTools Protocolで`registrations: []`、`cacheNames: []`を直接確認した。Google Play内部テスト配布版での最終確認を残すため、ステータスは検証中とする。
+回帰テスト5件、lint（0 errors・既存warning 66件）、production生成・Android同期、`:app:assembleDebug`が成功した。修正版を同じPixel Tabletへ上書きし、FerryTransitプロセスログにService Worker・`addAll`・未処理Promiseエラーがないこと、DevTools Protocolで`registrations: []`、`cacheNames: []`を直接確認した。
+
+2026年7月25日、moto g05 / Android 15のGoogle Play内部テスト版v2.4（24001）をコールド起動し、バックグラウンド復帰と運航状況の実通信まで実施した。Release版はWebView保存領域を直接参照できないが、同一修正版での上記DevTools確認に加え、実機ログでService Worker、`addAll`、未処理Promise、通信例外が各0件だったため解決済みとする。
 
 ---
 
@@ -342,7 +344,7 @@ Pixel Tablet / Android 14のproductionアセット入りAPKを起動すると、
 
 **報告日**: 2026年7月19日
 **優先度**: 🔥 高
-**ステータス**: 🧪 検証中
+**ステータス**: ✅ 解決済み
 
 #### 問題の内容
 Androidアプリで時刻表の既定日「本日」を表示したままバックグラウンドへ移動し、端末日付を翌日に進めて復帰すると、JavaScriptの現在日は翌日になっている一方、日付入力と時刻表見出しは前日のまま残った。乗換案内にも同じ固定日処理があり、日をまたいでアプリを使うと前日の便を検索する可能性があった。
@@ -359,7 +361,10 @@ Androidアプリで時刻表の既定日「本日」を表示したままバッ�
 #### 再検証（2026年7月19日）
 Pixel 3a / Android 14の専用AVDで端末日付を手動変更した。修正前は7月20→21の復帰後も入力と見出しが7月20のままだった。修正版productionアセット入りdebug APKでは、時刻表が7月21→22、乗換案内が7月23→24へ復帰時に追随した。一方、時刻表で明示選択した7月24は端末日付を7月22→23へ進めても保持された。自動時刻を復元し、最終ログにクラッシュ・ANR・SSL・Capacitor例外・未処理例外はなかった。
 
-共通処理の回帰テスト3件を追加し、全体99 files・915 passed・1 skipped、lint 0 errors・既存warning 66件、production Android同期とdebug APK生成に成功した。Google Play内部テスト配布版の実機で最終確認するため、ステータスは検証中を維持する。
+共通処理の回帰テスト3件を追加し、全体99 files・915 passed・1 skipped、lint 0 errors・既存warning 66件、production Android同期とdebug APK生成に成功した。
+
+#### Google Play内部テスト実機での最終確認（2026年7月25日）
+moto g05 / Android 15のGoogle Play内部テスト版v2.4（24001）で、時刻表を`2026/07/25 本日`のままバックグラウンドへ移動し、標準設定画面から端末日付を7月26日へ変更した。復帰後、時刻表と乗換案内の両方が`2026/07/26 本日`へ追随した。自動日時・自動タイムゾーンを復元すると`2026/07/25 本日`へ戻り、設定値はいずれも有効になった。最終ログのクラッシュ、ANR、SSL/通信、Capacitor、Security、未処理Promise例外は各0件だったため解決済みとする。
 
 ---
 
