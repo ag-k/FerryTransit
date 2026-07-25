@@ -1,14 +1,24 @@
 <template>
   <div v-if="isVisible" class="mb-6">
-    <div class="relative">
-      <div v-if="showHideButton && settingsStore.mapEnabled" class="absolute left-2 top-2 z-20">
+    <div class="relative isolate">
+      <div
+        v-if="showHideButton && settingsStore.mapEnabled"
+        class="pointer-events-none absolute right-2 top-2 z-20"
+      >
         <SecondaryButton
           size="sm"
-          class="bg-white/90 dark:bg-gray-900/90 border border-gray-300/80 dark:border-gray-700 shadow-sm backdrop-blur"
+          class="pointer-events-auto relative z-10 bg-white/90 dark:bg-gray-900/90 border border-gray-300/80 dark:border-gray-700 shadow-sm backdrop-blur"
           @click="hideMap"
         >
-          <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="mr-1.5"
-            viewBox="0 0 16 16" aria-hidden="true">
+          <svg
+            xmlns="http://www.w3.org/2000/svg"
+            width="16"
+            height="16"
+            fill="currentColor"
+            class="mr-1.5"
+            viewBox="0 0 16 16"
+            aria-hidden="true"
+          >
             <path
               d="M8 8.75a2.5 2.5 0 1 1 0-5 2.5 2.5 0 0 1 0 5z" />
             <path
@@ -17,32 +27,45 @@
           {{ $t('MAP_HIDE') }}
         </SecondaryButton>
       </div>
-      <FerryMap
-        :selected-port="selectedPort"
-        :selected-route="selectedRoute"
-        :selected-route-segments="selectedRouteSegments"
-        :show-port-details="showPortDetails"
-        :height="height"
-        @port-click="emit('portClick', $event)"
-        @route-select="emit('routeSelect', $event)"
-      />
+      <div class="relative z-0">
+        <FerryMap
+          :selected-port="selectedPort"
+          :selected-route="selectedRoute"
+          :selected-route-segments="selectedRouteSegments"
+          :transport-mode="transportMode"
+          :bus-stops="busStops"
+          :show-port-details="showPortDetails"
+          :height="height"
+          @port-click="emit('portClick', $event)"
+          @location-click="emit('locationClick', $event)"
+          @location-set-departure="emit('locationSetDeparture', $event)"
+          @location-set-arrival="emit('locationSetArrival', $event)"
+          @port-set-departure="emit('portSetDeparture', $event)"
+          @port-set-arrival="emit('portSetArrival', $event)"
+          @route-select="emit('routeSelect', $event)"
+        />
+      </div>
     </div>
   </div>
 </template>
 
 <script setup lang="ts">
 import { computed } from 'vue'
-import type { Port } from '~/types'
+import type { LocationType, Port, TransportMode } from '~/types'
 import FerryMap from '~/components/map/FerryMap.vue'
 import SecondaryButton from '~/components/common/SecondaryButton.vue'
 import { useSettingsStore } from '@/stores/settings'
+import type { BusStopLocation } from '@/utils/gtfsBusTimetable'
 
 type RouteSegment = { from: string; to: string; ship?: string }
+type MapLocationClick = { id: string; type: LocationType }
 
 interface Props {
   selectedPort?: string
   selectedRoute?: { from: string; to: string }
   selectedRouteSegments?: RouteSegment[]
+  transportMode?: Extract<TransportMode, 'FERRY' | 'BUS' | 'AIR'>
+  busStops?: BusStopLocation[]
   showPortDetails?: boolean
   height?: string
   showHideButton?: boolean
@@ -51,13 +74,23 @@ interface Props {
 
 const props = withDefaults(defineProps<Props>(), {
   height: '300px',
+  transportMode: 'FERRY',
+  busStops: () => [],
   showPortDetails: true,
   showHideButton: true,
-  forceVisible: false
+  forceVisible: false,
+  selectedPort: undefined,
+  selectedRoute: undefined,
+  selectedRouteSegments: undefined
 })
 
 const emit = defineEmits<{
   portClick: [port: Port]
+  locationClick: [location: MapLocationClick]
+  locationSetDeparture: [location: MapLocationClick]
+  locationSetArrival: [location: MapLocationClick]
+  portSetDeparture: [portId: string]
+  portSetArrival: [portId: string]
   routeSelect: [route: { from: string; to: string }]
 }>()
 

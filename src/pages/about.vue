@@ -25,7 +25,7 @@ xmlns="http://www.w3.org/2000/svg" width="48" height="48" fill="currentColor"
           <p class="text-gray-600 dark:text-gray-300 mb-4">{{ $t('TIMETABLE_DESC') }}</p>
           <NuxtLink
 :to="localePath('/')"
-            class="inline-block px-6 py-2 font-semibold text-white rounded bg-app-primary hover:bg-app-primary-2 focus:outline-none focus-visible:ring-2 focus-visible:ring-app-primary/60 focus-visible:ring-offset-2 focus-visible:ring-offset-app-bg transition-all shadow-sm hover:shadow-md">
+            class="inline-flex min-h-12 items-center px-6 py-2 font-semibold text-white rounded bg-app-primary hover:bg-app-primary-2 focus:outline-none focus-visible:ring-2 focus-visible:ring-app-primary/60 focus-visible:ring-offset-2 focus-visible:ring-offset-app-bg transition-all shadow-sm hover:shadow-md">
             {{ $t('VIEW_TIMETABLE') }}
           </NuxtLink>
         </div>
@@ -47,7 +47,7 @@ fill-rule="evenodd"
           <p class="text-gray-600 dark:text-gray-300 mb-4">{{ $t('TRANSIT_DESC') }}</p>
           <NuxtLink
 :to="localePath('/transit')"
-            class="inline-block px-6 py-2 font-semibold text-white rounded bg-app-primary hover:bg-app-primary-2 focus:outline-none focus-visible:ring-2 focus-visible:ring-app-primary/60 focus-visible:ring-offset-2 focus-visible:ring-offset-app-bg transition-all shadow-sm hover:shadow-md">
+            class="inline-flex min-h-12 items-center px-6 py-2 font-semibold text-white rounded bg-app-primary hover:bg-app-primary-2 focus:outline-none focus-visible:ring-2 focus-visible:ring-app-primary/60 focus-visible:ring-offset-2 focus-visible:ring-offset-app-bg transition-all shadow-sm hover:shadow-md">
             {{ $t('SEARCH_ROUTES') }}
           </NuxtLink>
         </div>
@@ -69,7 +69,7 @@ xmlns="http://www.w3.org/2000/svg" width="48" height="48" fill="currentColor"
           <p class="text-gray-600 dark:text-gray-300 mb-4">{{ $t('STATUS_DESC') }}</p>
           <NuxtLink
 :to="localePath('/status')"
-            class="inline-block px-6 py-2 font-semibold text-white rounded bg-app-primary hover:bg-app-primary-2 focus:outline-none focus-visible:ring-2 focus-visible:ring-app-primary/60 focus-visible:ring-offset-2 focus-visible:ring-offset-app-bg transition-all shadow-sm hover:shadow-md">
+            class="inline-flex min-h-12 items-center px-6 py-2 font-semibold text-white rounded bg-app-primary hover:bg-app-primary-2 focus:outline-none focus-visible:ring-2 focus-visible:ring-app-primary/60 focus-visible:ring-offset-2 focus-visible:ring-offset-app-bg transition-all shadow-sm hover:shadow-md">
             {{ $t('CHECK_STATUS') }}
           </NuxtLink>
         </div>
@@ -81,6 +81,59 @@ xmlns="http://www.w3.org/2000/svg" width="48" height="48" fill="currentColor"
 
     <!-- Current status alerts -->
     <StatusAlerts />
+
+    <!-- Timetable validity -->
+    <section class="mb-10">
+      <div class="mb-4">
+        <h2 class="text-2xl font-semibold mb-2 dark:text-white">{{ $t('TIMETABLE_VALIDITY_TITLE') }}</h2>
+        <p class="text-sm text-gray-600 dark:text-gray-300">{{ $t('TIMETABLE_VALIDITY_DESC') }}</p>
+      </div>
+
+      <div class="overflow-hidden rounded-lg border border-gray-200 bg-white dark:border-gray-700 dark:bg-gray-900">
+        <div class="overflow-x-auto">
+          <table class="min-w-[760px] w-full text-sm">
+            <thead class="bg-gray-50 text-left text-xs font-semibold uppercase text-gray-600 dark:bg-slate-800 dark:text-gray-300">
+              <tr>
+                <th scope="col" class="px-4 py-3">{{ $t('TIMETABLE_VALIDITY_OPERATOR') }}</th>
+                <th scope="col" class="px-4 py-3">{{ $t('TIMETABLE_VALIDITY_MODE') }}</th>
+                <th scope="col" class="px-4 py-3">{{ $t('TRANSPORT_NAME') }}</th>
+                <th scope="col" class="px-4 py-3 whitespace-nowrap">{{ $t('VALID_FROM') }}</th>
+                <th scope="col" class="px-4 py-3 whitespace-nowrap">{{ $t('VALID_UNTIL') }}</th>
+              </tr>
+            </thead>
+            <tbody class="divide-y divide-gray-200 dark:divide-gray-700">
+              <tr v-if="isValidityLoading && timetableValidityRows.length === 0">
+                <td colspan="5" class="px-4 py-6 text-center text-gray-600 dark:text-gray-300">
+                  {{ $t('TIMETABLE_VALIDITY_LOADING') }}
+                </td>
+              </tr>
+              <tr v-else-if="timetableValidityRows.length === 0">
+                <td colspan="5" class="px-4 py-6 text-center text-gray-600 dark:text-gray-300">
+                  {{ $t('TIMETABLE_VALIDITY_EMPTY') }}
+                </td>
+              </tr>
+              <template v-else>
+                <tr
+                  v-for="row in timetableValidityRows"
+                  :key="row.key"
+                  class="text-gray-800 dark:text-gray-100"
+                  :class="{ 'border-t-4 border-gray-200 dark:border-gray-600': row.startsOperatorGroup }">
+                  <td class="px-4 py-3 font-semibold text-gray-700 dark:text-gray-200">{{ row.operatorLabel }}</td>
+                  <td class="px-4 py-3">
+                    <span class="inline-flex items-center rounded-full bg-slate-100 px-2.5 py-1 text-xs font-medium text-slate-700 dark:bg-slate-700 dark:text-slate-100">
+                      {{ formatModeLabel(row.mode) }}
+                    </span>
+                  </td>
+                  <td class="px-4 py-3 font-medium">{{ row.transportLabel }}</td>
+                  <td class="px-4 py-3 whitespace-nowrap">{{ formatValidityDate(row.startDate) }}</td>
+                  <td class="px-4 py-3 whitespace-nowrap font-semibold">{{ formatValidityDate(row.endDate) }}</td>
+                </tr>
+              </template>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </section>
 
     <!-- Information section -->
     <div class="grid md:grid-cols-2 gap-6">
@@ -162,10 +215,135 @@ fill-rule="evenodd"
 </template>
 
 <script setup lang="ts">
+import { computed, onMounted, ref } from 'vue'
 import NewsSection from '@/components/news/NewsSection.vue'
 import StatusAlerts from '@/components/common/StatusAlerts.vue'
+import { SHIP_DETAILS, type ShipId } from '@/data/ships'
+import { useFerryStore } from '@/stores/ferry'
+import type { TransportMode } from '@/types'
+import {
+  loadBusRouteValiditySummaries,
+  type BusRouteValiditySummary
+} from '@/utils/gtfsBusTimetable'
+import {
+  buildAvailableTransportTimetableValidityRows,
+  normalizeTimetableValidityDate,
+  type TimetableValidityRow,
+  type TimetableValiditySource
+} from '@/utils/timetableValidity'
 
 const localePath = useLocalePath()
+const { locale, t, te } = useI18n()
+const ferryStore = useFerryStore()
+const busValiditySummaries = ref<BusRouteValiditySummary[]>([])
+const isValidityLoading = ref(false)
+const TIMETABLE_VALIDITY_LOAD_TIMEOUT_MS = 8000
+
+const normalizeMode = (mode?: TransportMode): TransportMode => mode || 'FERRY'
+
+const translateKey = (key?: string | null): string => {
+  if (!key) return t('UNKNOWN')
+  return te(key) ? t(key) : key
+}
+
+const resolveTransportOperatorKey = (transportKey: string, operatorId?: string): string => {
+  const shipOperatorKey = SHIP_DETAILS[transportKey as ShipId]?.operatorKey
+  return shipOperatorKey || operatorId || 'UNKNOWN'
+}
+
+const OKI_KISEN_FERRY_GROUP = new Set(['FERRY_OKI', 'FERRY_KUNIGA', 'FERRY_SHIRASHIMA'])
+
+const resolveTransportValidityKey = (transportKey: string): string => {
+  if (OKI_KISEN_FERRY_GROUP.has(transportKey)) return 'OKI_KISEN_FERRY_GROUP'
+  return transportKey
+}
+
+const resolveTransportValidityLabel = (transportKey: string): string => {
+  if (OKI_KISEN_FERRY_GROUP.has(transportKey)) return translateKey('OKI_KISEN_FERRY_FLEET_LABEL')
+  return translateKey(transportKey)
+}
+
+const timetableValidityRows = computed<TimetableValidityRow[]>(() => {
+  const sources: TimetableValiditySource[] = []
+
+  for (const trip of ferryStore.timetableData) {
+    const mode = normalizeMode(trip.mode)
+    const operatorKey = resolveTransportOperatorKey(trip.name, trip.operatorId)
+
+    sources.push({
+      mode,
+      operatorKey,
+      operatorLabel: translateKey(operatorKey),
+      transportKey: resolveTransportValidityKey(trip.name),
+      transportLabel: resolveTransportValidityLabel(trip.name),
+      startDate: trip.startDate,
+      endDate: trip.endDate
+    })
+  }
+
+  for (const summary of busValiditySummaries.value) {
+    sources.push({
+      mode: 'BUS',
+      operatorKey: summary.operatorId,
+      operatorLabel: translateKey(summary.operatorId),
+      transportKey: [summary.operatorId, summary.tripName].join('|'),
+      transportLabel: translateKey(summary.tripName),
+      startDate: summary.startDate,
+      endDate: summary.endDate
+    })
+  }
+
+  return buildAvailableTransportTimetableValidityRows(sources, locale.value)
+})
+
+const formatModeLabel = (mode: TransportMode): string => {
+  return t(`TRANSPORT_MODES.${mode}`)
+}
+
+const formatValidityDate = (date: string): string => {
+  const normalized = normalizeTimetableValidityDate(date)
+  if (!normalized) return t('UNKNOWN')
+
+  if (locale.value === 'ja') {
+    const [year, month, day] = normalized.split('-')
+    return `${Number(year)}年${Number(month)}月${Number(day)}日`
+  }
+
+  return normalized
+}
+
+const withValidityLoadTimeout = (promise: Promise<unknown>): Promise<unknown> => {
+  return Promise.race([
+    promise,
+    new Promise<void>((resolve) => {
+      setTimeout(resolve, TIMETABLE_VALIDITY_LOAD_TIMEOUT_MS)
+    })
+  ])
+}
+
+onMounted(async () => {
+  isValidityLoading.value = true
+
+  try {
+    const tasks: Promise<unknown>[] = [
+      withValidityLoadTimeout(loadBusRouteValiditySummaries()
+        .then((summaries) => {
+          busValiditySummaries.value = summaries
+        })
+        .catch(() => {
+          busValiditySummaries.value = []
+        }))
+    ]
+
+    if (ferryStore.timetableData.length === 0) {
+      tasks.push(withValidityLoadTimeout(ferryStore.fetchTimetable()))
+    }
+
+    await Promise.allSettled(tasks)
+  } finally {
+    isValidityLoading.value = false
+  }
+})
 
 // Page metadata
 useHead({

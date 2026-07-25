@@ -1,0 +1,13 @@
+stop_id,stop_code,stop_name,stop_desc,stop_lat,stop_lon,zone_id,stop_url,location_type,parent_station,platform_code
+kuri_naikosen,kuri_naikosen,来居内航船,来居港内（内航船乗り場）,36.0243794,133.0401959,,,0,,
+nibu_bus,nibu_bus,仁夫,仁夫バス停,36.00669672,133.03282616,,,0,,
+nibu_mitaya,nibu_mitaya,仁夫美田屋前,仁夫 美田屋前,36.00662,133.0327,,,0,,
+usuge_bus,usuge_bus,薄毛,薄毛バス停,36.00562588,133.05737786,,,0,,
+taku_bus,taku_bus,多沢,多沢バス停,36.0089692,133.04858535,,,0,,
+taku_shofukuen,taku_shofukuen,多沢招福苑,多沢 招福苑,36.00935,133.0489,,,0,,
+kori_school,kori_school,学校前,郡 学校前,36.01349392,133.04180702,,,0,,
+kori_community,kori_community,コミュニティセンター,郡 コミュニティセンター,36.01349392,133.04180702,,,0,,
+kuri_ferry,kuri_ferry,フェリーターミナル,来居港フェリーターミナル,36.0249446,133.03939755,,,0,,
+kuri_office,kuri_office,来居事務所,来居 事務所,36.0249446,133.03939755,,,0,,
+furumi_bus,furumi_bus,古海,古海バス停,36.0293181,133.02505562,,,0,,
+oe_clinic,oe_clinic,大江診療所,大江 診療所,36.01276648,133.04056315,,,0,,

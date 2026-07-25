@@ -9,7 +9,8 @@
     </div>
 
     <!-- Error state -->
-    <div v-else-if="error"
+    <div
+      v-else-if="error"
       class="bg-red-100 dark:bg-red-900/20 border border-red-400 dark:border-red-700 text-red-700 dark:text-red-300 px-4 py-3 rounded"
       role="alert">
       {{ $t(error) }}
@@ -18,14 +19,30 @@
     <!-- Fare tables -->
     <div v-else>
       <!-- Tab navigation -->
-      <div ref="tabBarRef"
+      <div
+        ref="tabBarRef"
         class="sticky top-0 z-20 mb-6 border-b border-gray-200 dark:border-gray-700 dark:bg-gray-900/90 backdrop-blur">
-        <nav class="-mb-px flex space-x-1 overflow-x-auto scrollbar-hide" aria-label="Tabs" role="tablist"
-          style="scrollbar-width: none; -ms-overflow-style: none;">
-          <button v-for="tab in tabs" :id="`fare-tab-${tab.id}`" :key="tab.id" type="button" role="tab"
+        <nav class="mb-3 grid grid-cols-2 gap-2" aria-label="Transport modes" role="tablist">
+          <button
+            v-for="mode in transportTabs" :key="mode.id" type="button" role="tab"
+            :aria-selected="activeTransport === mode.id" :tabindex="activeTransport === mode.id ? 0 : -1" :class="[
+              'min-h-12 select-none rounded-lg px-4 py-2 text-sm font-medium transition-colors',
+              'focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 focus-visible:ring-offset-2 dark:focus-visible:ring-offset-gray-900',
+              activeTransport === mode.id
+                ? 'bg-app-primary text-white'
+                : 'bg-app-surface-2 text-app-muted hover:text-app-fg'
+            ]" @click="setActiveTransport(mode.id)">
+            {{ $t(mode.nameKey) }}
+          </button>
+        </nav>
+        <nav
+          v-if="activeTransport === 'ship'" class="-mb-px flex space-x-1 overflow-x-auto scrollbar-hide"
+          aria-label="Ship fare tabs" role="tablist" style="scrollbar-width: none; -ms-overflow-style: none;">
+          <button
+            v-for="tab in shipTabs" :id="`fare-tab-${tab.id}`" :key="tab.id" type="button" role="tab"
             :aria-controls="`fare-tabpanel-${tab.id}`" :aria-selected="activeTab === tab.id"
             :tabindex="activeTab === tab.id ? 0 : -1" :class="[
-              'flex-shrink-0 select-none whitespace-nowrap rounded-t-lg px-4 py-2 text-sm font-medium transition-colors',
+              'min-h-12 flex-shrink-0 select-none whitespace-nowrap rounded-t-lg px-4 py-2 text-sm font-medium transition-colors',
               'focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 focus-visible:ring-offset-2 dark:focus-visible:ring-offset-gray-900',
               activeTab === tab.id
                 ? 'bg-app-surface-2 text-app-primary dark:text-white border-b-2 border-app-primary-2'
@@ -34,14 +51,83 @@
             {{ $t(tab.nameKey) }}
           </button>
         </nav>
+        <nav
+          v-else class="-mb-px flex space-x-1 overflow-x-auto scrollbar-hide" aria-label="Bus fare tabs" role="tablist"
+          style="scrollbar-width: none; -ms-overflow-style: none;">
+          <button
+            v-for="row in busFareRows" :id="`fare-tab-bus-${row.id}`" :key="row.id" type="button" role="tab"
+            aria-controls="fare-tabpanel-bus" :aria-selected="activeBusFareId === row.id"
+            :tabindex="activeBusFareId === row.id ? 0 : -1" :class="[
+              'min-h-12 flex-shrink-0 select-none whitespace-nowrap rounded-t-lg px-4 py-2 text-sm font-medium transition-colors',
+              'focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 focus-visible:ring-offset-2 dark:focus-visible:ring-offset-gray-900',
+              activeBusFareId === row.id
+                ? 'bg-app-surface-2 text-app-primary dark:text-white border-b-2 border-app-primary-2'
+                : 'text-app-muted hover:text-app-fg hover:bg-app-surface-2/60'
+            ]" @click="activeBusFareId = row.id">
+            {{ $t(row.operatorKey) }}
+          </button>
+        </nav>
       </div>
 
       <p v-if="activeVersionLabel" class="mb-4 text-sm text-gray-600 dark:text-gray-400">
         {{ activeVersionLabel }}
       </p>
 
+      <!-- Bus fares -->
+      <div
+        v-show="activeTransport === 'bus'" id="fare-tabpanel-bus" role="tabpanel" tabindex="0"
+        :aria-labelledby="`fare-tab-bus-${activeBusFareId}`" class="mb-4">
+        <div class="mb-4">
+          <h3 class="text-xl font-medium dark:text-white">{{ $t('BUS_FARE') }}</h3>
+          <p class="text-sm text-gray-600 dark:text-gray-400 mt-2 sm:mt-1">
+            {{ $t('BUS_FARE_NOTE') }}
+          </p>
+        </div>
+
+        <div class="overflow-x-auto">
+          <table class="w-full text-base sm:text-sm border-collapse">
+            <thead>
+              <tr class="bg-gray-100 dark:bg-gray-800">
+                <th
+                  scope="col"
+                  class="border border-gray-300 dark:border-gray-600 px-4 py-3 text-left dark:text-gray-100">
+                  {{ $t('TRANSPORT_NAME') }}
+                </th>
+                <th
+                  scope="col"
+                  class="border border-gray-300 dark:border-gray-600 px-4 py-3 text-left dark:text-gray-100">
+                  {{ $t('BUS_FARE_TYPE') }}
+                </th>
+                <th
+                  scope="col"
+                  class="border border-gray-300 dark:border-gray-600 px-4 py-3 text-right dark:text-gray-100">
+                  {{ $t('FARE') }}
+                </th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr v-if="activeBusFare" class="hover:bg-gray-50 dark:hover:bg-gray-700/50">
+                <th
+                  scope="row"
+                  class="border border-gray-300 dark:border-gray-600 px-4 py-3 text-left font-medium dark:text-gray-100">
+                  {{ $t(activeBusFare.operatorKey) }}
+                </th>
+                <td class="border border-gray-300 dark:border-gray-600 px-4 py-3 dark:text-gray-100">
+                  {{ $t(activeBusFare.fareTypeKey) }}
+                </td>
+                <td
+                  class="border border-gray-300 dark:border-gray-600 px-4 py-3 text-right font-mono dark:text-gray-100">
+                  {{ formatCurrency(activeBusFare.fare) }}
+                </td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+
       <!-- Oki Kisen Ferry -->
-      <div v-show="activeTab === 'okiKisen'" id="fare-tabpanel-okiKisen" role="tabpanel" tabindex="0"
+      <div
+        v-show="activeTransport === 'ship' && activeTab === 'okiKisen'" id="fare-tabpanel-okiKisen" role="tabpanel" tabindex="0"
         aria-labelledby="fare-tab-okiKisen" class="mb-4">
         <div class="mb-4">
           <div class="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
@@ -58,22 +144,24 @@
         <div class="mb-8">
           <div class="flex flex-col gap-3 md:items-center md:justify-between">
             <nav class="flex flex-wrap gap-2" aria-label="Passenger categories" role="tablist">
-              <button v-for="category in passengerCategories" :key="category.id" :class="[
+              <button
+                v-for="category in passengerCategories" :key="category.id" :class="[
                 okiKisenPassengerActiveCategory === category.id
                   ? 'bg-app-primary text-white border border-app-primary'
                   : 'bg-white text-gray-700 dark:bg-gray-800 dark:text-gray-200 border border-gray-300 dark:border-gray-600',
-                'px-3 py-1.5 rounded-full text-sm font-medium transition-colors'
+                'min-h-12 px-3 py-1.5 rounded-full text-sm font-medium transition-colors'
               ]" type="button" role="tab" :aria-selected="okiKisenPassengerActiveCategory === category.id"
                 @click="okiKisenPassengerActiveCategory = category.id">
                 {{ translateLabel(category.labelKey, category.fallback) }}
               </button>
             </nav>
             <nav class="flex flex-wrap gap-2 md:hidden" aria-label="Seat classes" role="tablist">
-              <button v-for="seatClass in seatClasses" :key="`seat-class-tab-${seatClass.key}`" :class="[
+              <button
+                v-for="seatClass in seatClasses" :key="`seat-class-tab-${seatClass.key}`" :class="[
                 okiKisenActiveSeatClass === seatClass.key
                   ? 'bg-app-primary text-white border border-app-primary'
                   : 'bg-white text-gray-700 dark:bg-gray-800 dark:text-gray-200 border border-gray-300 dark:border-gray-600',
-                'px-3 py-1.5 rounded-full text-sm font-medium transition-colors'
+                'min-h-12 px-3 py-1.5 rounded-full text-sm font-medium transition-colors'
               ]" type="button" role="tab" :aria-selected="okiKisenActiveSeatClass === seatClass.key"
                 @click="okiKisenActiveSeatClass = seatClass.key">
                 {{ $t(seatClass.nameKey) }}
@@ -101,7 +189,8 @@
                 </tr>
               </thead>
               <tbody>
-                <tr v-for="group in okiKisenRouteGroups" :key="`mobile-seat-class-${group.id}`"
+                <tr
+                  v-for="group in okiKisenRouteGroups" :key="`mobile-seat-class-${group.id}`"
                   class="hover:bg-gray-50 dark:hover:bg-gray-700/50">
                   <td class="border border-gray-300 dark:border-gray-600 px-4 py-3 font-medium dark:text-gray-100">
                     {{ translateLabel(group.labelKey) }}
@@ -126,24 +215,29 @@
           <table class="w-full text-sm border-collapse">
             <thead>
               <tr class="bg-gray-100 dark:bg-gray-800">
-                <th scope="col"
+                <th
+                  scope="col"
                   class="border border-gray-300 dark:border-gray-600 px-4 py-3 text-left dark:text-gray-100">
                   {{ $t('ROUTE') }}
                 </th>
-                <th v-for="seatClass in seatClasses" :key="`seat-class-header-${seatClass.key}`" scope="col"
+                <th
+                  v-for="seatClass in seatClasses" :key="`seat-class-header-${seatClass.key}`" scope="col"
                   class="border border-gray-300 dark:border-gray-600 px-4 py-3 text-center dark:text-gray-100">
                   {{ $t(seatClass.nameKey) }}
                 </th>
               </tr>
             </thead>
             <tbody>
-              <tr v-for="group in okiKisenRouteGroups" :key="`seat-class-row-${group.id}`"
+              <tr
+                v-for="group in okiKisenRouteGroups" :key="`seat-class-row-${group.id}`"
                 class="hover:bg-gray-50 dark:hover:bg-gray-700/50">
-                <th scope="row"
+                <th
+                  scope="row"
                   class="border border-gray-300 dark:border-gray-600 px-4 py-3 text-left font-medium dark:text-gray-100">
                   {{ translateLabel(group.labelKey) }}
                 </th>
-                <td v-for="seatClass in seatClasses" :key="`seat-class-cell-${group.id}-${seatClass.key}`"
+                <td
+                  v-for="seatClass in seatClasses" :key="`seat-class-cell-${group.id}-${seatClass.key}`"
                   class="border border-gray-300 dark:border-gray-600 px-4 py-3 text-center font-mono dark:text-gray-100">
                   {{ getSeatClassFareForCategory(group.id, seatClass.key, okiKisenPassengerActiveCategory) }}
                 </td>
@@ -191,11 +285,12 @@
         </div>
         <div class="md:hidden mb-8">
           <nav class="flex flex-wrap gap-2 mb-3" aria-label="Vehicle routes" role="tablist">
-            <button v-for="group in okiKisenRouteGroups" :key="`vehicle-route-tab-${group.id}`" :class="[
+            <button
+              v-for="group in okiKisenRouteGroups" :key="`vehicle-route-tab-${group.id}`" :class="[
               okiKisenVehicleActiveRoute === group.id
                 ? 'bg-app-primary text-white border border-app-primary'
                 : 'bg-white text-gray-700 dark:bg-gray-800 dark:text-gray-200 border border-gray-300 dark:border-gray-600',
-              'px-3 py-1.5 rounded-full text-sm font-medium transition-colors'
+              'min-h-12 px-3 py-1.5 rounded-full text-sm font-medium transition-colors'
             ]" type="button" role="tab" :aria-selected="okiKisenVehicleActiveRoute === group.id"
               @click="okiKisenVehicleActiveRoute = group.id">
               {{ translateLabel(group.labelKey) }}
@@ -214,7 +309,8 @@
                 </tr>
               </thead>
               <tbody>
-                <tr v-for="size in vehicleSizeList" :key="`vehicle-mobile-${size.key}`"
+                <tr
+                  v-for="size in vehicleSizeList" :key="`vehicle-mobile-${size.key}`"
                   class="hover:bg-gray-50 dark:hover:bg-gray-700/50">
                   <td
                     class="border border-gray-300 dark:border-gray-600 px-4 py-3 font-normal dark:text-gray-100 whitespace-pre-line">
@@ -298,14 +394,16 @@
             class="md:hidden w-full p-4 bg-gray-50 dark:bg-gray-800/50 text-left flex items-center justify-between hover:bg-gray-100 dark:hover:bg-gray-700/50 transition-colors"
             @click="toggleVehicleNotes">
             <h5 class="font-semibold text-gray-900 dark:text-gray-100">{{ $t('VEHICLE_OPERATION_NOTES_TITLE') }}</h5>
-            <svg class="w-5 h-5 text-gray-500 dark:text-gray-400 transition-transform duration-200"
+            <svg
+              class="w-5 h-5 text-gray-500 dark:text-gray-400 transition-transform duration-200"
               :class="{ 'rotate-180': showVehicleNotes }" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path>
             </svg>
           </button>
 
           <!-- Content - Desktop always visible, Mobile collapsible -->
-          <div class="p-4 bg-gray-50 dark:bg-gray-800/50 border-t border-gray-200 dark:border-gray-700"
+          <div
+            class="p-4 bg-gray-50 dark:bg-gray-800/50 border-t border-gray-200 dark:border-gray-700"
             :class="{ 'hidden md:block': !showVehicleNotes, 'block': showVehicleNotes }">
             <div class="text-sm text-gray-700 dark:text-gray-300 space-y-2">
               <ul class="list-disc list-inside space-y-2">
@@ -324,11 +422,13 @@
           </div>
         </div>
         <div class="mt-4 text-center">
-          <a href="https://www.oki-kisen.co.jp/fare/" target="_blank" rel="noopener noreferrer"
-            class="inline-flex items-center px-4 py-2 bg-app-primary hover:bg-app-primary-2 text-white text-sm font-medium rounded-lg transition-colors duration-200">
+          <a
+            href="https://www.oki-kisen.co.jp/fare/" target="_blank" rel="noopener noreferrer"
+            class="inline-flex min-h-12 items-center px-4 py-2 bg-app-primary hover:bg-app-primary-2 text-white text-sm font-medium rounded-lg transition-colors duration-200">
             {{ $t('FARE_DETAILS') }}
             <svg class="ml-2 w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+              <path
+                stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                 d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14"></path>
             </svg>
           </a>
@@ -336,7 +436,8 @@
       </div>
 
       <!-- Naiko Sen (Ferry Dozen / Isokaze) -->
-      <div v-show="activeTab === 'naikoSen'" id="fare-tabpanel-naikoSen" role="tabpanel" tabindex="0"
+      <div
+        v-show="activeTransport === 'ship' && activeTab === 'naikoSen'" id="fare-tabpanel-naikoSen" role="tabpanel" tabindex="0"
         aria-labelledby="fare-tab-naikoSen" class="mb-4">
         <div class="mb-4">
           <div class="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
@@ -353,7 +454,8 @@
           {{ $t('PASSENGER_FARE') }}</h4>
         <div class="md:hidden">
           <div class="flex flex-wrap gap-2 mb-3">
-            <button v-for="category in passengerCategories" :key="category.id" :class="[
+            <button
+              v-for="category in passengerCategories" :key="category.id" :class="[
               naikoSenPassengerActiveCategory === category.id
                 ? 'bg-app-primary text-white border border-app-primary'
                 : 'bg-white text-gray-700 dark:bg-gray-800 dark:text-gray-200 border border-gray-300 dark:border-gray-600',
@@ -494,11 +596,13 @@
           <p>{{ $t('VEHICLE_LENGTH_NOTE') }}</p>
         </div>
         <div class="mt-4 text-center">
-          <a href="https://www.okikankou.com/fee_detail/" target="_blank" rel="noopener noreferrer"
-            class="inline-flex items-center px-4 py-2 bg-app-primary hover:bg-app-primary-2 text-white text-sm font-medium rounded-lg transition-colors duration-200">
+          <a
+            href="https://www.okikankou.com/fee_detail/" target="_blank" rel="noopener noreferrer"
+            class="inline-flex min-h-12 items-center px-4 py-2 bg-app-primary hover:bg-app-primary-2 text-white text-sm font-medium rounded-lg transition-colors duration-200">
             {{ $t('INNER_ISLAND_FARE_DETAILS') }}
             <svg class="ml-2 w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+              <path
+                stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                 d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14"></path>
             </svg>
           </a>
@@ -506,7 +610,8 @@
       </div>
 
       <!-- Rainbow Jet -->
-      <div v-show="activeTab === 'rainbowJet'" id="fare-tabpanel-rainbowJet" role="tabpanel" tabindex="0"
+      <div
+        v-show="activeTransport === 'ship' && activeTab === 'rainbowJet'" id="fare-tabpanel-rainbowJet" role="tabpanel" tabindex="0"
         aria-labelledby="fare-tab-rainbowJet" class="mb-4">
         <div class="mb-4">
           <div class="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
@@ -523,7 +628,8 @@
           {{ $t('PASSENGER_FARE') }}</h4>
         <div class="md:hidden">
           <div class="flex flex-wrap gap-2 mb-3">
-            <button v-for="category in passengerCategories" :key="category.id" :class="[
+            <button
+              v-for="category in passengerCategories" :key="category.id" :class="[
               rainbowJetPassengerActiveCategory === category.id
                 ? 'bg-app-primary text-white border border-app-primary'
                 : 'bg-white text-gray-700 dark:bg-gray-800 dark:text-gray-200 border border-gray-300 dark:border-gray-600',
@@ -547,7 +653,8 @@
                 </tr>
               </thead>
               <tbody>
-                <tr v-for="group in rainbowJetRouteGroups" :key="group.id"
+                <tr
+                  v-for="group in rainbowJetRouteGroups" :key="group.id"
                   class="hover:bg-gray-50 dark:hover:bg-gray-700/50">
                   <td class="border border-gray-300 dark:border-gray-600 px-4 py-3 dark:text-gray-100">
                     {{ translateLabel(group.labelKey) }}
@@ -568,19 +675,22 @@
               <tr class="bg-gray-100 dark:bg-gray-800">
                 <th class="border border-gray-300 dark:border-gray-600 px-4 py-3 text-left dark:text-gray-100">{{
                   $t('ROUTE') }}</th>
-                <th v-for="category in passengerCategories" :key="`rainbow-jet-header-${category.id}`"
+                <th
+                  v-for="category in passengerCategories" :key="`rainbow-jet-header-${category.id}`"
                   class="border border-gray-300 dark:border-gray-600 px-4 py-3 text-center dark:text-gray-100">
                   {{ translateLabel(category.labelKey, category.fallback) }}
                 </th>
               </tr>
             </thead>
             <tbody>
-              <tr v-for="group in rainbowJetRouteGroups" :key="`rainbow-jet-row-${group.id}`"
+              <tr
+                v-for="group in rainbowJetRouteGroups" :key="`rainbow-jet-row-${group.id}`"
                 class="hover:bg-gray-50 dark:hover:bg-gray-700/50">
                 <td class="border border-gray-300 dark:border-gray-600 px-4 py-3 dark:text-gray-100">
                   {{ translateLabel(group.labelKey) }}
                 </td>
-                <td v-for="category in passengerCategories" :key="`rainbow-jet-cell-${group.id}-${category.id}`"
+                <td
+                  v-for="category in passengerCategories" :key="`rainbow-jet-cell-${group.id}-${category.id}`"
                   class="border border-gray-300 dark:border-gray-600 px-4 py-3 text-right font-mono dark:text-gray-100">
                   {{ getRainbowJetPassengerFare(group.id, category.id) }}
                 </td>
@@ -641,11 +751,13 @@
           </div>
         </div>
         <div class="mt-4 text-center">
-          <a href="https://www.oki-kisen.co.jp/fare/" target="_blank" rel="noopener noreferrer"
-            class="inline-flex items-center px-4 py-2 bg-app-primary hover:bg-app-primary-2 text-white text-sm font-medium rounded-lg transition-colors duration-200">
+          <a
+            href="https://www.oki-kisen.co.jp/fare/" target="_blank" rel="noopener noreferrer"
+            class="inline-flex min-h-12 items-center px-4 py-2 bg-app-primary hover:bg-app-primary-2 text-white text-sm font-medium rounded-lg transition-colors duration-200">
             {{ $t('FARE_DETAILS') }}
             <svg class="ml-2 w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+              <path
+                stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                 d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14"></path>
             </svg>
           </a>
@@ -661,14 +773,17 @@ import { watch, nextTick } from 'vue'
 import type { FareVersion } from '@/types/fare'
 import { roundUpToTen } from '@/utils/currency'
 import { mapHighspeedToCanonicalRoute, normalizeRouteId } from '@/utils/fareRoutes'
+import { formatFareVersionLabel } from '@/utils/fareVersionLabel'
 
 // Composables
 const { formatCurrency, getAllFares } = useFareDisplay()
 const fareStore = process.client ? useFareStore() : null
-const { t, te } = useI18n({ useScope: 'global' })
+const { t, te, locale } = useI18n({ useScope: 'global' })
 
 // State
+const activeTransport = ref<'ship' | 'bus'>('ship')
 const activeTab = ref('okiKisen')
+const activeBusFareId = ref('ama')
 const tabBarRef = ref<HTMLElement | null>(null)
 const okiKisenFares = ref<any[]>([])
 const naikoSenFares = ref<any[]>([])
@@ -678,7 +793,7 @@ const innerIslandVehicleFare = ref<any>(null)
 const showVehicleNotes = ref(false)
 
 watch(
-  activeTab,
+  [activeTransport, activeTab, activeBusFareId],
   async () => {
     if (!process.client) return
     await nextTick()
@@ -790,11 +905,36 @@ const rainbowJetRouteGroups = [
 const PASSENGER_DISCOUNT_RATE = 0.5
 
 // Tab definitions
-const tabs = [
+const transportTabs = [
+  { id: 'ship', nameKey: 'TRANSPORT_MODES.FERRY' },
+  { id: 'bus', nameKey: 'TRANSPORT_MODES.BUS' }
+] as const
+
+const shipTabs = [
   { id: 'okiKisen', nameKey: 'OKI_KISEN_FERRY' },
   { id: 'rainbowJet', nameKey: 'RAINBOWJET' },
   { id: 'naikoSen', nameKey: 'NAIKO_SEN' }
+] as const
+
+type TransportTabId = typeof transportTabs[number]['id']
+
+const busFareRows = [
+  { id: 'ama', operatorKey: 'AMA_TOWN_BUS', fareTypeKey: 'BUS_FLAT_FARE', fare: 200 },
+  { id: 'nishinoshima', operatorKey: 'NISHINOSHIMA_TOWN_BUS', fareTypeKey: 'BUS_FLAT_FARE', fare: 200 },
+  { id: 'chibu', operatorKey: 'CHIBU_VILLAGE_BUS', fareTypeKey: 'BUS_FLAT_FARE', fare: 100 },
+  { id: 'okinoshima-ichibata', operatorKey: 'OKI_ICHIBATA_BUS', fareTypeKey: 'BUS_MAX_FARE', fare: 500 },
+  { id: 'okinoshima-town', operatorKey: 'OKINOSHIMA_TOWN_BUS', fareTypeKey: 'BUS_FLAT_FARE', fare: 300 },
+  { id: 'ichibata-connection', operatorKey: 'ICHIBATA_BUS_CONNECTION', fareTypeKey: 'BUS_MAX_FARE', fare: 1200 },
+  { id: 'oki-airport-bus', operatorKey: 'OKI_AIRPORT_BUS', fareTypeKey: 'BUS_ADULT_ONE_WAY_FARE', fare: 520 }
 ]
+
+const activeBusFare = computed(() =>
+  busFareRows.find(row => row.id === activeBusFareId.value) ?? busFareRows[0]
+)
+
+const setActiveTransport = (mode: TransportTabId) => {
+  activeTransport.value = mode
+}
 
 // Vehicle sizes (for old format compatibility)
 // Vehicle size list for new format
@@ -827,15 +967,14 @@ const localVersion = computed<FareVersion | null>(() =>
 )
 
 const formatVersionLabel = (version: FareVersion | null): string => {
-  if (!version) return ''
-  const label = version.name || '現行版'
-  if (version.effectiveFrom === '1970-01-01') {
-    return label
-  }
-  return `${label}`
+  return formatFareVersionLabel(version, locale.value, (key, params) => t(key, params))
 }
 
 const activeVersionLabel = computed(() => {
+  if (activeTransport.value === 'bus') {
+    return ''
+  }
+
   switch (activeTab.value) {
     case 'rainbowJet':
       return formatVersionLabel(highspeedVersion.value)

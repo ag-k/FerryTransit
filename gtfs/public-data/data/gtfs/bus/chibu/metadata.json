@@ -1,0 +1,22 @@
+{
+  "id": "chibu",
+  "mode": "bus",
+  "generatedAt": "2026-07-02T13:08:53.427Z",
+  "feed": {
+    "publisherName": "知夫村",
+    "publisherUrl": "https://chibu.jp/access.html",
+    "lang": "ja",
+    "startDate": "20260101",
+    "endDate": "20261231",
+    "version": "20230201_20260101-20261231"
+  },
+  "counts": {
+    "agencies": 1,
+    "routes": 1,
+    "stops": 12,
+    "trips": 4,
+    "stopTimes": 29,
+    "calendarServices": 1,
+    "calendarDates": 22
+  }
+}

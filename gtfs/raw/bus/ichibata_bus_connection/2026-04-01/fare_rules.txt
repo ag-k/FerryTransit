@@ -1,0 +1,2 @@
+fare_id,route_id,origin_id,destination_id,contains_id
+ICHIBATA_CONNECTION_MAX_ADULT,route_ichibata_bus_connection_https_bus_ichibata_8927b51c,,,

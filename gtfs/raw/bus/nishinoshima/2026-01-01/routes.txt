@@ -1,0 +1,7 @@
+route_id,agency_id,route_short_name,route_long_name,route_desc,route_type,route_url,route_color,route_text_color
+NISHINOSHIMA_MAIN,NISHINOSHIMA_TOWN,町営バス,西ノ島町営バス,西ノ島町営バスの主要系統,3,https://www.town.nishinoshima.shimane.jp/bunya/b_kurashi/b_kotsu/47,0F766E,FFFFFF
+NISHINOSHIMA_UGA,NISHINOSHIMA_TOWN,宇賀線,西ノ島町営バス 宇賀線,宇賀・大山方面の系統,3,https://www.town.nishinoshima.shimane.jp/bunya/b_kurashi/b_kotsu/47,2563EB,FFFFFF
+NISHINOSHIMA_CHINZAKI_SANDO,NISHINOSHIMA_TOWN,珍崎線・三度線,西ノ島町営バス 珍崎線・三度線,浦郷・赤ノ江・珍崎・三度方面の系統,3,https://www.town.nishinoshima.shimane.jp/bunya/b_kurashi/b_kotsu/47,DC2626,FFFFFF
+NISHINOSHIMA_KUNIGA,NISHINOSHIMA_TOWN,国賀線,西ノ島町営バス 国賀線,季節運行の国賀方面系統,3,https://www.town.nishinoshima.shimane.jp/bunya/b_kurashi/b_kotsu/47,7C3AED,FFFFFF
+NISHINOSHIMA_HATO,NISHINOSHIMA_TOWN,波止線,西ノ島町営バス 波止線,波止方面の系統,3,https://www.town.nishinoshima.shimane.jp/bunya/b_kurashi/b_kotsu/47,D97706,FFFFFF
+NISHINOSHIMA_DIRECT,NISHINOSHIMA_TOWN,直行便,西ノ島町営バス 直行便,由良車庫・浦郷・別府方面の直行便,3,https://www.town.nishinoshima.shimane.jp/bunya/b_kurashi/b_kotsu/47,0891B2,FFFFFF

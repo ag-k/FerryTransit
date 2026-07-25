@@ -1,0 +1,2 @@
+agency_id,agency_name,agency_url,agency_timezone,agency_lang,agency_phone,agency_fare_url,agency_email
+9000020325252,海士町,http://www.town.ama.shimane.jp/access/chonai.html,Asia/Tokyo,ja,,,

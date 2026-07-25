@@ -6,6 +6,9 @@ import ShipModal from "@/components/common/ShipModal.vue";
 const stubs = {
   Teleport: {
     template: '<div><slot /></div>'
+  },
+  PortAreaLeafletMap: {
+    template: '<div class="port-area-leaflet-map-stub"></div>'
   }
 }
 
@@ -55,6 +58,80 @@ describe("ShipModal", () => {
     expect(img.attributes("alt")).toBe("Test Modal");
   });
 
+  it("renders Ichibata bus connection details without a ship image", () => {
+    const wrapper = mount(ShipModal, {
+      props: {
+        ...defaultProps,
+        title: "一畑バス 隠岐汽船接続バス",
+        type: "ship",
+        shipId: "ICHIBATA_BUS_CONNECTION",
+      },
+      global: { stubs }
+    });
+
+    expect(wrapper.find("img").exists()).toBe(false);
+
+    const text = wrapper.text();
+    expect(text).toContain("松江駅");
+    expect(text).toContain("七類港");
+    expect(text).toContain("境港");
+    expect(text).toContain("¥1,200");
+    expect(text).toContain("2026/04/01 - 2026/12/31");
+
+    const links = wrapper.findAll("a");
+    expect(links.some(link => link.attributes("href") === "https://bus.ichibata.co.jp/oki-kisen/oki-kisen-sichirui/")).toBe(true);
+    expect(links.some(link => link.attributes("href") === "https://bus.ichibata.co.jp/media/r8_0718_kisen_dia.pdf")).toBe(true);
+  });
+
+  it("renders Oki airport shuttle bus details without a ship image", () => {
+    const wrapper = mount(ShipModal, {
+      props: {
+        ...defaultProps,
+        title: "隠岐空港連絡バス",
+        type: "ship",
+        shipId: "OKI_AIRPORT_BUS",
+      },
+      global: { stubs }
+    });
+
+    expect(wrapper.find("img").exists()).toBe(false);
+
+    const text = wrapper.text();
+    expect(text).toContain("隠岐空港");
+    expect(text).toContain("隠岐ポートプラザ前");
+    expect(text).toContain("隠岐一畑交通");
+    expect(text).toContain("¥520");
+    expect(text).toContain("2026/03/29 - 2026/10/24");
+
+    const links = wrapper.findAll("a");
+    expect(links.some(link => link.attributes("href") === "https://oki.ichibata.co.jp/airport.html")).toBe(true);
+  });
+
+  it("renders JAL air route details without a ship image or fare field", () => {
+    const wrapper = mount(ShipModal, {
+      props: {
+        ...defaultProps,
+        title: "JAL 大阪（伊丹）線",
+        type: "ship",
+        shipId: "JAL_OKI_ITAMI",
+      },
+      global: { stubs }
+    });
+
+    expect(wrapper.find("img").exists()).toBe(false);
+
+    const text = wrapper.text();
+    expect(text).toContain("隠岐空港");
+    expect(text).toContain("大阪（伊丹）空港");
+    expect(text).toContain("2026/03/29 - 2026/10/24");
+    expect(text).not.toContain("料金不明");
+    expect(text).not.toContain("¥");
+
+    const links = wrapper.findAll("a");
+    expect(links.some(link => link.attributes("href") === "https://www.oki-airport.jp/news/archives/14")).toBe(true);
+    expect(links.some(link => link.attributes("href") === "https://www.jal.co.jp/jp/ja/dom/route/time/")).toBe(true);
+  });
+
   it("renders port content for port type", () => {
     const wrapper = mount(ShipModal, {
       props: {
@@ -68,6 +145,22 @@ describe("ShipModal", () => {
     expect(wrapper.find(".map-container").html()).toContain(
       '<iframe src="map.html"></iframe>'
     );
+  });
+
+  it("uses the resolved stop title for bus stop port modals", () => {
+    const wrapper = mount(ShipModal, {
+      props: {
+        ...defaultProps,
+        title: "郡バス待合所",
+        type: "port",
+        portId: "BUS_OKINOSHIMA_goka_gun_waiting",
+      },
+      global: { stubs }
+    });
+
+    expect(wrapper.find("h3").text()).toBe("郡バス待合所");
+    expect(wrapper.find("h3").text()).not.toContain("BUS_OKINOSHIMA");
+    expect(wrapper.find("h3").text()).not.toContain("港");
   });
 
   it("renders slot content for custom type", () => {

@@ -26,7 +26,10 @@ vi.mock('vue-i18n', async () => {
 
 vi.mock('~/stores/ferry', () => ({
   useFerryStore: () => ({
-    ports: []
+    ports: [],
+    getLocationLabel: (locationId: string) => ({
+      BUS_AMA_100_01: '豊田'
+    }[locationId] ?? null)
   })
 }))
 
@@ -51,6 +54,23 @@ describe('FavoritePortCard', () => {
     mockRouter.push.mockReset()
     // @ts-expect-error global useLocalePath
     global.useLocalePath = vi.fn(() => (path: string) => path)
+  })
+
+  it('削除ボタンに48px以上のタッチ領域を確保する', () => {
+    const wrapper = mount(FavoritePortCard, {
+      props: { portId: 'SAIGO', portCode: 'SAIGO' },
+      global: {
+        stubs: {
+          FavoriteButton: { template: '<button />' },
+          ConfirmDialog: { template: '<div />', props: ['isOpen'] }
+        },
+        config: { globalProperties: { $t: (key: string) => key } }
+      }
+    })
+
+    const removeButton = wrapper.findAll('button')
+      .find(button => button.text().includes('favorites.remove'))
+    expect(removeButton?.classes()).toContain('min-h-12')
   })
 
   it('「時刻表を見る」ボタンは / に遷移する（departureだけ付与）', async () => {
@@ -106,5 +126,28 @@ describe('FavoritePortCard', () => {
     })
 
     expect(wrapper.text()).toContain('七類(松江市)または境港(境港市)')
+  })
+
+  it('バス停コードは停留所名で表示する', () => {
+    const wrapper = mount(FavoritePortCard, {
+      props: {
+        portId: 'BUS_AMA_100_01',
+        portCode: 'BUS_AMA_100_01'
+      },
+      global: {
+        stubs: {
+          FavoriteButton: { template: '<button />' },
+          ConfirmDialog: { template: '<div />', props: ['isOpen'] }
+        },
+        config: {
+          globalProperties: {
+            $t: (key: string) => key
+          }
+        }
+      }
+    })
+
+    expect(wrapper.text()).toContain('豊田')
+    expect(wrapper.text()).not.toContain('BUS_AMA_100_01')
   })
 })

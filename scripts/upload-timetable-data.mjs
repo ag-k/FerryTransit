@@ -4,13 +4,15 @@ import { Storage } from '@google-cloud/storage';
 import fs from 'fs';
 import path from 'path';
 import { fileURLToPath } from 'url';
+import { readEmulatorConfig } from './emulator-config.mjs';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
+const { hosts } = readEmulatorConfig(path.join(__dirname, '..'));
 
 // エミュレータに接続
 const storage = new Storage({
-  apiEndpoint: 'http://localhost:9199',
+  apiEndpoint: `http://${hosts.storage}`,
   projectId: 'oki-ferryguide'
 });
 
@@ -20,11 +22,12 @@ async function uploadTimetableData() {
 
     const bucketName = 'oki-ferryguide.appspot.com';
     const fileName = 'data/timetable.json';
-    const filePath = path.join(__dirname, '..', 'src', 'public', 'data', 'timetable.json');
+    const filePath = path.join(__dirname, '..', 'gtfs', 'generated', 'public', 'timetable.json');
 
     // ファイルが存在するか確認
     if (!fs.existsSync(filePath)) {
       console.error('❌ 時刻表データファイルが見つかりません:', filePath);
+      console.error('   先に npm run timetable:build を実行してください。');
       process.exit(1);
     }
 

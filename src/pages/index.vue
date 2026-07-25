@@ -7,11 +7,13 @@
 
     <!-- 出発地・到着地選択 -->
     <ClientOnly>
-      <TransportModeFilter v-if="transportModeOptions.length > 1" v-model="selectedTransportMode"
+      <TransportModeFilter
+        v-if="transportModeOptions.length > 1" v-model="selectedTransportMode"
         :options="transportModeOptions" class="mb-3" />
-      <TimetableForm :departure="departure" :arrival="arrival" :hondo-ports="hondoPorts" :dozen-ports="dozenPorts"
-        :dogo-ports="dogoPorts" @update:departure="handleDepartureChange" @update:arrival="handleArrivalChange"
-        @reverse="reverseRoute" />
+      <TimetableForm
+        :departure="departure" :arrival="arrival" :hondo-ports="hondoPorts" :dozen-ports="dozenPorts"
+        :dogo-ports="dogoPorts" :allowed-location-type="selectedLocationType"
+        @update:departure="handleDepartureChange" @update:arrival="handleArrivalChange" @reverse="reverseRoute" />
       <template #fallback>
         <!-- SSR時のフォールバック -->
         <div class="mb-4">
@@ -25,11 +27,13 @@
               </select>
             </div>
             <div class="md:col-span-2 text-center hidden md:block">
-              <button type="button"
+              <button
+                type="button"
                 class="px-3 py-1 text-sm border border-gray-300 dark:border-gray-600 rounded bg-gray-100 dark:bg-slate-700 dark:text-gray-200"
                 disabled>
                 <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" viewBox="0 0 16 16">
-                  <path fill-rule="evenodd"
+                  <path
+                    fill-rule="evenodd"
                     d="M1 11.5a.5.5 0 0 0 .5.5h11.793l-3.147 3.146a.5.5 0 0 0 .708.708l4-4a.5.5 0 0 0 0-.708l-4-4a.5.5 0 0 0-.708.708L13.293 11H1.5a.5.5 0 0 0-.5.5zm14-7a.5.5 0 0 1-.5.5H2.707l3.147 3.146a.5.5 0 1 1-.708.708l-4-4a.5.5 0 0 1 0-.708l4-4a.5.5 0 1 1 .708.708L2.707 4H14.5a.5.5 0 0 1 .5.5z" />
                 </svg>
               </button>
@@ -53,12 +57,14 @@
         <div class="flex items-end gap-3">
           <div class="w-full md:w-1/3">
             <!-- 乗換案内（/transit）と同じ DatePicker 表示に統一（時刻なし） -->
-            <DatePicker :model-value="selectedDate" :min-date="today" margin="none" size="compact"
+            <DatePicker
+              :model-value="selectedDate" :min-date="today" margin="none" size="compact"
               @update:model-value="handleDateChange" />
           </div>
           <!-- 地図表示ボタン（地図が非表示の時だけ表示、右端に配置） -->
           <SecondaryButton v-if="!settingsStore.mapEnabled" size="sm" class="ml-auto" @click="toggleMapDisplay">
-            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="mr-1.5"
+            <svg
+              xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="mr-1.5"
               viewBox="0 0 16 16" aria-hidden="true">
               <path d="M8 8.75a2.5 2.5 0 1 1 0-5 2.5 2.5 0 0 1 0 5z" />
               <path
@@ -72,10 +78,12 @@
         <div class="mb-4">
           <div class="w-full md:w-1/3">
             <div class="flex">
-              <input type="date"
+              <input
+                type="date"
                 class="flex-1 px-3 py-2 text-base border border-gray-300 dark:border-gray-600 rounded-l-md bg-gray-100 dark:bg-slate-700 dark:text-gray-200"
                 disabled>
-              <button type="button"
+              <button
+                type="button"
                 class="px-4 py-2 text-base border border-l-0 border-gray-300 dark:border-gray-600 rounded-r-md bg-gray-100 dark:bg-slate-700 dark:text-gray-200"
                 disabled>
                 {{ $t('TODAY') }}
@@ -86,10 +94,50 @@
       </template>
     </ClientOnly>
 
+    <!-- 車両乗船オプション -->
+    <ClientOnly>
+      <div v-if="selectedTransportMode === 'FERRY'" class="mb-4 rounded-md border border-app-border bg-app-surface px-4 py-3">
+        <ToggleSwitch
+          data-test="with-car-toggle"
+          :checked="withCar"
+          :label="$t('VIA_CAR')"
+          @update:checked="handleWithCarChange"
+        />
+        <div v-if="withCar" class="mt-3 max-w-xs">
+          <label :for="vehicleLengthSelectId" class="block text-sm font-medium text-app-muted mb-1">
+            {{ $t('VEHICLE_SIZE') }}
+          </label>
+          <select
+            :id="vehicleLengthSelectId"
+            v-model.number="vehicleLengthMeters"
+            data-test="vehicle-length-select"
+            class="w-full px-3 py-2 text-sm border border-gray-300 dark:border-gray-600 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 bg-white dark:bg-gray-700 dark:text-white"
+          >
+            <option v-for="length in vehicleLengthOptions" :key="length" :value="length">
+              {{ formatVehicleLengthOptionLabel(length) }}
+            </option>
+          </select>
+        </div>
+      </div>
+    </ClientOnly>
+
     <!-- 地図表示 -->
     <ClientOnly>
-      <TimetableMap :selected-port="selectedMapPort" :selected-route="selectedMapRoute" :show-port-details="true"
-        height="300px" @port-click="handleMapPortClick" @route-select="handleMapRouteSelect" />
+      <TimetableMap
+        :selected-port="selectedMapPort"
+        :selected-route="selectedMapRoute"
+        :transport-mode="selectedMapTransportMode"
+        :bus-stops="mapBusStops"
+        :show-port-details="true"
+        height="300px"
+        @port-click="handleMapPortClick"
+        @location-click="handleMapLocationClick"
+        @location-set-departure="handleMapLocationSetDeparture"
+        @location-set-arrival="handleMapLocationSetArrival"
+        @port-set-departure="handleMapPortSetDeparture"
+        @port-set-arrival="handleMapPortSetArrival"
+        @route-select="handleMapRouteSelect"
+      />
     </ClientOnly>
 
     <!-- 時刻表 -->
@@ -102,14 +150,21 @@
               {{ headerDateLabel }}
             </h3>
           </div>
-          <p data-test="timetable-summary" class="text-xs text-blue-100/90 leading-tight mt-0.5 truncate"
-            :title="`${$t('DATE')}: ${selectedDateString} / ${$t('_FROM')}: ${departure ? $t(departure) : '-'} / ${$t('_TO')}: ${arrival ? $t(arrival) : '-'}`">
-            <span>{{ departure ? $t(departure) : '-' }}</span>
+          <p
+            data-test="timetable-summary" class="text-xs text-blue-100/90 leading-tight mt-0.5 truncate"
+            :title="`${$t('DATE')}: ${selectedDateString} / ${$t('_FROM')}: ${getLocationDisplayName(departure)} / ${$t('_TO')}: ${getLocationDisplayName(arrival)}`">
+            <span>{{ getLocationDisplayName(departure) }}</span>
             <span class="mx-1">→</span>
-            <span>{{ arrival ? $t(arrival) : '-' }}</span>
+            <span>{{ getLocationDisplayName(arrival) }}</span>
           </p>
         </div>
-        <FavoriteButton v-if="departure && arrival" :type="'route'" :route="{ departure, arrival }"
+        <FavoriteButton
+          v-if="departure && arrival" :type="'route'" :route="{
+          departure,
+          arrival,
+          withCar,
+          ...(withCar ? { vehicleLengthMeters } : {})
+        }"
           class="text-white hover:text-yellow-300" />
       </div>
       <ClientOnly>
@@ -119,10 +174,12 @@
             <span class="sr-only">Loading...</span>
           </div>
 
-          <Alert v-else-if="error" :visible="true" type="danger" :dismissible="false" class="mx-4 my-3"
+          <Alert
+            v-else-if="error" :visible="true" type="danger" :dismissible="false" class="mx-4 my-3"
             :message="$t(error)" />
 
-          <div v-else-if="filteredTimetableByMode.length === 0"
+          <div
+            v-else-if="filteredTimetableByMode.length === 0"
             class="text-center py-6 text-gray-500 dark:text-gray-300">
             <small v-if="!departure && !arrival">
               {{ $t('SELECT_BOTH_PORTS') }}
@@ -142,26 +199,29 @@
             <table class="w-full text-base sm:text-sm min-w-[360px] border-separate border-spacing-0">
               <thead class="bg-app-surface-2/70 border-b border-app-border/70">
                 <tr>
-                  <th class="px-3 sm:px-4 py-3 text-left font-medium text-app-muted">{{ $t('SHIP') }}
+                  <th class="px-3 sm:px-4 py-3 text-left font-medium text-app-muted">{{ $t('TRANSPORT_NAME') }}
                   </th>
                   <th class="px-3 sm:px-4 py-3 text-right font-medium text-app-muted align-middle">
-                    <a href="#"
+                    <a
+                      href="#"
                       class="text-app-primary dark:text-white font-semibold inline-flex flex-col items-center justify-center gap-1 -my-1 -mx-2 touch-manipulation text-center min-h-[40px] w-fit ml-auto group"
                       @click.prevent="showPortInfo(departure)">
                       <span class="leading-tight group-hover:underline inline-flex items-center gap-2">
-                        <LocationTypeIcon v-if="departure" :type="resolveLocationType()" />
+                        <LocationTypeIcon v-if="departure" :type="resolveLocationType(departure)" />
                         <span class="shrink-0">{{ departureLabelParts.name }}</span>
                       </span>
-                      <PortBadges :badges="departureLabelParts.badges"
+                      <PortBadges
+                        :badges="departureLabelParts.badges"
                         class="flex flex-1 flex-wrap justify-end gap-1" />
                     </a>
                   </th>
                   <th class="px-3 sm:px-4 py-3 text-right font-medium text-app-muted align-middle">
-                    <a href="#"
+                    <a
+                      href="#"
                       class="text-app-primary dark:text-white font-semibold inline-flex flex-col items-center justify-center gap-1 -my-1 -mx-2 touch-manipulation text-center min-h-[40px] w-fit ml-auto group"
                       @click.prevent="showPortInfo(arrival)">
                       <span class="leading-tight group-hover:underline inline-flex items-center gap-2">
-                        <LocationTypeIcon v-if="arrival" :type="resolveLocationType()" />
+                        <LocationTypeIcon v-if="arrival" :type="resolveLocationType(arrival)" />
                         <span class="shrink-0">{{ arrivalLabelParts.name }}</span>
                       </span>
                       <PortBadges :badges="arrivalLabelParts.badges" class="flex flex-1 flex-wrap justify-end gap-1" />
@@ -170,62 +230,76 @@
                 </tr>
               </thead>
               <tbody class="divide-y divide-app-border/60">
-                <tr v-for="trip in sortedTimetable" :key="trip.tripId"
+                <tr
+                  v-for="trip in sortedTimetable" :key="trip.tripId"
                   class="hover:bg-app-surface-2/50 transition-colors duration-150"
                   :class="{ 'line-through opacity-60': tripStatus(trip) === 2 }">
                   <td class="px-3 sm:px-4 py-4 sm:py-3">
                     <div class="flex items-center gap-1 min-h-[20px]">
-                      <button v-if="tripStatus(trip) === 2" type="button" data-test="cancel-status-icon"
+                      <button
+                        v-if="tripStatus(trip) === 2" type="button" data-test="cancel-status-icon"
                         class="inline-flex items-center text-red-600 dark:text-red-300" :title="$t('OPERATION_STATUS')"
                         aria-label="運航状況を見る" @click.stop="showOperationStatus(trip.name)">
-                        <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" fill="currentColor"
+                        <svg
+                          xmlns="http://www.w3.org/2000/svg" width="18" height="18" fill="currentColor"
                           viewBox="0 0 16 16">
                           <path
                             d="M16 8A8 8 0 1 1 0 8a8 8 0 0 1 16 0zM5.354 4.646a.5.5 0 1 0-.708.708L7.293 8l-2.647 2.646a.5.5 0 0 0 .708.708L8 8.707l2.646 2.647a.5.5 0 0 0 .708-.708L8.707 8l2.647-2.646a.5.5 0 0 0-.708-.708L8 7.293 5.354 4.646z" />
                         </svg>
                       </button>
-                      <button v-else-if="tripStatus(trip) === 3" type="button" data-test="warning-status-icon"
+                      <button
+                        v-else-if="tripStatus(trip) === 3" type="button" data-test="warning-status-icon"
                         class="inline-flex items-center text-yellow-600 dark:text-yellow-300"
                         :title="$t('OPERATION_STATUS')" aria-label="運航状況を見る"
                         @click.stop="showOperationStatus(trip.name)">
-                        <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" fill="currentColor"
+                        <svg
+                          xmlns="http://www.w3.org/2000/svg" width="18" height="18" fill="currentColor"
                           viewBox="0 0 16 16">
                           <path
                             d="M8.982 1.566a1.13 1.13 0 0 0-1.96 0L.165 13.233c-.457.778.091 1.767.98 1.767h13.713c.889 0 1.438-.99.98-1.767L8.982 1.566zM8 5c.535 0 .954.462.9.995l-.35 3.507a.552.552 0 0 1-1.1 0L7.1 5.995A.905.905 0 0 1 8 5zm.002 6a1 1 0 1 1 0 2 1 1 0 0 1 0-2z" />
                         </svg>
                       </button>
-                      <button v-else-if="tripStatus(trip) === 4" type="button" data-test="resumed-status-icon"
+                      <button
+                        v-else-if="tripStatus(trip) === 4" type="button" data-test="resumed-status-icon"
                         class="inline-flex items-center text-green-600 dark:text-green-300"
                         :title="$t('OPERATION_STATUS')" aria-label="運航状況を見る"
                         @click.stop="showOperationStatus(trip.name)">
-                        <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" fill="currentColor"
+                        <svg
+                          xmlns="http://www.w3.org/2000/svg" width="18" height="18" fill="currentColor"
                           viewBox="0 0 16 16">
                           <path
                             d="M16 8A8 8 0 1 1 0 8a8 8 0 0 1 16 0zM8.5 4.5a.5.5 0 0 0-1 0v3h-3a.5.5 0 0 0 0 1h3v3a.5.5 0 0 0 1 0v-3h3a.5.5 0 0 0 0-1h-3v-3z" />
                         </svg>
                       </button>
                       <!-- 船種全体の運航状況に変更がある場合の注意マーク（便ごとのステータスが通常の場合のみ表示） -->
-                      <button v-else-if="getShipStatusAlert(trip.name)" type="button" data-test="ship-status-alert-icon"
+                      <button
+                        v-else-if="getShipStatusAlert(trip.name)" type="button" data-test="ship-status-alert-icon"
                         class="inline-flex items-center" :class="{
                           'text-red-600 dark:text-red-300': getShipStatusAlert(trip.name)?.severity === 'danger',
                           'text-yellow-600 dark:text-yellow-300': getShipStatusAlert(trip.name)?.severity === 'warning',
                           'text-green-600 dark:text-green-300': getShipStatusAlert(trip.name)?.severity === 'info'
                         }" :title="$t('OPERATION_STATUS')" aria-label="運航状況を見る"
                         @click.stop="showOperationStatus(trip.name)">
-                        <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" fill="currentColor"
+                        <svg
+                          xmlns="http://www.w3.org/2000/svg" width="18" height="18" fill="currentColor"
                           viewBox="0 0 16 16">
                           <path
                             d="M8.982 1.566a1.13 1.13 0 0 0-1.96 0L.165 13.233c-.457.778.091 1.767.98 1.767h13.713c.889 0 1.438-.99.98-1.767L8.982 1.566zM8 5c.535 0 .954.462.9.995l-.35 3.507a.552.552 0 0 1-1.1 0L7.1 5.995A.905.905 0 0 1 8 5zm.002 6a1 1 0 1 1 0 2 1 1 0 0 1 0-2z" />
                         </svg>
                       </button>
-                      <a href="#"
+                      <a
+                        href="#" data-test="transport-details-link"
                         class="text-app-primary dark:text-white hover:underline font-medium inline-block py-1 -my-1 px-2 -mx-2 touch-manipulation"
                         @click.prevent="showShipInfo(trip.name)">
-                        {{ $t(trip.name) }}
+                        {{ getTripTransportLabel(trip) }}
                       </a>
                     </div>
                     <p v-if="formatTripMeta(trip)" class="text-xs text-app-muted mt-1">
                       {{ formatTripMeta(trip) }}
+                    </p>
+                    <p v-if="withCar" data-test="timetable-vehicle-fare" class="text-xs text-app-muted mt-1">
+                      {{ $t('VEHICLE_FARE_WITH_DRIVER') }}:
+                      {{ formatVehicleFare(getTripVehicleFare(trip)) }}
                     </p>
                   </td>
                   <td class="px-3 sm:px-4 py-4 sm:py-3 font-mono tabular-nums text-right text-app-fg">
@@ -265,7 +339,8 @@
       <div v-if="showTransferSearchButton" class="px-4 py-3 bg-app-surface-2/70 border-t border-app-border/70">
         <PrimaryButton type="button" data-test="transfer-search-button" block size="md" @click="navigateToTransit">
           <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+            <path
+              stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
               d="M8 7h12m0 0l-4-4m4 4l-4 4m0 6H4m0 0l4 4m-4-4l4-4" />
           </svg>
           {{ $t('SEARCH_WITH_TRANSFER') }}
@@ -275,8 +350,11 @@
 
     <!-- モーダル -->
     <ClientOnly>
-      <CommonShipModal v-model:visible="modalVisible" :title="modalTitle" :type="modalType" :ship-id="modalShipId"
-        :port-id="modalPortId" :port-zoom="modalPortZoom" :content="modalContent" />
+      <CommonShipModal
+        v-model:visible="modalVisible" :title="modalTitle" :type="modalType" :ship-id="modalShipId"
+        :port-id="modalPortId" :port-zoom="modalPortZoom" :content="modalContent"
+        :show-route-set-actions="modalType === 'port'" @set-departure="handleModalPortSetDeparture"
+        @set-arrival="handleModalPortSetArrival" />
       <OperationStatusModal v-model:visible="operationStatusModalVisible" :ship-name="operationStatusShipName" />
     </ClientOnly>
   </div>
@@ -286,6 +364,7 @@
 import { nextTick, onMounted, ref, computed, watch, unref } from 'vue'
 import { useHead, useI18n, useRoute, useRouter, useLocalePath } from '#imports'
 import { useFerryStore } from '@/stores/ferry'
+import { useFareStore } from '@/stores/fare'
 import { useHistoryStore } from '@/stores/history'
 import { useSettingsStore } from '@/stores/settings'
 import { useFerryData } from '@/composables/useFerryData'
@@ -300,18 +379,31 @@ import Alert from '@/components/common/Alert.vue'
 import PrimaryButton from '@/components/common/PrimaryButton.vue'
 import SecondaryButton from '@/components/common/SecondaryButton.vue'
 import TransportModeFilter from '@/components/common/TransportModeFilter.vue'
+import ToggleSwitch from '@/components/common/ToggleSwitch.vue'
 import LocationTypeIcon from '@/components/common/LocationTypeIcon.vue'
-import { formatDateYmdJst, getJstDateParts, getTodayJstMidnight } from '@/utils/jstDate'
+import { formatDateYmdJst, getJstDateParts } from '@/utils/jstDate'
 import { getPortMapZoom } from '@/utils/portMapZoom'
+import { getLocationTypeForCode, loadBusTripsForRoute } from '@/utils/gtfsBusTimetable'
+import { useTodayRollover } from '@/composables/useTodayRollover'
 import type { LocationType, TransportMode, Trip } from '@/types'
+import type { BusStopLocation } from '@/utils/gtfsBusTimetable'
+import {
+  DEFAULT_VEHICLE_LENGTH_METERS,
+  VEHICLE_LENGTH_OPTIONS,
+  calculateVehicleFareForShip,
+  getVehicleLengthLabelKey,
+  isOkiKisenVehicleFerry,
+  isVehicleSearchShip,
+  normalizeVehicleLengthMeters
+} from '@/utils/vehicleFare'
 
 // Store and composables
 const ferryStore = useFerryStore()
+const fareStore = useFareStore()
 const historyStore = useHistoryStore()
 const settingsStore = useSettingsStore()
 const {
   filteredTimetable,
-  timetableData,
   getTripStatus,
   selectedDate,
   departure,
@@ -336,8 +428,21 @@ const selectedMapPort = ref<string>('')
 const selectedMapRoute = ref<{ from: string; to: string } | undefined>()
 const operationStatusModalVisible = ref(false)
 const operationStatusShipName = ref('')
+const withCar = ref(false)
+const vehicleLengthMeters = ref(DEFAULT_VEHICLE_LENGTH_METERS)
+const vehicleLengthSelectId = 'timetable-vehicle-length-select'
+const vehicleLengthOptions = VEHICLE_LENGTH_OPTIONS
+const directBusTimetable = ref<Trip[]>([])
+let directBusTimetableRequestId = 0
 
-const today = getTodayJstMidnight()
+const {
+  today,
+  selectDate: selectTimetableDate,
+  selectExplicitDate: selectExplicitTimetableDate
+} = useTodayRollover({
+  selectedDate,
+  setSelectedDate: date => ferryStore.setSelectedDate(date)
+})
 
 // Computed properties
 const selectedDateString = computed(() => {
@@ -359,7 +464,7 @@ const headerDateLabel = computed(() => {
 })
 
 const getPortLabelParts = (port?: string) => {
-  const label = port ? String(t(port)) : '-'
+  const label = port ? (ferryStore.getLocationLabel(port) || String(t(port))) : '-'
   const parenRegex = /[（(]([^）)]+)[）)]/g
   const badges: string[] = []
 
@@ -378,17 +483,20 @@ const getPortLabelParts = (port?: string) => {
   }
 }
 
-const resolveLocationType = (value?: LocationType) => value ?? 'PORT'
+const getLocationDisplayName = (locationId?: string) => {
+  return getPortLabelParts(locationId).name
+}
+
+const resolveLocationType = (value?: string): LocationType => getLocationTypeForCode(value)
 
 const departureLabelParts = computed(() => getPortLabelParts(departure.value))
 const arrivalLabelParts = computed(() => getPortLabelParts(arrival.value))
 
 const todayString = computed(() => {
   // JST基準で本日の日付を取得（海外端末でも常にJST）
-  return formatDateYmdJst(new Date())
+  return formatDateYmdJst(today.value)
 })
 
-const transportModeOrder: TransportMode[] = ['FERRY', 'BUS', 'AIR']
 type TransportModeFilterValue = TransportMode | 'ALL'
 
 const normalizeTransportMode = (mode?: TransportMode | string): TransportMode => {
@@ -396,37 +504,146 @@ const normalizeTransportMode = (mode?: TransportMode | string): TransportMode =>
   return 'FERRY'
 }
 
-const availableTransportModes = computed(() => {
-  const modes = new Set<TransportMode>()
-  for (const trip of timetableData.value) {
-    modes.add(normalizeTransportMode(trip.mode))
-  }
-  return transportModeOrder.filter(mode => modes.has(mode))
-})
+const transportModeOptions = computed<TransportMode[]>(() => ['FERRY', 'BUS', 'AIR'])
 
-const transportModeOptions = computed(() => {
-  if (availableTransportModes.value.length <= 1) return []
-  return ['ALL', ...availableTransportModes.value]
-})
+const selectedTransportMode = ref<TransportModeFilterValue>('FERRY')
 
-const selectedTransportMode = ref<TransportModeFilterValue>('ALL')
+const isRouteCompatibleWithMode = (mode: TransportModeFilterValue, locations: string[]): boolean => {
+  if (mode === 'ALL' || locations.length === 0) return true
+
+  const locationTypes = locations.map(locationId => getLocationTypeForCode(locationId))
+  if (mode === 'FERRY') return locationTypes.every(type => type === 'PORT')
+  if (mode === 'AIR') return locationTypes.every(type => type === 'AIRPORT')
+
+  // 島内バスに加え、空港連絡バスや港連絡バスは
+  // STOP / PORT / AIRPORT をまたぐ。同種別の港間・空港間は船・航空を優先する。
+  if (locations.length < 2) return true
+  return locationTypes.includes('STOP') || new Set(locationTypes).size > 1
+}
 
 watch(transportModeOptions, (options) => {
   if (!options.length) {
     selectedTransportMode.value = 'ALL'
     return
   }
-  if (!options.includes(selectedTransportMode.value)) {
-    selectedTransportMode.value = 'ALL'
+  if (!options.includes(selectedTransportMode.value as TransportMode)) {
+    selectedTransportMode.value = options[0] ?? 'ALL'
   }
 })
 
-const filteredTimetableByMode = computed(() => {
-  if (selectedTransportMode.value === 'ALL' || transportModeOptions.value.length === 0) {
+const preferredTransportModeForRoute = computed<TransportMode>(() => {
+  const selectedLocations = [departure.value, arrival.value].filter(Boolean)
+
+  // モードタブの明示選択で互換性のない経路をクリアした直後は、
+  // 空の経路からFERRYへ戻さずユーザーの選択を維持する。
+  if (selectedLocations.length === 0) {
+    return selectedTransportMode.value === 'ALL' ? 'FERRY' : selectedTransportMode.value
+  }
+
+  if (
+    selectedTransportMode.value !== 'ALL' &&
+    isRouteCompatibleWithMode(selectedTransportMode.value, selectedLocations)
+  ) {
+    return selectedTransportMode.value
+  }
+
+  const locationTypes = selectedLocations.map(locationId => getLocationTypeForCode(locationId))
+  if (locationTypes.includes('STOP') || new Set(locationTypes).size > 1) return 'BUS'
+  if (locationTypes.every(type => type === 'AIRPORT')) return 'AIR'
+  return 'FERRY'
+})
+
+watch([preferredTransportModeForRoute, transportModeOptions], ([preferredMode, options]) => {
+  if (options.includes(preferredMode)) {
+    selectedTransportMode.value = preferredMode
+  }
+}, { immediate: true })
+
+const selectedLocationType = computed<LocationType | 'ALL'>(() => {
+  if (selectedTransportMode.value === 'BUS') return 'ALL'
+  if (selectedTransportMode.value === 'AIR') return 'AIRPORT'
+  return 'PORT'
+})
+
+const selectedMapTransportMode = computed<Extract<TransportMode, 'FERRY' | 'BUS' | 'AIR'>>(() => {
+  if (selectedTransportMode.value === 'BUS') return 'BUS'
+  if (selectedTransportMode.value === 'AIR') return 'AIR'
+  return 'FERRY'
+})
+
+const mapBusStops = computed<BusStopLocation[]>(() => {
+  return Object.values(ferryStore.busStopLocations ?? {})
+})
+
+const getTimetableTripDedupKey = (trip: Trip): string => {
+  return [
+    normalizeTransportMode(trip.mode),
+    trip.name,
+    trip.serviceId ?? '',
+    trip.vehicleId ?? '',
+    trip.departure,
+    trip.departureTime,
+    trip.arrival,
+    trip.arrivalTime,
+    trip.via ?? ''
+  ].join('|')
+}
+
+const timetableWithDirectBus = computed<Trip[]>(() => {
+  if (directBusTimetable.value.length === 0) {
     return filteredTimetable.value
   }
-  return filteredTimetable.value.filter((trip) => normalizeTransportMode(trip.mode) === selectedTransportMode.value)
+
+  const seen = new Set(filteredTimetable.value.map(getTimetableTripDedupKey))
+  const additions = directBusTimetable.value.filter((trip) => {
+    const key = getTimetableTripDedupKey(trip)
+    if (seen.has(key)) return false
+    seen.add(key)
+    return true
+  })
+
+  return [...filteredTimetable.value, ...additions]
 })
+
+const filteredTimetableByMode = computed(() => {
+  let trips = timetableWithDirectBus.value
+
+  if (selectedTransportMode.value !== 'ALL' && transportModeOptions.value.length > 0) {
+    trips = trips.filter((trip) => normalizeTransportMode(trip.mode) === selectedTransportMode.value)
+  }
+
+  if (withCar.value) {
+    trips = trips.filter((trip) => isVehicleSearchShip(trip.name))
+  }
+
+  return trips
+})
+
+watch([departure, arrival, selectedDateString, withCar], async ([from, to, dateString, vehicleEnabled]) => {
+  const requestId = ++directBusTimetableRequestId
+  directBusTimetable.value = []
+
+  if (
+    vehicleEnabled ||
+    !from ||
+    !to ||
+    getLocationTypeForCode(from) !== 'STOP' ||
+    getLocationTypeForCode(to) !== 'STOP'
+  ) {
+    return
+  }
+
+  try {
+    const trips = await loadBusTripsForRoute(from, to, dateString)
+    if (requestId === directBusTimetableRequestId) {
+      directBusTimetable.value = trips
+    }
+  } catch {
+    if (requestId === directBusTimetableRequestId) {
+      directBusTimetable.value = []
+    }
+  }
+}, { immediate: true })
 
 const sortedTimetable = computed(() => {
   return [...filteredTimetableByMode.value].sort((a, b) => {
@@ -449,13 +666,146 @@ const sortedTimetable = computed(() => {
 })
 
 const formatTripMeta = (trip: Trip) => {
+  const flightNumber = normalizeTransportMode(trip.mode) === 'AIR' ? trip.vehicleId : ''
   const parts = [
+    flightNumber ? `${t('SEGMENT.FLIGHT')}: ${flightNumber}` : '',
     trip.platform ? `${t('SEGMENT.PLATFORM')}: ${trip.platform}` : '',
     trip.terminal ? `${t('SEGMENT.TERMINAL')}: ${trip.terminal}` : '',
     trip.gate ? `${t('SEGMENT.GATE')}: ${trip.gate}` : ''
   ].filter(Boolean)
   return parts.join(' / ')
 }
+
+const getTripTransportLabel = (trip: Trip) => {
+  if (normalizeTransportMode(trip.mode) === 'BUS') {
+    const routeName = trip.via || t(trip.name)
+    const busName = getBusTransportName(trip.name)
+    if (!trip.via) return busName
+    return `${busName}（${routeName}）`
+  }
+  if (normalizeTransportMode(trip.mode) === 'AIR') {
+    return String(t(trip.name))
+  }
+  return t(trip.name)
+}
+
+const getBusTransportName = (name: string) => {
+  const translated = String(t(name))
+  if (translated !== name) return translated
+  if (name === 'AMA_TOWN_BUS') return '海士町路線バス'
+  if (name === 'NISHINOSHIMA_TOWN_BUS') return '西ノ島町営バス'
+  if (name === 'CHIBU_VILLAGE_BUS') return '知夫村営バス'
+  if (name === 'OKI_ICHIBATA_BUS') return '隠岐一畑交通'
+  if (name === 'OKINOSHIMA_TOWN_BUS') return '隠岐の島町営バス'
+  if (name === 'ICHIBATA_BUS_CONNECTION') return '一畑バス 隠岐汽船接続バス'
+  if (name === 'OKI_AIRPORT_BUS') return '隠岐空港連絡バス'
+  return translated
+}
+
+const formatVehicleLengthOptionLabel = (length: number) => {
+  const key = getVehicleLengthLabelKey(length)
+  return key ? t(key) : t('VEHICLE_LENGTH_METERS', { meters: length })
+}
+
+const formatVehicleFare = (fare: number | null) => {
+  return typeof fare === 'number' && fare > 0
+    ? `¥${fare.toLocaleString()}`
+    : t('FARE_UNAVAILABLE')
+}
+
+const getFarePortVariants = (port: string): string[] => {
+  if (port === 'HONDO') return ['HONDO', 'HONDO_SHICHIRUI', 'HONDO_SAKAIMINATO']
+  if (port === 'HONDO_SHICHIRUI' || port === 'HONDO_SAKAIMINATO') return [port, 'HONDO']
+  return [port]
+}
+
+const getTripFareRoute = (trip: Trip) => {
+  const departures = getFarePortVariants(trip.departure)
+  const arrivals = getFarePortVariants(trip.arrival)
+
+  for (const dep of departures) {
+    for (const arr of arrivals) {
+      const route = fareStore.getFareByRoute(dep, arr, {
+        date: selectedDate.value,
+        vesselType: 'ferry'
+      })
+      if (route) return route
+    }
+  }
+
+  return undefined
+}
+
+const getTripVehicleFare = (trip: Trip) => {
+  if (!withCar.value || !fareStore.fareMaster || !isVehicleSearchShip(trip.name)) {
+    return null
+  }
+
+  const fareRoute = isOkiKisenVehicleFerry(trip.name)
+    ? getTripFareRoute(trip)
+    : undefined
+
+  return calculateVehicleFareForShip(
+    trip.name,
+    fareRoute,
+    fareStore.fareMaster,
+    vehicleLengthMeters.value
+  )
+}
+
+const saveCurrentTimetableHistory = () => {
+  if (!departure.value || !arrival.value) {
+    return
+  }
+
+  historyStore.addSearchHistory({
+    type: 'timetable',
+    departure: departure.value,
+    arrival: arrival.value,
+    date: selectedDate.value,
+    withCar: withCar.value,
+    ...(withCar.value ? { vehicleLengthMeters: vehicleLengthMeters.value } : {})
+  })
+}
+
+const handleWithCarChange = (value: boolean) => {
+  withCar.value = value
+  saveCurrentTimetableHistory()
+}
+
+watch(withCar, async (enabled) => {
+  if (enabled) {
+    await fareStore.loadFareMaster()
+  }
+})
+
+watch(selectedTransportMode, (mode) => {
+  if (mode !== 'FERRY' && withCar.value) {
+    withCar.value = false
+  }
+
+  const selectedLocations = [departure.value, arrival.value].filter(Boolean)
+  if (mode === 'BUS' && !isRouteCompatibleWithMode(mode, selectedLocations)) {
+    ferryStore.setDeparture('')
+    ferryStore.setArrival('')
+    return
+  }
+
+  const allowedType = mode === 'AIR' ? 'AIRPORT' : 'PORT'
+  if (mode === 'BUS') return
+  if (departure.value && getLocationTypeForCode(departure.value) !== allowedType) {
+    ferryStore.setDeparture('')
+  }
+  if (arrival.value && getLocationTypeForCode(arrival.value) !== allowedType) {
+    ferryStore.setArrival('')
+  }
+})
+
+watch(vehicleLengthMeters, () => {
+  if (withCar.value) {
+    saveCurrentTimetableHistory()
+  }
+})
 
 // 島前3島間のルートかどうかを判定
 const isDozenRoute = computed(() => {
@@ -473,7 +823,7 @@ const showTransferSearchButton = computed(() => {
 
 // Methods
 const handleDateChange = (newDate: Date) => {
-  ferryStore.setSelectedDate(newDate)
+  selectTimetableDate(newDate)
 
   // Add to search history if route is selected
   if (departure.value && arrival.value) {
@@ -481,7 +831,9 @@ const handleDateChange = (newDate: Date) => {
       type: 'timetable',
       departure: departure.value,
       arrival: arrival.value,
-      date: newDate
+      date: newDate,
+      withCar: withCar.value,
+      ...(withCar.value ? { vehicleLengthMeters: vehicleLengthMeters.value } : {})
     })
   }
 }
@@ -495,7 +847,9 @@ const handleDepartureChange = (value: string) => {
       type: 'timetable',
       departure: value,
       arrival: arrival.value,
-      date: selectedDate.value
+      date: selectedDate.value,
+      withCar: withCar.value,
+      ...(withCar.value ? { vehicleLengthMeters: vehicleLengthMeters.value } : {})
     })
   }
 }
@@ -509,7 +863,9 @@ const handleArrivalChange = (value: string) => {
       type: 'timetable',
       departure: departure.value,
       arrival: value,
-      date: selectedDate.value
+      date: selectedDate.value,
+      withCar: withCar.value,
+      ...(withCar.value ? { vehicleLengthMeters: vehicleLengthMeters.value } : {})
     })
   }
 }
@@ -525,7 +881,9 @@ const reverseRoute = () => {
       type: 'timetable',
       departure: arrival.value,
       arrival: departure.value,
-      date: selectedDate.value
+      date: selectedDate.value,
+      withCar: withCar.value,
+      ...(withCar.value ? { vehicleLengthMeters: vehicleLengthMeters.value } : {})
     })
   }
 }
@@ -629,7 +987,7 @@ const getShipStatusAlert = (shipName: string): { hasAlert: boolean; severity: 'w
   // レインボージェット
   if (shipName === 'RAINBOWJET') {
     const fastFerryState = status.ferry?.fastFerryState || status.ferry?.fast_ferry_state
-    if (fastFerryState && !['( in Operation )', '定期運航', '通常運航', '平常運航', 'Normal Operation', 'Normal Service'].includes(fastFerryState)) {
+    if (fastFerryState && !['定期運航', '通常運航', '平常運航', 'Normal Operation', 'Normal Service'].includes(fastFerryState)) {
       if (fastFerryState.includes('欠航') || fastFerryState.includes('Cancelled') || fastFerryState.includes('Canceled')) {
         return { hasAlert: true, severity: 'danger' }
       }
@@ -651,7 +1009,7 @@ const showShipInfo = (shipName: string) => {
 }
 
 const showPortInfo = (portName: string) => {
-  modalTitle.value = t(portName)
+  modalTitle.value = getLocationDisplayName(portName)
   modalType.value = 'port'
   modalShipId.value = ''
   modalPortId.value = portName
@@ -669,6 +1027,36 @@ const handleMapPortClick = (port: any) => {
   } else if (!arrival.value && port.id !== departure.value) {
     handleArrivalChange(port.id)
   }
+}
+
+const handleMapLocationClick = (_location: { id: string; type: LocationType }) => {}
+
+const handleMapLocationSetDeparture = (location: { id: string; type: LocationType }) => {
+  if (location.type !== 'STOP' && location.type !== 'AIRPORT') return
+  handleDepartureChange(location.id)
+}
+
+const handleMapLocationSetArrival = (location: { id: string; type: LocationType }) => {
+  if (location.type !== 'STOP' && location.type !== 'AIRPORT') return
+  handleArrivalChange(location.id)
+}
+
+const handleMapPortSetDeparture = (portId: string) => {
+  handleDepartureChange(portId)
+}
+
+const handleMapPortSetArrival = (portId: string) => {
+  handleArrivalChange(portId)
+}
+
+const handleModalPortSetDeparture = (portId: string) => {
+  handleDepartureChange(portId)
+  modalVisible.value = false
+}
+
+const handleModalPortSetArrival = (portId: string) => {
+  handleArrivalChange(portId)
+  modalVisible.value = false
 }
 
 const handleMapRouteSelect = (route: { from: string; to: string }) => {
@@ -702,7 +1090,11 @@ const navigateToTransit = () => {
       departure: departure.value,
       arrival: arrival.value,
       date: dateStr,
-      time: '00:00'
+      time: '00:00',
+      ...(withCar.value ? {
+        withCar: '1',
+        vehicleLengthMeters: String(vehicleLengthMeters.value)
+      } : {})
     }
   })
 }
@@ -762,7 +1154,10 @@ onMounted(async () => {
 
   if (route.query.date && ferryStore) {
     const value = String(route.query.date)
-    const [year, month, day] = value.split('-').map(v => Number(v))
+    const [yearPart, monthPart, dayPart] = value.split('-')
+    const year = Number(yearPart)
+    const month = Number(monthPart)
+    const day = Number(dayPart)
     if (
       Number.isInteger(year) &&
       Number.isInteger(month) &&
@@ -770,8 +1165,15 @@ onMounted(async () => {
       month >= 1 && month <= 12 &&
       day >= 1 && day <= 31
     ) {
-      ferryStore.setSelectedDate(new Date(year, month - 1, day))
+      selectExplicitTimetableDate(new Date(year, month - 1, day))
     }
+  }
+
+  if (route.query.withCar === '1') {
+    withCar.value = true
+  }
+  if (route.query.vehicleLengthMeters) {
+    vehicleLengthMeters.value = normalizeVehicleLengthMeters(String(route.query.vehicleLengthMeters))
   }
 
   if (ferryStore && ferryStore.timetableData.length === 0) {

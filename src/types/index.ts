@@ -77,7 +77,7 @@ export enum TripStatus {
   Extra = 4,
 }
 
-export type TransportMode = 'FERRY' | 'BUS' | 'AIR'
+export type TransportMode = 'FERRY' | 'BUS' | 'AIR' | 'WALK'
 export type LocationType = 'PORT' | 'STOP' | 'AIRPORT'
 
 // Trip interface
@@ -96,6 +96,9 @@ export interface Trip {
   arrival: string;
   arrivalType?: LocationType;
   arrivalTime: Date | string;
+  activeDays?: number[];
+  addedDates?: string[];
+  removedDates?: string[];
   platform?: string;
   terminal?: string;
   gate?: string;
@@ -187,6 +190,7 @@ export interface RouteSearchParams {
   time: Date;
   mode: "departureTime" | "arrivalTime";
   withCar?: boolean;
+  vehicleLengthMeters?: number;
   exceptFastFerry?: boolean;
 }
 
@@ -274,6 +278,8 @@ export interface TransitSegment {
   gate?: string;
   status: number;
   fare: number;
+  passengerFare?: number;
+  vehicleFare?: number;
 }
 
 export interface TransitRoute {

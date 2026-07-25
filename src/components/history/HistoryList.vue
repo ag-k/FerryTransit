@@ -47,6 +47,7 @@ import { useI18n } from 'vue-i18n'
 import HistoryItem from './HistoryItem.vue'
 import type { SearchHistoryItem } from '~/types/history'
 import { createLogger } from '~/utils/logger'
+import { buildHistorySearchQuery } from '@/utils/historySearch'
 
 const router = useRouter()
 const historyStore = process.client ? useHistoryStore() : null
@@ -73,7 +74,7 @@ const groupedHistory = computed(() => {
         return
       }
       
-      const dateKey = dateObj.toISOString().split('T')[0] // YYYY-MM-DD format
+      const dateKey = dateObj.toISOString().slice(0, 10) // YYYY-MM-DD format
       if (!groupMap.has(dateKey)) {
         groupMap.set(dateKey, [])
       }
@@ -87,7 +88,11 @@ const groupedHistory = computed(() => {
   groupMap.forEach((items, dateKey) => {
     try {
       // Take the first item's searchedAt to get the actual date
-      const firstItemDate = new Date(items[0].searchedAt)
+      const firstItem = items[0]
+      if (!firstItem) {
+        return
+      }
+      const firstItemDate = new Date(firstItem.searchedAt)
       
       // Validate date
       if (isNaN(firstItemDate.getTime())) {
@@ -137,20 +142,9 @@ const groupedHistory = computed(() => {
 })
 
 const handleSearch = (history: SearchHistoryItem) => {
-  // 検索履歴から再検索する場合は、元の検索日時（searchedAt）を使用
-  const searchedAtDate = new Date(history.searchedAt)
-
   router.push({
     path: localePath('/transit'),
-    query: {
-      departure: history.departure,
-      arrival: history.arrival,
-      date: history.date ? new Date(history.date).toISOString().split('T')[0] : undefined,
-      time: history.time ? new Date(history.time).toTimeString().slice(0, 5) : undefined,
-      isArrivalMode: history.isArrivalMode ? '1' : '0',
-      // 検索履歴の日時を使用（ISO形式で渡す）
-      searchedAt: searchedAtDate.toISOString()
-    }
+    query: buildHistorySearchQuery(history)
   })
 }
 

@@ -14,10 +14,15 @@ const derivedDataPath = resolve(
   process.env.IOS_SIM_DERIVED_DATA_PATH ?? 'ios/build/appstore-screenshots'
 )
 const workspacePath = resolve(process.cwd(), 'ios/App/App.xcworkspace')
+const projectPath = resolve(process.cwd(), 'ios/App/App.xcodeproj')
+const xcodeContainerArgs = existsSync(workspacePath)
+  ? ['-workspace', workspacePath]
+  : ['-project', projectPath]
 const scheme = process.env.IOS_SIM_SCHEME ?? 'App'
 const staticRoot = process.env.APPSTORE_STATIC_ROOT ?? '.output/public'
 const skipCapBuild = process.env.IOS_SIM_SKIP_CAP_BUILD === '1'
 const skipXcodeBuild = process.env.IOS_SIM_SKIP_XCODEBUILD === '1'
+const skipXcodeClean = process.env.IOS_SIM_SKIP_XCODE_CLEAN === '1'
 const explicitAppPath = process.env.IOS_SIM_APP_PATH
   ? resolve(process.cwd(), process.env.IOS_SIM_APP_PATH)
   : ''
@@ -462,13 +467,14 @@ const main = async () => {
 
   if (!skipXcodeBuild) {
     run('xcodebuild', [
-      '-workspace', workspacePath,
+      ...xcodeContainerArgs,
       '-scheme', scheme,
       '-configuration', 'Release',
       '-destination', `id=${buildTargetSimulator.udid}`,
       '-derivedDataPath', derivedDataPath,
       'CODE_SIGNING_ALLOWED=NO',
       'CODE_SIGNING_REQUIRED=NO',
+      ...(skipXcodeClean ? [] : ['clean']),
       'build'
     ])
   } else {

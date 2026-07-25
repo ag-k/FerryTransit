@@ -1,5 +1,7 @@
 // https://nuxt.com/docs/api/configuration/nuxt-config
 
+import { resolveFirebaseEmulatorRuntimeConfig } from "./src/config/firebaseRuntimeConfig";
+
 const parseBooleanEnv = (value?: string) => {
   if (!value) {
     return false;
@@ -41,6 +43,10 @@ const pruneAdminPages = (pages: NuxtPageNode[]) => {
   for (let i = pages.length - 1; i >= 0; i--) {
     const page = pages[i];
 
+    if (!page) {
+      continue;
+    }
+
     if (page.path?.startsWith("/admin")) {
       pages.splice(i, 1);
       continue;
@@ -54,13 +60,19 @@ const pruneAdminPages = (pages: NuxtPageNode[]) => {
 
 export default defineNuxtConfig({
   srcDir: "src/",
+  dir: {
+    public: "src/public",
+  },
+  future: {
+    compatibilityVersion: 4,
+  },
   ignore: isCapacitorBuild ? capacitorIgnorePatterns : [],
   compatibilityDate: "2025-05-15",
   devtools: { enabled: true },
 
   experimental: {
     componentIslands: false,
-    treeshakeClientOnly: false,
+    viteEnvironmentApi: true,
   },
 
   // Capacitor（アプリ版）の場合は管理画面を除外
@@ -151,6 +163,9 @@ export default defineNuxtConfig({
         process.env.NUXT_PUBLIC_APP_VERSION ||
         process.env.npm_package_version ||
         "0.0.0",
+      releaseDate:
+        process.env.NUXT_PUBLIC_RELEASE_DATE ||
+        "2026-07-14",
       apiBase:
         process.env.NUXT_PUBLIC_API_BASE ||
         "https://naturebot-lab.com/ferry_transit",
@@ -171,26 +186,16 @@ export default defineNuxtConfig({
         messagingSenderId:
           process.env.NUXT_PUBLIC_FIREBASE_MESSAGING_SENDER_ID || "",
         appId: process.env.NUXT_PUBLIC_FIREBASE_APP_ID || "",
-        measurementId: process.env.NUXT_PUBLIC_FIREBASE_MEASUREMENT_ID || "",
+        measurementId: isCapacitorBuild
+          ? ""
+          : process.env.NUXT_PUBLIC_FIREBASE_MEASUREMENT_ID || "",
         useEmulators: isProductionBuild
           ? false
           : parseBooleanEnv(process.env.NUXT_PUBLIC_FIREBASE_USE_EMULATORS),
-        emulatorHost:
-          process.env.NUXT_PUBLIC_FIREBASE_EMULATOR_HOST || "localhost",
-        ports: {
-          firestore: parseInt(
-            process.env.NUXT_PUBLIC_FIRESTORE_EMULATOR_PORT || "8751"
-          ),
-          auth: parseInt(
-            process.env.NUXT_PUBLIC_FIREBASE_AUTH_EMULATOR_PORT || "9099"
-          ),
-          storage: parseInt(
-            process.env.NUXT_PUBLIC_FIREBASE_STORAGE_EMULATOR_PORT || "9199"
-          ),
-          functions: parseInt(
-            process.env.NUXT_PUBLIC_FIREBASE_FUNCTIONS_EMULATOR_PORT || "55002"
-          ),
-        },
+        ...resolveFirebaseEmulatorRuntimeConfig({
+          isProductionBuild,
+          env: process.env,
+        }),
       },
     },
   },

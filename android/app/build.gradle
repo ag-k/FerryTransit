@@ -1,14 +1,38 @@
 apply plugin: 'com.android.application'
 
+def releaseSigningValues = [
+    keystorePath: System.getenv('FERRYTRANSIT_ANDROID_KEYSTORE_PATH'),
+    storePassword: System.getenv('FERRYTRANSIT_ANDROID_KEYSTORE_PASSWORD'),
+    keyAlias: System.getenv('FERRYTRANSIT_ANDROID_KEY_ALIAS'),
+    keyPassword: System.getenv('FERRYTRANSIT_ANDROID_KEY_PASSWORD')
+]
+def configuredReleaseSigningValues = releaseSigningValues.findAll { key, value -> value?.trim() }
+def hasCompleteReleaseSigning = configuredReleaseSigningValues.size() == releaseSigningValues.size()
+def requestedReleaseArtifact = gradle.startParameter.taskNames.any { taskName ->
+    def normalizedTaskName = taskName.toLowerCase()
+    (normalizedTaskName.contains('bundle') || normalizedTaskName.contains('assemble')) &&
+        normalizedTaskName.contains('release')
+}
+
 android {
     namespace "com.naturebotlab.ferrytransit"
     compileSdk rootProject.ext.compileSdkVersion
+    signingConfigs {
+        if (hasCompleteReleaseSigning) {
+            release {
+                storeFile file(releaseSigningValues.keystorePath)
+                storePassword releaseSigningValues.storePassword
+                keyAlias releaseSigningValues.keyAlias
+                keyPassword releaseSigningValues.keyPassword
+            }
+        }
+    }
     defaultConfig {
         applicationId "com.naturebotlab.ferrytransit"
         minSdkVersion rootProject.ext.minSdkVersion
         targetSdkVersion rootProject.ext.targetSdkVersion
-        versionCode 22000
-        versionName "2.2"
+        versionCode 24001
+        versionName "2.4"
         testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
         aaptOptions {
              // Files and dirs to omit from the packaged assets dir, modified to accommodate modern web apps.
@@ -20,8 +44,30 @@ android {
         release {
             minifyEnabled false
             proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
+            if (hasCompleteReleaseSigning) {
+                signingConfig signingConfigs.release
+            }
         }
     }
+}
+
+if (!configuredReleaseSigningValues.isEmpty() && !hasCompleteReleaseSigning) {
+    def missingNames = releaseSigningValues.findAll { key, value -> !value?.trim() }.keySet().join(', ')
+    throw new GradleException("Android release signing configuration is incomplete. Missing: ${missingNames}")
+}
+
+if (requestedReleaseArtifact && !hasCompleteReleaseSigning) {
+    throw new GradleException(
+        'Android release signing is required. Set FERRYTRANSIT_ANDROID_KEYSTORE_PATH, ' +
+        'FERRYTRANSIT_ANDROID_KEYSTORE_PASSWORD, FERRYTRANSIT_ANDROID_KEY_ALIAS, and ' +
+        'FERRYTRANSIT_ANDROID_KEY_PASSWORD.'
+    )
+}
+
+if (hasCompleteReleaseSigning && !file(releaseSigningValues.keystorePath).isFile()) {
+    throw new GradleException(
+        "Android release keystore was not found: ${releaseSigningValues.keystorePath}"
+    )
 }
 
 repositories {

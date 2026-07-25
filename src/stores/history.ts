@@ -67,12 +67,15 @@ export const useHistoryStore = defineStore('history', () => {
     item: Omit<SearchHistoryItem, 'id' | 'searchedAt'>,
     searchedAt?: Date
   ): void => {
+    const itemWithCar = item.withCar === true
     // 重複チェック（同じ検索条件は最新のもののみ保持）
     const existingIndex = history.value.findIndex(h => 
       h.type === item.type &&
       h.departure === item.departure &&
       h.arrival === item.arrival &&
-      h.isArrivalMode === item.isArrivalMode
+      h.isArrivalMode === item.isArrivalMode &&
+      (h.withCar === true) === itemWithCar &&
+      (!itemWithCar || h.vehicleLengthMeters === item.vehicleLengthMeters)
     )
     
     // 既存の重複エントリを削除
@@ -88,7 +91,7 @@ export const useHistoryStore = defineStore('history', () => {
       } else if (typeof item.time === 'string') {
         // 時刻文字列の場合は、今日の日付と組み合わせてDateオブジェクトを作成
         const today = new Date()
-        const [hours, minutes] = item.time.split(':')
+        const [hours = '0', minutes = '0'] = item.time.split(':')
         convertedTime = new Date(today.getFullYear(), today.getMonth(), today.getDate(), 
                                  parseInt(hours), parseInt(minutes), 0, 0)
       } else {
@@ -160,11 +163,12 @@ export const useHistoryStore = defineStore('history', () => {
           if (item.time instanceof Date) {
             convertedTime = new Date(item.time)
           } else if (typeof item.time === 'string') {
-            // 時刻文字列の場合は、今日の日付と組み合わせてDateオブジェクトを作成
+            // HH:mm のみの場合は今日の日付と組み合わせる。
+            // JSON保存されたISO日時は、その日時として復元して時差による時刻変化を防ぐ。
             const today = new Date()
-            const timeMatch = item.time.match(/(\d{1,2}):(\d{2})/)
+            const timeMatch = item.time.match(/^(\d{1,2}):(\d{2})$/)
             if (timeMatch) {
-              const [, hours, minutes] = timeMatch
+              const [, hours = '0', minutes = '0'] = timeMatch
               convertedTime = new Date(today.getFullYear(), today.getMonth(), today.getDate(), 
                                        parseInt(hours), parseInt(minutes), 0, 0)
             } else {

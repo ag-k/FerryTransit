@@ -15,19 +15,23 @@
         <PortSelector
           v-model="departureProxy"
           class="route-endpoints__selector"
+          :aria-label="$t('_FROM')"
           :placeholder="$t('UI.SEARCH_LOCATION_PLACEHOLDER')"
           :disabled="disabled"
           :disabled-ports="disabledDeparturePorts"
           :hondo-ports="hondoPorts"
           :dozen-ports="dozenPorts"
           :dogo-ports="dogoPorts"
+          :allowed-location-type="allowedLocationType"
+          :show-transport-tabs="showTransportTabs"
+          :preferred-bus-stop-town-source="arrivalProxy"
           margin="none"
           @selectRoute="handleSelectRoute"
         />
         <button
           v-if="departureProxy && !disabled"
           type="button"
-          class="absolute right-2 top-1/2 -translate-y-1/2 p-2 rounded-md text-app-muted hover:text-app-fg hover:bg-app-surface-2 transition-colors touch-manipulation"
+          class="absolute right-0 top-1/2 min-h-12 min-w-12 -translate-y-1/2 rounded-md text-app-muted hover:text-app-fg hover:bg-app-surface-2 transition-colors touch-manipulation flex items-center justify-center"
           :aria-label="$t('CLEAR')"
           :title="$t('CLEAR')"
           data-testid="route-endpoints-clear-departure"
@@ -52,7 +56,7 @@
       <button
         v-if="showVia"
         type="button"
-        class="px-3 py-2 text-sm font-medium text-app-primary hover:underline disabled:opacity-50 disabled:cursor-not-allowed"
+        class="min-h-12 px-3 py-2 text-sm font-medium text-app-primary hover:underline disabled:opacity-50 disabled:cursor-not-allowed"
         :disabled="disabled"
         data-testid="route-endpoints-add-via"
         @click="$emit('addVia')"
@@ -62,7 +66,7 @@
 
       <button
         type="button"
-        class="p-3 text-base text-app-primary dark:text-white hover:bg-app-surface-2 transition-colors touch-manipulation"
+        class="min-h-12 min-w-12 p-3 text-base text-app-primary dark:text-white hover:bg-app-surface-2 transition-colors touch-manipulation flex items-center justify-center"
         title="出発地と到着地を入れ替え"
         aria-label="Reverse route"
         :disabled="disabled"
@@ -89,19 +93,23 @@
         <PortSelector
           v-model="arrivalProxy"
           class="route-endpoints__selector"
+          :aria-label="$t('_TO')"
           :placeholder="$t('UI.SEARCH_LOCATION_PLACEHOLDER')"
           :disabled="disabled"
           :disabled-ports="disabledArrivalPorts"
           :hondo-ports="hondoPorts"
           :dozen-ports="dozenPorts"
           :dogo-ports="dogoPorts"
+          :allowed-location-type="allowedLocationType"
+          :show-transport-tabs="showTransportTabs"
+          :preferred-bus-stop-town-source="departureProxy"
           margin="none"
           @selectRoute="handleSelectRoute"
         />
         <button
           v-if="arrivalProxy && !disabled"
           type="button"
-          class="absolute right-2 top-1/2 -translate-y-1/2 p-2 rounded-md text-app-muted hover:text-app-fg hover:bg-app-surface-2 transition-colors touch-manipulation"
+          class="absolute right-0 top-1/2 min-h-12 min-w-12 -translate-y-1/2 rounded-md text-app-muted hover:text-app-fg hover:bg-app-surface-2 transition-colors touch-manipulation flex items-center justify-center"
           :aria-label="$t('CLEAR')"
           :title="$t('CLEAR')"
           data-testid="route-endpoints-clear-arrival"
@@ -122,6 +130,7 @@
 
 <script setup lang="ts">
 import PortSelector from '@/components/common/PortSelector.vue'
+import type { LocationType } from '@/types'
 import type { FavoriteRoute } from '@/types/favorite'
 
 type Props = {
@@ -132,12 +141,16 @@ type Props = {
   hondoPorts?: string[]
   dozenPorts?: string[]
   dogoPorts?: string[]
+  allowedLocationType?: LocationType | 'ALL'
+  showTransportTabs?: boolean
 }
 
 const props = withDefaults(defineProps<Props>(), {
   // 経由は未実装のためデフォルトでは非表示（必要になったら呼び出し側で showVia を明示的に true にする）
   showVia: false,
-  disabled: false
+  disabled: false,
+  allowedLocationType: 'ALL',
+  showTransportTabs: false
 })
 
 const emit = defineEmits<{
@@ -227,8 +240,8 @@ watch(
   border-radius: 0 !important;
   background: transparent !important;
   /* 右側にクリア(✗)ボタン領域を確保 */
-  padding: 0.75rem 2.75rem 0.75rem 0.75rem !important;
-  min-height: 44px;
+  padding: 0.75rem 3rem 0.75rem 0.75rem !important;
+  min-height: 48px;
 }
 
 .route-endpoints__selector :deep([data-testid="port-selector-button"] .port-selector__caret) {

@@ -1,0 +1,2 @@
+feed_publisher_name,feed_publisher_url,feed_lang,feed_start_date,feed_end_date,feed_version
+知夫村,https://chibu.jp/access.html,ja,20260101,20261231,20230201_20260101-20261231

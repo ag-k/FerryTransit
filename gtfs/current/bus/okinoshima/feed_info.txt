@@ -1,0 +1,2 @@
+feed_publisher_name,feed_publisher_url,feed_lang,feed_start_date,feed_end_date,feed_version
+隠岐の島町,https://www.town.okinoshima.shimane.jp/kanko/tounaikoutuujouhou/7990.html,ja,20260101,20261231,20260302_20260101-20261231

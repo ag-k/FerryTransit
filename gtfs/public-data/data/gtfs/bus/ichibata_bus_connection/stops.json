@@ -1,0 +1,62 @@
+[
+  {
+    "stopId": "matsue_station",
+    "code": "matsue_station",
+    "name": "松江駅",
+    "description": "松江駅前バスターミナル9番のりば",
+    "lat": 35.464361,
+    "lon": 133.06285,
+    "zoneId": "",
+    "url": "",
+    "locationType": 0,
+    "platformCode": ""
+  },
+  {
+    "stopId": "fuzoku_gakuen_iriguchi",
+    "code": "fuzoku_gakuen_iriguchi",
+    "name": "附属学園入口",
+    "description": "松江駅発の接続バス経由停留所",
+    "lat": 35.47946100000006,
+    "lon": 133.063467,
+    "zoneId": "",
+    "url": "",
+    "locationType": 0,
+    "platformCode": ""
+  },
+  {
+    "stopId": "rainbow_plaza_mae",
+    "code": "rainbow_plaza_mae",
+    "name": "レインボープラザ前",
+    "description": "松江駅行き接続バス経由停留所",
+    "lat": 35.48044134431981,
+    "lon": 133.06465342327292,
+    "zoneId": "",
+    "url": "",
+    "locationType": 0,
+    "platformCode": ""
+  },
+  {
+    "stopId": "shichirui_port",
+    "code": "shichirui_port",
+    "name": "七類港",
+    "description": "フェリーはフェリーターミナル正面バス停、高速船は接岸岸壁そば",
+    "lat": 35.57113300000003,
+    "lon": 133.23002099999997,
+    "zoneId": "",
+    "url": "",
+    "locationType": 0,
+    "platformCode": ""
+  },
+  {
+    "stopId": "sakaiminato_port",
+    "code": "sakaiminato_port",
+    "name": "境港",
+    "description": "フェリーはJR境港駅前バスのりば、高速船は接岸岸壁そば",
+    "lat": 35.54510346994129,
+    "lon": 133.22338314132912,
+    "zoneId": "",
+    "url": "",
+    "locationType": 0,
+    "platformCode": ""
+  }
+]

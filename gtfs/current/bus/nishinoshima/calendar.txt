@@ -1,0 +1,7 @@
+service_id,monday,tuesday,wednesday,thursday,friday,saturday,sunday,start_date,end_date
+daily,1,1,1,1,1,1,1,20260301,20261231
+star_weekday_plus_summer,1,1,1,1,1,0,0,20260301,20261231
+holiday_direct_except_summer,0,0,0,0,0,1,1,20260301,20261231
+kuniga_spring_fall,1,1,1,1,1,1,1,20260415,20261021
+kuniga_summer,1,1,1,1,1,1,1,20260701,20260831
+range_0808_0816,1,1,1,1,1,1,1,20260808,20260816

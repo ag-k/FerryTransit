@@ -10,16 +10,11 @@
       <h3 class="sr-only">{{ $t('SEARCH_CONDITIONS') }}</h3>
       <!-- Port Selection -->
       <div class="mb-3">
-          <TransportModeFilter
-            v-if="transportModeOptions.length > 1"
-            v-model="selectedTransportMode"
-            :options="transportModeOptions"
-            class="mb-3"
-          />
           <!-- Mobile/PC: 添付デザインに合わせた独自UIに統一 -->
           <RouteEndpointsSelector
             :departure="departure"
             :arrival="arrival"
+            show-transport-tabs
             @update:departure="departure = $event"
             @update:arrival="arrival = $event"
             @reverse="reverseRoute"
@@ -30,7 +25,13 @@
       <div class="grid md:grid-cols-2 gap-3 mb-3">
         <!-- Date Selection -->
         <div>
-          <DatePicker v-model="date" :min-date="today" margin="none" size="compact" />
+          <DatePicker
+            :model-value="date"
+            :min-date="today"
+            :aria-label="$t('DATE')"
+            margin="none"
+            size="compact"
+            @update:model-value="handleTransitDateChange" />
         </div>
 
         <!-- Time Selection -->
@@ -39,7 +40,7 @@
           <div class="flex">
             <select
 v-model="isArrivalMode"
-              class="px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-l-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:text-white"
+              class="min-h-12 px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-l-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:text-white"
               style="min-width: 140px"
               :aria-label="$t('TIME')"
             >
@@ -48,8 +49,34 @@ v-model="isArrivalMode"
             </select>
             <input
 :id="timeInputId" v-model="time" type="time"
-              class="flex-1 px-3 py-2 border border-l-0 border-gray-300 dark:border-gray-600 rounded-r-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 bg-white dark:bg-white text-gray-900 dark:text-gray-900">
+              :aria-label="$t(isArrivalMode ? 'ARRIVAL_TIME' : 'DEPARTURE_TIME')"
+              class="min-h-12 flex-1 px-3 py-2 border border-l-0 border-gray-300 dark:border-gray-600 rounded-r-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 bg-white dark:bg-white text-gray-900 dark:text-gray-900">
           </div>
+        </div>
+      </div>
+
+      <!-- Vehicle boarding option -->
+      <div class="mb-3 rounded-md border border-app-border bg-app-surface px-4 py-3">
+        <ToggleSwitch
+          data-testid="transit-with-car-toggle"
+          :checked="withCar"
+          :label="$t('VIA_CAR')"
+          @update:checked="handleWithCarChange"
+        />
+        <div v-if="withCar" class="mt-3 max-w-xs">
+          <label :for="vehicleLengthSelectId" class="block text-sm font-medium text-app-muted mb-1">
+            {{ $t('VEHICLE_SIZE') }}
+          </label>
+          <select
+            :id="vehicleLengthSelectId"
+            v-model.number="vehicleLengthMeters"
+            data-testid="transit-vehicle-length-select"
+            class="min-h-12 w-full px-3 py-2 text-sm border border-gray-300 dark:border-gray-600 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 bg-white dark:bg-gray-700 dark:text-white"
+          >
+            <option v-for="length in vehicleLengthOptions" :key="length" :value="length">
+              {{ formatVehicleLengthOptionLabel(length) }}
+            </option>
+          </select>
         </div>
       </div>
 
@@ -87,7 +114,7 @@ stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
               <select
                 :id="sortSelectId"
                 v-model="sortOption"
-                class="w-full px-3 py-2 text-sm font-medium rounded-md border border-app-primary text-app-primary bg-app-surface dark:bg-slate-700 dark:text-white dark:border-slate-500 transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-app-primary/60"
+                class="min-h-12 w-full px-3 py-2 text-sm font-medium rounded-md border border-app-primary text-app-primary bg-app-surface dark:bg-slate-700 dark:text-white dark:border-slate-500 transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-app-primary/60"
               >
                 <option v-for="option in sortOptions" :key="option.value" :value="option.value">
                   {{ $t(option.labelKey) }}
@@ -98,7 +125,7 @@ stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
               <button
 v-for="option in sortOptions" :key="option.value" type="button" role="tab"
                 :aria-selected="sortOption === option.value"
-                class="px-3 py-2 text-sm font-medium rounded-md border transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-app-primary/60 flex items-center justify-center"
+                class="min-h-12 px-3 py-2 text-sm font-medium rounded-md border transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-app-primary/60 flex items-center justify-center"
                 :class="sortOption === option.value
                   ? 'bg-app-primary text-white border-app-primary shadow-sm'
                   : 'border-app-primary text-app-primary bg-app-surface dark:bg-slate-700 dark:text-white dark:border-slate-500 hover:bg-app-primary/10 dark:hover:bg-slate-600'"
@@ -136,6 +163,7 @@ v-for="option in sortOptions" :key="option.value" type="button" role="tab"
                 <span class="text-sm text-app-fg truncate" data-testid="transit-header-summary">
                   {{ calculateDuration(route.departureTime, route.arrivalTime) }} /
                   <span v-if="route.totalFare > 0">¥{{ route.totalFare.toLocaleString() }}</span>
+                  <span v-else-if="isWalkOnlyRoute(route)" class="text-app-muted">-</span>
                   <span v-else class="text-yellow-700 dark:text-yellow-300">{{ $t('FARE_UNAVAILABLE') }}</span>
                 </span>
               </div>
@@ -193,12 +221,12 @@ stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                   <td class="py-2 pl-4">
                     <a
 href="#" class="text-app-primary dark:text-white group inline-flex items-center gap-2 flex-wrap"
-                      @click.prevent="showPortInfo(route.segments[0].departure)">
+                      @click.prevent="showPortInfo(getRouteDeparture(route))">
                       <span class="group-hover:underline inline-flex items-center gap-2">
-                        <LocationTypeIcon :type="resolveLocationType(route.segments[0].departureType)" />
-                        <span>{{ getPortLabelParts(route.segments[0].departure).name }}</span>
+                        <LocationTypeIcon :type="resolveLocationType(getRouteDepartureType(route))" />
+                        <span>{{ getPortLabelParts(getRouteDeparture(route)).name }}</span>
                       </span>
-                      <PortBadges :badges="getPortLabelParts(route.segments[0].departure).badges" class="flex flex-wrap gap-1" />
+                      <PortBadges :badges="getPortLabelParts(getRouteDeparture(route)).badges" class="flex flex-wrap gap-1" />
                     </a>
                   </td>
                   <td class="py-2"></td>
@@ -215,8 +243,10 @@ href="#" class="text-app-primary dark:text-white group inline-flex items-center 
                       <div class="flex items-center">
                         <!-- 欠航アイコン -->
                         <button
-v-if="segment.status === 2" type="button" data-test="cancel-status-icon"
-                          class="mr-2 inline-flex items-center text-red-600 dark:text-red-300"
+                          v-if="segment.status === 2"
+                          type="button"
+                          data-test="cancel-status-icon"
+                          class="mr-2 inline-flex items-center rounded-full p-1 text-red-600 transition-colors hover:bg-red-50 hover:ring-2 hover:ring-red-300 hover:shadow-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-red-500 dark:text-red-300 dark:hover:bg-red-900/30 dark:hover:ring-red-400"
                           :title="$t('OPERATION_STATUS')"
                           aria-label="運航状況を見る"
                           @click.stop="showOperationStatus(segment.ship)">
@@ -226,8 +256,10 @@ v-if="segment.status === 2" type="button" data-test="cancel-status-icon"
                         </button>
                         <!-- 警告/変更アイコン -->
                         <button
-v-else-if="segment.status === 3" type="button" data-test="warning-status-icon"
-                          class="mr-2 inline-flex items-center text-yellow-600 dark:text-yellow-300"
+                          v-else-if="segment.status === 3"
+                          type="button"
+                          data-test="warning-status-icon"
+                          class="mr-2 inline-flex items-center rounded-full p-1 text-yellow-600 transition-colors hover:bg-yellow-50 hover:ring-2 hover:ring-yellow-300 hover:shadow-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-yellow-500 dark:text-yellow-300 dark:hover:bg-yellow-900/30 dark:hover:ring-yellow-400"
                           :title="$t('OPERATION_STATUS')"
                           aria-label="運航状況を見る"
                           @click.stop="showOperationStatus(segment.ship)">
@@ -237,8 +269,10 @@ v-else-if="segment.status === 3" type="button" data-test="warning-status-icon"
                         </button>
                         <!-- 運航再開アイコン -->
                         <button
-v-else-if="segment.status === 4" type="button" data-test="resumed-status-icon"
-                          class="mr-2 inline-flex items-center text-green-600 dark:text-green-300"
+                          v-else-if="segment.status === 4"
+                          type="button"
+                          data-test="resumed-status-icon"
+                          class="mr-2 inline-flex items-center rounded-full p-1 text-green-600 transition-colors hover:bg-green-50 hover:ring-2 hover:ring-green-300 hover:shadow-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-green-500 dark:text-green-300 dark:hover:bg-green-900/30 dark:hover:ring-green-400"
                           :title="$t('OPERATION_STATUS')"
                           aria-label="運航状況を見る"
                           @click.stop="showOperationStatus(segment.ship)">
@@ -251,11 +285,11 @@ v-else-if="segment.status === 4" type="button" data-test="resumed-status-icon"
                           v-else-if="getShipStatusAlert(segment.ship)"
                           type="button"
                           data-test="ship-status-alert-icon"
-                          class="mr-2 inline-flex items-center"
+                          class="mr-2 inline-flex items-center rounded-full p-1 transition-colors hover:shadow-sm focus-visible:outline-none focus-visible:ring-2"
                           :class="{
-                            'text-red-600 dark:text-red-300': getShipStatusAlert(segment.ship)?.severity === 'danger',
-                            'text-yellow-600 dark:text-yellow-300': getShipStatusAlert(segment.ship)?.severity === 'warning',
-                            'text-green-600 dark:text-green-300': getShipStatusAlert(segment.ship)?.severity === 'info'
+                            'text-red-600 hover:bg-red-50 hover:ring-2 hover:ring-red-300 focus-visible:ring-red-500 dark:text-red-300 dark:hover:bg-red-900/30 dark:hover:ring-red-400': getShipStatusAlert(segment.ship)?.severity === 'danger',
+                            'text-yellow-600 hover:bg-yellow-50 hover:ring-2 hover:ring-yellow-300 focus-visible:ring-yellow-500 dark:text-yellow-300 dark:hover:bg-yellow-900/30 dark:hover:ring-yellow-400': getShipStatusAlert(segment.ship)?.severity === 'warning',
+                            'text-green-600 hover:bg-green-50 hover:ring-2 hover:ring-green-300 focus-visible:ring-green-500 dark:text-green-300 dark:hover:bg-green-900/30 dark:hover:ring-green-400': getShipStatusAlert(segment.ship)?.severity === 'info'
                           }"
                           :title="$t('OPERATION_STATUS')"
                           aria-label="運航状況を見る"
@@ -268,10 +302,24 @@ v-else-if="segment.status === 4" type="button" data-test="resumed-status-icon"
                         <div class="flex flex-col">
                           <div class="flex items-center gap-2 flex-wrap">
                             <a
-href="#" class="text-app-primary dark:text-white hover:underline"
+v-if="normalizeTransportMode(segment.mode) !== 'WALK'"
+href="#" class="inline-flex items-center gap-1.5 text-app-primary dark:text-white hover:underline"
                               @click.prevent="showShipInfo(segment.ship)">
-                              🚢 {{ $t(segment.ship) }}
+                              <Icon
+                                :name="getSegmentTransportIcon(segment)"
+                                class="h-4 w-4 shrink-0"
+                                aria-hidden="true"
+                              />
+                              <span>{{ $t(segment.ship) }}</span>
                             </a>
+                            <span v-else class="inline-flex items-center gap-1.5 text-app-muted">
+                              <Icon
+                                :name="getSegmentTransportIcon(segment)"
+                                class="h-4 w-4 shrink-0"
+                                aria-hidden="true"
+                              />
+                              <span>{{ $t(segment.ship) }}</span>
+                            </span>
                             <a
                               v-if="segment.ship === 'RAINBOWJET'"
                               :href="rainbowJetSeatAvailabilityUrl"
@@ -290,7 +338,11 @@ href="#" class="text-app-primary dark:text-white hover:underline"
                       </div>
                     </td>
                     <td class="py-2 text-app-fg">
-                    <span v-if="segment.fare > 0">¥{{ segment.fare.toLocaleString() }}</span>
+                    <span v-if="segment.fare > 0">
+                      <span v-if="withCar" class="block text-xs text-app-muted">{{ $t('VEHICLE_FARE_WITH_DRIVER') }}</span>
+                      ¥{{ segment.fare.toLocaleString() }}
+                    </span>
+                    <span v-else-if="normalizeTransportMode(segment.mode) === 'WALK'" class="text-app-muted">-</span>
                     <span v-else class="text-app-muted">{{ $t('FARE_UNAVAILABLE') }}</span>
                   </td>
                   </tr>
@@ -298,7 +350,7 @@ href="#" class="text-app-primary dark:text-white hover:underline"
                   <!-- Transfer Port (if not last segment) -->
                   <tr v-if="segIndex < route.segments.length - 1" class="bg-app-surface-2/60">
                     <td class="py-2 pl-4 pr-4 text-left text-app-fg whitespace-pre-line align-middle">
-                      {{ formatTransferPortTimes(segment.arrivalTime, route.segments[segIndex + 1].departureTime) }}
+                      {{ formatTransferPortTimes(segment.arrivalTime, getNextDepartureTime(route, segIndex)) }}
                     </td>
                     <td class="py-2 pl-4 align-middle">
                       <div class="flex items-center flex-wrap gap-x-2">
@@ -312,8 +364,7 @@ href="#" class="text-app-primary dark:text-white group inline-flex items-center 
                           <PortBadges :badges="getPortLabelParts(segment.arrival).badges" class="flex flex-wrap gap-1" />
                         </a>
                         <span class="text-xs text-app-muted">
-                          ({{ $t('TRANSFER') }}) {{ formatTransferWaitTime(segment.arrivalTime, route.segments[segIndex +
-                            1].departureTime) }}
+                          ({{ $t('TRANSFER') }}) {{ formatTransferWaitTime(segment.arrivalTime, getNextDepartureTime(route, segIndex)) }}
                         </span>
                       </div>
                     </td>
@@ -327,16 +378,20 @@ href="#" class="text-app-primary dark:text-white group inline-flex items-center 
                   <td class="py-2 pl-4">
                     <a
 href="#" class="text-app-primary dark:text-white group inline-flex items-center gap-2 flex-wrap"
-                      @click.prevent="showPortInfo(route.segments[route.segments.length - 1].arrival)">
+                      @click.prevent="showPortInfo(getRouteArrival(route))">
                       <span class="group-hover:underline inline-flex items-center gap-2">
-                        <LocationTypeIcon :type="resolveLocationType(route.segments[route.segments.length - 1].arrivalType)" />
-                        <span>{{ getPortLabelParts(route.segments[route.segments.length - 1].arrival).name }}</span>
+                        <LocationTypeIcon :type="resolveLocationType(getRouteArrivalType(route))" />
+                        <span>{{ getPortLabelParts(getRouteArrival(route)).name }}</span>
                       </span>
-                      <PortBadges :badges="getPortLabelParts(route.segments[route.segments.length - 1].arrival).badges" class="flex flex-wrap gap-1" />
+                      <PortBadges :badges="getPortLabelParts(getRouteArrival(route)).badges" class="flex flex-wrap gap-1" />
                     </a>
                   </td>
                   <td class="py-2 font-medium text-app-fg">
-                    <span v-if="route.totalFare > 0">{{ $t('TOTAL') }}: ¥{{ route.totalFare.toLocaleString() }}</span>
+                    <span v-if="route.totalFare > 0">
+                      <span v-if="withCar" class="block text-xs font-normal text-app-muted">{{ $t('VEHICLE_FARE_WITH_DRIVER') }}</span>
+                      {{ $t('TOTAL') }}: ¥{{ route.totalFare.toLocaleString() }}
+                    </span>
+                    <span v-else-if="isWalkOnlyRoute(route)" class="text-app-muted">-</span>
                     <span v-else class="text-app-muted">{{ $t('FARE_UNAVAILABLE') }}</span>
                   </td>
                 </tr>
@@ -401,7 +456,14 @@ v-else-if="hasSearched && !isSearching"
                 </div>
                 <div class="md:col-span-1 text-center">
                   <div class="mt-2 dark:text-gray-300">→</div>
-                  <small class="text-gray-500 dark:text-gray-300">🚢 {{ $t(segment.ship) }}</small>
+                  <small class="inline-flex items-center justify-center gap-1.5 text-gray-500 dark:text-gray-300">
+                    <Icon
+                      :name="getSegmentTransportIcon(segment)"
+                      class="h-4 w-4 shrink-0"
+                      aria-hidden="true"
+                    />
+                    <span>{{ $t(segment.ship) }}</span>
+                  </small>
                   <small v-if="formatSegmentMeta(segment)" class="text-gray-500 dark:text-gray-300 block mt-1">
                     {{ formatSegmentMeta(segment) }}
                   </small>
@@ -420,7 +482,11 @@ v-else-if="hasSearched && !isSearching"
               <div class="mt-2">
                 <small class="text-gray-500 dark:text-gray-300">
                   {{ $t('FARE') }}: 
-                  <span v-if="segment.fare > 0">¥{{ segment.fare.toLocaleString() }}</span>
+                  <span v-if="segment.fare > 0">
+                    <span v-if="withCar">{{ $t('VEHICLE_FARE_WITH_DRIVER') }}: </span>
+                    ¥{{ segment.fare.toLocaleString() }}
+                  </span>
+                  <span v-else-if="normalizeTransportMode(segment.mode) === 'WALK'" class="text-gray-500">-</span>
                   <span v-else class="text-gray-500">{{ $t('FARE_UNAVAILABLE') }}</span>
                 </small>
               </div>
@@ -436,7 +502,11 @@ v-else-if="hasSearched && !isSearching"
             </div>
             <div class="text-right dark:text-gray-300">
               <strong>{{ $t('TOTAL_FARE') }}:</strong>
-              <span v-if="selectedRoute.totalFare > 0">¥{{ selectedRoute.totalFare.toLocaleString() }}</span>
+              <span v-if="selectedRoute.totalFare > 0">
+                <span v-if="withCar">{{ $t('VEHICLE_FARE_WITH_DRIVER') }}: </span>
+                ¥{{ selectedRoute.totalFare.toLocaleString() }}
+              </span>
+              <span v-else-if="isWalkOnlyRoute(selectedRoute)" class="text-gray-500">-</span>
               <span v-else class="text-gray-500">{{ $t('FARE_UNAVAILABLE') }}</span>
             </div>
           </div>
@@ -449,7 +519,7 @@ v-else-if="hasSearched && !isSearching"
 
     <!-- Port Info Modal -->
     <CommonShipModal
-v-model:visible="showPortModal" :title="getPortDisplayName(modalPortId)" type="port"
+v-model:visible="showPortModal" :title="getPortLabelParts(modalPortId).name" type="port"
       :port-id="modalPortId" :port-zoom="modalPortZoom" />
 
     <!-- Route Map Modal -->
@@ -464,13 +534,15 @@ v-model:visible="showPortModal" :title="getPortDisplayName(modalPortId)" type="p
 </template>
 
 <script setup lang="ts">
-import { nextTick, getCurrentInstance, markRaw } from 'vue'
+import { computed, getCurrentInstance, markRaw, nextTick, onMounted, ref, watch } from 'vue'
+import { useHead, useI18n, useNuxtApp, useRoute } from '#imports'
 import { useRouteSearch } from '@/composables/useRouteSearch'
 import { useAnalytics } from '@/composables/useAnalytics'
 import { useHistoryStore } from '@/stores/history'
 import { useFerryStore } from '@/stores/ferry'
 import RouteEndpointsSelector from '@/components/common/RouteEndpointsSelector.vue'
 import DatePicker from '@/components/common/DatePicker.vue'
+import { useTodayRollover } from '@/composables/useTodayRollover'
 import CommonShipModal from '@/components/common/ShipModal.vue'
 import OperationStatusModal from '@/components/common/OperationStatusModal.vue'
 import StatusAlerts from '@/components/common/StatusAlerts.vue'
@@ -480,12 +552,23 @@ import RouteMapModal from '@/components/map/RouteMapModal.vue'
 import Card from '@/components/common/Card.vue'
 import PrimaryButton from '@/components/common/PrimaryButton.vue'
 import Badge from '@/components/common/Badge.vue'
-import TransportModeFilter from '@/components/common/TransportModeFilter.vue'
+import ToggleSwitch from '@/components/common/ToggleSwitch.vue'
 import LocationTypeIcon from '@/components/common/LocationTypeIcon.vue'
 import type { LocationType, TransportMode, TransitRoute, TransitSegment } from '@/types'
 import { createLogger } from '~/utils/logger'
 import { getPortMapZoom } from '@/utils/portMapZoom'
 import { isTodayJst } from '@/utils/jstDate'
+import {
+  DEFAULT_VEHICLE_LENGTH_METERS,
+  VEHICLE_LENGTH_OPTIONS,
+  getVehicleLengthLabelKey,
+  normalizeVehicleLengthMeters
+} from '@/utils/vehicleFare'
+import {
+  getBusStopPortBadgeLabel,
+  getBusStopTownLabelKey,
+  getLocationTypeForCode
+} from '@/utils/gtfsBusTimetable'
 
 // Stores
 const ferryStore = process.client ? useFerryStore() : null
@@ -501,6 +584,10 @@ const timeInputId = 'transit-time-input'
 const sortSelectId = 'transit-sort-select'
 const isArrivalMode = ref(false)
 const historySearchedAt = ref<Date | null>(null)
+const withCar = ref(false)
+const vehicleLengthMeters = ref(DEFAULT_VEHICLE_LENGTH_METERS)
+const vehicleLengthSelectId = 'transit-vehicle-length-select'
+const vehicleLengthOptions = VEHICLE_LENGTH_OPTIONS
 
 // Watch for changes in departure/arrival and update ferryStore
 watch(departure, (newVal) => {
@@ -533,6 +620,7 @@ const isSearching = ref(false)
 const hasSearched = ref(false)
 const searchResults = ref<TransitRoute[]>([])
 const searchDateForResults = ref<Date | null>(null)
+const isArrivalModeForResults = ref(false)
 const displayLimit = ref(5)
 const showDetailsModal = ref(false)
 const selectedRoute = ref<TransitRoute | null>(null)
@@ -547,28 +635,39 @@ const sortOptions: Array<{ value: SortKey; labelKey: string }> = [
 ]
 
 const sortOption = ref<SortKey>('recommended')
-const transportModeOrder: TransportMode[] = ['FERRY', 'BUS', 'AIR']
-type TransportModeFilterValue = TransportMode | 'ALL'
-const selectedTransportMode = ref<TransportModeFilterValue>('ALL')
 
 // Composables
 const { searchRoutes, formatTime, calculateDuration, getPortDisplayName } = useRouteSearch()
 const { trackSearch } = useAnalytics()
 const { t } = useI18n()
 
+const getTownBadgeLabel = (labelKey: string): string => {
+  const translated = String(t(labelKey))
+  if (translated !== labelKey) return translated
+  if (labelKey === 'AMA_CHO') return '海士町'
+  if (labelKey === 'NISHINOSHIMA_CHO') return '西ノ島町'
+  if (labelKey === 'CHIBU_MURA') return '知夫村'
+  if (labelKey === 'OKINOSHIMA_CHO') return '隠岐の島町'
+  return translated
+}
+
 const getPortLabelParts = (portId?: string) => {
   if (!portId) {
     return { name: '-', badges: [] as string[] }
   }
-  const translated = String(t(portId))
+  const storeLabel = ferryStore?.getLocationLabel(portId)
+  const translated = storeLabel || String(t(portId))
   const label = translated && translated !== portId ? translated : getPortDisplayName(portId) || portId
   const parenRegex = /[（(]([^）)]+)[）)]/g
-  const badges: string[] = []
+  const townLabelKey = getLocationTypeForCode(portId) === 'STOP' ? getBusStopTownLabelKey(portId) : null
+  const badges: string[] = townLabelKey ? [getTownBadgeLabel(townLabelKey)] : []
+  const portBadgeLabel = getBusStopPortBadgeLabel(portId)
+  if (portBadgeLabel) badges.push(portBadgeLabel)
 
   let match = parenRegex.exec(label)
   while (match) {
     const value = match[1]?.trim()
-    if (value) badges.push(value)
+    if (value && !badges.includes(value)) badges.push(value)
     match = parenRegex.exec(label)
   }
 
@@ -581,13 +680,54 @@ const getPortLabelParts = (portId?: string) => {
 
 const resolveLocationType = (value?: LocationType) => value ?? 'PORT'
 
+const getRouteFirstSegment = (route: TransitRoute): TransitSegment | undefined => {
+  return route.segments[0]
+}
+
+const getRouteLastSegment = (route: TransitRoute): TransitSegment | undefined => {
+  return route.segments[route.segments.length - 1]
+}
+
+const getRouteDeparture = (route: TransitRoute): string => {
+  return getRouteFirstSegment(route)?.departure ?? ''
+}
+
+const getRouteDepartureType = (route: TransitRoute): LocationType | undefined => {
+  return getRouteFirstSegment(route)?.departureType
+}
+
+const getRouteArrival = (route: TransitRoute): string => {
+  return getRouteLastSegment(route)?.arrival ?? ''
+}
+
+const getRouteArrivalType = (route: TransitRoute): LocationType | undefined => {
+  return getRouteLastSegment(route)?.arrivalType
+}
+
+const getNextDepartureTime = (route: TransitRoute, segmentIndex: number): Date => {
+  return route.segments[segmentIndex + 1]?.departureTime ?? route.segments[segmentIndex]?.arrivalTime ?? route.arrivalTime
+}
+
 const formatSegmentMeta = (segment: TransitSegment) => {
+  const flightNumber = normalizeTransportMode(segment.mode) === 'AIR'
+    ? (segment.flightNumber || segment.vehicleId)
+    : ''
   const parts = [
+    flightNumber ? `${t('SEGMENT.FLIGHT')}: ${flightNumber}` : '',
     segment.platform ? `${t('SEGMENT.PLATFORM')}: ${segment.platform}` : '',
     segment.terminal ? `${t('SEGMENT.TERMINAL')}: ${segment.terminal}` : '',
     segment.gate ? `${t('SEGMENT.GATE')}: ${segment.gate}` : ''
   ].filter(Boolean)
   return parts.join(' / ')
+}
+
+const formatVehicleLengthOptionLabel = (length: number) => {
+  const key = getVehicleLengthLabelKey(length)
+  return key ? t(key) : t('VEHICLE_LENGTH_METERS', { meters: length })
+}
+
+const handleWithCarChange = (value: boolean) => {
+  withCar.value = value
 }
 
 const hasCancelledSegment = (route: TransitRoute): boolean => {
@@ -596,6 +736,42 @@ const hasCancelledSegment = (route: TransitRoute): boolean => {
 
 const hasChangedSegment = (route: TransitRoute): boolean => {
   return Array.isArray(route?.segments) && route.segments.some(s => s.status === 3)
+}
+
+const compareByRecommended = (a: TransitRoute, b: TransitRoute): number => {
+  const cancelledDiff = Number(hasCancelledSegment(a)) - Number(hasCancelledSegment(b))
+  if (cancelledDiff !== 0) {
+    return cancelledDiff
+  }
+
+  if (isArrivalModeForResults.value) {
+    const departureDiff = b.departureTime.getTime() - a.departureTime.getTime()
+    if (departureDiff !== 0) {
+      return departureDiff
+    }
+
+    const arrivalDiff = a.arrivalTime.getTime() - b.arrivalTime.getTime()
+    if (arrivalDiff !== 0) {
+      return arrivalDiff
+    }
+  } else {
+    const arrivalDiff = a.arrivalTime.getTime() - b.arrivalTime.getTime()
+    if (arrivalDiff !== 0) {
+      return arrivalDiff
+    }
+
+    const departureDiff = b.departureTime.getTime() - a.departureTime.getTime()
+    if (departureDiff !== 0) {
+      return departureDiff
+    }
+  }
+
+  const transferDiff = a.transferCount - b.transferCount
+  if (transferDiff !== 0) {
+    return transferDiff
+  }
+
+  return a.totalFare - b.totalFare
 }
 
 const cloneRouteForState = (route: TransitRoute): TransitRoute => {
@@ -651,9 +827,18 @@ if (instance?.proxy) {
   })
 }
 
-// Constants
-const today = new Date()
-today.setHours(0, 0, 0, 0)
+const {
+  today,
+  selectDate: selectTransitDate,
+  selectExplicitDate: selectExplicitTransitDate
+} = useTodayRollover({
+  selectedDate: date,
+  setSelectedDate: value => { date.value = value }
+})
+
+const handleTransitDateChange = (value: Date) => {
+  selectTransitDate(value)
+}
 
 // Computed
 const canSearch = computed(() => {
@@ -663,84 +848,29 @@ const canSearch = computed(() => {
 })
 
 const normalizeTransportMode = (mode?: TransportMode | string): TransportMode => {
-  if (mode === 'BUS' || mode === 'AIR' || mode === 'FERRY') return mode
+  if (mode === 'BUS' || mode === 'AIR' || mode === 'FERRY' || mode === 'WALK') return mode
   return 'FERRY'
 }
 
-const availableTransportModes = computed(() => {
-  const modes = new Set<TransportMode>()
-  for (const route of searchResults.value) {
-    for (const segment of route.segments) {
-      modes.add(normalizeTransportMode(segment.mode))
-    }
-  }
-  return transportModeOrder.filter(mode => modes.has(mode))
-})
+const getSegmentTransportIcon = (segment: TransitSegment) => {
+  const mode = normalizeTransportMode(segment.mode)
+  if (mode === 'BUS') return 'mdi:bus'
+  if (mode === 'WALK') return 'mdi:walk'
+  if (mode === 'AIR') return 'mdi:airplane'
+  return 'mdi:ferry'
+}
 
-const transportModeOptions = computed(() => {
-  if (availableTransportModes.value.length <= 1) return []
-  return ['ALL', ...availableTransportModes.value]
-})
+const isWalkOnlyRoute = (route: TransitRoute): boolean => {
+  return route.segments.length > 0 &&
+    route.segments.every(segment => normalizeTransportMode(segment.mode) === 'WALK')
+}
 
-watch(transportModeOptions, (options) => {
-  if (!options.length) {
-    selectedTransportMode.value = 'ALL'
-    return
-  }
-  if (!options.includes(selectedTransportMode.value)) {
-    selectedTransportMode.value = 'ALL'
-  }
-})
-
-const filteredResults = computed(() => {
-  if (selectedTransportMode.value === 'ALL' || transportModeOptions.value.length === 0) {
-    return searchResults.value
-  }
-  return searchResults.value.filter(route =>
-    route.segments.some(segment => normalizeTransportMode(segment.mode) === selectedTransportMode.value)
-  )
-})
-
-watch(selectedTransportMode, () => {
-  displayLimit.value = 5
-})
+const filteredResults = computed(() => searchResults.value)
 
 const sortedResults = computed(() => {
   const routes = [...filteredResults.value]
   if (routes.length <= 1) {
     return routes
-  }
-
-  // まず出発時刻順にソート（最適化のための準備）
-  routes.sort((a, b) => {
-    const departureDiff = a.departureTime.getTime() - b.departureTime.getTime()
-    if (departureDiff !== 0) {
-      return departureDiff
-    }
-    // 出発時刻が同じ場合は到着時刻の早い順
-    return a.arrivalTime.getTime() - b.arrivalTime.getTime()
-  })
-
-  // 同じ出発時刻でより遅く到着する結果を除外
-  const filteredRoutes: TransitRoute[] = []
-  const departureTimeGroups = new Map<number, TransitRoute[]>()
-
-  // 出発時刻ごとにグループ化
-  for (const route of routes) {
-    const departureTime = route.departureTime.getTime()
-    if (!departureTimeGroups.has(departureTime)) {
-      departureTimeGroups.set(departureTime, [])
-    }
-    departureTimeGroups.get(departureTime)!.push(route)
-  }
-
-  // 各グループから到着時刻が最も早いものだけを残す
-  for (const [, groupRoutes] of departureTimeGroups) {
-    // 到着時刻が最も早いものを選択
-    const bestRoute = groupRoutes.reduce((best, current) => {
-      return current.arrivalTime.getTime() < best.arrivalTime.getTime() ? current : best
-    })
-    filteredRoutes.push(bestRoute)
   }
 
   // ソートオプションに応じて並び替え
@@ -788,17 +918,17 @@ const sortedResults = computed(() => {
   }
 
   if (sortOption.value === 'fast') {
-    return filteredRoutes.sort(compareByDuration)
+    return routes.sort(compareByDuration)
   }
   if (sortOption.value === 'cheap') {
-    return filteredRoutes.sort(compareByFare)
+    return routes.sort(compareByFare)
   }
   if (sortOption.value === 'easy') {
-    return filteredRoutes.sort(compareByTransfer)
+    return routes.sort(compareByTransfer)
   }
 
-  // 時系列順（出発時刻順）でソート
-  return filteredRoutes.sort(compareByDepartureTime)
+  // おすすめ順でソート
+  return routes.sort(compareByRecommended)
 })
 
 const displayedResults = computed(() => {
@@ -839,7 +969,7 @@ function buildRainbowJetSeatAvailabilityUrl(targetDate: Date): string {
 
 function buildSearchDateTime(baseDate: Date, timeStr: string): Date {
   const dt = new Date(baseDate)
-  const [h, m] = (timeStr || '00:00').split(':').map(Number)
+  const [h = 0, m = 0] = (timeStr || '00:00').split(':').map(Number)
   dt.setHours(Number.isFinite(h) ? h : 0, Number.isFinite(m) ? m : 0, 0, 0)
   return dt
 }
@@ -852,7 +982,7 @@ function formatHHMM(dt: Date): string {
 
 function clampToMinDateTime(dt: Date): Date {
   // DatePicker の min-date は「今日」なので、今日より前に落ちる場合は今日の 00:00 に丸める
-  const min = new Date(today)
+  const min = new Date(today.value)
   min.setHours(0, 0, 0, 0)
   if (dt.getTime() < min.getTime()) {
     return min
@@ -889,7 +1019,8 @@ function getShipBorderStyle(ship: string): string {
     'FERRY_KUNIGA': 'border-left: double 10px #DA6272',
     'FERRY_DOZEN': 'border-left: double 10px #F3C759',
     'ISOKAZE': 'border-left: double 10px #45A1CF',
-    'RAINBOWJET': 'border-left: double 10px #40BFB0'
+    'RAINBOWJET': 'border-left: double 10px #40BFB0',
+    'WALK': 'border-left: double 10px #6B7280'
   }
   return borderStyles[ship] || 'border-left: double 10px #888888'
 }
@@ -973,7 +1104,7 @@ const getShipStatusAlert = (shipName: string): { hasAlert: boolean; severity: 'w
   // レインボージェット
   if (shipName === 'RAINBOWJET') {
     const fastFerryState = status.ferry?.fastFerryState || status.ferry?.fast_ferry_state
-    if (fastFerryState && !['( in Operation )', '定期運航', '通常運航', '平常運航', 'Normal Operation', 'Normal Service'].includes(fastFerryState)) {
+    if (fastFerryState && !['定期運航', '通常運航', '平常運航', 'Normal Operation', 'Normal Service'].includes(fastFerryState)) {
       if (fastFerryState.includes('欠航') || fastFerryState.includes('Cancelled') || fastFerryState.includes('Canceled')) {
         return { hasAlert: true, severity: 'danger' }
       }
@@ -992,6 +1123,7 @@ function showOperationStatus(shipName: string) {
 }
 
 function showShipInfo(shipName: string) {
+  if (shipName === 'WALK') return
   modalShipId.value = shipName
   showShipModal.value = true
 }
@@ -1018,6 +1150,7 @@ async function handleSearch() {
   hasSearched.value = true
   displayLimit.value = 5
   searchDateForResults.value = new Date(date.value)
+  isArrivalModeForResults.value = isArrivalMode.value
 
   try {
     const results = await searchRoutes(
@@ -1025,7 +1158,9 @@ async function handleSearch() {
       arrival.value,
       date.value,
       time.value,
-      isArrivalMode.value
+      isArrivalMode.value,
+      withCar.value,
+      vehicleLengthMeters.value
     )
 
     logger.debug('Search results', results)
@@ -1035,7 +1170,7 @@ async function handleSearch() {
     // アナリティクスに検索を記録
     const searchDateTime = new Date(date.value)
     if (time.value) {
-      const [hours, minutes] = time.value.split(':')
+      const [hours = '0', minutes = '0'] = time.value.split(':')
       searchDateTime.setHours(parseInt(hours), parseInt(minutes), 0, 0)
     }
     trackSearch({
@@ -1049,7 +1184,7 @@ async function handleSearch() {
       // Create a proper Date object for the time by combining date and time
       const searchDateTime = new Date(date.value)
       if (time.value) {
-        const [hours, minutes] = time.value.split(':')
+        const [hours = '0', minutes = '0'] = time.value.split(':')
         searchDateTime.setHours(parseInt(hours), parseInt(minutes), 0, 0)
       }
 
@@ -1060,7 +1195,9 @@ async function handleSearch() {
         arrival: arrival.value,
         date: date.value,
         time: searchDateTime,
-        isArrivalMode: isArrivalMode.value
+        isArrivalMode: isArrivalMode.value,
+        withCar: withCar.value,
+        ...(withCar.value ? { vehicleLengthMeters: vehicleLengthMeters.value } : {})
       }, historySearchedAt.value || undefined)
     }
   } catch (error) {
@@ -1102,7 +1239,7 @@ onMounted(() => {
     arrival.value = route.query.arrival as string
   }
   if (route.query.date) {
-    date.value = new Date(route.query.date as string)
+    selectExplicitTransitDate(new Date(route.query.date as string))
   }
   if (route.query.time) {
     time.value = route.query.time as string
@@ -1113,13 +1250,19 @@ onMounted(() => {
   if (route.query.isArrivalMode) {
     isArrivalMode.value = route.query.isArrivalMode === '1'
   }
+  if (route.query.withCar === '1') {
+    withCar.value = true
+  }
+  if (route.query.vehicleLengthMeters) {
+    vehicleLengthMeters.value = normalizeVehicleLengthMeters(String(route.query.vehicleLengthMeters))
+  }
   // 検索履歴から遷移してきた場合は、元の検索日時を保持
   if (route.query.searchedAt) {
     historySearchedAt.value = new Date(route.query.searchedAt as string)
   }
 
   if (route.query.autoSearch === '1') {
-    void nextTick(async () => {
+    nextTick(async () => {
       await handleSearch()
     })
   }

@@ -6,7 +6,7 @@
       </h2>
       <NuxtLink
         to="/news"
-        class="text-sm text-blue-700 dark:text-blue-400 hover:underline"
+        class="-mx-2 inline-flex min-h-12 items-center px-2 text-sm text-blue-700 dark:text-blue-400 hover:underline"
       >
         {{ $t('news.viewAll') }}
       </NuxtLink>

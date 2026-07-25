@@ -41,6 +41,8 @@ interface Props {
   route?: {
     departure: string
     arrival: string
+    withCar?: boolean
+    vehicleLengthMeters?: number
   }
   port?: string
 }
@@ -52,7 +54,12 @@ const isFavorite = computed(() => {
   if (!favoriteStore) return false
   
   if (props.type === 'route' && props.route) {
-    return favoriteStore.isRouteFavorited(props.route.departure, props.route.arrival)
+    return favoriteStore.isRouteFavorited(
+      props.route.departure,
+      props.route.arrival,
+      Boolean(props.route.withCar),
+      props.route.vehicleLengthMeters ?? 5
+    )
   }
   if (props.type === 'port' && props.port) {
     return favoriteStore.isPortFavorited(props.port)
@@ -67,7 +74,10 @@ const toggleFavorite = () => {
     if (isFavorite.value) {
       // お気に入りから削除する場合は、まず該当するルートを見つける
       const favoriteRoute = favoriteStore.routes.find(r => 
-        r.departure === props.route!.departure && r.arrival === props.route!.arrival
+        r.departure === props.route!.departure &&
+        r.arrival === props.route!.arrival &&
+        Boolean(r.withCar) === Boolean(props.route!.withCar) &&
+        (!props.route!.withCar || (r.vehicleLengthMeters ?? 5) === (props.route!.vehicleLengthMeters ?? 5))
       )
       if (favoriteRoute) {
         favoriteStore.removeFavoriteRoute(favoriteRoute.id)
@@ -75,7 +85,11 @@ const toggleFavorite = () => {
     } else {
       favoriteStore.addFavoriteRoute({
         departure: props.route.departure,
-        arrival: props.route.arrival
+        arrival: props.route.arrival,
+        withCar: Boolean(props.route.withCar),
+        ...(props.route.withCar
+          ? { vehicleLengthMeters: props.route.vehicleLengthMeters ?? 5 }
+          : {})
       })
     }
   } else if (props.type === 'port' && props.port) {

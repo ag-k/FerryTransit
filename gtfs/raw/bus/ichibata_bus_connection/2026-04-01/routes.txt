@@ -1,0 +1,2 @@
+route_id,agency_id,route_short_name,route_long_name,route_desc,route_type,route_url,route_color,route_text_color
+route_ichibata_bus_connection_https_bus_ichibata_8927b51c,agency_ichibata_bus_connection_a97e48aa,松江・七類・境港間時刻表,一畑バス・隠岐汽船接続バス / 松江・七類・境港間時刻表 / 隠岐汽船連絡バス時刻表 2026年3月から（PDFが表示されます。）,一畑バス・隠岐汽船接続バス / 隠岐汽船連絡バス時刻表 2026年3月から（PDFが表示されます。）,3,https://bus.ichibata.co.jp/media/oki_2026_dia.pdf,00833E,FFFFFF

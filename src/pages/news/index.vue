@@ -11,7 +11,7 @@
     <div class="category-filter mb-6 flex flex-wrap gap-2">
       <button
         :class="[
-          'px-4 py-2 rounded-full text-sm font-medium transition-colors',
+          'min-h-12 px-4 py-2 rounded-full text-sm font-medium transition-colors',
           selectedCategory === null
             ? 'active bg-blue-700 text-white'
             : 'bg-gray-200 dark:bg-gray-700 text-gray-700 dark:text-gray-300 hover:bg-gray-300 dark:hover:bg-gray-600'
@@ -24,7 +24,7 @@
         v-for="category in categories"
         :key="category"
         :class="[
-          'px-4 py-2 rounded-full text-sm font-medium transition-colors',
+          'min-h-12 px-4 py-2 rounded-full text-sm font-medium transition-colors',
           selectedCategory === category
             ? 'active bg-blue-700 text-white'
             : 'bg-gray-200 dark:bg-gray-700 text-gray-700 dark:text-gray-300 hover:bg-gray-300 dark:hover:bg-gray-600'
@@ -110,7 +110,7 @@
           <NuxtLink
             v-if="news.hasDetail"
             :to="`/news/${news.id}`"
-            class="inline-flex items-center text-blue-700 dark:text-blue-400 hover:underline"
+            class="-mx-2 inline-flex min-h-12 items-center px-2 text-blue-700 dark:text-blue-400 hover:underline"
           >
             {{ $t('news.readMore') }}
             <svg class="w-4 h-4 ml-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -126,7 +126,7 @@
       <nav class="flex gap-2">
         <button
           :disabled="currentPage === 1"
-          class="prev-button px-4 py-2 rounded-md bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 disabled:opacity-50 disabled:cursor-not-allowed hover:bg-gray-50 dark:hover:bg-gray-700"
+          class="prev-button min-h-12 min-w-12 px-4 py-2 rounded-md bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 disabled:opacity-50 disabled:cursor-not-allowed hover:bg-gray-50 dark:hover:bg-gray-700"
           @click="currentPage = Math.max(1, currentPage - 1)"
         >
           <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -138,7 +138,7 @@
           v-for="page in displayPages"
           :key="page"
           :class="[
-            'px-4 py-2 rounded-md border transition-colors',
+            'min-h-12 min-w-12 px-4 py-2 rounded-md border transition-colors',
             currentPage === page
               ? 'bg-blue-700 text-white border-blue-700'
               : 'bg-white dark:bg-gray-800 border-gray-300 dark:border-gray-600 hover:bg-gray-50 dark:hover:bg-gray-700'
@@ -150,7 +150,7 @@
         
         <button
           :disabled="currentPage === totalPages"
-          class="next-button px-4 py-2 rounded-md bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 disabled:opacity-50 disabled:cursor-not-allowed hover:bg-gray-50 dark:hover:bg-gray-700"
+          class="next-button min-h-12 min-w-12 px-4 py-2 rounded-md bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 disabled:opacity-50 disabled:cursor-not-allowed hover:bg-gray-50 dark:hover:bg-gray-700"
           @click="currentPage = Math.min(totalPages, currentPage + 1)"
         >
           <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">

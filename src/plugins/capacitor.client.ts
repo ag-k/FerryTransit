@@ -5,36 +5,21 @@ import { Capacitor } from '@capacitor/core'
 import { storeToRefs } from 'pinia'
 import { useUIStore } from '@/stores/ui'
 import { createLogger } from '~/utils/logger'
+import { navigateToDeepLink, parseDeepLinkPath } from '~/utils/deepLink'
+import { isAppRootPath, isIOSBackSwipe, type SwipeCoordinates } from '~/utils/nativeNavigation'
+import { APP_RESUME_EVENT } from '~/composables/useTodayRollover'
 
 export default defineNuxtPlugin(() => {
   const logger = createLogger('CapacitorPlugin')
   if (Capacitor.isNativePlatform()) {
     const router = useRouter()
 
-    const parseDeepLinkPath = (url?: string | null): string | null => {
-      if (!url) return null
-
-      try {
-        const parsed = new URL(url)
-        if (parsed.protocol !== 'ferrytransit:') return null
-
-        const hostBasedPath = parsed.host && parsed.host !== 'app' ? `/${parsed.host}` : ''
-        const pathname = parsed.pathname && parsed.pathname !== '/' ? parsed.pathname : ''
-        const path = pathname || hostBasedPath || '/'
-
-        return `${path}${parsed.search || ''}${parsed.hash || ''}`
-      } catch (error) {
-        logger.warn('Failed to parse deep link URL', { url, error })
-        return null
-      }
-    }
-
     const handleDeepLink = async (url?: string | null) => {
       const path = parseDeepLinkPath(url)
       if (!path) return
 
       try {
-        await router.replace(path)
+        await navigateToDeepLink(router, url)
       } catch (error) {
         logger.error('Failed to navigate by deep link', { url, path, error })
       }
@@ -116,46 +101,69 @@ export default defineNuxtPlugin(() => {
       })
     }
     
-    // Androidのナビゲーションバーを設定
-    if (Capacitor.getPlatform() === 'android') {
-      // ナビゲーションバーの色を設定
-      try {
-        // @ts-ignore - Android specific API
-        if (window.AndroidInterface) {
-          // @ts-ignore
-          window.AndroidInterface.setNavigationBarColor('#FFFFFF')
-        }
-      } catch (error) {
-        logger.info('Android navigation bar color setting not available')
-      }
-    }
-
-    // スプラッシュスクリーンを3秒後に非表示
-    setTimeout(() => {
-      SplashScreen.hide().catch(error => {
-        logger.error('Failed to hide splash screen', error)
-      })
-    }, 3000)
+    // Nuxtのクライアント初期化完了後に一度だけ非表示にする。
+    // capacitor.config.tsで自動非表示を止め、タイムアウトとの競合を防ぐ。
+    SplashScreen.hide().catch(error => {
+      logger.error('Failed to hide splash screen', error)
+    })
 
     // バックボタンの処理（Android）
     if (Capacitor.getPlatform() === 'android') {
       App.addListener('backButton', ({ canGoBack }) => {
-        if (!canGoBack || router.currentRoute.value.path === '/') {
+        if (!canGoBack || isAppRootPath(router.currentRoute.value.path)) {
           App.exitApp()
         } else {
           router.back()
         }
       })
+    } else if (Capacitor.getPlatform() === 'ios') {
+      let swipeStart: Pick<SwipeCoordinates, 'startX' | 'startY'> | null = null
+
+      document.addEventListener('touchstart', (event) => {
+        if (event.touches.length !== 1) {
+          swipeStart = null
+          return
+        }
+
+        const touch = event.touches[0]
+        swipeStart = { startX: touch.clientX, startY: touch.clientY }
+      }, { passive: true })
+
+      document.addEventListener('touchend', (event) => {
+        const start = swipeStart
+        swipeStart = null
+        if (!start || event.changedTouches.length !== 1) return
+        if (isAppRootPath(router.currentRoute.value.path)) return
+
+        const touch = event.changedTouches[0]
+        if (isIOSBackSwipe({
+          ...start,
+          endX: touch.clientX,
+          endY: touch.clientY
+        })) {
+          router.back()
+        }
+      }, { passive: true })
+
+      document.addEventListener('touchcancel', () => {
+        swipeStart = null
+      }, { passive: true })
     }
 
     // ディープリンクで画面遷移（例: ferrytransit://app/transit?...）
     App.addListener('appUrlOpen', (event) => {
-      void handleDeepLink(event?.url)
+      handleDeepLink(event?.url).catch(error => {
+        logger.error('Failed to handle app URL open event', error)
+      })
+    })
+
+    App.addListener('appStateChange', ({ isActive }) => {
+      if (isActive) window.dispatchEvent(new Event(APP_RESUME_EVENT))
     })
 
     App.getLaunchUrl()
       .then((launchUrl) => {
-        void handleDeepLink(launchUrl?.url)
+        return handleDeepLink(launchUrl?.url)
       })
       .catch((error) => {
         logger.warn('Failed to read launch URL', error)

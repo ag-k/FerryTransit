@@ -7,37 +7,23 @@ const PortSelectorStub = defineComponent({
   name: 'PortSelector',
   props: [
     'modelValue',
+    'ariaLabel',
     'placeholder',
     'disabled',
     'disabledPorts',
     'hondoPorts',
     'dozenPorts',
     'dogoPorts',
+    'allowedLocationType',
+    'showTransportTabs',
+    'preferredBusStopTownSource',
     'margin'
   ],
   emits: ['update:modelValue', 'selectRoute'],
-  methods: {
-    nextValue() {
-      // テストでは $t がキー文字列を返す想定なので placeholder で出発/目的地を判別する
-      return this.placeholder === 'DEPARTURE' ? 'HONDO_SHICHIRUI' : 'SAIGO'
-    }
-  },
   template: `
     <div>
-      <button
-        type="button"
-        :data-testid="'port-selector-stub-' + placeholder"
-        @click="$emit('update:modelValue', nextValue())"
-      >
-        {{ modelValue || placeholder }}
-      </button>
-      <button
-        type="button"
-        :data-testid="'port-selector-route-stub-' + placeholder"
-        @click="$emit('selectRoute', { departure: 'HONDO_SHICHIRUI', arrival: 'SAIGO' })"
-      >
-        route
-      </button>
+      <button type="button" data-testid="port-selector-stub">{{ modelValue || placeholder }}</button>
+      <button type="button" data-testid="port-selector-route-stub">route</button>
     </div>
   `
 })
@@ -72,16 +58,24 @@ describe('RouteEndpointsSelector', () => {
     expect(wrapper.find('button[aria-label="Reverse route"]').exists()).toBe(true)
   })
 
-  it('emits update:departure when departure selector updates', async () => {
+  it('passes distinct accessible names to the endpoint selectors', () => {
     const wrapper = mountComponent()
-    await wrapper.find('[data-testid="port-selector-stub-DEPARTURE"]').trigger('click')
+    const stubs = wrapper.findAllComponents(PortSelectorStub)
+
+    expect(stubs[0].props('ariaLabel')).toBe('_FROM')
+    expect(stubs[1].props('ariaLabel')).toBe('_TO')
+  })
+
+  it('emits update:departure when departure selector updates', () => {
+    const wrapper = mountComponent()
+    wrapper.findAllComponents(PortSelectorStub)[0].vm.$emit('update:modelValue', 'HONDO_SHICHIRUI')
     expect(wrapper.emitted('update:departure')).toBeTruthy()
     expect(wrapper.emitted('update:departure')![0][0]).toBe('HONDO_SHICHIRUI')
   })
 
-  it('emits update:arrival when arrival selector updates', async () => {
+  it('emits update:arrival when arrival selector updates', () => {
     const wrapper = mountComponent()
-    await wrapper.find('[data-testid="port-selector-stub-ARRIVAL"]').trigger('click')
+    wrapper.findAllComponents(PortSelectorStub)[1].vm.$emit('update:modelValue', 'SAIGO')
     expect(wrapper.emitted('update:arrival')).toBeTruthy()
     expect(wrapper.emitted('update:arrival')![0][0]).toBe('SAIGO')
   })
@@ -91,6 +85,12 @@ describe('RouteEndpointsSelector', () => {
 
     expect(wrapper.find('[data-testid="route-endpoints-clear-departure"]').exists()).toBe(true)
     expect(wrapper.find('[data-testid="route-endpoints-clear-arrival"]').exists()).toBe(true)
+    expect(wrapper.find('[data-testid="route-endpoints-clear-departure"]').classes()).toEqual(
+      expect.arrayContaining(['min-h-12', 'min-w-12'])
+    )
+    expect(wrapper.find('[data-testid="route-endpoints-clear-arrival"]').classes()).toEqual(
+      expect.arrayContaining(['min-h-12', 'min-w-12'])
+    )
 
     await wrapper.find('[data-testid="route-endpoints-clear-departure"]').trigger('click')
     expect(wrapper.emitted('update:departure')).toBeTruthy()
@@ -104,7 +104,7 @@ describe('RouteEndpointsSelector', () => {
   it('disables mainland ports when the other side is mainland', () => {
     const wrapper = mountComponent({ departure: '', arrival: 'HONDO_SHICHIRUI' })
     const stubs = wrapper.findAllComponents(PortSelectorStub)
-    const depStub = stubs.find(w => w.props('placeholder') === 'DEPARTURE')!
+    const depStub = stubs[0]
     expect(depStub.props('disabledPorts')).toEqual(expect.arrayContaining(['HONDO', 'HONDO_SHICHIRUI', 'HONDO_SAKAIMINATO']))
   })
 
@@ -116,7 +116,9 @@ describe('RouteEndpointsSelector', () => {
 
   it('emits reverse when swap button is clicked', async () => {
     const wrapper = mountComponent()
-    await wrapper.find('button[aria-label="Reverse route"]').trigger('click')
+    const reverseButton = wrapper.find('button[aria-label="Reverse route"]')
+    expect(reverseButton.classes()).toEqual(expect.arrayContaining(['min-h-12', 'min-w-12']))
+    await reverseButton.trigger('click')
     expect(wrapper.emitted('reverse')).toBeTruthy()
   })
 
@@ -126,13 +128,40 @@ describe('RouteEndpointsSelector', () => {
     expect(wrapper.emitted('addVia')).toBeTruthy()
   })
 
-  it('sets both departure and arrival when favorite route is selected', async () => {
+  it('sets both departure and arrival when favorite route is selected', () => {
     const wrapper = mountComponent()
-    await wrapper.find('[data-testid="port-selector-route-stub-DEPARTURE"]').trigger('click')
+    wrapper.findAllComponents(PortSelectorStub)[0].vm.$emit('selectRoute', { departure: 'HONDO_SHICHIRUI', arrival: 'SAIGO' })
     expect(wrapper.emitted('update:departure')).toBeTruthy()
     expect(wrapper.emitted('update:arrival')).toBeTruthy()
     expect(wrapper.emitted('update:departure')!.at(-1)![0]).toBe('HONDO_SHICHIRUI')
     expect(wrapper.emitted('update:arrival')!.at(-1)![0]).toBe('SAIGO')
+  })
+
+  it('passes allowed location type to both selectors', () => {
+    const wrapper = mountComponent({ allowedLocationType: 'STOP' } as any)
+    const stubs = wrapper.findAllComponents(PortSelectorStub)
+
+    expect(stubs[0].props('allowedLocationType')).toBe('STOP')
+    expect(stubs[1].props('allowedLocationType')).toBe('STOP')
+  })
+
+  it('passes transport tabs setting to both selectors', () => {
+    const wrapper = mountComponent({ showTransportTabs: true } as any)
+    const stubs = wrapper.findAllComponents(PortSelectorStub)
+
+    expect(stubs[0].props('showTransportTabs')).toBe(true)
+    expect(stubs[1].props('showTransportTabs')).toBe(true)
+  })
+
+  it('passes the opposite endpoint as preferred bus stop town source', () => {
+    const wrapper = mountComponent({
+      departure: 'BUS_NISHINOSHIMA_nishinoshima_001',
+      arrival: 'BUS_AMA_126_01'
+    })
+    const stubs = wrapper.findAllComponents(PortSelectorStub)
+
+    expect(stubs[0].props('preferredBusStopTownSource')).toBe('BUS_AMA_126_01')
+    expect(stubs[1].props('preferredBusStopTownSource')).toBe('BUS_NISHINOSHIMA_nishinoshima_001')
   })
 
   it('hides +via button by default', () => {

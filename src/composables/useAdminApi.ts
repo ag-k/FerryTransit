@@ -180,6 +180,9 @@ export const useAdminApi = () => {
    * データの公開
    */
   const publishData = (dataType: 'timetable' | 'fare' | 'holidays') => {
+    if (dataType === 'timetable') {
+      return Promise.reject(new Error('公開時刻表はコード管理パイプラインからのみ公開できます'))
+    }
     return apiRequest('/api/admin/publish', {
       method: 'POST',
       body: JSON.stringify({ dataType })

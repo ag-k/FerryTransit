@@ -11,6 +11,8 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
     private let appStoreLaunchUrlArg = "--appstore-url"
 
     func application(_ application: UIApplication, didFinishLaunchingWithOptions launchOptions: [UIApplication.LaunchOptionsKey: Any]?) -> Bool {
+        WKWebViewConfiguration.installCapacitorFontMimePatch()
+        captureColdLaunchUrl(application, launchOptions: launchOptions)
         navigateToAppStoreStartPathIfNeeded()
         injectLaunchUrlFromArguments(application)
         // Override point for customization after application launch.
@@ -42,7 +44,9 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
     func application(_ app: UIApplication, open url: URL, options: [UIApplication.OpenURLOptionsKey: Any] = [:]) -> Bool {
         // Called when the app was launched with a url. Feel free to add additional processing here,
         // but if you want the App API to support tracking app url opens, make sure to keep this call
-        return ApplicationDelegateProxy.shared.application(app, open: url, options: options)
+        let handled = ApplicationDelegateProxy.shared.application(app, open: url, options: options)
+        navigateToDeepLinkIfNeeded(url)
+        return handled
     }
 
     func application(_ application: UIApplication, continue userActivity: NSUserActivity, restorationHandler: @escaping ([UIUserActivityRestoring]?) -> Void) -> Bool {
@@ -50,6 +54,41 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
         // Feel free to add additional processing here, but if you want the App API to support
         // tracking app url opens, make sure to keep this call
         return ApplicationDelegateProxy.shared.application(application, continue: userActivity, restorationHandler: restorationHandler)
+    }
+
+    private func captureColdLaunchUrl(
+        _ application: UIApplication,
+        launchOptions: [UIApplication.LaunchOptionsKey: Any]?
+    ) {
+        guard let launchUrl = launchOptions?[.url] as? URL else {
+            return
+        }
+
+        // コールド起動ではopen URLデリゲートより先にJSが初期化される場合がある。
+        // Proxyへ先に渡してlastURLへ保持し、App.getLaunchUrl()から取得可能にする。
+        _ = ApplicationDelegateProxy.shared.application(application, open: launchUrl, options: [:])
+        navigateToDeepLinkIfNeeded(launchUrl)
+    }
+
+    private func navigateToDeepLinkIfNeeded(_ url: URL) {
+        guard url.scheme == "ferrytransit" else {
+            return
+        }
+
+        let hostPath = url.host.flatMap { host in
+            host == "app" ? nil : "/\(host)"
+        }
+        let pathname = url.path == "/" || url.path.isEmpty ? nil : url.path
+        var path = pathname ?? hostPath ?? "/"
+        if let query = url.query, !query.isEmpty {
+            path += "?\(query)"
+        }
+        if let fragment = url.fragment, !fragment.isEmpty {
+            path += "#\(fragment)"
+        }
+
+        // JS側のappUrlOpen/getLaunchUrlを優先し、取りこぼしたコールド起動だけを補完する。
+        navigateWebView(path: path, retries: 10)
     }
 
     private func injectLaunchUrlFromArguments(_ application: UIApplication) {
@@ -120,6 +159,12 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
                 let targetUrl = self.buildTargetURL(baseUrl: bridge.config.serverURL, path: path)
             else {
                 self.navigateWebView(path: path, retries: retries - 1)
+                return
+            }
+
+            if webView.url?.path == targetUrl.path,
+               webView.url?.query == targetUrl.query,
+               webView.url?.fragment == targetUrl.fragment {
                 return
             }
 

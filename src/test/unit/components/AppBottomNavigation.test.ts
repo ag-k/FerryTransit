@@ -30,7 +30,23 @@ describe('AppBottomNavigation', () => {
     expect(wrapper.find('[data-testid="bottom-nav-item-TIMETABLE"]').exists()).toBe(true)
     expect(wrapper.find('[data-testid="bottom-nav-item-TRANSIT"]').exists()).toBe(true)
     expect(wrapper.find('[data-testid="bottom-nav-item-STATUS"]').exists()).toBe(true)
+    expect(wrapper.find('[data-testid="bottom-nav-item-favorites.title"]').exists()).toBe(true)
     expect(wrapper.find('[data-testid="bottom-nav-item-SETTINGS"]').exists()).toBe(true)
+  })
+
+  it('allows long navigation labels to wrap instead of truncating them', () => {
+    const wrapper = mount(AppBottomNavigation, {
+      global: {
+        mocks: {
+          $t: (key: string) => key === 'STATUS' ? 'Service Status' : key
+        }
+      }
+    })
+
+    const statusLabel = wrapper.find('[data-testid="bottom-nav-item-STATUS"] span:nth-of-type(2)')
+    expect(statusLabel.text()).toBe('Service Status')
+    expect(statusLabel.classes()).toContain('whitespace-normal')
+    expect(statusLabel.classes()).not.toContain('truncate')
   })
 
   it('sets aria-current on active item (supports locale-prefixed route)', () => {
@@ -52,5 +68,26 @@ describe('AppBottomNavigation', () => {
     const timetable = wrapper.find('[data-testid="bottom-nav-item-TIMETABLE"]')
     expect(transit.attributes('aria-current')).toBe('page')
     expect(timetable.attributes('aria-current')).toBeUndefined()
+  })
+
+  it('sets aria-current on favorites item', () => {
+    global.useRoute = vi.fn(() => ({
+      path: '/favorites',
+      params: {},
+      query: {}
+    }))
+
+    const wrapper = mount(AppBottomNavigation, {
+      global: {
+        mocks: {
+          $t: (key: string) => key
+        }
+      }
+    })
+
+    const favorites = wrapper.find('[data-testid="bottom-nav-item-favorites.title"]')
+    const settings = wrapper.find('[data-testid="bottom-nav-item-SETTINGS"]')
+    expect(favorites.attributes('aria-current')).toBe('page')
+    expect(settings.attributes('aria-current')).toBeUndefined()
   })
 })

@@ -17,6 +17,7 @@
 import { readFileSync } from 'fs'
 import { join } from 'path'
 import admin from 'firebase-admin'
+import { configureAdminEmulatorEnv } from './emulator-config.mjs'
 
 const projectRoot = process.cwd()
 
@@ -59,11 +60,11 @@ console.log(`   適用開始日: ${effectiveFrom}`)
 try {
   // Firebase Admin SDKの初期化
   if (useEmulator) {
-    process.env.FIRESTORE_EMULATOR_HOST = 'localhost:8095'
+    const { hosts } = configureAdminEmulatorEnv({ projectRoot })
     admin.initializeApp({
       projectId: 'oki-ferryguide'
     })
-    console.log('🔥 エミュレータに接続します')
+    console.log(`🔥 エミュレータに接続します (${hosts.firestore})`)
   } else {
     const serviceAccountPath = process.env.GOOGLE_APPLICATION_CREDENTIALS
     if (serviceAccountPath) {

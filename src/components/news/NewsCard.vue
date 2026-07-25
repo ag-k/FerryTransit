@@ -46,7 +46,7 @@
     <button
       v-if="!expanded && news.hasDetail"
       @click="$emit('expand', news.id)"
-      class="mt-3 text-sm text-blue-700 dark:text-blue-400 hover:underline"
+      class="-mx-2 mt-1 inline-flex min-h-12 items-center px-2 text-sm text-blue-700 dark:text-blue-400 hover:underline"
     >
       {{ $t('news.readMore') }}
     </button>

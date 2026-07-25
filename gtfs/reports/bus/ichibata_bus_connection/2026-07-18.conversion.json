@@ -1,0 +1,30 @@
+{
+  "convertedAt": "2026-07-19T05:49:39.431Z",
+  "archivedSourcePdf": "/Users/ag/works/FerryTransit/gtfs/pdf/bus/ichibata_bus_connection/oki_2026_dia.pdf",
+  "sourceUrl": "https://bus.ichibata.co.jp/media/r8_0718_kisen_dia.pdf",
+  "sourcePageUrl": "https://bus.ichibata.co.jp/oki-kisen/oki-kisen-sichirui/",
+  "outputDir": "/Users/ag/works/FerryTransit/gtfs/raw/bus/ichibata_bus_connection/2026-07-18",
+  "currentUpdated": true,
+  "feedStartDate": "20260401",
+  "feedEndDate": "20261231",
+  "feedVersion": "r8_0718_kisen_dia_20260401-20261231",
+  "routeId": "route_ichibata_bus_connection_https_bus_ichibata_8927b51c",
+  "agencyId": "agency_ichibata_bus_connection_a97e48aa",
+  "counts": {
+    "agencies": 1,
+    "routes": 1,
+    "stops": 5,
+    "services": 20,
+    "calendarDates": 0,
+    "trips": 72,
+    "stopTimes": 216
+  },
+  "notes": [
+    "2026年4月1日から7月17日は保管済み旧版PDF、7月18日以降は公式r8_0718_kisen_dia.pdfをGTFSに転記",
+    "最新PDFの掲出期間は2026年7月18日から2027年2月28日だが、このfeedは2026年内の2026年12月31日までを対象に生成",
+    "隠岐汽船欠航時は接続バスも運休する注記があるが、静的GTFSではリアルタイム運休として表現できないため資料注記として保持",
+    "船舶時刻はjp_trip_descに接続船情報として保持し、stop_timesはバス停発着時刻のみを出力",
+    "七類港と境港のフェリー/高速船のりば差分はstop_descに保持し、時刻表列名に合わせて各港1停留所として扱う",
+    "運賃は松江駅発着の大人片道1,200円を最大運賃としてfare_attributesとbus-searchに保持。附属学園入口/レインボープラザ前発着は公式運賃表で1,100円"
+  ]
+}

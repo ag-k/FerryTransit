@@ -7,6 +7,7 @@
 import { readFileSync } from 'fs'
 import { join } from 'path'
 import admin from 'firebase-admin'
+import { configureAdminEmulatorEnv } from './emulator-config.mjs'
 
 const projectRoot = process.cwd()
 
@@ -14,14 +15,14 @@ console.log('📅 Importing timetable data using Admin SDK...')
 
 try {
   // Initialize Firebase Admin SDK for emulator
-  process.env.FIRESTORE_EMULATOR_HOST = 'localhost:8095'
+  const { hosts } = configureAdminEmulatorEnv({ projectRoot })
 
   admin.initializeApp({
     projectId: 'oki-ferryguide'
   })
 
   const db = admin.firestore()
-  console.log('🔥 Connected to Firestore emulator with Admin SDK')
+  console.log(`🔥 Connected to Firestore emulator with Admin SDK (${hosts.firestore})`)
 
   // Read timetable data
   const timetablePath = join(projectRoot, 'archive/timetable.json')

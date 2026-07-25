@@ -4,10 +4,31 @@ import { useFerryStore } from "@/stores/ferry";
 import { useFareStore } from "@/stores/fare";
 import { useFerryData } from "@/composables/useFerryData";
 import { useTimetableLoader } from "@/composables/useTimetableLoader";
-import type { Trip, TransitRoute, TransitSegment } from "@/types";
+import type { LocationType, Trip, TransitRoute, TransitSegment } from "@/types";
 import type { FareRoute, VesselType } from "@/types/fare";
 import { createLogger } from "~/utils/logger";
 import { isTodayJst } from "@/utils/jstDate";
+import {
+  DEFAULT_VEHICLE_LENGTH_METERS,
+  calculateVehicleFareForShip,
+  isOkiKisenVehicleFerry,
+  isVehicleSearchShip,
+  normalizeVehicleLengthMeters,
+} from "@/utils/vehicleFare";
+import {
+  getAllPortConnectedBusStopCodes,
+  getBusStopConnectedPortId,
+  getConnectedBusStopsForPort,
+  getLocationTypeForCode,
+  isBusStopCode,
+  isTripActiveOnDate,
+  loadBusTransferCandidateTripsForRoute,
+  loadBusTripsForRoute,
+} from "@/utils/gtfsBusTimetable";
+
+const WALK_TRANSFER_MINUTES = 3;
+const WALK_SEGMENT_SHIP = "WALK";
+const MAX_INTERMODAL_SEGMENTS = 5;
 
 export const useRouteSearch = () => {
   const ferryStore = process.client ? useFerryStore() : null;
@@ -22,6 +43,10 @@ export const useRouteSearch = () => {
       return Number((trip as any).status ?? 0) || 0;
     }
     return getTripStatus(trip);
+  };
+
+  const getFlightNumberForTrip = (trip: Trip): string | undefined => {
+    return (trip.mode ?? "FERRY") === "AIR" ? trip.vehicleId : undefined;
   };
 
   const buildRouteSignature = (route: TransitRoute): string => {
@@ -39,6 +64,7 @@ export const useRouteSearch = () => {
     for (let i = 0; i < route.segments.length - 1; i++) {
       const prev = route.segments[i];
       const next = route.segments[i + 1];
+      if (!prev || !next) continue;
       const diff = next.departureTime.getTime() - prev.arrivalTime.getTime();
       total += Math.max(0, diff);
     }
@@ -92,6 +118,41 @@ export const useRouteSearch = () => {
     return [...directRoutes, ...Array.from(bestBySignature.values())];
   };
 
+  const hasCancelledSegment = (route: TransitRoute): boolean => {
+    return route.segments.some((segment) => segment.status === 2);
+  };
+
+  const filterDominatedTransferRoutes = (
+    routes: TransitRoute[]
+  ): TransitRoute[] => {
+    const singleSegmentRoutes = routes.filter(
+      (route) => route.segments.length === 1 && !hasCancelledSegment(route)
+    );
+
+    return routes.filter((route) => {
+      if (route.segments.length < 2) {
+        return true;
+      }
+
+      if (hasCancelledSegment(route)) {
+        return true;
+      }
+
+      return !singleSegmentRoutes.some((directRoute) => {
+        const directDeparture = directRoute.departureTime.getTime();
+        const directArrival = directRoute.arrivalTime.getTime();
+        const routeDeparture = route.departureTime.getTime();
+        const routeArrival = route.arrivalTime.getTime();
+
+        return (
+          directDeparture >= routeDeparture &&
+          directArrival <= routeArrival &&
+          (directDeparture > routeDeparture || directArrival < routeArrival)
+        );
+      });
+    });
+  };
+
   // Initialize fare data
   onMounted(async () => {
     if (fareStore) {
@@ -105,7 +166,9 @@ export const useRouteSearch = () => {
     arrival: string,
     searchDate: Date,
     searchTime: string,
-    isArrivalMode: boolean = false
+    isArrivalMode: boolean = false,
+    withCar: boolean = false,
+    vehicleLengthMeters: number = DEFAULT_VEHICLE_LENGTH_METERS
   ): Promise<TransitRoute[]> => {
     // Ensure data is loaded
     if (ferryStore) {
@@ -122,9 +185,12 @@ export const useRouteSearch = () => {
 
     const routes: TransitRoute[] = [];
     const searchDateTime = new Date(searchDate);
-    const [hours, minutes] = searchTime.split(":").map(Number);
+    const [hours = 0, minutes = 0] = searchTime.split(":").map(Number);
     searchDateTime.setHours(hours, minutes, 0, 0);
     const applyLiveStatus = isTodayJst(searchDate);
+    const normalizedVehicleLengthMeters = normalizeVehicleLengthMeters(
+      vehicleLengthMeters
+    );
 
     // Debug logging
     logger.debug("Search params", {
@@ -134,6 +200,8 @@ export const useRouteSearch = () => {
       searchTime,
       isArrivalMode,
       applyLiveStatus,
+      withCar,
+      vehicleLengthMeters: normalizedVehicleLengthMeters,
     });
     logger.debug("Total timetable data", ferryStore?.timetableData.length || 0);
 
@@ -145,43 +213,80 @@ export const useRouteSearch = () => {
     const searchDateStr = `${year}-${month}-${day}`;
 
     const dayTimetable = (ferryStore?.timetableData || []).filter((trip) => {
-      // Parse start and end dates
-      const startDate = trip.startDate.replace(/\//g, "-");
-      const endDate = trip.endDate.replace(/\//g, "-");
-
-      // Check if search date is within the trip's valid period
-      return searchDateStr >= startDate && searchDateStr <= endDate;
+      return isTripActiveOnDate(trip, searchDate, searchDateStr);
     });
+    let busDirectTrips: Trip[] = [];
+    let busTransferCandidateTrips: Trip[] = [];
+    if (!withCar) {
+      try {
+        busDirectTrips = await loadBusTripsForRoute(departure, arrival, searchDateStr);
+        if (
+          busDirectTrips.length === 0 &&
+          isBusStopCode(departure) &&
+          isBusStopCode(arrival)
+        ) {
+          busTransferCandidateTrips = await loadBusTransferCandidateTripsForRoute(
+            departure,
+            arrival,
+            searchDateStr
+          );
+        }
+      } catch (error) {
+        logger.warn("Failed to load bus search data", error);
+      }
+    }
+    const searchableTimetable = withCar
+      ? dayTimetable.filter((trip) => isVehicleSearchShip(trip.name))
+      : [...dayTimetable, ...busDirectTrips, ...busTransferCandidateTrips];
 
     logger.debug("Filtered timetable for date range", {
       count: dayTimetable.length,
+      busDirectCount: busDirectTrips.length,
+      busTransferCandidateCount: busTransferCandidateTrips.length,
+      searchableCount: searchableTimetable.length,
       searchDate: searchDateStr,
     });
 
     // Find direct routes
     const directRoutes = await findDirectRoutes(
-      dayTimetable,
+      searchableTimetable,
       departure,
       arrival,
       searchDateTime,
       isArrivalMode,
-      applyLiveStatus
+      applyLiveStatus,
+      withCar,
+      normalizedVehicleLengthMeters
     );
 
     routes.push(...directRoutes);
 
-    // Find transfer routes if direct routes are limited
-    if (directRoutes.length < 5) {
-      const transferRoutes = await findTransferRoutes(
+    if (!withCar && (isBusStopCode(departure) || isBusStopCode(arrival))) {
+      const intermodalRoutes = await findIntermodalRoutes(
         dayTimetable,
         departure,
         arrival,
         searchDateTime,
         isArrivalMode,
-        applyLiveStatus
+        applyLiveStatus,
+        normalizedVehicleLengthMeters,
+        searchDateStr
       );
-      routes.push(...transferRoutes);
+      routes.push(...intermodalRoutes);
     }
+
+    // 直行便が多い区間でも、同一船チェーンの通し乗車は乗換探索で正規化される
+    const transferRoutes = await findTransferRoutes(
+      searchableTimetable,
+      departure,
+      arrival,
+      searchDateTime,
+      isArrivalMode,
+      applyLiveStatus,
+      withCar,
+      normalizedVehicleLengthMeters
+    );
+    routes.push(...transferRoutes);
 
     // Sort routes
     if (isArrivalMode) {
@@ -195,19 +300,20 @@ export const useRouteSearch = () => {
     // De-duplicate transfer routes that have the same path + vessel sequence
     // and differ only by transfer wait time.
     const dedupedRoutes = dedupeTransferRoutesByWaitTime(routes);
+    const filteredRoutes = filterDominatedTransferRoutes(dedupedRoutes);
 
     // Keep existing sort behavior after de-duplication
     if (isArrivalMode) {
-      dedupedRoutes.sort(
+      filteredRoutes.sort(
         (a, b) => b.arrivalTime.getTime() - a.arrivalTime.getTime()
       );
     } else {
-      dedupedRoutes.sort(
+      filteredRoutes.sort(
         (a, b) => a.departureTime.getTime() - b.departureTime.getTime()
       );
     }
 
-    return dedupedRoutes;
+    return filteredRoutes;
   };
 
   // Find direct routes
@@ -217,7 +323,9 @@ export const useRouteSearch = () => {
     arrival: string,
     searchTime: Date,
     isArrivalMode: boolean,
-    applyLiveStatus: boolean
+    applyLiveStatus: boolean,
+    withCar: boolean,
+    vehicleLengthMeters: number
   ): Promise<TransitRoute[]> => {
     const routes: TransitRoute[] = [];
 
@@ -276,11 +384,13 @@ export const useRouteSearch = () => {
         const status = getStatusForSearchDate(trip, applyLiveStatus);
         // NOTE: 時刻表と合わせて欠航便も表示対象にする（status=2 のまま返す）
 
-        const fare = await calculateFare(
+        const fareFields = await calculateSegmentFareFields(
           trip.name,
           trip.departure,
           trip.arrival,
-          departureTime
+          departureTime,
+          withCar,
+          vehicleLengthMeters
         );
 
         const segment: TransitSegment = {
@@ -290,6 +400,7 @@ export const useRouteSearch = () => {
           operatorId: trip.operatorId,
           serviceId: trip.serviceId,
           vehicleId: trip.vehicleId,
+          flightNumber: getFlightNumberForTrip(trip),
           departure: trip.departure,
           departureType: trip.departureType,
           arrival: trip.arrival,
@@ -300,7 +411,7 @@ export const useRouteSearch = () => {
           terminal: trip.terminal,
           gate: trip.gate,
           status,
-          fare,
+          ...fareFields,
         };
 
         routes.push({
@@ -316,6 +427,408 @@ export const useRouteSearch = () => {
     return routes;
   };
 
+  const getLocationTypeForSearch = (locationId: string): LocationType => {
+    return getLocationTypeForCode(locationId);
+  };
+
+  const expandHondoPort = (portId: string): string[] => {
+    return portId === "HONDO"
+      ? ["HONDO_SHICHIRUI", "HONDO_SAKAIMINATO"]
+      : [portId];
+  };
+
+  const matchesLocation = (actual: string, expected: string): boolean => {
+    return expandHondoPort(expected).includes(actual);
+  };
+
+  const createDateForTripTime = (timeValue: string | Date, baseDate: Date): Date => {
+    const [hours, minutes] = parseTimeParts(timeValue);
+    const result = new Date(baseDate);
+    result.setHours(hours, minutes, 0, 0);
+    return result;
+  };
+
+  const shouldSkipMainlandVia = (trip: Trip): boolean => {
+    if (!trip.via || !isMainlandPort(trip.via)) return false;
+    return !isMainlandPort(trip.departure) && !isMainlandPort(trip.arrival);
+  };
+
+  const createScheduledSegment = async (
+    trip: Trip,
+    currentTime: Date,
+    applyLiveStatus: boolean,
+    vehicleLengthMeters: number
+  ): Promise<TransitSegment | null> => {
+    const departureTime = createDateForTripTime(trip.departureTime, currentTime);
+    if (departureTime < currentTime) return null;
+
+    const arrivalTime = createDateForTripTime(trip.arrivalTime, departureTime);
+    if (arrivalTime < departureTime) {
+      arrivalTime.setDate(arrivalTime.getDate() + 1);
+    }
+
+    const fareFields = await calculateSegmentFareFields(
+      trip.name,
+      trip.departure,
+      trip.arrival,
+      departureTime,
+      false,
+      vehicleLengthMeters
+    );
+
+    return {
+      tripId: String(trip.tripId),
+      ship: trip.name,
+      mode: trip.mode ?? "FERRY",
+      operatorId: trip.operatorId,
+      serviceId: trip.serviceId,
+      vehicleId: trip.vehicleId,
+      flightNumber: getFlightNumberForTrip(trip),
+      departure: trip.departure,
+      departureType: trip.departureType,
+      arrival: trip.arrival,
+      arrivalType: trip.arrivalType,
+      departureTime,
+      arrivalTime,
+      platform: trip.platform,
+      terminal: trip.terminal,
+      gate: trip.gate,
+      status: getStatusForSearchDate(trip, applyLiveStatus),
+      ...fareFields,
+    };
+  };
+
+  const createWalkSegment = (
+    departure: string,
+    arrival: string,
+    departureTime: Date
+  ): TransitSegment => {
+    const arrivalTime = new Date(
+      departureTime.getTime() + WALK_TRANSFER_MINUTES * 60 * 1000
+    );
+
+    return {
+      tripId: `${WALK_SEGMENT_SHIP}_${departure}_${arrival}_${departureTime.getTime()}`,
+      ship: WALK_SEGMENT_SHIP,
+      mode: "WALK",
+      departure,
+      departureType: getLocationTypeForSearch(departure),
+      arrival,
+      arrivalType: getLocationTypeForSearch(arrival),
+      departureTime,
+      arrivalTime,
+      status: 0,
+      fare: 0,
+      passengerFare: 0,
+    };
+  };
+
+  const isFerrySearchTrip = (trip: Trip): boolean => {
+    return (trip.mode ?? "FERRY") !== "BUS" && (trip.mode ?? "FERRY") !== "WALK";
+  };
+
+  const findIntermodalRoutes = async (
+    ferryTimetable: Trip[],
+    departure: string,
+    arrival: string,
+    searchTime: Date,
+    isArrivalMode: boolean,
+    applyLiveStatus: boolean,
+    vehicleLengthMeters: number,
+    searchDateStr: string
+  ): Promise<TransitRoute[]> => {
+    const connectedStops = getAllPortConnectedBusStopCodes();
+    const connectedPorts = Array.from(
+      new Set(
+        connectedStops
+          .map(stop => getBusStopConnectedPortId(stop))
+          .filter((portId): portId is string => Boolean(portId))
+      )
+    );
+    const busTripCache = new Map<string, Promise<Trip[]>>();
+    const routeResults: TransitRoute[] = [];
+    const routeKeys = new Set<string>();
+    const startTime = new Date(searchTime);
+    const ferryTripById = new Map<string, Trip>();
+
+    for (const trip of ferryTimetable) {
+      ferryTripById.set(String(trip.tripId), trip);
+    }
+
+    if (isArrivalMode) {
+      startTime.setHours(0, 0, 0, 0);
+    }
+
+    const getBusTrips = (from: string, to: string): Promise<Trip[]> => {
+      const key = `${from}->${to}`;
+      const cached = busTripCache.get(key);
+      if (cached) return cached;
+
+      const promise = loadBusTripsForRoute(from, to, searchDateStr)
+        .catch((error) => {
+          logger.warn("Failed to load bus trips for intermodal route", {
+            from,
+            to,
+            error,
+          });
+          return [];
+        });
+      busTripCache.set(key, promise);
+      return promise;
+    };
+
+    const getWalkSegments = (node: string, currentTime: Date): TransitSegment[] => {
+      const connectedPort = getBusStopConnectedPortId(node);
+      if (connectedPort) {
+        return [createWalkSegment(node, connectedPort, currentTime)];
+      }
+
+      return getConnectedBusStopsForPort(node)
+        .map(stop => createWalkSegment(node, stop, currentTime));
+    };
+
+    const getBusSegments = async (
+      node: string,
+      currentTime: Date
+    ): Promise<TransitSegment[]> => {
+      if (!isBusStopCode(node)) return [];
+
+      const targets = new Set<string>();
+      if (isBusStopCode(arrival)) targets.add(arrival);
+      for (const stop of connectedStops) targets.add(stop);
+      targets.delete(node);
+
+      const segments: TransitSegment[] = [];
+      for (const target of targets) {
+        const trips = await getBusTrips(node, target);
+        for (const trip of trips) {
+          const segment = await createScheduledSegment(
+            trip,
+            currentTime,
+            applyLiveStatus,
+            vehicleLengthMeters
+          );
+          if (!segment) continue;
+          if (isArrivalMode && segment.arrivalTime > searchTime) continue;
+          segments.push(segment);
+        }
+      }
+
+      return segments.sort((a, b) => a.departureTime.getTime() - b.departureTime.getTime());
+    };
+
+    const getFerrySegments = async (
+      node: string,
+      currentTime: Date
+    ): Promise<TransitSegment[]> => {
+      if (isBusStopCode(node)) return [];
+
+      const targetPorts = new Set<string>(connectedPorts);
+      if (!isBusStopCode(arrival)) {
+        for (const port of expandHondoPort(arrival)) targetPorts.add(port);
+      }
+      for (const port of expandHondoPort(node)) targetPorts.delete(port);
+
+      const departurePorts = expandHondoPort(node);
+      const segments: TransitSegment[] = [];
+
+      for (const trip of ferryTimetable) {
+        if (!isFerrySearchTrip(trip)) continue;
+        if (!departurePorts.includes(trip.departure)) continue;
+        if (!targetPorts.has(trip.arrival)) continue;
+        if (shouldSkipMainlandVia(trip)) continue;
+
+        const segment = await createScheduledSegment(
+          trip,
+          currentTime,
+          applyLiveStatus,
+          vehicleLengthMeters
+        );
+        if (!segment) continue;
+        if (isArrivalMode && segment.arrivalTime > searchTime) continue;
+        segments.push(segment);
+      }
+
+      return segments.sort((a, b) => a.departureTime.getTime() - b.departureTime.getTime());
+    };
+
+    type IntermodalState = {
+      node: string;
+      time: Date;
+      segments: TransitSegment[];
+      visited: Set<string>;
+    };
+
+    const getSourceTripForSegment = (segment: TransitSegment): Trip | undefined => {
+      const tripIds = String(segment.tripId).split("-");
+
+      for (let i = tripIds.length - 1; i >= 0; i--) {
+        const tripId = tripIds[i];
+        if (!tripId) continue;
+        const trip = ferryTripById.get(tripId);
+        if (trip) return trip;
+      }
+
+      return undefined;
+    };
+
+    const isMergeableThroughShipSegment = (segment: TransitSegment): boolean => {
+      return (segment.mode ?? "FERRY") === "FERRY";
+    };
+
+    const canMergeThroughShipSegments = (
+      previous: TransitSegment,
+      next: TransitSegment
+    ): boolean => {
+      if (
+        !isMergeableThroughShipSegment(previous) ||
+        !isMergeableThroughShipSegment(next)
+      ) {
+        return false;
+      }
+      if (previous.ship !== next.ship || previous.arrival !== next.departure) {
+        return false;
+      }
+
+      const previousTrip = getSourceTripForSegment(previous);
+      const nextTrip = getSourceTripForSegment(next);
+      if (!previousTrip || !nextTrip) return false;
+
+      return shouldNormalizeTrips(previousTrip, nextTrip);
+    };
+
+    const normalizeThroughShipSegments = async (
+      segments: TransitSegment[]
+    ): Promise<TransitSegment[]> => {
+      if (segments.length <= 1) return segments;
+
+      const normalized: TransitSegment[] = [];
+      let group: TransitSegment[] = [];
+
+      const flushGroup = async () => {
+        if (group.length === 0) return;
+        if (group.length === 1) {
+          normalized.push(group[0]!);
+          group = [];
+          return;
+        }
+
+        const first = group[0]!;
+        const last = group[group.length - 1]!;
+        const fareFields = await calculateSegmentFareFields(
+          first.ship,
+          first.departure,
+          last.arrival,
+          first.departureTime,
+          false,
+          vehicleLengthMeters
+        );
+
+        normalized.push({
+          ...first,
+          tripId: group.map(segment => segment.tripId).join("-"),
+          arrival: last.arrival,
+          arrivalType: last.arrivalType,
+          arrivalTime: last.arrivalTime,
+          status: Math.max(...group.map(segment => segment.status)),
+          ...fareFields,
+        });
+        group = [];
+      };
+
+      for (const segment of segments) {
+        if (group.length === 0) {
+          group = [segment];
+          continue;
+        }
+
+        const previous = group[group.length - 1]!;
+        if (canMergeThroughShipSegments(previous, segment)) {
+          group.push(segment);
+          continue;
+        }
+
+        await flushGroup();
+        group = [segment];
+      }
+
+      await flushGroup();
+      return normalized;
+    };
+
+    const pushRouteIfComplete = async (state: IntermodalState): Promise<boolean> => {
+      if (
+        state.segments.length > 0 &&
+        state.segments.some(segment => segment.mode === "WALK") &&
+        matchesLocation(state.node, arrival)
+      ) {
+        const segments = await normalizeThroughShipSegments(state.segments);
+        const routeKey = segments
+          .map(segment => `${segment.tripId}:${segment.departure}->${segment.arrival}`)
+          .join("|");
+        if (!routeKeys.has(routeKey)) {
+          routeKeys.add(routeKey);
+          routeResults.push({
+            segments,
+            departureTime: segments[0]!.departureTime,
+            arrivalTime: state.time,
+            totalFare: segments.reduce((sum, segment) => sum + segment.fare, 0),
+            transferCount: Math.max(0, segments.length - 1),
+          });
+        }
+        return true;
+      }
+
+      return false;
+    };
+
+    let states: IntermodalState[] = [{
+      node: departure,
+      time: startTime,
+      segments: [],
+      visited: new Set([departure]),
+    }];
+
+    for (let depth = 0; depth < MAX_INTERMODAL_SEGMENTS; depth++) {
+      const nextStates: IntermodalState[] = [];
+
+      for (const state of states) {
+        if (await pushRouteIfComplete(state)) {
+          continue;
+        }
+
+        const candidates = [
+          ...getWalkSegments(state.node, state.time),
+          ...(await getBusSegments(state.node, state.time)),
+          ...(await getFerrySegments(state.node, state.time)),
+        ];
+
+        for (const segment of candidates) {
+          if (segment.arrival === state.node) continue;
+          if (state.visited.has(segment.arrival)) {
+            continue;
+          }
+
+          const nextVisited = new Set(state.visited);
+          nextVisited.add(segment.arrival);
+          const nextState = {
+            node: segment.arrival,
+            time: segment.arrivalTime,
+            segments: [...state.segments, segment],
+            visited: nextVisited,
+          };
+          if (await pushRouteIfComplete(nextState)) continue;
+          nextStates.push(nextState);
+        }
+      }
+
+      states = nextStates;
+      if (states.length === 0) break;
+    }
+
+    return routeResults;
+  };
+
   // Find transfer routes
   const findTransferRoutes = async (
     timetable: Trip[],
@@ -323,14 +836,20 @@ export const useRouteSearch = () => {
     arrival: string,
     searchTime: Date,
     isArrivalMode: boolean,
-    applyLiveStatus: boolean
+    applyLiveStatus: boolean,
+    withCar: boolean,
+    vehicleLengthMeters: number
   ): Promise<TransitRoute[]> => {
     const routes: TransitRoute[] = [];
     const processedRoutes = new Set<string>();
     const tripMap = new Map<string, Trip>();
+    const tripsByDeparture = new Map<string, Trip[]>();
 
     for (const trip of timetable) {
       tripMap.set(String(trip.tripId), trip);
+      const departures = tripsByDeparture.get(trip.departure) ?? [];
+      departures.push(trip);
+      tripsByDeparture.set(trip.departure, departures);
     }
 
     // Handle special HONDO port mapping
@@ -417,6 +936,113 @@ export const useRouteSearch = () => {
       return null;
     };
 
+    type ContinuedFirstLegCandidate = {
+      trips: Trip[];
+      finalTrip: Trip;
+      arrivalTime: Date;
+      maxStatus: number;
+      visitedPorts: Set<string>;
+    };
+
+    const collectContinuedFirstLegCandidates = (
+      firstTrip: Trip,
+      firstArrivalTime: Date,
+      firstStatus: number
+    ): ContinuedFirstLegCandidate[] => {
+      const candidates: ContinuedFirstLegCandidate[] = [];
+      const chain: Trip[] = [firstTrip];
+      const visitedPorts = new Set<string>([
+        firstTrip.departure,
+        firstTrip.arrival,
+      ]);
+      let current = firstTrip;
+      let currentArrivalTime = firstArrivalTime;
+      let maxStatus = firstStatus;
+
+      while (current.nextId) {
+        if (
+          !isMainlandPort(departure) &&
+          !isMainlandPort(arrival) &&
+          isMainlandPort(current.arrival)
+        ) {
+          break;
+        }
+
+        const nextTrip = tripMap.get(String(current.nextId));
+        if (!nextTrip) {
+          break;
+        }
+
+        if (nextTrip.name !== current.name) {
+          break;
+        }
+
+        if (nextTrip.departure !== current.arrival) {
+          break;
+        }
+
+        if (nextTrip.via && isMainlandPort(nextTrip.via)) {
+          if (
+            !isMainlandPort(nextTrip.departure) &&
+            !isMainlandPort(nextTrip.arrival)
+          ) {
+            break;
+          }
+        }
+
+        const [nextDepHours, nextDepMinutes] = parseTimeParts(
+          nextTrip.departureTime
+        );
+        const nextDepartureTime = new Date(currentArrivalTime);
+        nextDepartureTime.setHours(nextDepHours, nextDepMinutes, 0, 0);
+        if (nextDepartureTime < currentArrivalTime) {
+          nextDepartureTime.setDate(nextDepartureTime.getDate() + 1);
+        }
+
+        const [nextArrHours, nextArrMinutes] = parseTimeParts(
+          nextTrip.arrivalTime
+        );
+        const nextArrivalTime = new Date(nextDepartureTime);
+        nextArrivalTime.setHours(nextArrHours, nextArrMinutes, 0, 0);
+        if (nextArrivalTime < nextDepartureTime) {
+          nextArrivalTime.setDate(nextArrivalTime.getDate() + 1);
+        }
+
+        if (visitedPorts.has(nextTrip.arrival)) {
+          break;
+        }
+
+        chain.push(nextTrip);
+        visitedPorts.add(nextTrip.arrival);
+        maxStatus = Math.max(
+          maxStatus,
+          getStatusForSearchDate(nextTrip, applyLiveStatus)
+        );
+        current = nextTrip;
+        currentArrivalTime = nextArrivalTime;
+
+        if (
+          !isMainlandPort(departure) &&
+          !isMainlandPort(arrival) &&
+          Array.from(visitedPorts).some((port) => isMainlandPort(port))
+        ) {
+          break;
+        }
+
+        if (!arrivalPorts.includes(current.arrival)) {
+          candidates.push({
+            trips: [...chain],
+            finalTrip: current,
+            arrivalTime: new Date(currentArrivalTime),
+            maxStatus,
+            visitedPorts: new Set(visitedPorts),
+          });
+        }
+      }
+
+      return candidates;
+    };
+
     // First leg trips
     for (const firstTrip of timetable) {
       if (!departurePorts.includes(firstTrip.departure)) continue;
@@ -452,9 +1078,7 @@ export const useRouteSearch = () => {
 
       if (arrivalPorts.includes(firstTrip.arrival)) continue;
 
-      for (const secondTrip of timetable) {
-        if (secondTrip.departure !== firstTrip.arrival) continue;
-
+      for (const secondTrip of tripsByDeparture.get(firstTrip.arrival) ?? []) {
         // 本土の港が途中経由地（出発地/目的地以外）にある便を除外
         if (secondTrip.via && isMainlandPort(secondTrip.via)) {
           // 出発地または目的地が本土の港の場合は除外しない
@@ -471,6 +1095,7 @@ export const useRouteSearch = () => {
 
         const { trips: chain, maxStatus: chainStatus } = chainResult;
         const finalTrip = chain[chain.length - 1];
+        if (!finalTrip) continue;
 
         const [secondDepHours, secondDepMinutes] = parseTimeParts(
           secondTrip.departureTime
@@ -517,7 +1142,22 @@ export const useRouteSearch = () => {
 
           const resumeTrips = chain.slice(resumeIdx);
           const resumeFinalTrip = resumeTrips[resumeTrips.length - 1];
+          if (!resumeFinalTrip) {
+            continue;
+          }
           if (!arrivalPorts.includes(resumeFinalTrip.arrival)) {
+            continue;
+          }
+
+          const hasMainlandViaResumeTrip = resumeTrips.some((t) => {
+            if (!t.via || !isMainlandPort(t.via)) {
+              return false;
+            }
+            return !isMainlandPort(t.departure) && !isMainlandPort(t.arrival);
+          });
+
+          // via 本土フラグがない再開区間は通常の直行検索・同一船正規化で発見済み
+          if (!hasMainlandViaResumeTrip) {
             continue;
           }
 
@@ -531,7 +1171,7 @@ export const useRouteSearch = () => {
             const [depH, depM] = parseTimeParts(t.departureTime);
             const [arrH, arrM] = parseTimeParts(t.arrivalTime);
 
-            const depTime = prevArrival
+            const depTime: Date = prevArrival
               ? new Date(prevArrival)
               : new Date(searchTime);
             depTime.setHours(depH, depM, 0, 0);
@@ -539,7 +1179,7 @@ export const useRouteSearch = () => {
               depTime.setDate(depTime.getDate() + 1);
             }
 
-            const arrTime = new Date(depTime);
+            const arrTime: Date = new Date(depTime);
             arrTime.setHours(arrH, arrM, 0, 0);
             if (arrTime < depTime) {
               arrTime.setDate(arrTime.getDate() + 1);
@@ -562,13 +1202,15 @@ export const useRouteSearch = () => {
               break;
             }
 
-            const fare = await calculateFare(
+            const fareFields = await calculateSegmentFareFields(
               t.name,
               t.departure,
               t.arrival,
-              depTime
+              depTime,
+              withCar,
+              vehicleLengthMeters
             );
-            totalFare += fare;
+            totalFare += fareFields.fare;
             maxStatus = Math.max(maxStatus, status);
 
             resumeSegments.push({
@@ -578,6 +1220,7 @@ export const useRouteSearch = () => {
               operatorId: t.operatorId,
               serviceId: t.serviceId,
               vehicleId: t.vehicleId,
+              flightNumber: getFlightNumberForTrip(t),
               departure: t.departure,
               departureType: t.departureType,
               arrival: t.arrival,
@@ -588,7 +1231,7 @@ export const useRouteSearch = () => {
               terminal: t.terminal,
               gate: t.gate,
               status,
-              fare,
+              ...fareFields,
             });
 
             prevArrival = arrTime;
@@ -599,8 +1242,11 @@ export const useRouteSearch = () => {
           }
 
           if (isArrivalMode) {
-            const finalArrival =
-              resumeSegments[resumeSegments.length - 1].arrivalTime;
+            const finalSegment = resumeSegments[resumeSegments.length - 1];
+            if (!finalSegment) {
+              continue;
+            }
+            const finalArrival = finalSegment.arrivalTime;
             if (finalArrival > searchTime) {
               continue;
             }
@@ -612,10 +1258,16 @@ export const useRouteSearch = () => {
           if (processedRoutes.has(resumeKey)) continue;
           processedRoutes.add(resumeKey);
 
+          const firstResumeSegment = resumeSegments[0];
+          const lastResumeSegment = resumeSegments[resumeSegments.length - 1];
+          if (!firstResumeSegment || !lastResumeSegment) {
+            continue;
+          }
+
           routes.push({
             segments: resumeSegments,
-            departureTime: resumeSegments[0].departureTime,
-            arrivalTime: resumeSegments[resumeSegments.length - 1].arrivalTime,
+            departureTime: firstResumeSegment.departureTime,
+            arrivalTime: lastResumeSegment.arrivalTime,
             totalFare,
             transferCount: Math.max(0, resumeSegments.length - 1),
           });
@@ -630,20 +1282,25 @@ export const useRouteSearch = () => {
         processedRoutes.add(routeKey);
 
         if (shouldNormalizeTrips(firstTrip, secondTrip)) {
-          const fare = await calculateFare(
+          const fareFields = await calculateSegmentFareFields(
             firstTrip.name,
             firstTrip.departure,
             finalTrip.arrival,
-            firstDepartureTime
+            firstDepartureTime,
+            withCar,
+            vehicleLengthMeters
           );
 
           const segment: TransitSegment = {
-            tripId: String(firstTrip.tripId),
+            tripId: [firstTrip, ...chain]
+              .map((trip) => trip.tripId)
+              .join("-"),
             ship: firstTrip.name,
             mode: firstTrip.mode ?? "FERRY",
             operatorId: firstTrip.operatorId,
             serviceId: firstTrip.serviceId,
             vehicleId: firstTrip.vehicleId,
+            flightNumber: getFlightNumberForTrip(firstTrip),
             departure: firstTrip.departure,
             departureType: firstTrip.departureType,
             arrival: finalTrip.arrival,
@@ -654,7 +1311,7 @@ export const useRouteSearch = () => {
             terminal: firstTrip.terminal,
             gate: firstTrip.gate,
             status: Math.max(firstStatus, chainStatus),
-            fare,
+            ...fareFields,
           };
 
           routes.push({
@@ -665,18 +1322,22 @@ export const useRouteSearch = () => {
             transferCount: 0,
           });
         } else {
-          const fare1 = await calculateFare(
+          const fareFields1 = await calculateSegmentFareFields(
             firstTrip.name,
             firstTrip.departure,
             firstTrip.arrival,
-            firstDepartureTime
+            firstDepartureTime,
+            withCar,
+            vehicleLengthMeters
           );
 
-          const fare2 = await calculateFare(
+          const fareFields2 = await calculateSegmentFareFields(
             secondTrip.name,
             secondTrip.departure,
             finalTrip.arrival,
-            secondDepartureTime
+            secondDepartureTime,
+            withCar,
+            vehicleLengthMeters
           );
 
           const segment1: TransitSegment = {
@@ -686,6 +1347,7 @@ export const useRouteSearch = () => {
             operatorId: firstTrip.operatorId,
             serviceId: firstTrip.serviceId,
             vehicleId: firstTrip.vehicleId,
+            flightNumber: getFlightNumberForTrip(firstTrip),
             departure: firstTrip.departure,
             departureType: firstTrip.departureType,
             arrival: firstTrip.arrival,
@@ -696,19 +1358,21 @@ export const useRouteSearch = () => {
             terminal: firstTrip.terminal,
             gate: firstTrip.gate,
             status: firstStatus,
-            fare: fare1,
+            ...fareFields1,
           };
 
+          const firstChainTrip = chain[0];
           const segment2: TransitSegment = {
             tripId:
-              chain.length === 1
+              chain.length === 1 || !firstChainTrip
                 ? String(secondTrip.tripId)
-                : `${chain[0].tripId}-${finalTrip.tripId}`,
+                : `${firstChainTrip.tripId}-${finalTrip.tripId}`,
             ship: secondTrip.name,
             mode: secondTrip.mode ?? "FERRY",
             operatorId: secondTrip.operatorId,
             serviceId: secondTrip.serviceId,
             vehicleId: secondTrip.vehicleId,
+            flightNumber: getFlightNumberForTrip(secondTrip),
             departure: secondTrip.departure,
             departureType: secondTrip.departureType,
             arrival: finalTrip.arrival,
@@ -719,7 +1383,179 @@ export const useRouteSearch = () => {
             terminal: secondTrip.terminal,
             gate: secondTrip.gate,
             status: chainStatus,
-            fare: fare2,
+            ...fareFields2,
+          };
+
+          routes.push({
+            segments: [segment1, segment2],
+            departureTime: firstDepartureTime,
+            arrivalTime: secondArrivalTime,
+            totalFare: segment1.fare + segment2.fare,
+            transferCount: 1,
+          });
+        }
+      }
+
+      const continuedFirstLegCandidates =
+        collectContinuedFirstLegCandidates(
+          firstTrip,
+          firstArrivalTime,
+          firstStatus
+        );
+
+      for (const firstLegCandidate of continuedFirstLegCandidates) {
+        const firstLegStartTrip = firstLegCandidate.trips[0];
+        if (!firstLegStartTrip) continue;
+
+        const transferPort = firstLegCandidate.finalTrip.arrival;
+        if (departurePorts.includes(transferPort)) continue;
+
+        for (const secondTrip of tripsByDeparture.get(transferPort) ?? []) {
+          if (
+            firstLegCandidate.trips.some(
+              (trip) => trip.tripId === secondTrip.tripId
+            )
+          ) {
+            continue;
+          }
+
+          if (shouldNormalizeTrips(firstLegCandidate.finalTrip, secondTrip)) {
+            continue;
+          }
+
+          // 本土の港が途中経由地（出発地/目的地以外）にある便を除外
+          if (secondTrip.via && isMainlandPort(secondTrip.via)) {
+            // 出発地または目的地が本土の港の場合は除外しない
+            if (
+              !isMainlandPort(secondTrip.departure) &&
+              !isMainlandPort(secondTrip.arrival)
+            ) {
+              continue;
+            }
+          }
+
+          const chainResult = collectTripChain(secondTrip);
+          if (!chainResult) continue;
+
+          const { trips: chain, maxStatus: chainStatus } = chainResult;
+          if (
+            chain.some((trip) =>
+              firstLegCandidate.visitedPorts.has(trip.arrival)
+            )
+          ) {
+            continue;
+          }
+
+          const finalTrip = chain[chain.length - 1];
+          if (!finalTrip) continue;
+
+          const [secondDepHours, secondDepMinutes] = parseTimeParts(
+            secondTrip.departureTime
+          );
+          const secondDepartureTime = new Date(firstLegCandidate.arrivalTime);
+          secondDepartureTime.setHours(secondDepHours, secondDepMinutes, 0, 0);
+
+          const [secondArrHours, secondArrMinutes] = parseTimeParts(
+            finalTrip.arrivalTime
+          );
+          const secondArrivalTime = new Date(secondDepartureTime);
+          secondArrivalTime.setHours(secondArrHours, secondArrMinutes, 0, 0);
+          if (secondArrivalTime < secondDepartureTime) {
+            secondArrivalTime.setDate(secondArrivalTime.getDate() + 1);
+          }
+
+          if (secondDepartureTime <= firstLegCandidate.arrivalTime) continue;
+
+          if (isArrivalMode && secondArrivalTime > searchTime) continue;
+
+          if (
+            isMainlandPort(departure) &&
+            isMainlandPort(transferPort) &&
+            isMainlandPort(arrival)
+          ) {
+            continue;
+          }
+
+          if (
+            !isMainlandPort(departure) &&
+            !isMainlandPort(arrival) &&
+            Array.from(firstLegCandidate.visitedPorts).some((port) =>
+              isMainlandPort(port)
+            )
+          ) {
+            continue;
+          }
+
+          const routeKey = `continued-${firstLegCandidate.trips
+            .map((trip) => trip.tripId)
+            .join("_")}-${chain.map((trip) => trip.tripId).join("_")}`;
+          if (processedRoutes.has(routeKey)) continue;
+          processedRoutes.add(routeKey);
+
+          const fareFields1 = await calculateSegmentFareFields(
+            firstLegStartTrip.name,
+            firstLegStartTrip.departure,
+            firstLegCandidate.finalTrip.arrival,
+            firstDepartureTime,
+            withCar,
+            vehicleLengthMeters
+          );
+
+          const fareFields2 = await calculateSegmentFareFields(
+            secondTrip.name,
+            secondTrip.departure,
+            finalTrip.arrival,
+            secondDepartureTime,
+            withCar,
+            vehicleLengthMeters
+          );
+
+          const segment1: TransitSegment = {
+            tripId: firstLegCandidate.trips
+              .map((trip) => trip.tripId)
+              .join("-"),
+            ship: firstLegStartTrip.name,
+            mode: firstLegStartTrip.mode ?? "FERRY",
+            operatorId: firstLegStartTrip.operatorId,
+            serviceId: firstLegStartTrip.serviceId,
+            vehicleId: firstLegStartTrip.vehicleId,
+            flightNumber: getFlightNumberForTrip(firstLegStartTrip),
+            departure: firstLegStartTrip.departure,
+            departureType: firstLegStartTrip.departureType,
+            arrival: firstLegCandidate.finalTrip.arrival,
+            arrivalType: firstLegCandidate.finalTrip.arrivalType,
+            departureTime: firstDepartureTime,
+            arrivalTime: firstLegCandidate.arrivalTime,
+            platform: firstLegStartTrip.platform,
+            terminal: firstLegStartTrip.terminal,
+            gate: firstLegStartTrip.gate,
+            status: firstLegCandidate.maxStatus,
+            ...fareFields1,
+          };
+
+          const firstChainTrip = chain[0];
+          const segment2: TransitSegment = {
+            tripId:
+              chain.length === 1 || !firstChainTrip
+                ? String(secondTrip.tripId)
+                : `${firstChainTrip.tripId}-${finalTrip.tripId}`,
+            ship: secondTrip.name,
+            mode: secondTrip.mode ?? "FERRY",
+            operatorId: secondTrip.operatorId,
+            serviceId: secondTrip.serviceId,
+            vehicleId: secondTrip.vehicleId,
+            flightNumber: getFlightNumberForTrip(secondTrip),
+            departure: secondTrip.departure,
+            departureType: secondTrip.departureType,
+            arrival: finalTrip.arrival,
+            arrivalType: finalTrip.arrivalType,
+            departureTime: secondDepartureTime,
+            arrivalTime: secondArrivalTime,
+            platform: secondTrip.platform,
+            terminal: secondTrip.terminal,
+            gate: secondTrip.gate,
+            status: chainStatus,
+            ...fareFields2,
           };
 
           routes.push({
@@ -738,7 +1574,11 @@ export const useRouteSearch = () => {
 
   // Check if two trips should be normalized (same ship, connected)
   const shouldNormalizeTrips = (trip1: Trip, trip2: Trip): boolean => {
-    return trip1.name === trip2.name && trip1.nextId === trip2.tripId;
+    return (
+      trip1.name === trip2.name &&
+      trip1.nextId !== undefined &&
+      String(trip1.nextId) === String(trip2.tripId)
+    );
   };
 
   // Check if port is on mainland
@@ -758,6 +1598,107 @@ export const useRouteSearch = () => {
     return [hours, minutes];
   };
 
+  const toFarePortVariants = (port: string): string[] => {
+    if (port === "HONDO") {
+      return ["HONDO", "HONDO_SHICHIRUI", "HONDO_SAKAIMINATO"];
+    }
+    if (port === "HONDO_SHICHIRUI" || port === "HONDO_SAKAIMINATO") {
+      return [port, "HONDO"];
+    }
+    return [port];
+  };
+
+  const findFareRoute = (
+    departure: string,
+    arrival: string,
+    date: Date | undefined,
+    vesselType: VesselType
+  ): FareRoute | undefined => {
+    if (!fareStore?.fareMaster) return undefined;
+
+    const departureCandidates = toFarePortVariants(departure);
+    const arrivalCandidates = toFarePortVariants(arrival);
+
+    for (const dep of departureCandidates) {
+      for (const arr of arrivalCandidates) {
+        const route = fareStore.getFareByRoute(dep, arr, {
+          date,
+          vesselType,
+        });
+        if (route) {
+          return route;
+        }
+      }
+    }
+
+    return undefined;
+  };
+
+  const calculateVehicleFare = async (
+    ship: string,
+    departure: string,
+    arrival: string,
+    date: Date | undefined,
+    vehicleLengthMeters: number
+  ): Promise<number | null> => {
+    if (!fareStore) {
+      logger.warn(`FareStore is not available (server-side rendering?)`);
+      return null;
+    }
+
+    if (!fareStore.fareMaster) {
+      await fareStore.loadFareMaster();
+    }
+
+    if (!fareStore.fareMaster) {
+      logger.warn(`FareMaster is not available after loading attempt`);
+      return null;
+    }
+
+    const fareRoute = isOkiKisenVehicleFerry(ship)
+      ? findFareRoute(departure, arrival, date, "ferry")
+      : undefined;
+
+    return calculateVehicleFareForShip(
+      ship,
+      fareRoute,
+      fareStore.fareMaster,
+      vehicleLengthMeters
+    );
+  };
+
+  const calculateSegmentFareFields = async (
+    ship: string,
+    departure: string,
+    arrival: string,
+    date: Date | undefined,
+    withCar: boolean,
+    vehicleLengthMeters: number
+  ): Promise<Pick<TransitSegment, "fare" | "passengerFare" | "vehicleFare">> => {
+    const passengerFare = await calculateFare(ship, departure, arrival, date);
+
+    if (!withCar) {
+      return {
+        fare: passengerFare,
+        passengerFare,
+      };
+    }
+
+    const vehicleFare = await calculateVehicleFare(
+      ship,
+      departure,
+      arrival,
+      date,
+      vehicleLengthMeters
+    );
+
+    return {
+      fare: vehicleFare ?? 0,
+      passengerFare,
+      vehicleFare: vehicleFare ?? undefined,
+    };
+  };
+
   // Calculate fare for a trip with date consideration
   const calculateFare = async (
     ship: string,
@@ -765,6 +1706,31 @@ export const useRouteSearch = () => {
     arrival: string,
     date?: Date
   ): Promise<number> => {
+    if (ship === "AMA_TOWN_BUS") {
+      return 200;
+    }
+    if (ship === "NISHINOSHIMA_TOWN_BUS") {
+      return 200;
+    }
+    if (ship === "CHIBU_VILLAGE_BUS") {
+      return 100;
+    }
+    if (ship === "OKI_ICHIBATA_BUS") {
+      return 500;
+    }
+    if (ship === "OKINOSHIMA_TOWN_BUS") {
+      return 300;
+    }
+    if (ship === "ICHIBATA_BUS_CONNECTION") {
+      return 1200;
+    }
+    if (ship === "OKI_AIRPORT_BUS") {
+      return 520;
+    }
+    if (ship === "JAL_OKI_ITAMI" || ship === "JAL_OKI_IZUMO") {
+      return 0;
+    }
+
     // Ensure fare data is loaded
     if (!fareStore) {
       logger.warn(`FareStore is not available (server-side rendering?)`);
@@ -781,20 +1747,6 @@ export const useRouteSearch = () => {
       return 0;
     }
 
-    const toFarePortVariants = (port: string): string[] => {
-      if (port === "HONDO") {
-        return ["HONDO", "HONDO_SHICHIRUI", "HONDO_SAKAIMINATO"];
-      }
-      if (port === "HONDO_SHICHIRUI" || port === "HONDO_SAKAIMINATO") {
-        return [port, "HONDO"];
-      }
-      return [port];
-    };
-
-    const departureCandidates = toFarePortVariants(departure);
-    const arrivalCandidates = toFarePortVariants(arrival);
-
-    let route: FareRoute | undefined;
     let vesselType: VesselType;
 
     // Determine vessel type based on ship name
@@ -840,27 +1792,12 @@ export const useRouteSearch = () => {
       return 0;
     }
 
-    // Try to find route by direct match first
-    for (const dep of departureCandidates) {
-      for (const arr of arrivalCandidates) {
-        const candidate = fareStore?.getFareByRoute(dep, arr, {
-          date,
-          vesselType,
-        });
-        if (candidate) {
-          route = candidate;
-          break;
-        }
-      }
-      if (route) {
-        break;
-      }
-    }
+    const route = findFareRoute(departure, arrival, date, vesselType);
 
     // If route found, return adult fare
     if (route && route.fares) {
       // Try to get adult fare from various sources
-      let adultFare = route.fares.adult;
+              let adultFare: number | undefined = route.fares.adult;
 
       // If adult fare is not available, try to get from seatClass (class2 is typically the base fare)
       if (adultFare === undefined || adultFare === null || adultFare === 0) {
@@ -914,6 +1851,11 @@ export const useRouteSearch = () => {
 
     // Get port from ferryStore
     if (ferryStore) {
+      const locationLabel = ferryStore.getLocationLabel(port);
+      if (locationLabel) {
+        return locationLabel;
+      }
+
       const portData = ferryStore.ports.find((p) => p.PORT_ID === port);
       if (portData) {
         return i18n.locale.value === "ja"

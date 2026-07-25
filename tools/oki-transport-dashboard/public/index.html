@@ -1,0 +1,237 @@
+<!doctype html>
+<html lang="ja">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>隠岐交通ソース監視</title>
+    <link rel="stylesheet" href="/styles.css">
+  </head>
+  <body>
+    <div class="app-shell">
+      <aside class="sidebar" aria-label="ソースグループ">
+        <div class="brand">
+          <div class="brand-mark" aria-hidden="true">隠</div>
+          <div>
+            <h1>隠岐交通ソース監視</h1>
+            <p>Local Ops Dashboard</p>
+          </div>
+        </div>
+        <nav id="groupNav" class="group-nav"></nav>
+      </aside>
+
+      <main class="main">
+        <header class="topbar">
+          <div>
+            <p class="eyeline">公式ソース収集</p>
+            <h2>時刻表・料金表・お知らせ</h2>
+          </div>
+          <div class="actions">
+            <button id="refreshBtn" class="button primary" type="button">
+              <span class="icon" aria-hidden="true">↻</span>
+              最新取得
+            </button>
+            <button id="saveBtn" class="button" type="button">
+              <span class="icon" aria-hidden="true">✓</span>
+              保存して取得
+            </button>
+            <button id="downloadBtn" class="button" type="button">
+              <span class="icon" aria-hidden="true">↓</span>
+              PDF等も保存
+            </button>
+          </div>
+        </header>
+
+        <section class="summary-grid" aria-label="収集サマリー">
+          <div class="metric">
+            <span class="metric-label">ソース</span>
+            <strong id="sourceCount">-</strong>
+            <small id="sourceStatus">未取得</small>
+          </div>
+          <div class="metric">
+            <span class="metric-label">資料</span>
+            <strong id="documentCount">-</strong>
+            <small id="documentStatus">時刻表 / 運賃</small>
+          </div>
+          <div class="metric">
+            <span class="metric-label">差分</span>
+            <strong id="changedCount">-</strong>
+            <small id="changedStatus">前回比</small>
+          </div>
+          <div class="metric">
+            <span class="metric-label">お知らせ</span>
+            <strong id="noticeCount">-</strong>
+            <small id="noticeStatus">新着</small>
+          </div>
+        </section>
+
+        <nav class="main-tabs" aria-label="表示切り替え">
+          <button class="main-tab active" type="button" data-main-tab="documents" aria-controls="documentsTabPanel" aria-selected="true">
+            検出資料
+          </button>
+          <button class="main-tab" type="button" data-main-tab="gtfs" aria-controls="gtfsTabPanel" aria-selected="false">
+            GTFS管理
+          </button>
+        </nav>
+
+        <div id="errorBanner" class="error-banner hidden" role="alert"></div>
+
+        <div id="documentsTabPanel" class="tab-panel active" data-tab-panel="documents">
+          <section class="toolbar" aria-label="絞り込み">
+            <label class="search">
+              <span aria-hidden="true">⌕</span>
+              <input id="searchInput" type="search" placeholder="会社名・資料名・URL">
+            </label>
+            <div class="segmented" role="tablist" aria-label="資料種別">
+              <button class="segment active" data-filter-type="all" type="button">すべて</button>
+              <button class="segment" data-filter-type="timetable" type="button">時刻表</button>
+              <button class="segment" data-filter-type="fare" type="button">料金</button>
+              <button class="segment" data-filter-type="notice" type="button">お知らせ</button>
+              <button class="segment" data-filter-type="status" type="button">運航</button>
+              <button class="segment" data-filter-type="map" type="button">地図</button>
+              <button class="segment" data-filter-type="other" type="button">その他</button>
+            </div>
+            <div class="filter-block" aria-label="レビュー状態">
+              <span>レビュー</span>
+              <div class="segmented compact" role="tablist">
+                <button class="segment active" data-filter-review="all" type="button">すべて</button>
+                <button class="segment" data-filter-review="unreviewed" type="button">未レビュー</button>
+                <button class="segment" data-filter-review="unnecessary" type="button">不要</button>
+                <button class="segment" data-filter-review="required" type="button">必要</button>
+              </div>
+            </div>
+            <div id="lastFetched" class="last-fetched">未取得</div>
+          </section>
+
+          <section class="content-grid">
+            <div class="source-panel">
+              <div class="section-header">
+                <h3>ソース</h3>
+                <span id="sourcePanelMeta"></span>
+              </div>
+              <div id="sourceCards" class="source-cards"></div>
+            </div>
+
+            <aside class="feed-panel">
+              <div class="section-header">
+                <h3>お知らせ</h3>
+                <span id="noticeMeta"></span>
+              </div>
+              <div id="noticeFeed" class="notice-feed"></div>
+              <div class="section-header log-header">
+                <h3>取得ログ</h3>
+                <span id="pageMeta"></span>
+              </div>
+              <div id="pageLog" class="page-log"></div>
+            </aside>
+          </section>
+
+          <section class="table-panel">
+            <div class="section-header">
+              <h3>検出資料</h3>
+              <span id="documentMeta"></span>
+            </div>
+            <div class="table-wrap">
+              <table>
+                <thead>
+                  <tr>
+                    <th>状態</th>
+                    <th>レビュー</th>
+                    <th>反映</th>
+                    <th>種別</th>
+                    <th>資料</th>
+                    <th>ソース</th>
+                    <th>日付</th>
+                    <th>取得元</th>
+                  </tr>
+                </thead>
+                <tbody id="documentRows"></tbody>
+              </table>
+            </div>
+          </section>
+        </div>
+
+        <section id="gtfsTabPanel" class="gtfs-panel tab-panel" data-tab-panel="gtfs">
+          <div class="section-header">
+            <div>
+              <h3>GTFS管理</h3>
+              <p>検出資料からGTFS下書きを作成し、既存GTFSの検証・変換も実行できます</p>
+            </div>
+            <span id="gtfsMeta">未読込</span>
+          </div>
+          <div class="gtfs-actions">
+            <label class="field-inline">
+              <span>下書き対象</span>
+              <select id="gtfsDraftScope">
+                <option value="active">不要以外の時刻表</option>
+                <option value="required">必要のみ</option>
+                <option value="all">全時刻表</option>
+              </select>
+            </label>
+            <button id="gtfsCreateDraftBtn" class="button primary" type="button">
+              <span class="icon" aria-hidden="true">⇄</span>
+              GTFS下書き作成
+            </button>
+            <button id="gtfsExportBtn" class="button" type="button">
+              <span class="icon" aria-hidden="true">⇩</span>
+              GTFSファイル生成
+            </button>
+            <a id="gtfsDownloadLink" class="button link-button hidden" href="#" download>
+              <span class="icon" aria-hidden="true">↓</span>
+              ZIPダウンロード
+            </a>
+          </div>
+          <div id="gtfsWorkflow" class="gtfs-workflow" aria-label="GTFS化ワークフロー"></div>
+          <div class="codex-panel">
+            <div class="section-header compact-header">
+              <div>
+                <h4>Codex App Server</h4>
+                <p>route候補ごとにGTFS化ジョブを作成し、Codexへ送信またはローカルキューに保存します</p>
+              </div>
+              <span id="codexAppServerMeta">未読込</span>
+            </div>
+            <div id="codexAppServerBody" class="codex-body"></div>
+          </div>
+          <div class="gtfs-grid">
+            <div id="gtfsFeedsCard" class="gtfs-card">
+              <div class="section-header compact-header">
+                <h4>採用中GTFS</h4>
+                <span id="gtfsCurrentMeta"></span>
+              </div>
+              <div id="gtfsFeeds" class="gtfs-feed-list"></div>
+            </div>
+            <div class="gtfs-card">
+              <div class="section-header compact-header">
+                <h4>下書き設定</h4>
+                <span id="gtfsDraftMeta"></span>
+              </div>
+              <div id="gtfsDraftEditor" class="gtfs-draft-editor"></div>
+              <pre id="gtfsTaskLog" class="task-log hidden"></pre>
+            </div>
+          </div>
+          <div id="gtfsRoutesSection" class="gtfs-routes">
+            <div class="section-header compact-header">
+              <h4>GTFS route候補</h4>
+              <span id="gtfsRouteMeta"></span>
+            </div>
+            <div class="table-wrap">
+              <table class="gtfs-table">
+                <thead>
+                  <tr>
+                    <th>管理状態</th>
+                    <th>route_type</th>
+                    <th>短縮名</th>
+                    <th>正式名</th>
+                    <th>資料</th>
+                    <th>操作</th>
+                  </tr>
+                </thead>
+                <tbody id="gtfsRouteRows"></tbody>
+              </table>
+            </div>
+          </div>
+        </section>
+      </main>
+    </div>
+    <script src="/app.js" type="module"></script>
+  </body>
+</html>

@@ -1,0 +1,62 @@
+[
+  {
+    "routeId": "NISHINOSHIMA_MAIN",
+    "agencyId": "NISHINOSHIMA_TOWN",
+    "shortName": "町営バス",
+    "longName": "西ノ島町営バス",
+    "description": "西ノ島町営バスの主要系統",
+    "type": 3,
+    "color": "0F766E",
+    "textColor": "FFFFFF"
+  },
+  {
+    "routeId": "NISHINOSHIMA_UGA",
+    "agencyId": "NISHINOSHIMA_TOWN",
+    "shortName": "宇賀線",
+    "longName": "西ノ島町営バス 宇賀線",
+    "description": "宇賀・大山方面の系統",
+    "type": 3,
+    "color": "2563EB",
+    "textColor": "FFFFFF"
+  },
+  {
+    "routeId": "NISHINOSHIMA_CHINZAKI_SANDO",
+    "agencyId": "NISHINOSHIMA_TOWN",
+    "shortName": "珍崎線・三度線",
+    "longName": "西ノ島町営バス 珍崎線・三度線",
+    "description": "浦郷・赤ノ江・珍崎・三度方面の系統",
+    "type": 3,
+    "color": "DC2626",
+    "textColor": "FFFFFF"
+  },
+  {
+    "routeId": "NISHINOSHIMA_KUNIGA",
+    "agencyId": "NISHINOSHIMA_TOWN",
+    "shortName": "国賀線",
+    "longName": "西ノ島町営バス 国賀線",
+    "description": "季節運行の国賀方面系統",
+    "type": 3,
+    "color": "7C3AED",
+    "textColor": "FFFFFF"
+  },
+  {
+    "routeId": "NISHINOSHIMA_HATO",
+    "agencyId": "NISHINOSHIMA_TOWN",
+    "shortName": "波止線",
+    "longName": "西ノ島町営バス 波止線",
+    "description": "波止方面の系統",
+    "type": 3,
+    "color": "D97706",
+    "textColor": "FFFFFF"
+  },
+  {
+    "routeId": "NISHINOSHIMA_DIRECT",
+    "agencyId": "NISHINOSHIMA_TOWN",
+    "shortName": "直行便",
+    "longName": "西ノ島町営バス 直行便",
+    "description": "由良車庫・浦郷・別府方面の直行便",
+    "type": 3,
+    "color": "0891B2",
+    "textColor": "FFFFFF"
+  }
+]

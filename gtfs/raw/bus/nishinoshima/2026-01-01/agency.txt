@@ -1,0 +1,2 @@
+agency_id,agency_name,agency_url,agency_timezone,agency_lang,agency_phone
+NISHINOSHIMA_TOWN,西ノ島町,https://www.town.nishinoshima.shimane.jp/,Asia/Tokyo,ja,08514-6-1220

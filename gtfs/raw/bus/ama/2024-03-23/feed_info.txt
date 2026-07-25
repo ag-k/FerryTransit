@@ -1,0 +1,2 @@
+feed_publisher_name,feed_publisher_url,feed_lang,feed_start_date,feed_end_date,feed_version
+海士町,http://www.town.ama.shimane.jp/,ja,20240323,20241231,2024/01/02改正-見える化ver2.6e

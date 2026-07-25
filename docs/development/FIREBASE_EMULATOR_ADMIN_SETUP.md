@@ -4,21 +4,27 @@ This document explains how the super admin registration works in the development
 
 ## Overview
 
-When running `npm run dev`, the system automatically registers a super administrator account in the Firebase emulators for development and testing purposes.
+`npm run dev` starts only the Nuxt development server through Portless. To start fresh Firebase emulators and automatically register a development super administrator, run `npm run firebase:emulators:with-admin` in a separate terminal.
 
 ## Automatic Registration
 
 ### Development Setup Script
 
-The `scripts/dev-setup.mjs` script automatically registers a super admin when you run:
+The `scripts/dev-setup.mjs` script prepares `.env.local` and verifies development tooling when you run:
 
 ```bash
 npm run dev:setup
 ```
 
-This script:
+This script does not start emulators or register users. Automatic registration is performed by:
 
-1. Sets up the Firebase emulators
+```bash
+npm run firebase:emulators:with-admin
+```
+
+That script:
+
+1. Starts the Firebase emulators
 2. Registers a super admin account with the following credentials:
    - **Email**: admin@ferry-dev.local
    - **Password**: Admin123!
@@ -26,7 +32,7 @@ This script:
 
 ### Full Development Environment
 
-For a complete development environment with emulators and admin registration, use:
+For the persistent emulator data workflow and Portless app server, use:
 
 ```bash
 npm run dev:full
@@ -34,9 +40,11 @@ npm run dev:full
 
 This command:
 
-1. Starts Firebase emulators with automatic super admin registration
-2. Starts the Nuxt development server
-3. Opens both services concurrently
+1. Starts Firebase emulators with import/export persistence
+2. Starts the Nuxt development server through portless at `https://ferry-transit.localhost`
+3. Runs both services concurrently
+
+On a fresh persistent-data directory, register the admin manually after the emulators are ready, or use `firebase:emulators:with-admin` instead when persistence is not needed.
 
 ## Manual Registration
 
@@ -58,7 +66,7 @@ node src/scripts/setup-admin.js admin@example.com Admin123! general
 The setup script automatically configures the following environment variables for emulator mode:
 
 - `FIREBASE_AUTH_EMULATOR_HOST=localhost:9099`
-- `FIRESTORE_EMULATOR_HOST=localhost:8095`
+- `FIRESTORE_EMULATOR_HOST=127.0.0.1:8751`
 - `GOOGLE_APPLICATION_CREDENTIALS=""` (empty for emulator mode)
 
 ## Firebase Emulator UI
@@ -73,9 +81,11 @@ After starting the emulators, you can access the Firebase Emulator UI at:
 
 | Script                                  | Description                                             |
 | --------------------------------------- | ------------------------------------------------------- |
-| `npm run dev`                           | Runs setup and starts Nuxt dev server                   |
-| `npm run dev:setup`                     | Runs environment setup including admin registration     |
-| `npm run dev:full`                      | Starts emulators with admin and dev server concurrently |
+| `npm run dev`                           | Runs setup and starts Nuxt through Portless HTTPS        |
+| `npm run dev:local`                     | Runs setup and starts the raw Nuxt dev server            |
+| `npm run dev:setup`                     | Prepares `.env.local` and verifies local tooling         |
+| `npm run dev:full`                      | Starts persistent emulators and Portless concurrently    |
+| `npm run dev:full:local`                | Starts emulators with the raw Nuxt dev server URL       |
 | `npm run firebase:emulators`            | Starts Firebase emulators only                          |
 | `npm run firebase:emulators:with-admin` | Starts emulators with automatic admin registration      |
 
@@ -95,7 +105,7 @@ This script will check:
 
 ## Production vs Development
 
-- **Development**: Uses Firebase emulators with automatic admin registration
+- **Development**: Uses Firebase emulators; the `firebase:emulators:with-admin` workflow also registers the development admin
 - **Production**: Requires `GOOGLE_APPLICATION_CREDENTIALS` environment variable pointing to a service account key
 
 ## Troubleshooting
@@ -161,7 +171,7 @@ Make sure the Firebase emulators are running before executing this command.
 Ensure the following ports are available:
 
 - Auth Emulator: 9099
-- Firestore Emulator: 8095
+- Firestore Emulator: 8751
 - Storage Emulator: 9199
 - Functions Emulator: 55002
 - Emulator UI: 4000

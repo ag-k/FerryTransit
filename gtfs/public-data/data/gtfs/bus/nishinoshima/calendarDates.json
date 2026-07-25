@@ -1,0 +1,287 @@
+[
+  {
+    "service_id": "star_weekday_plus_summer",
+    "date": "20260320",
+    "exception_type": "2"
+  },
+  {
+    "service_id": "star_weekday_plus_summer",
+    "date": "20260429",
+    "exception_type": "2"
+  },
+  {
+    "service_id": "star_weekday_plus_summer",
+    "date": "20260504",
+    "exception_type": "2"
+  },
+  {
+    "service_id": "star_weekday_plus_summer",
+    "date": "20260505",
+    "exception_type": "2"
+  },
+  {
+    "service_id": "star_weekday_plus_summer",
+    "date": "20260506",
+    "exception_type": "2"
+  },
+  {
+    "service_id": "star_weekday_plus_summer",
+    "date": "20260921",
+    "exception_type": "2"
+  },
+  {
+    "service_id": "star_weekday_plus_summer",
+    "date": "20260922",
+    "exception_type": "2"
+  },
+  {
+    "service_id": "star_weekday_plus_summer",
+    "date": "20260923",
+    "exception_type": "2"
+  },
+  {
+    "service_id": "star_weekday_plus_summer",
+    "date": "20261012",
+    "exception_type": "2"
+  },
+  {
+    "service_id": "star_weekday_plus_summer",
+    "date": "20261103",
+    "exception_type": "2"
+  },
+  {
+    "service_id": "star_weekday_plus_summer",
+    "date": "20261123",
+    "exception_type": "2"
+  },
+  {
+    "service_id": "star_weekday_plus_summer",
+    "date": "20260718",
+    "exception_type": "1"
+  },
+  {
+    "service_id": "star_weekday_plus_summer",
+    "date": "20260719",
+    "exception_type": "1"
+  },
+  {
+    "service_id": "star_weekday_plus_summer",
+    "date": "20260725",
+    "exception_type": "1"
+  },
+  {
+    "service_id": "star_weekday_plus_summer",
+    "date": "20260726",
+    "exception_type": "1"
+  },
+  {
+    "service_id": "star_weekday_plus_summer",
+    "date": "20260801",
+    "exception_type": "1"
+  },
+  {
+    "service_id": "star_weekday_plus_summer",
+    "date": "20260802",
+    "exception_type": "1"
+  },
+  {
+    "service_id": "star_weekday_plus_summer",
+    "date": "20260808",
+    "exception_type": "1"
+  },
+  {
+    "service_id": "star_weekday_plus_summer",
+    "date": "20260809",
+    "exception_type": "1"
+  },
+  {
+    "service_id": "star_weekday_plus_summer",
+    "date": "20260815",
+    "exception_type": "1"
+  },
+  {
+    "service_id": "star_weekday_plus_summer",
+    "date": "20260816",
+    "exception_type": "1"
+  },
+  {
+    "service_id": "holiday_direct_except_summer",
+    "date": "20260320",
+    "exception_type": "1"
+  },
+  {
+    "service_id": "holiday_direct_except_summer",
+    "date": "20260429",
+    "exception_type": "1"
+  },
+  {
+    "service_id": "holiday_direct_except_summer",
+    "date": "20260504",
+    "exception_type": "1"
+  },
+  {
+    "service_id": "holiday_direct_except_summer",
+    "date": "20260505",
+    "exception_type": "1"
+  },
+  {
+    "service_id": "holiday_direct_except_summer",
+    "date": "20260506",
+    "exception_type": "1"
+  },
+  {
+    "service_id": "holiday_direct_except_summer",
+    "date": "20260921",
+    "exception_type": "1"
+  },
+  {
+    "service_id": "holiday_direct_except_summer",
+    "date": "20260922",
+    "exception_type": "1"
+  },
+  {
+    "service_id": "holiday_direct_except_summer",
+    "date": "20260923",
+    "exception_type": "1"
+  },
+  {
+    "service_id": "holiday_direct_except_summer",
+    "date": "20261012",
+    "exception_type": "1"
+  },
+  {
+    "service_id": "holiday_direct_except_summer",
+    "date": "20261103",
+    "exception_type": "1"
+  },
+  {
+    "service_id": "holiday_direct_except_summer",
+    "date": "20261123",
+    "exception_type": "1"
+  },
+  {
+    "service_id": "holiday_direct_except_summer",
+    "date": "20260718",
+    "exception_type": "2"
+  },
+  {
+    "service_id": "holiday_direct_except_summer",
+    "date": "20260719",
+    "exception_type": "2"
+  },
+  {
+    "service_id": "holiday_direct_except_summer",
+    "date": "20260725",
+    "exception_type": "2"
+  },
+  {
+    "service_id": "holiday_direct_except_summer",
+    "date": "20260726",
+    "exception_type": "2"
+  },
+  {
+    "service_id": "holiday_direct_except_summer",
+    "date": "20260801",
+    "exception_type": "2"
+  },
+  {
+    "service_id": "holiday_direct_except_summer",
+    "date": "20260802",
+    "exception_type": "2"
+  },
+  {
+    "service_id": "holiday_direct_except_summer",
+    "date": "20260808",
+    "exception_type": "2"
+  },
+  {
+    "service_id": "holiday_direct_except_summer",
+    "date": "20260809",
+    "exception_type": "2"
+  },
+  {
+    "service_id": "holiday_direct_except_summer",
+    "date": "20260815",
+    "exception_type": "2"
+  },
+  {
+    "service_id": "holiday_direct_except_summer",
+    "date": "20260816",
+    "exception_type": "2"
+  },
+  {
+    "service_id": "range_0501_0506_0808_0816",
+    "date": "20260501",
+    "exception_type": "1"
+  },
+  {
+    "service_id": "range_0501_0506_0808_0816",
+    "date": "20260502",
+    "exception_type": "1"
+  },
+  {
+    "service_id": "range_0501_0506_0808_0816",
+    "date": "20260503",
+    "exception_type": "1"
+  },
+  {
+    "service_id": "range_0501_0506_0808_0816",
+    "date": "20260504",
+    "exception_type": "1"
+  },
+  {
+    "service_id": "range_0501_0506_0808_0816",
+    "date": "20260505",
+    "exception_type": "1"
+  },
+  {
+    "service_id": "range_0501_0506_0808_0816",
+    "date": "20260506",
+    "exception_type": "1"
+  },
+  {
+    "service_id": "range_0501_0506_0808_0816",
+    "date": "20260808",
+    "exception_type": "1"
+  },
+  {
+    "service_id": "range_0501_0506_0808_0816",
+    "date": "20260809",
+    "exception_type": "1"
+  },
+  {
+    "service_id": "range_0501_0506_0808_0816",
+    "date": "20260810",
+    "exception_type": "1"
+  },
+  {
+    "service_id": "range_0501_0506_0808_0816",
+    "date": "20260811",
+    "exception_type": "1"
+  },
+  {
+    "service_id": "range_0501_0506_0808_0816",
+    "date": "20260812",
+    "exception_type": "1"
+  },
+  {
+    "service_id": "range_0501_0506_0808_0816",
+    "date": "20260813",
+    "exception_type": "1"
+  },
+  {
+    "service_id": "range_0501_0506_0808_0816",
+    "date": "20260814",
+    "exception_type": "1"
+  },
+  {
+    "service_id": "range_0501_0506_0808_0816",
+    "date": "20260815",
+    "exception_type": "1"
+  },
+  {
+    "service_id": "range_0501_0506_0808_0816",
+    "date": "20260816",
+    "exception_type": "1"
+  }
+]

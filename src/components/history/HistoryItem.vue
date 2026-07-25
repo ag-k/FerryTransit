@@ -106,6 +106,10 @@
           <span v-if="history.type === 'route' && history.time" class="mx-2">·</span>
           <span v-if="history.type === 'route' && history.time">{{ history.isArrivalMode ? $t('ARRIVE_BY') : $t('DEPARTURE_AFTER') }}</span>
           <span v-if="history.type === 'route' && history.time" class="font-medium dark:text-gray-300">{{ formatTime(history.time) }}</span>
+          <span v-if="history.withCar" class="mx-2">·</span>
+          <span v-if="history.withCar">
+            {{ $t('VIA_CAR') }} / {{ formatVehicleLength(history.vehicleLengthMeters) }}
+          </span>
         </div>
 
         <div v-if="history.resultCount !== undefined" class="text-sm text-gray-500 dark:text-gray-400 mt-1">
@@ -167,6 +171,11 @@ import { useFerryStore } from '~/stores/ferry'
 import type { SearchHistoryItem } from '~/types/history'
 import { createLogger } from '~/utils/logger'
 import PortBadges from '@/components/common/PortBadges.vue'
+import {
+  DEFAULT_VEHICLE_LENGTH_METERS,
+  getVehicleLengthLabelKey,
+  normalizeVehicleLengthMeters
+} from '@/utils/vehicleFare'
 
 interface Props {
   history: SearchHistoryItem
@@ -212,7 +221,7 @@ const parsePortLabel = (label: string): PortLabelLine[] => {
   return parts.map((part) => {
     const match = part.match(/^(.+?)\s*\(([^)]+)\)\s*$/)
     if (match) {
-      return { name: match[1], municipality: match[2] }
+      return { name: match[1] ?? part, municipality: match[2] }
     }
     return { name: part }
   })
@@ -263,7 +272,7 @@ const formatDate = (date: Date | string) => {
   }
 }
 
-const formatTime = (time?: Date | string) => {
+const formatTime = (time?: Date | string | number) => {
   if (!time) return '-'
   try {
     const timeObj = time instanceof Date ? time : new Date(time)
@@ -280,5 +289,11 @@ const formatTime = (time?: Date | string) => {
     logger.error('Error formatting time', error)
     return '-'
   }
+}
+
+const formatVehicleLength = (vehicleLengthMeters?: number) => {
+  const length = normalizeVehicleLengthMeters(vehicleLengthMeters ?? DEFAULT_VEHICLE_LENGTH_METERS)
+  const key = getVehicleLengthLabelKey(length)
+  return key ? t(key) : t('VEHICLE_LENGTH_METERS', { meters: length })
 }
 </script>

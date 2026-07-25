@@ -10,6 +10,15 @@ import {
   addDaysJst,
 } from "@/utils/jstDate";
 import { buildStorageObjectDownloadUrl } from "@/utils/firebaseStorageUrl";
+import {
+  type BusStopRouteFilter,
+  type BusStopLocation,
+  getLocationTypeForCode,
+  isTripActiveOnDate,
+  loadBusStopRouteFiltersIndex,
+  loadBusStopsIndex,
+} from "@/utils/gtfsBusTimetable";
+import { AIRPORT_LABELS, AIRPORTS } from "@/data/air";
 
 // Port and Ship interfaces
 interface Port {
@@ -33,7 +42,17 @@ const formatDateLocal = (date: Date): string => {
 
 const TIMETABLE_STORAGE_PATH = "data/timetable.json";
 const TIMETABLE_CACHE_KEY = "rawTimetable";
+const SHIP_STATUS_CACHE_KEY = "shipStatusCache";
+const SHIP_STATUS_FETCH_TIME_KEY = "shipStatusFetchTime";
 const NATIVE_STORAGE_SDK_TIMEOUT_MS = 5000;
+const NORMAL_FERRY_OPERATION_STATES = new Set(["定期運航", "通常運航"]);
+
+const isNormalFerryOperationState = (state: unknown): boolean => {
+  if (typeof state !== "string") {
+    return false;
+  }
+  return NORMAL_FERRY_OPERATION_STATES.has(state.trim());
+};
 
 const toLoggableError = (error: unknown): Record<string, unknown> => {
   if (error instanceof Error) {
@@ -112,6 +131,57 @@ const isNativeClientPlatform = (): boolean => {
   }
 };
 
+const parseOptionalInteger = (value: unknown): number | undefined => {
+  const parsed = Number(value);
+  if (Number.isFinite(parsed)) return parsed;
+
+  if (typeof value !== "string") return undefined;
+
+  const trimmed = value.trim();
+  if (!trimmed) return undefined;
+
+  let hash = 0;
+  for (let i = 0; i < trimmed.length; i++) {
+    hash = ((hash << 5) - hash + trimmed.charCodeAt(i)) | 0;
+  }
+
+  return 900_000_000 + Math.abs(hash % 1_000_000_000);
+};
+
+const parseStatus = (value: unknown): number => {
+  const parsed = Number(value);
+  return Number.isFinite(parsed) ? parsed : 0;
+};
+
+const normalizeTimetableTrip = (trip: any): Trip => {
+  return {
+    tripId: parseOptionalInteger(trip.trip_id ?? trip.tripId) ?? 0,
+    startDate: trip.start_date ?? trip.startDate,
+    endDate: trip.end_date ?? trip.endDate,
+    name: trip.name,
+    mode: trip.mode || "FERRY",
+    operatorId: trip.operator_id ?? trip.operatorId,
+    serviceId: trip.service_id ?? trip.serviceId,
+    vehicleId: trip.vehicle_id ?? trip.vehicleId,
+    departure: trip.departure,
+    departureType: trip.departure_type ?? trip.departureType,
+    departureTime: trip.departure_time ?? trip.departureTime,
+    arrival: trip.arrival,
+    arrivalType: trip.arrival_type ?? trip.arrivalType,
+    arrivalTime: trip.arrival_time ?? trip.arrivalTime,
+    activeDays: trip.active_days ?? trip.activeDays,
+    addedDates: trip.added_dates ?? trip.addedDates,
+    removedDates: trip.removed_dates ?? trip.removedDates,
+    platform: trip.platform,
+    terminal: trip.terminal,
+    gate: trip.gate,
+    nextId: parseOptionalInteger(trip.next_id ?? trip.nextId),
+    status: parseStatus(trip.status),
+    price: parseOptionalInteger(trip.price),
+    via: trip.via,
+  };
+};
+
 export const useFerryStore = defineStore("ferry", () => {
   const logger = createLogger("ferryStore");
   // State
@@ -134,13 +204,28 @@ export const useFerryStore = defineStore("ferry", () => {
   const isLoading = ref(false);
   const error = ref<string | null>(null);
   const lastFetchTime = ref<Date | null>(null);
+  const busStops = ref<string[]>([]);
+  const busStopLocations = ref<Record<string, BusStopLocation>>({});
+  const busStopRouteFilters = ref<BusStopRouteFilter[]>([]);
+  const locationLabels = ref<Record<string, string>>({ ...AIRPORT_LABELS });
 
   // Port definitions
   const hondoPorts = ["HONDO", "HONDO_SHICHIRUI", "HONDO_SAKAIMINATO"];
   const dozenPorts = ["BEPPU", "HISHIURA", "KURI"];
   const dogoPorts = ["SAIGO"];
+  const airports = AIRPORTS.map(airport => airport.id);
 
   const allPorts = computed(() => [...hondoPorts, ...dozenPorts, ...dogoPorts]);
+
+  const allLocations = computed(() => [...allPorts.value, ...busStops.value, ...airports]);
+
+  const getLocationLabel = (locationId: string): string | null => {
+    return locationLabels.value[locationId] ?? null;
+  };
+
+  const isStopLocation = (locationId?: string): boolean => {
+    return getLocationTypeForCode(locationId) === "STOP";
+  };
 
   // Port data
   const ports = ref<Port[]>([
@@ -303,7 +388,7 @@ export const useFerryStore = defineStore("ferry", () => {
       const endExclusive = addDaysJst(parseYmdAsJstMidnight(endYmd), 1); // 終了日の翌日0:00(JST)
       const currentDate = parseYmdAsJstMidnight(dateStr);
 
-      return currentDate >= startDate && currentDate < endExclusive;
+      return currentDate >= startDate && currentDate < endExclusive && isTripActiveOnDate(trip, selectedDate.value, dateStr);
     });
 
     // 出発地でフィルタリング
@@ -459,6 +544,38 @@ export const useFerryStore = defineStore("ferry", () => {
     return resultTimetable;
   });
 
+  const ensureBusStopsLoaded = async () => {
+    if (busStops.value.length === 0) {
+      try {
+        const busIndex = await loadBusStopsIndex();
+        busStops.value = Array.from(new Set(busIndex.stopCodes));
+        locationLabels.value = {
+          ...AIRPORT_LABELS,
+          ...locationLabels.value,
+          ...busIndex.locationLabels,
+        };
+        busStopLocations.value = {
+          ...busStopLocations.value,
+          ...busIndex.stopLocations,
+        };
+      } catch (busError) {
+        logger.warn("Bus stop index load failed", {
+          error: toLoggableError(busError),
+        });
+      }
+    }
+
+    if (busStopRouteFilters.value.length === 0) {
+      try {
+        busStopRouteFilters.value = await loadBusStopRouteFiltersIndex();
+      } catch (busRouteError) {
+        logger.warn("Bus stop route filter index load failed", {
+          error: toLoggableError(busRouteError),
+        });
+      }
+    }
+  };
+
   // Actions
   const fetchTimetable = async (force = false) => {
     const nativeAtEntry = process.client && isNativeClientPlatform();
@@ -477,7 +594,7 @@ export const useFerryStore = defineStore("ferry", () => {
       const config = useRuntimeConfig();
       const functionsUrl = `https://asia-northeast1-${config.public.firebase.projectId}.cloudfunctions.net/getTimetableStorage`;
 
-      const fetchFromStorageSdk = async () => {
+      const fetchFromStorageSdk = () => {
         const { getCachedJsonFile } = useFirebaseStorage();
         return getCachedJsonFile<any[]>(TIMETABLE_STORAGE_PATH, TIMETABLE_CACHE_KEY, 15);
       };
@@ -495,8 +612,8 @@ export const useFerryStore = defineStore("ferry", () => {
         return (await response.json()) as any[];
       };
 
-      const fetchFromFunctions = async () => {
-        return $fetch<any[]>(functionsUrl);
+      const fetchFromFunctions = () => {
+        return $fetch(functionsUrl) as Promise<any[]>;
       };
 
       if (isNativeClient) {
@@ -543,24 +660,12 @@ export const useFerryStore = defineStore("ferry", () => {
       }
 
       if (!Array.isArray(data) || data.length === 0) {
-        timetableData.value = [];
         error.value = "LOAD_TIMETABLE_ERROR";
         return;
       }
 
       // Map API response fields to expected format
-      timetableData.value = data.map((trip) => ({
-        tripId: parseInt(trip.trip_id), // Convert string IDs to numbers
-        startDate: trip.start_date,
-        endDate: trip.end_date,
-        name: trip.name,
-        departure: trip.departure,
-        departureTime: trip.departure_time, // Keep as string
-        arrival: trip.arrival,
-        arrivalTime: trip.arrival_time, // Keep as string
-        nextId: trip.next_id ? parseInt(trip.next_id) : undefined,
-        status: parseInt(trip.status) || 0,
-      }));
+      timetableData.value = data.map(normalizeTimetableTrip);
 
       lastFetchTime.value = new Date();
 
@@ -585,29 +690,24 @@ export const useFerryStore = defineStore("ferry", () => {
       error.value = "LOAD_TIMETABLE_ERROR";
 
       // オフラインの場合はキャッシュから読み込み
+      let loadedFallbackTimetable = false;
       if (process.client) {
         try {
           const cached = localStorage.getItem(TIMETABLE_CACHE_KEY);
           if (cached) {
-            const data = JSON.parse(cached);
+            const data = JSON.parse(cached) as any[];
             // Map cached data to expected format
-            timetableData.value = data.map((trip) => ({
-              tripId: parseInt(trip.trip_id), // Convert string IDs to numbers
-              startDate: trip.start_date,
-              endDate: trip.end_date,
-              name: trip.name,
-              departure: trip.departure,
-              departureTime: trip.departure_time, // Keep as string
-              arrival: trip.arrival,
-              arrivalTime: trip.arrival_time, // Keep as string
-              nextId: trip.next_id ? parseInt(trip.next_id) : undefined,
-              status: parseInt(trip.status) || 0,
-            }));
+            timetableData.value = data.map(normalizeTimetableTrip);
             error.value = "OFFLINE_TIMETABLE_ERROR";
+            loadedFallbackTimetable = true;
           }
         } catch (e) {
           // ローカルキャッシュの読み込みが失敗した場合は既存データを保持
         }
+      }
+
+      if (!loadedFallbackTimetable) {
+        timetableData.value = [];
       }
     } finally {
       isLoading.value = false;
@@ -657,16 +757,19 @@ export const useFerryStore = defineStore("ferry", () => {
         }
 
         if (ferryData) {
+          const ferryState = ferryData.ferry_state || ferryData.ferryState;
+          const fastFerryState =
+            ferryData.fast_ferry_state || ferryData.fastFerryState;
+
           // フェリーデータはスネークケースからキャメルケースに変換
           shipStatus.value.ferry = {
             ...ferryData,
             hasAlert:
-              ferryData.ferry_state !== "定期運航" ||
-              ferryData.fast_ferry_state !== "( in Operation )",
-            ferryState: ferryData.ferry_state || ferryData.ferryState,
+              !isNormalFerryOperationState(ferryState) ||
+              !isNormalFerryOperationState(fastFerryState),
+            ferryState,
             ferryComment: ferryData.ferry_comment || ferryData.ferryComment,
-            fastFerryState:
-              ferryData.fast_ferry_state || ferryData.fastFerryState,
+            fastFerryState,
             fastFerryComment:
               ferryData.fast_ferry_comment || ferryData.fastFerryComment,
             todayWave: ferryData.today_wave || ferryData.todayWave,
@@ -690,8 +793,52 @@ export const useFerryStore = defineStore("ferry", () => {
 
       // 臨時便を時刻表データに追加
       processExtraShips();
+
+      const hasStatusData = Object.values(shipStatus.value).some((status) => status !== null);
+      if (typeof localStorage !== "undefined" && hasStatusData) {
+        const fetchedAt = new Date();
+        lastFetchTime.value = fetchedAt;
+        localStorage.setItem(SHIP_STATUS_CACHE_KEY, JSON.stringify(shipStatus.value));
+        localStorage.setItem(SHIP_STATUS_FETCH_TIME_KEY, fetchedAt.toISOString());
+      }
     } catch (e) {
       error.value = "LOAD_STATUS_ERROR";
+
+      if (typeof localStorage !== "undefined") {
+        try {
+          const cachedValue = localStorage.getItem(SHIP_STATUS_CACHE_KEY);
+          if (cachedValue) {
+            const cached = JSON.parse(cachedValue) as Partial<ShipStatusStoreState>;
+            const hasCachedStatus = cached && typeof cached === "object" && [
+              "isokaze",
+              "dozen",
+              "ferry",
+              "kunigaKankou",
+            ].some((key) => key in cached);
+
+            if (hasCachedStatus) {
+              shipStatus.value = {
+                isokaze: cached.isokaze ?? null,
+                dozen: cached.dozen ?? null,
+                ferry: cached.ferry ?? null,
+                kunigaKankou: cached.kunigaKankou ?? null,
+              };
+
+              const cachedTime = localStorage.getItem(SHIP_STATUS_FETCH_TIME_KEY);
+              if (cachedTime) {
+                const parsedTime = new Date(cachedTime);
+                if (!Number.isNaN(parsedTime.getTime())) {
+                  lastFetchTime.value = parsedTime;
+                }
+              }
+
+              processExtraShips();
+            }
+          }
+        } catch {
+          // 壊れたキャッシュは無視して、運航状況なしの状態を維持する
+        }
+      }
     } finally {
       isLoading.value = false;
     }
@@ -701,9 +848,13 @@ export const useFerryStore = defineStore("ferry", () => {
     const dateStr = formatDateLocal(selectedDate.value);
 
     // 既存の臨時便を削除
-    timetableData.value = timetableData.value.filter(
-      (trip) => trip.tripId < 1000
-    );
+    timetableData.value = timetableData.value.filter((trip) => {
+      const isExtraShip =
+        trip.tripId >= 1000 &&
+        trip.tripId < 3000 &&
+        (trip.name === "ISOKAZE" || trip.name === "FERRY_DOZEN");
+      return !isExtraShip;
+    });
 
     // いそかぜの臨時便
     if (shipStatus.value.isokaze?.extraShips) {
@@ -804,6 +955,8 @@ export const useFerryStore = defineStore("ferry", () => {
       if (savedTime) {
         lastFetchTime.value = new Date(savedTime);
       }
+
+      await ensureBusStopsLoaded();
     } catch (e) {
       // ローカルストレージ読み込みに失敗した場合は既存状態を維持
     }
@@ -826,7 +979,15 @@ export const useFerryStore = defineStore("ferry", () => {
     hondoPorts,
     dozenPorts,
     dogoPorts,
+    airports,
     allPorts,
+    allLocations,
+    busStops,
+    busStopLocations,
+    busStopRouteFilters,
+    locationLabels,
+    getLocationLabel,
+    isStopLocation,
     // portMaps: removed (was legacy Google Maps iframe embeds)
 
     // Getters
@@ -837,6 +998,7 @@ export const useFerryStore = defineStore("ferry", () => {
     // Actions
     fetchTimetable,
     fetchShipStatus,
+    ensureBusStopsLoaded,
     setDeparture,
     setArrival,
     reverseRoute,

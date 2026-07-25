@@ -57,6 +57,7 @@
                 </div>
                 <div class="bg-app-surface-2/70 px-4 py-3 sm:px-6 sm:flex sm:flex-row-reverse">
                   <button
+                    v-if="showSubmit"
                     type="submit"
                     :disabled="loading"
                     :class="[
@@ -113,6 +114,7 @@ interface Props {
   cancelText?: string
   loadingText?: string
   loading?: boolean
+  showSubmit?: boolean
   size?: 'sm' | 'md' | 'lg' | 'xl'
   variant?: 'info' | 'success' | 'warning' | 'danger'
   icon?: Component
@@ -123,6 +125,7 @@ const props = withDefaults(defineProps<Props>(), {
   cancelText: 'キャンセル',
   loadingText: '処理中...',
   loading: false,
+  showSubmit: true,
   size: 'md',
   variant: 'info'
 })

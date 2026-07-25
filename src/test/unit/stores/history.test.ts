@@ -103,6 +103,51 @@ describe('History Store', () => {
       expect(store.history[0].date).toEqual(new Date('2025-06-24'))
     })
 
+    it('車両条件が異なる検索は別履歴として保持される', () => {
+      const store = useHistoryStore()
+      const historyItem: Omit<SearchHistoryItem, 'id' | 'searchedAt'> = {
+        type: 'route',
+        departure: 'hongo',
+        arrival: 'saigo',
+        date: new Date('2025-06-23'),
+        isArrivalMode: false,
+        withCar: false
+      }
+
+      store.addSearchHistory(historyItem)
+      store.addSearchHistory({
+        ...historyItem,
+        withCar: true,
+        vehicleLengthMeters: 5
+      })
+
+      expect(store.history).toHaveLength(2)
+      expect(store.history.some(item => item.withCar === true && item.vehicleLengthMeters === 5)).toBe(true)
+      expect(store.history.some(item => item.withCar === false)).toBe(true)
+    })
+
+    it('車両オプションOFFでは車長の違いを重複判定に使わない', () => {
+      const store = useHistoryStore()
+      const historyItem: Omit<SearchHistoryItem, 'id' | 'searchedAt'> = {
+        type: 'route',
+        departure: 'hongo',
+        arrival: 'saigo',
+        date: new Date('2025-06-23'),
+        isArrivalMode: false,
+        withCar: false,
+        vehicleLengthMeters: 5
+      }
+
+      store.addSearchHistory(historyItem)
+      store.addSearchHistory({
+        ...historyItem,
+        vehicleLengthMeters: 7
+      })
+
+      expect(store.history).toHaveLength(1)
+      expect(store.history[0].vehicleLengthMeters).toBe(7)
+    })
+
     it('カスタムsearchedAtを指定して検索履歴を追加できる', () => {
       const store = useHistoryStore()
       const customSearchedAt = new Date('2025-01-15T10:00:00')
@@ -350,6 +395,27 @@ describe('History Store', () => {
       expect(mockGetData).toHaveBeenCalledWith(HISTORY_STORAGE_KEY)
       expect(store.history).toHaveLength(1)
       expect(store.history[0].departure).toBe('hongo')
+    })
+
+    it('ストレージ内のISO日時を検索時刻としてそのまま復元する', () => {
+      const searchedAt = new Date()
+      const storedTime = '2026-07-04T23:00:00.000Z'
+      mockGetData.mockReturnValue([{
+        id: 'iso-time-id',
+        type: 'route',
+        departure: 'HONDO_SAKAIMINATO',
+        arrival: 'HISHIURA',
+        date: '2026-07-05T00:00:00.000Z',
+        time: storedTime,
+        searchedAt: searchedAt.toISOString(),
+        isArrivalMode: false
+      }])
+
+      const store = useHistoryStore()
+      store.loadFromStorage()
+
+      expect(store.history[0].time).toBeInstanceOf(Date)
+      expect(store.history[0].time?.toISOString()).toBe(storedTime)
     })
   })
 })

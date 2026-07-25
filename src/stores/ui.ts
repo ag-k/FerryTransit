@@ -30,7 +30,7 @@ export const useUIStore = defineStore('ui', () => {
   // Initialize theme
   const initializeTheme = () => {
     // クライアントサイドでのみ実行
-    if (process.client) {
+    if (typeof window !== 'undefined') {
       // LocalStorageから設定を読み込む
       const savedTheme = localStorage.getItem('theme') as 'light' | 'dark' | 'system' | null
       if (savedTheme) {
@@ -55,7 +55,7 @@ export const useUIStore = defineStore('ui', () => {
   // テーマを適用
   const applyTheme = () => {
     // クライアントサイドでのみ実行
-    if (process.client) {
+    if (typeof window !== 'undefined') {
       const root = document.documentElement
       const isDark = theme.value === 'dark' || (theme.value === 'system' && prefersDark.value)
       
@@ -70,7 +70,7 @@ export const useUIStore = defineStore('ui', () => {
   // テーマを設定
   const setTheme = (newTheme: 'light' | 'dark' | 'system') => {
     theme.value = newTheme
-    if (process.client) {
+    if (typeof window !== 'undefined') {
       localStorage.setItem('theme', newTheme)
     }
     applyTheme()

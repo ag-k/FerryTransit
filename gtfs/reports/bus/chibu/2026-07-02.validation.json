@@ -1,0 +1,20 @@
+{
+  "ok": true,
+  "checkedAt": "2026-07-02T13:08:43.786Z",
+  "mode": "bus",
+  "id": "chibu",
+  "gtfsDir": "/Users/ag/works/FerryTransit/gtfs/current/bus/chibu",
+  "summary": {
+    "agencyCount": 1,
+    "routeCount": 1,
+    "stopCount": 12,
+    "tripCount": 4,
+    "stopTimeCount": 29,
+    "serviceCount": 1,
+    "feedStartDate": "20260101",
+    "feedEndDate": "20261231",
+    "feedVersion": "20230201_20260101-20261231"
+  },
+  "issues": [],
+  "warnings": []
+}

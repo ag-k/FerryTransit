@@ -1,0 +1,5 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- Fallback for legacy orientation/density-specific screen assets. -->
+    <item name="screen" type="drawable">@drawable/splash</item>
+</resources>

@@ -237,7 +237,7 @@ describe("Ferry Store", () => {
             ...mockFerryStatus,
             ferry_state: "定期運航",
             ferry_comment: mockFerryStatus.ferryComment,
-            fast_ferry_state: "( in Operation )",
+            fast_ferry_state: "定期運航",
             fast_ferry_comment: mockFerryStatus.fastFerryComment,
             today_wave: mockFerryStatus.todayWave,
             tomorrow_wave: mockFerryStatus.tomorrowWave,
@@ -253,6 +253,64 @@ describe("Ferry Store", () => {
       expect(store.shipStatus.dozen?.hasAlert).toBe(false);
       expect(store.shipStatus.ferry).toBeTruthy();
       expect(store.shipStatus.ferry?.hasAlert).toBe(false);
+      const statusCacheCall = (localStorage.setItem as any).mock.calls.find(
+        ([key]: [string]) => key === "shipStatusCache"
+      );
+      expect(JSON.parse(statusCacheCall?.[1] || "null")).toMatchObject({
+        isokaze: { status: 0, hasAlert: false },
+        dozen: { status: 0, hasAlert: false },
+        ferry: { ferryState: "定期運航", hasAlert: false },
+      });
+      expect(localStorage.setItem).toHaveBeenCalledWith(
+        "shipStatusFetchTime",
+        expect.any(String)
+      );
+    });
+
+    it("should restore cached ship status when the API is offline", async () => {
+      const store = useFerryStore();
+      const cachedAt = "2026-07-19T06:30:00.000Z";
+
+      const cachedStatus = JSON.stringify({
+        isokaze: { ...mockShipStatus, status: 0, hasAlert: false },
+        dozen: { ...mockShipStatus, status: 0, hasAlert: false },
+        ferry: {
+          ...mockFerryStatus,
+          ferryState: "定期運航",
+          fastFerryState: "定期運航",
+          hasAlert: false,
+        },
+        kunigaKankou: null,
+      });
+      (localStorage.getItem as any).mockImplementation((key: string) => {
+        if (key === "shipStatusCache") return cachedStatus;
+        if (key === "shipStatusFetchTime") return cachedAt;
+        return null;
+      });
+      (global.$fetch as any).mockRejectedValue(new Error("offline"));
+
+      await store.fetchShipStatus();
+
+      expect(store.shipStatus.isokaze?.status).toBe(0);
+      expect(store.shipStatus.dozen?.hasAlert).toBe(false);
+      expect(store.shipStatus.ferry?.ferryState).toBe("定期運航");
+      expect(store.lastFetchTime?.toISOString()).toBe(cachedAt);
+      expect(store.error).toBe("LOAD_STATUS_ERROR");
+    });
+
+    it("should ignore a corrupt ship status cache when the API is offline", async () => {
+      const store = useFerryStore();
+      (localStorage.getItem as any).mockImplementation((key: string) => {
+        return key === "shipStatusCache" ? "{invalid-json" : null;
+      });
+      (global.$fetch as any).mockRejectedValue(new Error("offline"));
+
+      await store.fetchShipStatus();
+
+      expect(store.shipStatus.isokaze).toBeNull();
+      expect(store.shipStatus.dozen).toBeNull();
+      expect(store.shipStatus.ferry).toBeNull();
+      expect(store.error).toBe("LOAD_STATUS_ERROR");
     });
 
     it("should set departure and arrival", () => {
@@ -438,6 +496,85 @@ describe("Ferry Store", () => {
       expect(extraTrip?.name).toBe("ISOKAZE");
       expect(extraTrip?.status).toBe(4);
       expect(extraTrip?.departureTime).toBe("10:15");
+    });
+
+    it("keeps scheduled Rainbow Jet trips when clearing extra ships", async () => {
+      const store = useFerryStore();
+      store.selectedDate = new Date("2026-07-24T00:00:00+09:00");
+      store.timetableData = [
+        {
+          tripId: 1000,
+          startDate: "2026-07-24",
+          endDate: "2026-07-24",
+          name: "ISOKAZE",
+          departure: "BEPPU",
+          departureTime: "07:00",
+          arrival: "HISHIURA",
+          arrivalTime: "07:10",
+          status: 4,
+        },
+        {
+          tripId: 1007,
+          nextId: 1008,
+          startDate: "2026-06-01",
+          endDate: "2026-08-07",
+          name: "RAINBOWJET",
+          departure: "HISHIURA",
+          departureTime: "08:14",
+          arrival: "SAIGO",
+          arrivalTime: "08:45",
+          status: 0,
+        },
+        {
+          tripId: 1008,
+          startDate: "2026-06-01",
+          endDate: "2026-08-07",
+          name: "RAINBOWJET",
+          departure: "SAIGO",
+          departureTime: "08:54",
+          arrival: "HONDO_SHICHIRUI",
+          arrivalTime: "10:03",
+          status: 0,
+        },
+      ];
+
+      (global.$fetch as any).mockImplementation((url: string) => {
+        if (url.includes("/status-kankou")) {
+          return Promise.resolve(null);
+        }
+        return Promise.resolve([null, null, null]);
+      });
+
+      await store.fetchShipStatus();
+
+      expect(
+        store.timetableData.find(
+          (trip) => trip.tripId === 1000 && trip.name === "ISOKAZE"
+        )
+      ).toBeUndefined();
+      expect(
+        store.timetableData
+          .filter((trip) => trip.name === "RAINBOWJET")
+          .map((trip) => ({
+            tripId: trip.tripId,
+            nextId: trip.nextId,
+            departure: trip.departure,
+            arrival: trip.arrival,
+          }))
+      ).toEqual([
+        {
+          tripId: 1007,
+          nextId: 1008,
+          departure: "HISHIURA",
+          arrival: "SAIGO",
+        },
+        {
+          tripId: 1008,
+          nextId: undefined,
+          departure: "SAIGO",
+          arrival: "HONDO_SHICHIRUI",
+        },
+      ]);
     });
 
     it("handles null ship states gracefully", async () => {
@@ -727,13 +864,25 @@ describe("Ferry Store", () => {
       };
       (localStorage.getItem as any).mockReturnValue(JSON.stringify(cachedData));
       store.lastFetchTime = new Date();
-      store.timetableData = mockTrips;
+      const cachedBusTrip = {
+        ...mockTrips[0],
+        tripId: 3000000,
+        name: "AMA_TOWN_BUS",
+        mode: "BUS",
+      } as Trip;
+      store.busStops = [
+        "BUS_AMA_100_01",
+        "BUS_NISHINOSHIMA_nishinoshima_001",
+        "BUS_CHIBU_kuri_naikosen",
+        "BUS_OKINOSHIMA_port_mae",
+      ];
+      store.timetableData = [...mockTrips, cachedBusTrip];
 
       await store.fetchTimetable(false);
 
       // Should not have called fetch
       expect(global.fetch).not.toHaveBeenCalled();
-      expect(store.timetableData).toEqual(mockTrips);
+      expect(store.timetableData).toEqual([...mockTrips, cachedBusTrip]);
     });
   });
 });

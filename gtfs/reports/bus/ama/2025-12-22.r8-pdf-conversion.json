@@ -1,0 +1,14 @@
+{
+  "convertedAt": "2026-05-21T06:56:54.653Z",
+  "sourceDir": "/Users/ag/works/FerryTransit/gtfs/pdf/bus/ama/r8",
+  "outputDir": "/Users/ag/works/FerryTransit/gtfs/raw/bus/ama/2025-12-22",
+  "currentUpdated": true,
+  "feedStartDate": "20260102",
+  "feedEndDate": "20261231",
+  "feedVersion": "R8_20251222-1",
+  "counts": {
+    "services": 36,
+    "trips": 396,
+    "stopTimes": 7348
+  }
+}

@@ -76,6 +76,29 @@ describe('Favorite Store', () => {
       }).toThrow('This route is already in favorites')
     })
 
+    it('車両条件が異なる同一区間を別のお気に入りとして保持する', () => {
+      const store = useFavoriteStore()
+
+      store.addFavoriteRoute({ departure: 'HONDO_SHICHIRUI', arrival: 'SAIGO' })
+      store.addFavoriteRoute({
+        departure: 'HONDO_SHICHIRUI',
+        arrival: 'SAIGO',
+        withCar: true,
+        vehicleLengthMeters: 7
+      })
+
+      expect(store.routes).toHaveLength(2)
+      expect(store.isRouteFavorited('HONDO_SHICHIRUI', 'SAIGO')).toBe(true)
+      expect(store.isRouteFavorited('HONDO_SHICHIRUI', 'SAIGO', true, 7)).toBe(true)
+      expect(store.isRouteFavorited('HONDO_SHICHIRUI', 'SAIGO', true, 5)).toBe(false)
+      expect(() => store.addFavoriteRoute({
+        departure: 'HONDO_SHICHIRUI',
+        arrival: 'SAIGO',
+        withCar: true,
+        vehicleLengthMeters: 7
+      })).toThrow('This route is already in favorites')
+    })
+
     it('should enforce maximum routes limit', () => {
       const store = useFavoriteStore()
       

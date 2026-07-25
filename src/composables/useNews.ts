@@ -2,6 +2,7 @@ import { ref, computed } from "vue";
 import type { News } from "~/types";
 import { createLogger } from "~/utils/logger";
 import { buildStorageObjectDownloadUrl } from "~/utils/firebaseStorageUrl";
+import { readNewsCache, writeNewsCache } from "~/utils/newsCache";
 
 export const useNews = () => {
   const newsList = ref<News[]>([]);
@@ -22,7 +23,7 @@ export const useNews = () => {
       }
 
       // Firebase Storageから最新データを取得（クライアントサイドのみ）
-      if (import.meta.client) {
+      if (typeof window !== "undefined") {
         try {
           const config = useRuntimeConfig();
           const newsUrl = buildStorageObjectDownloadUrl(
@@ -35,6 +36,9 @@ export const useNews = () => {
             {
               method: "GET",
               mode: "cors",
+              // 運休・障害のお知らせは緊急性が高いため、WebViewやブラウザの
+              // HTTPキャッシュを使わず、公開中のStorageオブジェクトを再検証する。
+              cache: "no-store",
             }
           );
 
@@ -42,16 +46,15 @@ export const useNews = () => {
             const data = await response.json();
             if (Array.isArray(data)) {
               newsList.value = data;
-              // キャッシュに保存
-              if (data.length > 0) {
-                await setCachedNews(data);
-              }
+              // 0件も含め、最新の取得結果をキャッシュに保存
+              setCachedNews(data);
               error.value = null;
             }
           } else if (response.status === 404) {
             // データが未公開の場合
             logger.debug("News data not published yet");
             newsList.value = [];
+            setCachedNews([]);
             error.value = null;
           } else {
             throw new Error(`HTTP error! status: ${response.status}`);
@@ -67,8 +70,8 @@ export const useNews = () => {
       error.value = "お知らせの取得に失敗しました";
 
       // エラー時はキャッシュから取得
-      const cachedNews = await getCachedNews();
-      if (cachedNews) {
+      const cachedNews = getCachedNews(true);
+      if (cachedNews !== null) {
         newsList.value = cachedNews;
         error.value = null; // キャッシュがある場合はエラーを表示しない
       }
@@ -135,19 +138,10 @@ export const useNews = () => {
   };
 
   // キャッシュからお知らせを取得
-  const getCachedNews = (): News[] | null => {
+  const getCachedNews = (allowStale = false): News[] | null => {
     try {
-      if (import.meta.client) {
-        const cached = localStorage.getItem("ferry_news_cache");
-        const cacheTime = localStorage.getItem("ferry_news_cache_time");
-
-        if (cached && cacheTime) {
-          const cacheAge = Date.now() - parseInt(cacheTime);
-          // 30分以内のキャッシュは有効
-          if (cacheAge < 30 * 60 * 1000) {
-            return JSON.parse(cached);
-          }
-        }
+      if (typeof localStorage !== "undefined") {
+        return readNewsCache(localStorage, { allowStale });
       }
       return null;
     } catch (error) {
@@ -159,9 +153,8 @@ export const useNews = () => {
   // お知らせをキャッシュに保存
   const setCachedNews = (news: News[]): void => {
     try {
-      if (import.meta.client) {
-        localStorage.setItem("ferry_news_cache", JSON.stringify(news));
-        localStorage.setItem("ferry_news_cache_time", Date.now().toString());
+      if (typeof localStorage !== "undefined") {
+        writeNewsCache(localStorage, news);
       }
     } catch (error) {
       logger.error("Failed to cache news", error);

@@ -36,9 +36,17 @@ export const useFavoriteStore = defineStore('favorite', () => {
     [...ports.value].sort((a, b) => a.sortOrder - b.sortOrder)
   )
   
-  const isRouteFavorited = (departure: string, arrival: string): boolean => {
+  const isRouteFavorited = (
+    departure: string,
+    arrival: string,
+    withCar = false,
+    vehicleLengthMeters = 5
+  ): boolean => {
     return routes.value.some(route => 
-      route.departure === departure && route.arrival === arrival
+      route.departure === departure &&
+      route.arrival === arrival &&
+      Boolean(route.withCar) === withCar &&
+      (!withCar || (route.vehicleLengthMeters ?? 5) === vehicleLengthMeters)
     )
   }
   
@@ -73,7 +81,12 @@ export const useFavoriteStore = defineStore('favorite', () => {
     }
     
     // 重複チェック
-    if (isRouteFavorited(route.departure, route.arrival)) {
+    if (isRouteFavorited(
+      route.departure,
+      route.arrival,
+      Boolean(route.withCar),
+      route.vehicleLengthMeters ?? 5
+    )) {
       throw new Error('This route is already in favorites')
     }
     

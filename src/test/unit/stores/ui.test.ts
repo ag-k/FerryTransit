@@ -1,10 +1,12 @@
-import { describe, it, expect, beforeEach } from 'vitest'
+import { describe, it, expect, beforeEach, vi } from 'vitest'
 import { setActivePinia, createPinia } from 'pinia'
 import { useUIStore } from '@/stores/ui'
 
 describe('UI Store', () => {
   beforeEach(() => {
     setActivePinia(createPinia())
+    localStorage.clear()
+    document.documentElement.classList.remove('dark')
   })
 
   describe('Initial State', () => {
@@ -22,6 +24,16 @@ describe('UI Store', () => {
   })
 
   describe('Actions', () => {
+    it('保存済みテーマを新しいstoreで復元してDOMへ適用する', () => {
+      vi.mocked(localStorage.getItem).mockImplementation((key) => key === 'theme' ? 'dark' : null)
+      const store = useUIStore()
+
+      store.initializeTheme()
+
+      expect(store.theme).toBe('dark')
+      expect(document.documentElement.classList.contains('dark')).toBe(true)
+    })
+
     it('should set loading state', () => {
       const store = useUIStore()
       

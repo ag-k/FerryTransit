@@ -12,7 +12,7 @@
 </template>
 
 <script setup lang="ts">
-import { computed, useAttrs } from 'vue'
+import { computed, resolveComponent, useAttrs } from 'vue'
 import type { RouteLocationRaw } from 'vue-router'
 
 type Size = 'sm' | 'md' | 'lg'
@@ -40,9 +40,10 @@ const emit = defineEmits<{
 }>()
 
 const attrs = useAttrs()
+const nuxtLink = resolveComponent('NuxtLink')
 
 const isNativeButton = computed(() => !props.to && !props.href)
-const componentTag = computed(() => (props.href ? 'a' : props.to ? 'NuxtLink' : 'button'))
+const componentTag = computed(() => (props.href ? 'a' : props.to ? nuxtLink : 'button'))
 
 const componentAttrs = computed(() => {
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
@@ -60,7 +61,7 @@ const componentAttrs = computed(() => {
 
 const buttonClasses = computed(() => {
   const base =
-    'inline-flex items-center justify-center gap-2 font-medium rounded-lg shadow-sm ring-1 ring-black/5 dark:ring-white/10 focus:outline-none focus-visible:ring-2 focus-visible:ring-app-primary/60 focus-visible:ring-offset-2 focus-visible:ring-offset-app-bg transition active:scale-[0.98] disabled:opacity-50 disabled:cursor-not-allowed disabled:active:scale-100'
+    'inline-flex min-h-12 items-center justify-center gap-2 font-medium rounded-lg shadow-sm ring-1 ring-black/5 dark:ring-white/10 focus:outline-none focus-visible:ring-2 focus-visible:ring-app-primary/60 focus-visible:ring-offset-2 focus-visible:ring-offset-app-bg transition active:scale-[0.98] disabled:opacity-50 disabled:cursor-not-allowed disabled:active:scale-100'
 
   const tone =
     'text-white bg-app-primary hover:bg-app-primary-2 disabled:hover:bg-app-primary'

@@ -1,0 +1,50 @@
+[
+  {
+    "routeId": "CHIBU_VILLAGE_BUS",
+    "serviceId": "weekday_except_holidays",
+    "tripId": "CHIBU_01_0715",
+    "headsign": "来居・郡",
+    "directionId": 0,
+    "blockId": "",
+    "shortName": "1便",
+    "shapeId": "",
+    "jpTripDesc": "1便。★印の古海は前日17:00までに予約。",
+    "jpPatternId": "CHIBU_PATTERN_01"
+  },
+  {
+    "routeId": "CHIBU_VILLAGE_BUS",
+    "serviceId": "weekday_except_holidays",
+    "tripId": "CHIBU_02_0815",
+    "headsign": "来居・郡",
+    "directionId": 0,
+    "blockId": "",
+    "shortName": "2便",
+    "shapeId": "",
+    "jpTripDesc": "2便。☆印は30分前までに予約受付時のみ玄関まで送迎。",
+    "jpPatternId": "CHIBU_PATTERN_02"
+  },
+  {
+    "routeId": "CHIBU_VILLAGE_BUS",
+    "serviceId": "weekday_except_holidays",
+    "tripId": "CHIBU_03_0948",
+    "headsign": "来居",
+    "directionId": 0,
+    "blockId": "",
+    "shortName": "3便",
+    "shapeId": "",
+    "jpTripDesc": "3便。☆印は30分前までに予約受付時のみ玄関まで送迎。",
+    "jpPatternId": "CHIBU_PATTERN_03"
+  },
+  {
+    "routeId": "CHIBU_VILLAGE_BUS",
+    "serviceId": "weekday_except_holidays",
+    "tripId": "CHIBU_04_1123",
+    "headsign": "来居",
+    "directionId": 0,
+    "blockId": "",
+    "shortName": "4便",
+    "shapeId": "",
+    "jpTripDesc": "4便。来居フェリー以降の停留所は原本上「降車専用」のみで時刻未記載。",
+    "jpPatternId": "CHIBU_PATTERN_04"
+  }
+]

@@ -1,0 +1,1527 @@
+import { beforeEach, describe, expect, it, vi } from 'vitest'
+import {
+  buildBusTripsForRoute,
+  buildBusRouteValiditySummaries,
+  clearBusSearchFeedCacheForTests,
+  getAllPortConnectedBusStopCodes,
+  getBusStopPortBadgeLabel,
+  getBusStopConnectedPortId,
+  getConnectedBusStopsForPort,
+  getBusStopTownLabelKey,
+  getLocationTypeForCode,
+  isAmaBusStopCode,
+  isChibuBusStopCode,
+  isIchibataBusConnectionStopCode,
+  isNishinoshimaBusStopCode,
+  isOkinoshimaBusStopCode,
+  isTripActiveOnDate,
+  loadBusRouteLabelsForStops,
+  loadBusStopRouteFiltersIndex,
+  loadBusStopsIndex,
+  loadBusTransferCandidateTripsForRoute,
+  loadIchibataBusConnectionTimetable,
+  loadBusTripsForRoute,
+  loadAmaBusTimetable,
+  loadChibuBusTimetable,
+  loadNishinoshimaBusTimetable,
+  loadOkinoshimaBusTimetable,
+  normalizeAmaBusRouteName,
+  normalizeChibuBusRouteName,
+  normalizeIchibataBusConnectionRouteName,
+  normalizeNishinoshimaBusRouteName,
+  normalizeOkinoshimaBusRouteName,
+  toAmaBusStopCode,
+  toChibuBusStopCode,
+  toIchibataBusConnectionStopCode,
+  toNishinoshimaBusStopCode,
+  toOkinoshimaBusStopCode
+} from '@/utils/gtfsBusTimetable'
+import type { BusSearchFeed } from '@/utils/gtfsBusTimetable'
+import type { Trip } from '@/types'
+
+const storageDataUrl = (path: string): string => {
+  return `https://firebasestorage.googleapis.com/v0/b/test-bucket/o/${encodeURIComponent(path)}?alt=media`
+}
+
+const fixtureFileName = (input: string | URL | Request): string => {
+  const decoded = decodeURIComponent(String(input)).split('?')[0] ?? ''
+  return decoded.split('/').pop() ?? ''
+}
+
+describe('gtfsBusTimetable', () => {
+  beforeEach(() => {
+    vi.restoreAllMocks()
+    clearBusSearchFeedCacheForTests()
+  })
+
+  it('海士町バス停コードを停留所として扱う', () => {
+    const stopCode = toAmaBusStopCode('100-01')
+
+    expect(stopCode).toBe('BUS_AMA_100_01')
+    expect(isAmaBusStopCode(stopCode)).toBe(true)
+    expect(isAmaBusStopCode('BEPPU')).toBe(false)
+    expect(getLocationTypeForCode(stopCode)).toBe('STOP')
+    expect(getLocationTypeForCode('BEPPU')).toBe('PORT')
+    expect(getBusStopTownLabelKey(stopCode)).toBe('AMA_CHO')
+    expect(getBusStopPortBadgeLabel(toAmaBusStopCode('126_01'))).toBe('菱浦港')
+    expect(getBusStopConnectedPortId(toAmaBusStopCode('126_01'))).toBe('HISHIURA')
+    expect(getBusStopPortBadgeLabel(stopCode)).toBeNull()
+  })
+
+  it('西ノ島町営バス停コードを停留所として扱う', () => {
+    const stopCode = toNishinoshimaBusStopCode('nishinoshima_001')
+
+    expect(stopCode).toBe('BUS_NISHINOSHIMA_nishinoshima_001')
+    expect(isNishinoshimaBusStopCode(stopCode)).toBe(true)
+    expect(isNishinoshimaBusStopCode('BUS_AMA_100_01')).toBe(false)
+    expect(getLocationTypeForCode(stopCode)).toBe('STOP')
+    expect(getBusStopTownLabelKey(stopCode)).toBe('NISHINOSHIMA_CHO')
+    expect(getBusStopPortBadgeLabel(toNishinoshimaBusStopCode('nishinoshima_006'))).toBe('別府港')
+    expect(getBusStopConnectedPortId(toNishinoshimaBusStopCode('nishinoshima_006'))).toBe('BEPPU')
+  })
+
+  it('知夫村営バス停コードを停留所として扱う', () => {
+    const stopCode = toChibuBusStopCode('kuri_naikosen')
+
+    expect(stopCode).toBe('BUS_CHIBU_kuri_naikosen')
+    expect(isChibuBusStopCode(stopCode)).toBe(true)
+    expect(isChibuBusStopCode('BUS_NISHINOSHIMA_nishinoshima_001')).toBe(false)
+    expect(getLocationTypeForCode(stopCode)).toBe('STOP')
+    expect(getBusStopTownLabelKey(stopCode)).toBe('CHIBU_MURA')
+    expect(getBusStopPortBadgeLabel(stopCode)).toBe('来居港')
+    expect(getBusStopConnectedPortId(stopCode)).toBe('KURI')
+    expect(getConnectedBusStopsForPort('KURI')).toEqual([
+      'BUS_CHIBU_kuri_naikosen',
+      'BUS_CHIBU_kuri_ferry',
+      'BUS_CHIBU_kuri_office'
+    ])
+  })
+
+  it('隠岐の島町バス停コードを停留所として扱う', () => {
+    const stopCode = toOkinoshimaBusStopCode('port_mae')
+
+    expect(stopCode).toBe('BUS_OKINOSHIMA_port_mae')
+    expect(isOkinoshimaBusStopCode(stopCode)).toBe(true)
+    expect(isOkinoshimaBusStopCode('BUS_CHIBU_kuri_naikosen')).toBe(false)
+    expect(getLocationTypeForCode(stopCode)).toBe('STOP')
+    expect(getBusStopTownLabelKey(stopCode)).toBe('OKINOSHIMA_CHO')
+    expect(getBusStopPortBadgeLabel(stopCode)).toBe('西郷港')
+    expect(getBusStopConnectedPortId(stopCode)).toBe('SAIGO')
+    expect(getAllPortConnectedBusStopCodes()).toContain('BUS_OKINOSHIMA_port_mae')
+  })
+
+  it('一畑バス接続便の本土停留所コードを停留所として扱う', () => {
+    const matsueStation = toIchibataBusConnectionStopCode('matsue_station')
+    const shichiruiPort = toIchibataBusConnectionStopCode('shichirui_port')
+    const sakaiminatoPort = toIchibataBusConnectionStopCode('sakaiminato_port')
+
+    expect(matsueStation).toBe('BUS_ICHIBATA_CONNECTION_matsue_station')
+    expect(isIchibataBusConnectionStopCode(matsueStation)).toBe(true)
+    expect(isIchibataBusConnectionStopCode('BUS_OKINOSHIMA_port_mae')).toBe(false)
+    expect(getLocationTypeForCode(matsueStation)).toBe('STOP')
+    expect(getBusStopTownLabelKey(matsueStation)).toBe('MAINLAND')
+    expect(getBusStopPortBadgeLabel(shichiruiPort)).toBe('七類港')
+    expect(getBusStopConnectedPortId(shichiruiPort)).toBe('HONDO_SHICHIRUI')
+    expect(getBusStopPortBadgeLabel(sakaiminatoPort)).toBe('境港')
+    expect(getBusStopConnectedPortId(sakaiminatoPort)).toBe('HONDO_SAKAIMINATO')
+  })
+
+  it('空港コードを空港として扱う', () => {
+    expect(getLocationTypeForCode('AIRPORT_OKI')).toBe('AIRPORT')
+    expect(getLocationTypeForCode('AIRPORT_ITAMI')).toBe('AIRPORT')
+  })
+
+  it('海士島線の枝番を表示用にまとめる', () => {
+    expect(normalizeAmaBusRouteName('海士島線1')).toBe('海士島線')
+    expect(normalizeAmaBusRouteName('海士島線9')).toBe('海士島線')
+    expect(normalizeAmaBusRouteName('豊田線')).toBe('豊田線')
+    expect(normalizeAmaBusRouteName('')).toBe('海士町バス')
+  })
+
+  it('西ノ島町営バスの路線名を表示用に整える', () => {
+    expect(normalizeNishinoshimaBusRouteName('西ノ島町営バス 宇賀線')).toBe('宇賀線')
+    expect(normalizeNishinoshimaBusRouteName('町営バス')).toBe('')
+    expect(normalizeNishinoshimaBusRouteName('波止線')).toBe('波止線')
+  })
+
+  it('知夫村営バスの路線名を表示用に整える', () => {
+    expect(normalizeChibuBusRouteName('知夫村営バス')).toBe('')
+    expect(normalizeChibuBusRouteName('村営バス')).toBe('')
+    expect(normalizeChibuBusRouteName('来居方面')).toBe('来居方面')
+  })
+
+  it('隠岐の島町のバス路線名を表示用に整える', () => {
+    expect(normalizeOkinoshimaBusRouteName('隠岐一畑交通 五箇線')).toBe('五箇線')
+    expect(normalizeOkinoshimaBusRouteName('隠岐の島町営バス 都万西部線')).toBe('都万西部線')
+    expect(normalizeOkinoshimaBusRouteName('町営バス')).toBe('')
+  })
+
+  it('一畑バス接続便の路線名を表示用に整える', () => {
+    expect(normalizeIchibataBusConnectionRouteName('松江・七類・境港間時刻表')).toBe('')
+    expect(normalizeIchibataBusConnectionRouteName('松江⇔七類港')).toBe('松江⇔七類港')
+    expect(normalizeIchibataBusConnectionRouteName('松江⇔境港')).toBe('松江⇔境港')
+  })
+
+  it('GTFSカレンダー由来の曜日と例外日で運行日を判定する', () => {
+    const trip: Trip = {
+      tripId: 1,
+      startDate: '2026-01-01',
+      endDate: '2026-01-31',
+      name: 'AMA_TOWN_BUS',
+      departure: 'BUS_AMA_100_01',
+      departureTime: '08:00',
+      arrival: 'BUS_AMA_100_02',
+      arrivalTime: '08:10',
+      activeDays: [1],
+      addedDates: ['2026-01-06'],
+      removedDates: ['2026-01-05'],
+      status: 0
+    }
+
+    expect(isTripActiveOnDate(trip, new Date('2026-01-12'), '2026-01-12')).toBe(true)
+    expect(isTripActiveOnDate(trip, new Date('2026-01-05'), '2026-01-05')).toBe(false)
+    expect(isTripActiveOnDate(trip, new Date('2026-01-06'), '2026-01-06')).toBe(true)
+    expect(isTripActiveOnDate(trip, new Date('2026-01-11'), '2026-01-11')).toBe(false)
+    expect(isTripActiveOnDate(trip, new Date('2026-02-02'), '2026-02-02')).toBe(false)
+  })
+
+  it('calendar_datesのみのserviceは追加日だけ運行と判定する', () => {
+    const trip: Trip = {
+      tripId: 1,
+      startDate: '2026-08-08',
+      endDate: '2026-08-16',
+      name: 'NISHINOSHIMA_TOWN_BUS',
+      departure: 'BUS_NISHINOSHIMA_nishinoshima_006',
+      departureTime: '14:20',
+      arrival: 'BUS_NISHINOSHIMA_nishinoshima_022',
+      arrivalTime: '14:55',
+      activeDays: [],
+      addedDates: ['2026-08-08', '2026-08-16'],
+      status: 0
+    }
+
+    expect(isTripActiveOnDate(trip, new Date('2026-08-08'), '2026-08-08')).toBe(true)
+    expect(isTripActiveOnDate(trip, new Date('2026-08-09'), '2026-08-09')).toBe(false)
+    expect(isTripActiveOnDate(trip, new Date('2026-08-16'), '2026-08-16')).toBe(true)
+  })
+
+  it('GTFS JSONから下流停留所ペアのバス時刻表を生成する', async () => {
+    const fixtures: Record<string, unknown> = {
+      'routes.json': [
+        { routeId: 'R8_AMA', longName: '海士島線1' }
+      ],
+      'stops.json': [
+        { stopId: '100-01', name: '菱浦港', lat: 36.105471, lon: 133.125968 },
+        { stopId: '100-02', name: '隠岐神社', lat: 36.097104, lon: 133.098744 },
+        { stopId: '100-03', name: '海士町役場', lat: 36.096178, lon: 133.097043 }
+      ],
+      'trips.json': [
+        { routeId: 'R8_AMA', serviceId: 'svc_weekday', tripId: 'trip_1', headsign: '海士町役場' }
+      ],
+      'stopTimes.json': [
+        { tripId: 'trip_1', arrivalTime: '08:00:00', departureTime: '08:00:00', stopId: '100-01', stopSequence: 1 },
+        { tripId: 'trip_1', arrivalTime: '08:10:00', departureTime: '08:10:00', stopId: '100-02', stopSequence: 2 },
+        { tripId: 'trip_1', arrivalTime: '08:20:00', departureTime: '08:20:00', stopId: '100-03', stopSequence: 3 }
+      ],
+      'calendar.json': [
+        {
+          service_id: 'svc_weekday',
+          monday: '1',
+          tuesday: '0',
+          wednesday: '0',
+          thursday: '0',
+          friday: '0',
+          saturday: '0',
+          sunday: '0',
+          start_date: '20260101',
+          end_date: '20260131'
+        }
+      ],
+      'calendarDates.json': [
+        { service_id: 'svc_weekday', date: '20260105', exception_type: '2' }
+      ]
+    }
+
+    const fetchMock = vi.fn((input: string | URL | Request) => {
+      const fileName = fixtureFileName(input)
+      return Promise.resolve({
+        ok: true,
+        status: 200,
+        json: () => Promise.resolve(fixtures[fileName])
+      } as Response)
+    })
+    vi.stubGlobal('fetch', fetchMock)
+
+    const result = await loadAmaBusTimetable()
+
+    expect(fetchMock).toHaveBeenCalledWith(storageDataUrl('data/gtfs/bus/ama/routes.json'))
+    expect(result.stopCodes).toEqual(['BUS_AMA_100_01', 'BUS_AMA_100_02', 'BUS_AMA_100_03'])
+    expect(result.locationLabels.BUS_AMA_100_02).toBe('隠岐神社')
+    expect(result.stopLocations.BUS_AMA_100_02).toMatchObject({
+      id: 'BUS_AMA_100_02',
+      name: '隠岐神社',
+      lat: 36.097104,
+      lng: 133.098744,
+      operatorId: 'AMA_TOWN',
+      townLabelKey: 'AMA_CHO'
+    })
+    expect(result.trips).toHaveLength(3)
+    expect(result.trips[0]).toMatchObject({
+      startDate: '2026-01-01',
+      endDate: '2026-01-31',
+      activeDays: [1],
+      removedDates: ['2026-01-05'],
+      name: 'AMA_TOWN_BUS',
+      mode: 'BUS',
+      departure: 'BUS_AMA_100_01',
+      arrival: 'BUS_AMA_100_02',
+      departureTime: '08:00',
+      arrivalTime: '08:10',
+      price: 200,
+      via: '海士島線'
+    })
+    expect(result.trips[2]).toMatchObject({
+      departure: 'BUS_AMA_100_02',
+      arrival: 'BUS_AMA_100_03'
+    })
+  })
+
+  it('西ノ島町営バスGTFS JSONからバス時刻表を生成する', async () => {
+    const fixtures: Record<string, unknown> = {
+      'routes.json': [
+        { routeId: 'NISHINOSHIMA_UGA', shortName: '宇賀線', longName: '西ノ島町営バス 宇賀線' }
+      ],
+      'stops.json': [
+        { stopId: 'nishinoshima_001', name: '宇賀', lat: 36.119464, lon: 133.076013 },
+        { stopId: 'nishinoshima_007', name: '別府交通センター', lat: 36.108989, lon: 133.040918 }
+      ],
+      'trips.json': [
+        { routeId: 'NISHINOSHIMA_UGA', serviceId: 'svc_daily', tripId: 'trip_1', headsign: '宇賀', shortName: '宇賀線' }
+      ],
+      'stopTimes.json': [
+        { tripId: 'trip_1', arrivalTime: '07:07:00', departureTime: '07:07:00', stopId: 'nishinoshima_007', stopSequence: 1 },
+        { tripId: 'trip_1', arrivalTime: '07:17:00', departureTime: '07:17:00', stopId: 'nishinoshima_001', stopSequence: 2 }
+      ],
+      'calendar.json': [
+        {
+          service_id: 'svc_daily',
+          monday: '1',
+          tuesday: '1',
+          wednesday: '1',
+          thursday: '1',
+          friday: '1',
+          saturday: '1',
+          sunday: '1',
+          start_date: '20260301',
+          end_date: '20261231'
+        }
+      ],
+      'calendarDates.json': []
+    }
+
+    const fetchMock = vi.fn((input: string | URL | Request) => {
+      const fileName = fixtureFileName(input)
+      return Promise.resolve({
+        ok: true,
+        status: 200,
+        json: () => Promise.resolve(fixtures[fileName])
+      } as Response)
+    })
+    vi.stubGlobal('fetch', fetchMock)
+
+    const result = await loadNishinoshimaBusTimetable()
+
+    expect(fetchMock).toHaveBeenCalledWith(storageDataUrl('data/gtfs/bus/nishinoshima/routes.json'))
+    expect(result.stopCodes).toEqual([
+      'BUS_NISHINOSHIMA_nishinoshima_001',
+      'BUS_NISHINOSHIMA_nishinoshima_007'
+    ])
+    expect(result.locationLabels.BUS_NISHINOSHIMA_nishinoshima_007).toBe('別府交通センター')
+    expect(result.stopLocations.BUS_NISHINOSHIMA_nishinoshima_001).toMatchObject({
+      id: 'BUS_NISHINOSHIMA_nishinoshima_001',
+      name: '宇賀',
+      lat: 36.119464,
+      lng: 133.076013,
+      operatorId: 'NISHINOSHIMA_TOWN',
+      townLabelKey: 'NISHINOSHIMA_CHO'
+    })
+    expect(result.trips).toHaveLength(1)
+    expect(result.trips[0]).toMatchObject({
+      startDate: '2026-03-01',
+      endDate: '2026-12-31',
+      name: 'NISHINOSHIMA_TOWN_BUS',
+      mode: 'BUS',
+      operatorId: 'NISHINOSHIMA_TOWN',
+      departure: 'BUS_NISHINOSHIMA_nishinoshima_007',
+      arrival: 'BUS_NISHINOSHIMA_nishinoshima_001',
+      departureTime: '07:07',
+      arrivalTime: '07:17',
+      price: 200,
+      via: '宇賀線'
+    })
+  })
+
+  it('知夫村営バスGTFS JSONからバス時刻表を生成する', async () => {
+    const fixtures: Record<string, unknown> = {
+      'routes.json': [
+        { routeId: 'CHIBU_VILLAGE_BUS', shortName: '村営バス', longName: '知夫村営バス' }
+      ],
+      'stops.json': [
+        { stopId: 'kuri_naikosen', name: '来居内航船', lat: 36.0243794, lon: 133.0401959 },
+        { stopId: 'nibu_bus', name: '仁夫', lat: 36.00669672, lon: 133.03282616 }
+      ],
+      'trips.json': [
+        { routeId: 'CHIBU_VILLAGE_BUS', serviceId: 'weekday_except_holidays', tripId: 'trip_1', headsign: '仁夫', shortName: '1便' }
+      ],
+      'stopTimes.json': [
+        { tripId: 'trip_1', arrivalTime: '07:15:00', departureTime: '07:15:00', stopId: 'kuri_naikosen', stopSequence: 1 },
+        { tripId: 'trip_1', arrivalTime: '07:24:00', departureTime: '07:24:00', stopId: 'nibu_bus', stopSequence: 2 }
+      ],
+      'calendar.json': [
+        {
+          service_id: 'weekday_except_holidays',
+          monday: '1',
+          tuesday: '1',
+          wednesday: '1',
+          thursday: '1',
+          friday: '1',
+          saturday: '0',
+          sunday: '0',
+          start_date: '20260101',
+          end_date: '20261231'
+        }
+      ],
+      'calendarDates.json': [
+        { service_id: 'weekday_except_holidays', date: '20260101', exception_type: '2' }
+      ]
+    }
+
+    const fetchMock = vi.fn((input: string | URL | Request) => {
+      const fileName = fixtureFileName(input)
+      return Promise.resolve({
+        ok: true,
+        status: 200,
+        json: () => Promise.resolve(fixtures[fileName])
+      } as Response)
+    })
+    vi.stubGlobal('fetch', fetchMock)
+
+    const result = await loadChibuBusTimetable()
+
+    expect(fetchMock).toHaveBeenCalledWith(storageDataUrl('data/gtfs/bus/chibu/routes.json'))
+    expect(result.stopCodes).toEqual(['BUS_CHIBU_kuri_naikosen', 'BUS_CHIBU_nibu_bus'])
+    expect(result.stopLocations.BUS_CHIBU_kuri_naikosen).toMatchObject({
+      id: 'BUS_CHIBU_kuri_naikosen',
+      name: '来居内航船',
+      operatorId: 'CHIBU_VILLAGE',
+      townLabelKey: 'CHIBU_MURA'
+    })
+    expect(result.trips).toHaveLength(1)
+    expect(result.trips[0]).toMatchObject({
+      startDate: '2026-01-01',
+      endDate: '2026-12-31',
+      name: 'CHIBU_VILLAGE_BUS',
+      mode: 'BUS',
+      operatorId: 'CHIBU_VILLAGE',
+      departure: 'BUS_CHIBU_kuri_naikosen',
+      arrival: 'BUS_CHIBU_nibu_bus',
+      departureTime: '07:15',
+      arrivalTime: '07:24',
+      price: 100
+    })
+    expect(result.trips[0]?.via).toBeUndefined()
+  })
+
+  it('隠岐の島町GTFS JSONから事業者別のバス時刻表を生成する', async () => {
+    const fixtures: Record<string, unknown> = {
+      'routes.json': [
+        { routeId: 'OKI_ICHIBATA_GOKA', agencyId: 'OKI_ICHIBATA', shortName: '五箇線', longName: '隠岐一畑交通 五箇線' },
+        { routeId: 'OKINOSHIMA_TOWN_GOKA', agencyId: 'OKINOSHIMA_TOWN', shortName: '五箇循環線', longName: '隠岐の島町営バス 五箇循環線' }
+      ],
+      'stops.json': [
+        { stopId: 'port_mae', name: 'ポート前', lat: 36.2012, lon: 133.3364 },
+        { stopId: 'goka_branch', name: '五箇支所', lat: 36.2669, lon: 133.2387 },
+        { stopId: 'kumi', name: '久見', lat: 36.307, lon: 133.211 }
+      ],
+      'trips.json': [
+        { routeId: 'OKI_ICHIBATA_GOKA', serviceId: 'daily', tripId: 'ichibata_1', headsign: '五箇支所', shortName: '五箇線' },
+        { routeId: 'OKINOSHIMA_TOWN_GOKA', serviceId: 'daily', tripId: 'town_1', headsign: '久見', shortName: '五箇循環線' }
+      ],
+      'stopTimes.json': [
+        { tripId: 'ichibata_1', arrivalTime: '08:29:00', departureTime: '08:29:00', stopId: 'port_mae', stopSequence: 1 },
+        { tripId: 'ichibata_1', arrivalTime: '09:14:00', departureTime: '09:14:00', stopId: 'goka_branch', stopSequence: 2 },
+        { tripId: 'town_1', arrivalTime: '06:51:00', departureTime: '06:51:00', stopId: 'goka_branch', stopSequence: 1 },
+        { tripId: 'town_1', arrivalTime: '07:02:00', departureTime: '07:02:00', stopId: 'kumi', stopSequence: 2 }
+      ],
+      'calendar.json': [
+        {
+          service_id: 'daily',
+          monday: '1',
+          tuesday: '1',
+          wednesday: '1',
+          thursday: '1',
+          friday: '1',
+          saturday: '1',
+          sunday: '1',
+          start_date: '20260101',
+          end_date: '20261231'
+        }
+      ],
+      'calendarDates.json': []
+    }
+
+    vi.stubGlobal('fetch', vi.fn((input: string | URL | Request) => {
+      const fileName = fixtureFileName(input)
+      return Promise.resolve({
+        ok: true,
+        status: 200,
+        json: () => Promise.resolve(fixtures[fileName])
+      } as Response)
+    }))
+
+    const result = await loadOkinoshimaBusTimetable()
+
+    expect(result.stopCodes).toEqual([
+      'BUS_OKINOSHIMA_port_mae',
+      'BUS_OKINOSHIMA_goka_branch',
+      'BUS_OKINOSHIMA_kumi'
+    ])
+    expect(result.stopLocations.BUS_OKINOSHIMA_port_mae).toMatchObject({
+      id: 'BUS_OKINOSHIMA_port_mae',
+      name: 'ポート前',
+      operatorId: 'OKINOSHIMA',
+      townLabelKey: 'OKINOSHIMA_CHO'
+    })
+    expect(result.trips).toHaveLength(2)
+    expect(result.trips[0]).toMatchObject({
+      name: 'OKI_ICHIBATA_BUS',
+      operatorId: 'OKI_ICHIBATA',
+      departure: 'BUS_OKINOSHIMA_port_mae',
+      arrival: 'BUS_OKINOSHIMA_goka_branch',
+      price: 500,
+      via: '五箇線'
+    })
+    expect(result.trips[1]).toMatchObject({
+      name: 'OKINOSHIMA_TOWN_BUS',
+      operatorId: 'OKINOSHIMA_TOWN',
+      departure: 'BUS_OKINOSHIMA_goka_branch',
+      arrival: 'BUS_OKINOSHIMA_kumi',
+      price: 300,
+      via: '五箇循環線'
+    })
+  })
+
+  it('一畑バス接続便GTFS JSONから本土側バス時刻表を生成する', async () => {
+    const fixtures: Record<string, unknown> = {
+      'routes.json': [
+        {
+          routeId: 'route_ichibata_bus_connection_https_bus_ichibata_8927b51c',
+          agencyId: 'agency_ichibata_bus_connection_a97e48aa',
+          shortName: '松江・七類・境港間時刻表',
+          longName: '一畑バス・隠岐汽船接続バス'
+        }
+      ],
+      'stops.json': [
+        { stopId: 'matsue_station', name: '松江駅', lat: 35.464361, lon: 133.06285 },
+        { stopId: 'shichirui_port', name: '七類港', lat: 35.571133, lon: 133.230021 },
+        { stopId: 'sakaiminato_port', name: '境港', lat: 35.545103, lon: 133.223383 }
+      ],
+      'trips.json': [
+        {
+          routeId: 'route_ichibata_bus_connection_https_bus_ichibata_8927b51c',
+          serviceId: 'service_shichirui_daily',
+          tripId: 'ICHIBATA_SHICHIRUI_0750',
+          headsign: '七類港',
+          shortName: '松江⇔七類港'
+        },
+        {
+          routeId: 'route_ichibata_bus_connection_https_bus_ichibata_8927b51c',
+          serviceId: 'service_sakaiminato_daily',
+          tripId: 'ICHIBATA_SAKAIMINATO_1315',
+          headsign: '境港',
+          shortName: '松江⇔境港'
+        }
+      ],
+      'stopTimes.json': [
+        {
+          tripId: 'ICHIBATA_SHICHIRUI_0750',
+          arrivalTime: '07:50:00',
+          departureTime: '07:50:00',
+          stopId: 'matsue_station',
+          stopSequence: 1
+        },
+        {
+          tripId: 'ICHIBATA_SHICHIRUI_0750',
+          arrivalTime: '08:30:00',
+          departureTime: '08:30:00',
+          stopId: 'shichirui_port',
+          stopSequence: 2
+        },
+        {
+          tripId: 'ICHIBATA_SAKAIMINATO_1315',
+          arrivalTime: '13:15:00',
+          departureTime: '13:15:00',
+          stopId: 'matsue_station',
+          stopSequence: 1
+        },
+        {
+          tripId: 'ICHIBATA_SAKAIMINATO_1315',
+          arrivalTime: '13:55:00',
+          departureTime: '13:55:00',
+          stopId: 'sakaiminato_port',
+          stopSequence: 2
+        }
+      ],
+      'calendar.json': [
+        {
+          service_id: 'service_shichirui_daily',
+          monday: '1',
+          tuesday: '1',
+          wednesday: '1',
+          thursday: '1',
+          friday: '1',
+          saturday: '1',
+          sunday: '1',
+          start_date: '20260401',
+          end_date: '20261231'
+        },
+        {
+          service_id: 'service_sakaiminato_daily',
+          monday: '1',
+          tuesday: '1',
+          wednesday: '1',
+          thursday: '1',
+          friday: '1',
+          saturday: '1',
+          sunday: '1',
+          start_date: '20260401',
+          end_date: '20261231'
+        }
+      ],
+      'calendarDates.json': []
+    }
+
+    vi.stubGlobal('fetch', vi.fn((input: string | URL | Request) => {
+      const fileName = fixtureFileName(input)
+      return Promise.resolve({
+        ok: true,
+        status: 200,
+        json: () => Promise.resolve(fixtures[fileName])
+      } as Response)
+    }))
+
+    const result = await loadIchibataBusConnectionTimetable()
+
+    expect(result.stopCodes).toEqual([
+      'BUS_ICHIBATA_CONNECTION_matsue_station',
+      'BUS_ICHIBATA_CONNECTION_shichirui_port',
+      'BUS_ICHIBATA_CONNECTION_sakaiminato_port'
+    ])
+    expect(result.stopLocations.BUS_ICHIBATA_CONNECTION_matsue_station).toMatchObject({
+      id: 'BUS_ICHIBATA_CONNECTION_matsue_station',
+      name: '松江駅',
+      operatorId: 'ICHIBATA_BUS',
+      townLabelKey: 'MAINLAND'
+    })
+    expect(result.trips).toHaveLength(2)
+    expect(result.trips[0]).toMatchObject({
+      startDate: '2026-04-01',
+      endDate: '2026-12-31',
+      name: 'ICHIBATA_BUS_CONNECTION',
+      mode: 'BUS',
+      operatorId: 'ICHIBATA_BUS',
+      departure: 'BUS_ICHIBATA_CONNECTION_matsue_station',
+      arrival: 'BUS_ICHIBATA_CONNECTION_shichirui_port',
+      departureTime: '07:50',
+      arrivalTime: '08:30',
+      price: 1200,
+      via: '松江⇔七類港'
+    })
+    expect(result.trips[1]).toMatchObject({
+      departure: 'BUS_ICHIBATA_CONNECTION_matsue_station',
+      arrival: 'BUS_ICHIBATA_CONNECTION_sakaiminato_port',
+      via: '松江⇔境港'
+    })
+  })
+
+  it('同一trip内の同一停留所時刻ペアは重複表示用Tripにしない', async () => {
+    const fixtures: Record<string, unknown> = {
+      'routes.json': [
+        { routeId: 'NISHINOSHIMA_HATO', shortName: '波止線', longName: '西ノ島町営バス 波止線' }
+      ],
+      'stops.json': [
+        { stopId: 'nishinoshima_026', name: '波止' },
+        { stopId: 'nishinoshima_006', name: '隠岐汽船（別府港）' }
+      ],
+      'trips.json': [
+        { routeId: 'NISHINOSHIMA_HATO', serviceId: 'svc_daily', tripId: 'hato_1', headsign: '隠岐汽船', shortName: '波止線' }
+      ],
+      'stopTimes.json': [
+        { tripId: 'hato_1', arrivalTime: '11:46:00', departureTime: '11:46:00', stopId: 'nishinoshima_026', stopSequence: 1 },
+        { tripId: 'hato_1', arrivalTime: '11:46:00', departureTime: '11:46:00', stopId: 'nishinoshima_026', stopSequence: 2 },
+        { tripId: 'hato_1', arrivalTime: '12:03:00', departureTime: '12:03:00', stopId: 'nishinoshima_006', stopSequence: 3 }
+      ],
+      'calendar.json': [
+        {
+          service_id: 'svc_daily',
+          monday: '1',
+          tuesday: '1',
+          wednesday: '1',
+          thursday: '1',
+          friday: '1',
+          saturday: '1',
+          sunday: '1',
+          start_date: '20260301',
+          end_date: '20261231'
+        }
+      ],
+      'calendarDates.json': []
+    }
+
+    vi.stubGlobal('fetch', vi.fn((input: string | URL | Request) => {
+      const fileName = fixtureFileName(input)
+      return Promise.resolve({
+        ok: true,
+        status: 200,
+        json: () => Promise.resolve(fixtures[fileName])
+      } as Response)
+    }))
+
+    const result = await loadNishinoshimaBusTimetable()
+
+    expect(result.trips).toHaveLength(1)
+    expect(result.trips[0]).toMatchObject({
+      departure: 'BUS_NISHINOSHIMA_nishinoshima_026',
+      arrival: 'BUS_NISHINOSHIMA_nishinoshima_006',
+      departureTime: '11:46',
+      arrivalTime: '12:03',
+      via: '波止線'
+    })
+  })
+
+  it('calendar_datesのみで定義された期間限定便も読み込む', async () => {
+    const fixtures: Record<string, unknown> = {
+      'routes.json': [
+        { routeId: 'NISHINOSHIMA_KUNIGA', shortName: '国賀線', longName: '西ノ島町営バス 国賀線' }
+      ],
+      'stops.json': [
+        { stopId: 'nishinoshima_006', name: '隠岐汽船（別府港）' },
+        { stopId: 'nishinoshima_022', name: '国賀' }
+      ],
+      'trips.json': [
+        {
+          routeId: 'NISHINOSHIMA_KUNIGA',
+          serviceId: 'range_0501_0506_0808_0816',
+          tripId: 'special_kuniga',
+          headsign: '国賀',
+          shortName: '5/1-5/6・8/8-8/16'
+        }
+      ],
+      'stopTimes.json': [
+        { tripId: 'special_kuniga', arrivalTime: '14:20:00', departureTime: '14:20:00', stopId: 'nishinoshima_006', stopSequence: 1 },
+        { tripId: 'special_kuniga', arrivalTime: '14:55:00', departureTime: '14:55:00', stopId: 'nishinoshima_022', stopSequence: 2 }
+      ],
+      'calendar.json': [],
+      'calendarDates.json': [
+        { service_id: 'range_0501_0506_0808_0816', date: '20260808', exception_type: '1' },
+        { service_id: 'range_0501_0506_0808_0816', date: '20260816', exception_type: '1' }
+      ]
+    }
+
+    vi.stubGlobal('fetch', vi.fn((input: string | URL | Request) => {
+      const fileName = fixtureFileName(input)
+      return Promise.resolve({
+        ok: true,
+        status: 200,
+        json: () => Promise.resolve(fixtures[fileName])
+      } as Response)
+    }))
+
+    const result = await loadNishinoshimaBusTimetable()
+
+    expect(result.trips).toHaveLength(1)
+    expect(result.trips[0]).toMatchObject({
+      startDate: '2026-08-08',
+      endDate: '2026-08-16',
+      activeDays: [],
+      addedDates: ['2026-08-08', '2026-08-16'],
+      departure: 'BUS_NISHINOSHIMA_nishinoshima_006',
+      arrival: 'BUS_NISHINOSHIMA_nishinoshima_022',
+      departureTime: '14:20',
+      arrivalTime: '14:55',
+      via: '国賀線'
+    })
+  })
+
+  it('bus-search停留所インデックスから停留所一覧だけを読み込む', async () => {
+    const fetchMock = vi.fn(() => Promise.resolve({
+      ok: true,
+      status: 200,
+      json: () => Promise.resolve({
+        version: 1,
+        generatedAt: '2026-05-25T00:00:00.000Z',
+        stops: [
+          ['BUS_AMA_100_01', '豊田', 36.105471, 133.125968, 'AMA_TOWN', 'AMA_CHO'],
+          ['BUS_CHIBU_nibu_bus', '仁夫', 36.00669672, 133.03282616, 'CHIBU_VILLAGE', 'CHIBU_MURA'],
+          ['BUS_ICHIBATA_CONNECTION_matsue_station', '松江駅', 35.464361, 133.06285, 'ICHIBATA_BUS', null]
+        ]
+      })
+    } as Response))
+    vi.stubGlobal('fetch', fetchMock)
+
+    const result = await loadBusStopsIndex()
+
+    expect(fetchMock).toHaveBeenCalledWith(storageDataUrl('data/bus-search/stops.json'))
+    expect(result.stopCodes).toEqual([
+      'BUS_AMA_100_01',
+      'BUS_CHIBU_nibu_bus',
+      'BUS_ICHIBATA_CONNECTION_matsue_station'
+    ])
+    expect(result.locationLabels.BUS_AMA_100_01).toBe('豊田')
+    expect(result.stopLocations.BUS_CHIBU_nibu_bus).toMatchObject({
+      id: 'BUS_CHIBU_nibu_bus',
+      name: '仁夫',
+      operatorId: 'CHIBU_VILLAGE',
+      townLabelKey: 'CHIBU_MURA'
+    })
+    expect(result.stopLocations.BUS_ICHIBATA_CONNECTION_matsue_station).toMatchObject({
+      id: 'BUS_ICHIBATA_CONNECTION_matsue_station',
+      name: '松江駅',
+      operatorId: 'ICHIBATA_BUS',
+      townLabelKey: 'MAINLAND'
+    })
+  })
+
+  it('bus-searchデータから町村別の路線フィルタを生成する', async () => {
+    const emptyFeed = (feedId: string, operatorId: string, townLabelKey: string | null, tripName: string) => ({
+      version: 1,
+      feedId,
+      generatedAt: '2026-06-09T00:00:00.000Z',
+      operatorId,
+      townLabelKey,
+      tripName,
+      fare: 0,
+      routes: {},
+      stops: [],
+      services: {},
+      trips: [],
+      departuresByStop: {}
+    })
+    const feeds: Record<string, unknown> = {
+      'ama.json': emptyFeed('ama', 'AMA_TOWN', 'AMA_CHO', 'AMA_TOWN_BUS'),
+      'nishinoshima.json': emptyFeed('nishinoshima', 'NISHINOSHIMA_TOWN', 'NISHINOSHIMA_CHO', 'NISHINOSHIMA_TOWN_BUS'),
+      'chibu.json': emptyFeed('chibu', 'CHIBU_VILLAGE', 'CHIBU_MURA', 'CHIBU_VILLAGE_BUS'),
+      'okinoshima.json': {
+        version: 1,
+        feedId: 'okinoshima',
+        generatedAt: '2026-06-09T00:00:00.000Z',
+        operatorId: 'OKINOSHIMA',
+        townLabelKey: 'OKINOSHIMA_CHO',
+        tripName: 'OKINOSHIMA_BUS',
+        fare: 500,
+        routes: {
+          OKI_ICHIBATA_GOKA: {
+            agencyId: 'OKI_ICHIBATA',
+            shortName: '五箇線',
+            longName: '隠岐一畑交通 五箇線'
+          },
+          OKI_ICHIBATA_NAKAMURA: {
+            agencyId: 'OKI_ICHIBATA',
+            shortName: '中村線',
+            longName: '隠岐一畑交通 中村線'
+          }
+        },
+        stops: [],
+        services: {},
+        trips: [
+          {
+            tripId: 'goka_1',
+            routeId: 'OKI_ICHIBATA_GOKA',
+            serviceId: 'daily',
+            headsign: '福浦',
+            shortName: '五箇線',
+            stops: [
+              ['BUS_OKINOSHIMA_port_mae', '08:29', '08:29'],
+              ['BUS_OKINOSHIMA_goka_branch', '09:14', '09:14']
+            ]
+          },
+          {
+            tripId: 'nakamura_1',
+            routeId: 'OKI_ICHIBATA_NAKAMURA',
+            serviceId: 'daily',
+            headsign: '伊後',
+            shortName: '中村線',
+            stops: [
+              ['BUS_OKINOSHIMA_port_mae', '10:00', '10:00'],
+              ['BUS_OKINOSHIMA_igo', '10:45', '10:45']
+            ]
+          }
+        ],
+        departuresByStop: {}
+      },
+      'ichibata_bus_connection.json': {
+        version: 1,
+        feedId: 'ichibata_bus_connection',
+        generatedAt: '2026-06-09T00:00:00.000Z',
+        operatorId: 'ICHIBATA_BUS',
+        townLabelKey: 'MAINLAND',
+        tripName: 'ICHIBATA_BUS_CONNECTION',
+        fare: 1200,
+        routes: {
+          route_ichibata_bus_connection_https_bus_ichibata_8927b51c: {
+            agencyId: 'agency_ichibata_bus_connection_a97e48aa',
+            shortName: '松江・七類・境港間時刻表',
+            longName: '一畑バス・隠岐汽船接続バス'
+          }
+        },
+        stops: [],
+        services: {},
+        trips: [
+          {
+            tripId: 'ICHIBATA_SHICHIRUI_0750',
+            routeId: 'route_ichibata_bus_connection_https_bus_ichibata_8927b51c',
+            serviceId: 'service_shichirui_daily',
+            headsign: '七類港',
+            shortName: '松江⇔七類港',
+            stops: [
+              ['BUS_ICHIBATA_CONNECTION_matsue_station', '07:50', '07:50'],
+              ['BUS_ICHIBATA_CONNECTION_shichirui_port', '08:30', '08:30']
+            ]
+          },
+          {
+            tripId: 'ICHIBATA_SAKAIMINATO_1315',
+            routeId: 'route_ichibata_bus_connection_https_bus_ichibata_8927b51c',
+            serviceId: 'service_sakaiminato_daily',
+            headsign: '境港',
+            shortName: '松江⇔境港',
+            stops: [
+              ['BUS_ICHIBATA_CONNECTION_matsue_station', '13:15', '13:15'],
+              ['BUS_ICHIBATA_CONNECTION_sakaiminato_port', '13:55', '13:55']
+            ]
+          }
+        ],
+        departuresByStop: {}
+      }
+    }
+    const fetchMock = vi.fn((input: string | URL | Request) => {
+      const fileName = fixtureFileName(input)
+      return Promise.resolve({
+        ok: true,
+        status: 200,
+        json: () => Promise.resolve(feeds[fileName])
+      } as Response)
+    })
+    vi.stubGlobal('fetch', fetchMock)
+
+    const result = await loadBusStopRouteFiltersIndex()
+
+    expect(fetchMock).toHaveBeenCalledWith(storageDataUrl('data/bus-search/okinoshima.json'))
+    expect(fetchMock).toHaveBeenCalledWith(storageDataUrl('data/bus-search/ichibata_bus_connection.json'))
+    expect(result).toEqual(expect.arrayContaining([
+      expect.objectContaining({
+        label: '五箇線',
+        operatorId: 'OKI_ICHIBATA',
+        townLabelKey: 'OKINOSHIMA_CHO',
+        stopCodes: ['BUS_OKINOSHIMA_port_mae', 'BUS_OKINOSHIMA_goka_branch']
+      }),
+      expect.objectContaining({
+        label: '中村線',
+        operatorId: 'OKI_ICHIBATA',
+        townLabelKey: 'OKINOSHIMA_CHO',
+        stopCodes: ['BUS_OKINOSHIMA_port_mae', 'BUS_OKINOSHIMA_igo']
+      }),
+      expect.objectContaining({
+        label: '松江⇔七類港',
+        operatorId: 'ICHIBATA_BUS',
+        townLabelKey: 'MAINLAND',
+        stopCodes: ['BUS_ICHIBATA_CONNECTION_matsue_station', 'BUS_ICHIBATA_CONNECTION_shichirui_port']
+      }),
+      expect.objectContaining({
+        label: '松江⇔境港',
+        operatorId: 'ICHIBATA_BUS',
+        townLabelKey: 'MAINLAND',
+        stopCodes: ['BUS_ICHIBATA_CONNECTION_matsue_station', 'BUS_ICHIBATA_CONNECTION_sakaiminato_port']
+      })
+    ]))
+  })
+
+  it('bus-searchデータから路線ごとの有効期限を集計する', () => {
+    const result = buildBusRouteValiditySummaries({
+      version: 1,
+      feedId: 'ama',
+      generatedAt: '2026-05-25T00:00:00.000Z',
+      operatorId: 'AMA_TOWN',
+      townLabelKey: 'AMA_CHO',
+      tripName: 'AMA_TOWN_BUS',
+      fare: 200,
+      routes: {
+        TOYODA: {
+          agencyId: '',
+          shortName: '',
+          longName: '豊田線'
+        }
+      },
+      stops: [
+        ['BUS_AMA_100_01', '豊田', 36.105471, 133.125968],
+        ['BUS_AMA_126_01', '隠岐汽船乗り場', 36.105058, 133.076744]
+      ],
+      services: {
+        weekday: {
+          startDate: '2026-04-01',
+          endDate: '2026-09-30',
+          activeDays: [1, 2, 3, 4, 5]
+        },
+        holiday: {
+          startDate: '2026-04-01',
+          endDate: '2027-03-31',
+          activeDays: [0, 6]
+        }
+      },
+      trips: [
+        {
+          tripId: 'weekday_1',
+          routeId: 'TOYODA',
+          serviceId: 'weekday',
+          headsign: '隠岐汽船乗り場',
+          shortName: '',
+          stops: [
+            ['BUS_AMA_100_01', '08:00', '08:00'],
+            ['BUS_AMA_126_01', '08:20', '08:20']
+          ]
+        },
+        {
+          tripId: 'holiday_1',
+          routeId: 'TOYODA',
+          serviceId: 'holiday',
+          headsign: '隠岐汽船乗り場',
+          shortName: '',
+          stops: [
+            ['BUS_AMA_100_01', '09:00', '09:00'],
+            ['BUS_AMA_126_01', '09:20', '09:20']
+          ]
+        }
+      ],
+      departuresByStop: {}
+    })
+
+    expect(result).toEqual([
+      {
+        feedId: 'ama',
+        operatorId: 'AMA_TOWN',
+        tripName: 'AMA_TOWN_BUS',
+        routeName: '豊田線',
+        townLabelKey: 'AMA_CHO',
+        startDate: '2026-04-01',
+        endDate: '2027-03-31'
+      }
+    ])
+  })
+
+  it('bus-searchデータから指定区間の候補だけを生成する', async () => {
+    const fetchMock = vi.fn(() => Promise.resolve({
+      ok: true,
+      status: 200,
+      json: () => Promise.resolve({
+        version: 1,
+        feedId: 'ama',
+        generatedAt: '2026-05-25T00:00:00.000Z',
+        operatorId: 'AMA_TOWN',
+        townLabelKey: 'AMA_CHO',
+        tripName: 'AMA_TOWN_BUS',
+        fare: 200,
+        routes: {
+          R8_AMA: {
+            agencyId: '',
+            shortName: '',
+            longName: '海士島線1'
+          }
+        },
+        stops: [
+          ['BUS_AMA_100_01', '豊田', 36.105471, 133.125968],
+          ['BUS_AMA_100_02', '隠岐神社前', 36.097104, 133.098744],
+          ['BUS_AMA_126_01', '隠岐汽船乗り場', 36.105058, 133.076744]
+        ],
+        services: {
+          svc_weekday: {
+            startDate: '2026-01-01',
+            endDate: '2026-01-31',
+            activeDays: [1],
+            addedDates: [],
+            removedDates: ['2026-01-05']
+          }
+        },
+        trips: [
+          {
+            tripId: 'trip_1',
+            routeId: 'R8_AMA',
+            serviceId: 'svc_weekday',
+            headsign: '隠岐汽船乗り場',
+            shortName: '',
+            stops: [
+              ['BUS_AMA_100_01', '08:00', '08:00'],
+              ['BUS_AMA_100_02', '08:10', '08:10'],
+              ['BUS_AMA_126_01', '08:20', '08:20']
+            ]
+          }
+        ],
+        departuresByStop: {
+          BUS_AMA_100_01: [[0, 0]],
+          BUS_AMA_100_02: [[0, 1]]
+        }
+      })
+    } as Response))
+    vi.stubGlobal('fetch', fetchMock)
+
+    const result = await loadBusTripsForRoute(
+      'BUS_AMA_100_01',
+      'BUS_AMA_126_01',
+      '2026-01-12'
+    )
+
+    expect(fetchMock).toHaveBeenCalledWith(storageDataUrl('data/bus-search/ama.json'))
+    expect(result).toHaveLength(1)
+    expect(result[0]).toMatchObject({
+      startDate: '2026-01-01',
+      endDate: '2026-01-31',
+      activeDays: [1],
+      removedDates: ['2026-01-05'],
+      name: 'AMA_TOWN_BUS',
+      mode: 'BUS',
+      departure: 'BUS_AMA_100_01',
+      arrival: 'BUS_AMA_126_01',
+      departureTime: '08:00',
+      arrivalTime: '08:20',
+      price: 200,
+      via: '海士島線'
+    })
+
+    const removedDateResult = await loadBusTripsForRoute(
+      'BUS_AMA_100_01',
+      'BUS_AMA_126_01',
+      '2026-01-05'
+    )
+    expect(removedDateResult).toEqual([])
+  })
+
+  it('compact feedに同一便が重複していても検索結果は1件にする', () => {
+    const duplicateTrip = {
+      tripId: 'trip_1',
+      routeId: 'R8_AMA',
+      serviceId: 'svc_daily',
+      headsign: '隠岐汽船乗り場',
+      shortName: '海士島線',
+      stops: [
+        ['BUS_AMA_100_01', '08:00', '08:00'],
+        ['BUS_AMA_126_01', '08:20', '08:20']
+      ]
+    } as BusSearchFeed['trips'][number]
+    const feed: BusSearchFeed = {
+      version: 1,
+      feedId: 'ama',
+      generatedAt: '2026-07-16T00:00:00.000Z',
+      operatorId: 'AMA_TOWN',
+      townLabelKey: 'AMA_CHO',
+      tripName: 'AMA_TOWN_BUS',
+      fare: 200,
+      routes: {
+        R8_AMA: { shortName: '海士島線', longName: '海士島線' }
+      },
+      stops: [
+        ['BUS_AMA_100_01', '豊田', 36.105471, 133.125968],
+        ['BUS_AMA_126_01', '隠岐汽船乗り場', 36.105058, 133.076744]
+      ],
+      services: {
+        svc_daily: {
+          startDate: '2026-01-01',
+          endDate: '2026-12-31',
+          activeDays: [0, 1, 2, 3, 4, 5, 6]
+        }
+      },
+      trips: [duplicateTrip, { ...duplicateTrip }],
+      departuresByStop: {
+        BUS_AMA_100_01: [[0, 0], [1, 0]]
+      }
+    }
+
+    const result = buildBusTripsForRoute(
+      feed,
+      'BUS_AMA_100_01',
+      'BUS_AMA_126_01',
+      '2026-07-16'
+    )
+
+    expect(result).toHaveLength(1)
+    expect(result[0]).toMatchObject({
+      departureTime: '08:00',
+      arrivalTime: '08:20',
+      via: '海士島線'
+    })
+  })
+
+  it('bus-searchデータから一畑バス接続便の候補を生成する', async () => {
+    const fetchMock = vi.fn(() => Promise.resolve({
+      ok: true,
+      status: 200,
+      json: () => Promise.resolve({
+        version: 1,
+        feedId: 'ichibata_bus_connection',
+        generatedAt: '2026-06-06T00:00:00.000Z',
+        operatorId: 'ICHIBATA_BUS',
+        townLabelKey: 'MAINLAND',
+        tripName: 'ICHIBATA_BUS_CONNECTION',
+        fare: 1200,
+        routes: {
+          route_ichibata_bus_connection_https_bus_ichibata_8927b51c: {
+            agencyId: 'agency_ichibata_bus_connection_a97e48aa',
+            shortName: '松江・七類・境港間時刻表',
+            longName: '一畑バス・隠岐汽船接続バス'
+          }
+        },
+        stops: [
+          ['BUS_ICHIBATA_CONNECTION_matsue_station', '松江駅', 35.464361, 133.06285],
+          ['BUS_ICHIBATA_CONNECTION_shichirui_port', '七類港', 35.571133, 133.230021]
+        ],
+        services: {
+          service_shichirui_daily: {
+            startDate: '2026-04-01',
+            endDate: '2026-12-31',
+            activeDays: [0, 1, 2, 3, 4, 5, 6],
+            addedDates: [],
+            removedDates: []
+          }
+        },
+        trips: [
+          {
+            tripId: 'ICHIBATA_SHICHIRUI_0750',
+            routeId: 'route_ichibata_bus_connection_https_bus_ichibata_8927b51c',
+            serviceId: 'service_shichirui_daily',
+            headsign: '七類港',
+            shortName: '松江⇔七類港',
+            stops: [
+              ['BUS_ICHIBATA_CONNECTION_matsue_station', '07:50', '07:50'],
+              ['BUS_ICHIBATA_CONNECTION_shichirui_port', '08:30', '08:30']
+            ]
+          }
+        ],
+        departuresByStop: {
+          BUS_ICHIBATA_CONNECTION_matsue_station: [[0, 0]]
+        }
+      })
+    } as Response))
+    vi.stubGlobal('fetch', fetchMock)
+
+    const result = await loadBusTripsForRoute(
+      'BUS_ICHIBATA_CONNECTION_matsue_station',
+      'BUS_ICHIBATA_CONNECTION_shichirui_port',
+      '2026-06-01'
+    )
+
+    expect(fetchMock).toHaveBeenCalledWith(storageDataUrl('data/bus-search/ichibata_bus_connection.json'))
+    expect(result).toHaveLength(1)
+    expect(result[0]).toMatchObject({
+      startDate: '2026-04-01',
+      endDate: '2026-12-31',
+      name: 'ICHIBATA_BUS_CONNECTION',
+      mode: 'BUS',
+      operatorId: 'ICHIBATA_BUS',
+      departure: 'BUS_ICHIBATA_CONNECTION_matsue_station',
+      arrival: 'BUS_ICHIBATA_CONNECTION_shichirui_port',
+      departureTime: '07:50',
+      arrivalTime: '08:30',
+      price: 1200,
+      via: '松江⇔七類港'
+    })
+  })
+
+  it('bus-searchデータから同一フィード内のバス乗換候補を生成する', async () => {
+    const fetchMock = vi.fn(() => Promise.resolve({
+      ok: true,
+      status: 200,
+      json: () => Promise.resolve({
+        version: 1,
+        feedId: 'nishinoshima',
+        generatedAt: '2026-06-09T00:00:00.000Z',
+        operatorId: 'NISHINOSHIMA_TOWN',
+        townLabelKey: 'NISHINOSHIMA_CHO',
+        tripName: 'NISHINOSHIMA_TOWN_BUS',
+        fare: 200,
+        routes: {
+          NISHINOSHIMA_MAIN: {
+            agencyId: 'NISHINOSHIMA_TOWN',
+            shortName: '町営バス',
+            longName: '西ノ島町営バス'
+          },
+          NISHINOSHIMA_HATO: {
+            agencyId: 'NISHINOSHIMA_TOWN',
+            shortName: '波止線',
+            longName: '西ノ島町営バス 波止線'
+          }
+        },
+        stops: [
+          ['BUS_NISHINOSHIMA_nishinoshima_005', '島前病院', 36.106629, 133.036793],
+          ['BUS_NISHINOSHIMA_nishinoshima_020', '浦郷', 36.09273782, 132.99520533],
+          ['BUS_NISHINOSHIMA_nishinoshima_026', '波止', 36.07446789, 133.01485121]
+        ],
+        services: {
+          daily: {
+            startDate: '2026-01-01',
+            endDate: '2026-12-31',
+            activeDays: [0, 1, 2, 3, 4, 5, 6],
+            addedDates: [],
+            removedDates: []
+          }
+        },
+        trips: [
+          {
+            tripId: 'B04_MAIN_0837',
+            routeId: 'NISHINOSHIMA_MAIN',
+            serviceId: 'daily',
+            headsign: '赤ノ江',
+            shortName: '2便',
+            stops: [
+              ['BUS_NISHINOSHIMA_nishinoshima_005', '08:37', '08:37'],
+              ['BUS_NISHINOSHIMA_nishinoshima_020', '09:01', '09:01']
+            ]
+          },
+          {
+            tripId: 'H02_HATO_1130',
+            routeId: 'NISHINOSHIMA_HATO',
+            serviceId: 'daily',
+            headsign: '島前病院',
+            shortName: '波止線 2便',
+            stops: [
+              ['BUS_NISHINOSHIMA_nishinoshima_020', '11:34', '11:34'],
+              ['BUS_NISHINOSHIMA_nishinoshima_026', '11:46', '11:46']
+            ]
+          }
+        ],
+        departuresByStop: {
+          BUS_NISHINOSHIMA_nishinoshima_005: [[0, 0]],
+          BUS_NISHINOSHIMA_nishinoshima_020: [[1, 0]]
+        }
+      })
+    } as Response))
+    vi.stubGlobal('fetch', fetchMock)
+
+    const result = await loadBusTransferCandidateTripsForRoute(
+      'BUS_NISHINOSHIMA_nishinoshima_005',
+      'BUS_NISHINOSHIMA_nishinoshima_026',
+      '2026-06-09'
+    )
+
+    expect(fetchMock).toHaveBeenCalledWith(storageDataUrl('data/bus-search/nishinoshima.json'))
+    expect(result).toHaveLength(2)
+    expect(result[0]).toMatchObject({
+      name: 'NISHINOSHIMA_TOWN_BUS',
+      mode: 'BUS',
+      departure: 'BUS_NISHINOSHIMA_nishinoshima_005',
+      arrival: 'BUS_NISHINOSHIMA_nishinoshima_020',
+      departureTime: '08:37',
+      arrivalTime: '09:01',
+      price: 200
+    })
+    expect(result[1]).toMatchObject({
+      departure: 'BUS_NISHINOSHIMA_nishinoshima_020',
+      arrival: 'BUS_NISHINOSHIMA_nishinoshima_026',
+      departureTime: '11:34',
+      arrivalTime: '11:46',
+      via: '波止線'
+    })
+  })
+
+  it('海士町バスの福井小学校前経由便は平日と土日祝で出し分ける', async () => {
+    const fetchMock = vi.fn(() => Promise.resolve({
+      ok: true,
+      status: 200,
+      json: () => Promise.resolve({
+        version: 1,
+        feedId: 'ama',
+        generatedAt: '2026-05-25T00:00:00.000Z',
+        operatorId: 'AMA_TOWN',
+        townLabelKey: 'AMA_CHO',
+        tripName: 'AMA_TOWN_BUS',
+        fare: 200,
+        routes: {
+          '21': {
+            agencyId: '',
+            shortName: '',
+            longName: '海士島線1'
+          },
+          '22': {
+            agencyId: '',
+            shortName: '',
+            longName: '海士島線2'
+          },
+          '23': {
+            agencyId: '',
+            shortName: '',
+            longName: '海士島線3'
+          }
+        },
+        stops: [
+          ['BUS_AMA_111_01', '役場前', 36.096178, 133.097043],
+          ['BUS_AMA_118_01', '西入口', 36.086348, 133.079677],
+          ['BUS_AMA_119_01', '福井', 36.089481, 133.079881],
+          ['BUS_AMA_120_01', '福井分かれ', 36.092452, 133.083025],
+          ['BUS_AMA_121_01', '福井小学校前', 36.098056, 133.085833],
+          ['BUS_AMA_126_01', '隠岐汽船乗り場', 36.105058, 133.076744]
+        ],
+        services: {
+          weekday: {
+            startDate: '2026-03-09',
+            endDate: '2026-05-31',
+            activeDays: [1, 2, 3, 4, 5],
+            addedDates: [],
+            removedDates: []
+          },
+          holiday: {
+            startDate: '2026-03-09',
+            endDate: '2026-05-31',
+            activeDays: [0, 6],
+            addedDates: [],
+            removedDates: []
+          }
+        },
+        trips: [
+          {
+            tripId: 'weekday_fukui_school_to_port',
+            routeId: '21',
+            serviceId: 'weekday',
+            headsign: '隠岐汽船乗り場',
+            shortName: '',
+            stops: [
+              ['BUS_AMA_111_01', '07:25', '07:25'],
+              ['BUS_AMA_118_01', '07:51', '07:51'],
+              ['BUS_AMA_119_01', '07:52', '07:52'],
+              ['BUS_AMA_120_01', '07:53', '07:53'],
+              ['BUS_AMA_121_01', '07:55', '07:55'],
+              ['BUS_AMA_126_01', '08:03', '08:03']
+            ]
+          },
+          {
+            tripId: 'holiday_fukui_branch_to_port',
+            routeId: '23',
+            serviceId: 'holiday',
+            headsign: '隠岐汽船乗り場',
+            shortName: '',
+            stops: [
+              ['BUS_AMA_111_01', '08:10', '08:10'],
+              ['BUS_AMA_118_01', '09:01', '09:01'],
+              ['BUS_AMA_119_01', '09:02', '09:02'],
+              ['BUS_AMA_120_01', '09:03', '09:03'],
+              ['BUS_AMA_126_01', '09:10', '09:10']
+            ]
+          }
+        ],
+        departuresByStop: {
+          BUS_AMA_121_01: [[0, 4]],
+          BUS_AMA_120_01: [[0, 3], [1, 3]]
+        }
+      })
+    } as Response))
+    vi.stubGlobal('fetch', fetchMock)
+
+    const weekdayResult = await loadBusTripsForRoute(
+      'BUS_AMA_121_01',
+      'BUS_AMA_126_01',
+      '2026-05-29'
+    )
+    const saturdayResult = await loadBusTripsForRoute(
+      'BUS_AMA_121_01',
+      'BUS_AMA_126_01',
+      '2026-05-30'
+    )
+    const saturdayBranchResult = await loadBusTripsForRoute(
+      'BUS_AMA_120_01',
+      'BUS_AMA_126_01',
+      '2026-05-30'
+    )
+
+    expect(weekdayResult).toHaveLength(1)
+    expect(weekdayResult[0]).toMatchObject({
+      serviceId: 'weekday',
+      departure: 'BUS_AMA_121_01',
+      departureTime: '07:55',
+      arrival: 'BUS_AMA_126_01',
+      arrivalTime: '08:03',
+      via: '海士島線'
+    })
+    expect(saturdayResult).toEqual([])
+    expect(saturdayBranchResult).toHaveLength(1)
+    expect(saturdayBranchResult[0]).toMatchObject({
+      serviceId: 'holiday',
+      departure: 'BUS_AMA_120_01',
+      departureTime: '09:03',
+      arrival: 'BUS_AMA_126_01',
+      arrivalTime: '09:10',
+      via: '海士島線'
+    })
+  })
+
+  it('bus-searchデータから指定区間の路線表示を取得する', async () => {
+    const fetchMock = vi.fn(() => Promise.resolve({
+      ok: true,
+      status: 200,
+      json: () => Promise.resolve({
+        version: 1,
+        feedId: 'ama',
+        generatedAt: '2026-05-25T00:00:00.000Z',
+        operatorId: 'AMA_TOWN',
+        townLabelKey: 'AMA_CHO',
+        tripName: 'AMA_TOWN_BUS',
+        fare: 200,
+        routes: {
+          TOYODA: {
+            agencyId: '',
+            shortName: '',
+            longName: '豊田線'
+          }
+        },
+        stops: [
+          ['BUS_AMA_100_01', '豊田', 36.105471, 133.125968],
+          ['BUS_AMA_126_01', '隠岐汽船乗り場', 36.105058, 133.076744]
+        ],
+        services: {},
+        trips: [
+          {
+            tripId: 'trip_1',
+            routeId: 'TOYODA',
+            serviceId: 'svc_weekday',
+            headsign: '隠岐汽船乗り場',
+            shortName: '',
+            stops: [
+              ['BUS_AMA_100_01', '08:00', '08:00'],
+              ['BUS_AMA_126_01', '08:20', '08:20']
+            ]
+          },
+          {
+            tripId: 'trip_2',
+            routeId: 'TOYODA',
+            serviceId: 'svc_weekday',
+            headsign: '隠岐汽船乗り場',
+            shortName: '',
+            stops: [
+              ['BUS_AMA_100_01', '09:00', '09:00'],
+              ['BUS_AMA_126_01', '09:20', '09:20']
+            ]
+          }
+        ],
+        departuresByStop: {
+          BUS_AMA_100_01: [[0, 0], [1, 0]]
+        }
+      })
+    } as Response))
+    vi.stubGlobal('fetch', fetchMock)
+
+    const result = await loadBusRouteLabelsForStops('BUS_AMA_100_01', 'BUS_AMA_126_01')
+
+    expect(fetchMock).toHaveBeenCalledWith(storageDataUrl('data/bus-search/ama.json'))
+    expect(result).toEqual([
+      {
+        operatorId: 'AMA_TOWN',
+        tripName: 'AMA_TOWN_BUS',
+        routeName: '豊田線'
+      }
+    ])
+  })
+})

@@ -1,0 +1,22 @@
+{
+  "id": "ama",
+  "mode": "bus",
+  "generatedAt": "2026-07-02T13:08:53.409Z",
+  "feed": {
+    "publisherName": "海士町",
+    "publisherUrl": "http://www.town.ama.shimane.jp/",
+    "lang": "ja",
+    "startDate": "20260102",
+    "endDate": "20261231",
+    "version": "R8_20251222-1"
+  },
+  "counts": {
+    "agencies": 1,
+    "routes": 10,
+    "stops": 36,
+    "trips": 396,
+    "stopTimes": 7348,
+    "calendarServices": 36,
+    "calendarDates": 66
+  }
+}

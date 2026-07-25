@@ -1,0 +1,112 @@
+[
+  {
+    "service_id": "weekday_except_holidays",
+    "date": "20260101",
+    "exception_type": "2"
+  },
+  {
+    "service_id": "weekday_except_holidays",
+    "date": "20260112",
+    "exception_type": "2"
+  },
+  {
+    "service_id": "weekday_except_holidays",
+    "date": "20260211",
+    "exception_type": "2"
+  },
+  {
+    "service_id": "weekday_except_holidays",
+    "date": "20260223",
+    "exception_type": "2"
+  },
+  {
+    "service_id": "weekday_except_holidays",
+    "date": "20260320",
+    "exception_type": "2"
+  },
+  {
+    "service_id": "weekday_except_holidays",
+    "date": "20260429",
+    "exception_type": "2"
+  },
+  {
+    "service_id": "weekday_except_holidays",
+    "date": "20260504",
+    "exception_type": "2"
+  },
+  {
+    "service_id": "weekday_except_holidays",
+    "date": "20260505",
+    "exception_type": "2"
+  },
+  {
+    "service_id": "weekday_except_holidays",
+    "date": "20260506",
+    "exception_type": "2"
+  },
+  {
+    "service_id": "weekday_except_holidays",
+    "date": "20260720",
+    "exception_type": "2"
+  },
+  {
+    "service_id": "weekday_except_holidays",
+    "date": "20260811",
+    "exception_type": "2"
+  },
+  {
+    "service_id": "weekday_except_holidays",
+    "date": "20260813",
+    "exception_type": "2"
+  },
+  {
+    "service_id": "weekday_except_holidays",
+    "date": "20260814",
+    "exception_type": "2"
+  },
+  {
+    "service_id": "weekday_except_holidays",
+    "date": "20260921",
+    "exception_type": "2"
+  },
+  {
+    "service_id": "weekday_except_holidays",
+    "date": "20260922",
+    "exception_type": "2"
+  },
+  {
+    "service_id": "weekday_except_holidays",
+    "date": "20260923",
+    "exception_type": "2"
+  },
+  {
+    "service_id": "weekday_except_holidays",
+    "date": "20261012",
+    "exception_type": "2"
+  },
+  {
+    "service_id": "weekday_except_holidays",
+    "date": "20261103",
+    "exception_type": "2"
+  },
+  {
+    "service_id": "weekday_except_holidays",
+    "date": "20261123",
+    "exception_type": "2"
+  },
+  {
+    "service_id": "weekday_except_holidays",
+    "date": "20261229",
+    "exception_type": "2"
+  },
+  {
+    "service_id": "weekday_except_holidays",
+    "date": "20261230",
+    "exception_type": "2"
+  },
+  {
+    "service_id": "weekday_except_holidays",
+    "date": "20261231",
+    "exception_type": "2"
+  }
+]

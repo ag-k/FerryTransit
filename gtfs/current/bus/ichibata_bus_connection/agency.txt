@@ -1,0 +1,2 @@
+agency_id,agency_name,agency_url,agency_timezone,agency_lang,agency_phone
+agency_ichibata_bus_connection_a97e48aa,一畑バス株式会社,https://bus.ichibata.co.jp/oki-kisen/oki-kisen-sichirui/,Asia/Tokyo,ja,0852-20-5205

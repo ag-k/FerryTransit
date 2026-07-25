@@ -5,8 +5,10 @@ export interface SearchHistoryItem {
   departure?: string
   arrival?: string
   date: Date
-  time?: Date
+  time?: Date | string | number
   isArrivalMode?: boolean
+  withCar?: boolean
+  vehicleLengthMeters?: number
   searchedAt: Date
   resultCount?: number
 }

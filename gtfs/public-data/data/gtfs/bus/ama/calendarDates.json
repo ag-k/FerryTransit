@@ -1,0 +1,332 @@
+[
+  {
+    "service_id": "R8_TOYODA_P1_01_weekday",
+    "date": "20260112",
+    "exception_type": "2"
+  },
+  {
+    "service_id": "R8_TOYODA_P1_01_weekday",
+    "date": "20260211",
+    "exception_type": "2"
+  },
+  {
+    "service_id": "R8_TOYODA_P1_01_weekday",
+    "date": "20260223",
+    "exception_type": "2"
+  },
+  {
+    "service_id": "R8_TOYODA_P1_01_holiday",
+    "date": "20260112",
+    "exception_type": "1"
+  },
+  {
+    "service_id": "R8_TOYODA_P1_01_holiday",
+    "date": "20260211",
+    "exception_type": "1"
+  },
+  {
+    "service_id": "R8_TOYODA_P1_01_holiday",
+    "date": "20260223",
+    "exception_type": "1"
+  },
+  {
+    "service_id": "R8_TOYODA_P2_03_weekday",
+    "date": "20260921",
+    "exception_type": "2"
+  },
+  {
+    "service_id": "R8_TOYODA_P2_03_weekday",
+    "date": "20260922",
+    "exception_type": "2"
+  },
+  {
+    "service_id": "R8_TOYODA_P2_03_weekday",
+    "date": "20260923",
+    "exception_type": "2"
+  },
+  {
+    "service_id": "R8_TOYODA_P2_04_weekday",
+    "date": "20261123",
+    "exception_type": "2"
+  },
+  {
+    "service_id": "R8_TOYODA_P2_03_holiday",
+    "date": "20260921",
+    "exception_type": "1"
+  },
+  {
+    "service_id": "R8_TOYODA_P2_03_holiday",
+    "date": "20260922",
+    "exception_type": "1"
+  },
+  {
+    "service_id": "R8_TOYODA_P2_03_holiday",
+    "date": "20260923",
+    "exception_type": "1"
+  },
+  {
+    "service_id": "R8_TOYODA_P2_04_holiday",
+    "date": "20261123",
+    "exception_type": "1"
+  },
+  {
+    "service_id": "R8_TOYODA_P3_01_weekday",
+    "date": "20260320",
+    "exception_type": "2"
+  },
+  {
+    "service_id": "R8_TOYODA_P3_01_weekday",
+    "date": "20260429",
+    "exception_type": "2"
+  },
+  {
+    "service_id": "R8_TOYODA_P3_01_weekday",
+    "date": "20260503",
+    "exception_type": "2"
+  },
+  {
+    "service_id": "R8_TOYODA_P3_01_weekday",
+    "date": "20260504",
+    "exception_type": "2"
+  },
+  {
+    "service_id": "R8_TOYODA_P3_01_weekday",
+    "date": "20260505",
+    "exception_type": "2"
+  },
+  {
+    "service_id": "R8_TOYODA_P3_01_weekday",
+    "date": "20260506",
+    "exception_type": "2"
+  },
+  {
+    "service_id": "R8_TOYODA_P3_02_weekday",
+    "date": "20260720",
+    "exception_type": "2"
+  },
+  {
+    "service_id": "R8_TOYODA_P3_02_weekday",
+    "date": "20260811",
+    "exception_type": "2"
+  },
+  {
+    "service_id": "R8_TOYODA_P3_03_weekday",
+    "date": "20261012",
+    "exception_type": "2"
+  },
+  {
+    "service_id": "R8_TOYODA_P3_03_weekday",
+    "date": "20261103",
+    "exception_type": "2"
+  },
+  {
+    "service_id": "R8_TOYODA_P3_01_holiday",
+    "date": "20260320",
+    "exception_type": "1"
+  },
+  {
+    "service_id": "R8_TOYODA_P3_01_holiday",
+    "date": "20260429",
+    "exception_type": "1"
+  },
+  {
+    "service_id": "R8_TOYODA_P3_01_holiday",
+    "date": "20260504",
+    "exception_type": "1"
+  },
+  {
+    "service_id": "R8_TOYODA_P3_01_holiday",
+    "date": "20260505",
+    "exception_type": "1"
+  },
+  {
+    "service_id": "R8_TOYODA_P3_01_holiday",
+    "date": "20260506",
+    "exception_type": "1"
+  },
+  {
+    "service_id": "R8_TOYODA_P3_02_holiday",
+    "date": "20260720",
+    "exception_type": "1"
+  },
+  {
+    "service_id": "R8_TOYODA_P3_02_holiday",
+    "date": "20260811",
+    "exception_type": "1"
+  },
+  {
+    "service_id": "R8_TOYODA_P3_03_holiday",
+    "date": "20261012",
+    "exception_type": "1"
+  },
+  {
+    "service_id": "R8_TOYODA_P3_03_holiday",
+    "date": "20261103",
+    "exception_type": "1"
+  },
+  {
+    "service_id": "R8_AMA_P1_01_weekday",
+    "date": "20260112",
+    "exception_type": "2"
+  },
+  {
+    "service_id": "R8_AMA_P1_01_weekday",
+    "date": "20260211",
+    "exception_type": "2"
+  },
+  {
+    "service_id": "R8_AMA_P1_01_weekday",
+    "date": "20260223",
+    "exception_type": "2"
+  },
+  {
+    "service_id": "R8_AMA_P1_01_holiday",
+    "date": "20260112",
+    "exception_type": "1"
+  },
+  {
+    "service_id": "R8_AMA_P1_01_holiday",
+    "date": "20260211",
+    "exception_type": "1"
+  },
+  {
+    "service_id": "R8_AMA_P1_01_holiday",
+    "date": "20260223",
+    "exception_type": "1"
+  },
+  {
+    "service_id": "R8_AMA_P3_01_weekday",
+    "date": "20260320",
+    "exception_type": "2"
+  },
+  {
+    "service_id": "R8_AMA_P3_01_weekday",
+    "date": "20260429",
+    "exception_type": "2"
+  },
+  {
+    "service_id": "R8_AMA_P3_01_weekday",
+    "date": "20260503",
+    "exception_type": "2"
+  },
+  {
+    "service_id": "R8_AMA_P3_01_weekday",
+    "date": "20260504",
+    "exception_type": "2"
+  },
+  {
+    "service_id": "R8_AMA_P3_01_weekday",
+    "date": "20260505",
+    "exception_type": "2"
+  },
+  {
+    "service_id": "R8_AMA_P3_01_weekday",
+    "date": "20260506",
+    "exception_type": "2"
+  },
+  {
+    "service_id": "R8_AMA_P3_02_weekday",
+    "date": "20260720",
+    "exception_type": "2"
+  },
+  {
+    "service_id": "R8_AMA_P3_02_weekday",
+    "date": "20260811",
+    "exception_type": "2"
+  },
+  {
+    "service_id": "R8_AMA_P3_01_holiday",
+    "date": "20260320",
+    "exception_type": "1"
+  },
+  {
+    "service_id": "R8_AMA_P3_01_holiday",
+    "date": "20260429",
+    "exception_type": "1"
+  },
+  {
+    "service_id": "R8_AMA_P3_01_holiday",
+    "date": "20260504",
+    "exception_type": "1"
+  },
+  {
+    "service_id": "R8_AMA_P3_01_holiday",
+    "date": "20260505",
+    "exception_type": "1"
+  },
+  {
+    "service_id": "R8_AMA_P3_01_holiday",
+    "date": "20260506",
+    "exception_type": "1"
+  },
+  {
+    "service_id": "R8_AMA_P3_02_holiday",
+    "date": "20260720",
+    "exception_type": "1"
+  },
+  {
+    "service_id": "R8_AMA_P3_02_holiday",
+    "date": "20260811",
+    "exception_type": "1"
+  },
+  {
+    "service_id": "R8_AMA_P4_01_weekday",
+    "date": "20260921",
+    "exception_type": "2"
+  },
+  {
+    "service_id": "R8_AMA_P4_01_weekday",
+    "date": "20260922",
+    "exception_type": "2"
+  },
+  {
+    "service_id": "R8_AMA_P4_01_weekday",
+    "date": "20260923",
+    "exception_type": "2"
+  },
+  {
+    "service_id": "R8_AMA_P4_02_weekday",
+    "date": "20261123",
+    "exception_type": "2"
+  },
+  {
+    "service_id": "R8_AMA_P4_01_holiday",
+    "date": "20260921",
+    "exception_type": "1"
+  },
+  {
+    "service_id": "R8_AMA_P4_01_holiday",
+    "date": "20260922",
+    "exception_type": "1"
+  },
+  {
+    "service_id": "R8_AMA_P4_01_holiday",
+    "date": "20260923",
+    "exception_type": "1"
+  },
+  {
+    "service_id": "R8_AMA_P4_02_holiday",
+    "date": "20261123",
+    "exception_type": "1"
+  },
+  {
+    "service_id": "R8_AMA_P5_01_weekday",
+    "date": "20261012",
+    "exception_type": "2"
+  },
+  {
+    "service_id": "R8_AMA_P5_01_weekday",
+    "date": "20261103",
+    "exception_type": "2"
+  },
+  {
+    "service_id": "R8_AMA_P5_01_holiday",
+    "date": "20261012",
+    "exception_type": "1"
+  },
+  {
+    "service_id": "R8_AMA_P5_01_holiday",
+    "date": "20261103",
+    "exception_type": "1"
+  }
+]

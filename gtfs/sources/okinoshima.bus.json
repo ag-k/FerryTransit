@@ -1,0 +1,17 @@
+{
+  "id": "okinoshima",
+  "mode": "bus",
+  "name": "隠岐の島町内バス",
+  "agencyName": "隠岐一畑交通 / 隠岐の島町",
+  "sourceUrl": "https://www.town.okinoshima.shimane.jp/kanko/tounaikoutuujouhou/7990.html",
+  "license": "未確認",
+  "updatePolicy": "隠岐の島町公式サイトの町内バス・デマンドタクシー時刻表ページと隠岐一畑交通の路線バス時刻表を確認し、更新があれば raw に日付付きで保存して current に反映する",
+  "currentRawDate": "2026-03-02",
+  "currentPath": "gtfs/current/bus/okinoshima",
+  "notes": [
+    "総合時刻表、路線バス時刻表、町営バス3路線のPDF原本は gtfs/pdf/bus/okinoshima に保管",
+    "scripts/gtfs/convert-okinoshima-2026.mjs で raw/bus/okinoshima/2026-03-02 と current/bus/okinoshima を生成",
+    "隠岐空港線は航空便連動の相対時刻のため固定時刻GTFSには含めない",
+    "デマンドタクシーは予約型タクシーのため今回のバスGTFSには含めない"
+  ]
+}

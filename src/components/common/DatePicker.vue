@@ -10,6 +10,7 @@
         :min="minDateString"
         :max="maxDateString"
         :disabled="disabled"
+        :aria-label="ariaLabel || undefined"
         @change="handleChange"
       >
       <button 
@@ -32,6 +33,7 @@ import { formatDateYmdJst, getTodayJstMidnight, parseYmdAsJstMidnight } from '@/
 interface Props {
   modelValue: Date
   label?: string
+  ariaLabel?: string
   hint?: string
   minDate?: Date
   maxDate?: Date
@@ -42,6 +44,7 @@ interface Props {
 }
 
 const props = withDefaults(defineProps<Props>(), {
+  ariaLabel: '',
   disabled: false,
   showTodayButton: true,
   margin: 'normal',
@@ -62,7 +65,7 @@ const containerClass = computed(() => {
 })
 
 const inputClass = computed(() => {
-  const base = 'flex-1 px-3 border border-app-border rounded-l-md bg-app-surface text-app-fg focus:outline-none focus:ring-2 focus:ring-app-primary-2 focus:border-app-primary-2 disabled:bg-app-surface-2 disabled:text-app-muted disabled:cursor-not-allowed touch-manipulation dark:[color-scheme:dark]'
+  const base = 'flex-1 min-h-12 px-3 border border-app-border rounded-l-md bg-app-surface text-app-fg focus:outline-none focus:ring-2 focus:ring-app-primary-2 focus:border-app-primary-2 disabled:bg-app-surface-2 disabled:text-app-muted disabled:cursor-not-allowed touch-manipulation dark:[color-scheme:dark]'
   if (props.size === 'compact') {
     return `${base} py-2 text-base`
   }
@@ -70,7 +73,7 @@ const inputClass = computed(() => {
 })
 
 const todayButtonClass = computed(() => {
-  const base = 'px-4 sm:px-4 border border-l-0 border-app-border rounded-r-md bg-app-surface-2 text-app-fg hover:bg-app-surface-2/80 focus:outline-none focus:ring-2 focus:ring-app-primary-2 focus:border-app-primary-2 disabled:bg-app-surface-2 disabled:text-app-muted disabled:cursor-not-allowed transition-colors touch-manipulation'
+  const base = 'min-h-12 px-4 sm:px-4 border border-l-0 border-app-border rounded-r-md bg-app-surface-2 text-app-fg hover:bg-app-surface-2/80 focus:outline-none focus:ring-2 focus:ring-app-primary-2 focus:border-app-primary-2 disabled:bg-app-surface-2 disabled:text-app-muted disabled:cursor-not-allowed transition-colors touch-manipulation'
   if (props.size === 'compact') {
     return `${base} py-2 text-base`
   }

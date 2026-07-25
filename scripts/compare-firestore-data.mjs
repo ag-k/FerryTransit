@@ -14,6 +14,7 @@
 import { readFileSync, writeFileSync } from 'fs'
 import { join } from 'path'
 import admin from 'firebase-admin'
+import { configureAdminEmulatorEnv } from './emulator-config.mjs'
 
 const projectRoot = process.cwd()
 
@@ -440,7 +441,7 @@ async function main() {
     // 本番の初期化をクリア
     admin.apps.forEach(app => app.delete())
 
-    process.env.FIRESTORE_EMULATOR_HOST = 'localhost:8095'
+    configureAdminEmulatorEnv({ projectRoot })
     admin.initializeApp({
       projectId: 'oki-ferryguide'
     })

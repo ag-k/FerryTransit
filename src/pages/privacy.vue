@@ -89,7 +89,7 @@ const jaPolicy: PolicyContent = {
   title: 'プライバシーポリシー',
   intro:
     '合同会社隠岐デジタルラボ（OKi Digital Lab, LLC.）（以下「当社」）は、隠岐航路案内（以下「本アプリ」）における利用者情報の取扱いについて、以下のとおり定めます。',
-  effectiveDate: '制定日・最終改定日: 2026年2月9日',
+  effectiveDate: '制定日: 2026年2月9日 / 最終改定日: 2026年7月22日',
   sections: [
     {
       heading: '1. 取得する情報',
@@ -115,7 +115,7 @@ const jaPolicy: PolicyContent = {
         '本アプリでは、以下の外部サービスを利用しています。これらのサービス提供者が、各社のプライバシーポリシーに基づいて情報を取り扱う場合があります。'
       ],
       bullets: [
-        'Google Firebase（Firestore / Storage / Analytics / Cloud Functions）',
+        'Google Firebase（Firestore / Storage / Cloud Functions。モバイルアプリではFirebase Analyticsを使用しません）',
         'Google Maps Platform',
         'OpenStreetMap（地図タイル）'
       ]
@@ -189,7 +189,7 @@ const enPolicy: PolicyContent = {
   title: 'Privacy Policy',
   intro:
     'Oki Digital Lab, LLC. (hereinafter referred to as "we", "our", or "us") sets forth the following policy regarding the handling of user information in Oki Route Guide (the "App").',
-  effectiveDate: 'Established / Last Updated: February 9, 2026',
+  effectiveDate: 'Established: February 9, 2026 / Last Updated: July 22, 2026',
   sections: [
     {
       heading: '1. Information We Collect',
@@ -215,7 +215,7 @@ const enPolicy: PolicyContent = {
         'The App uses the following third-party services. These providers may process information in accordance with their own privacy policies.'
       ],
       bullets: [
-        'Google Firebase (Firestore / Storage / Analytics / Cloud Functions)',
+        'Google Firebase (Firestore / Storage / Cloud Functions; Firebase Analytics is not used in the mobile app)',
         'Google Maps Platform',
         'OpenStreetMap (map tiles)'
       ]

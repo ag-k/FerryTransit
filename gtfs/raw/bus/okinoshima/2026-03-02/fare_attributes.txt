@@ -1,0 +1,3 @@
+fare_id,price,currency_type,payment_method,transfers,agency_id
+OKI_ICHIBATA_MAX_ADULT,500,JPY,0,0,OKI_ICHIBATA
+OKINOSHIMA_TOWN_FLAT_ADULT,300,JPY,0,0,OKINOSHIMA_TOWN

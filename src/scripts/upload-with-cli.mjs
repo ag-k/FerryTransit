@@ -23,10 +23,6 @@ const __dirname = dirname(__filename)
 // アップロードするファイルの設定
 const filesToUpload = [
   {
-    localPath: 'public/data/timetable.json',
-    storagePath: 'data/timetable.json'
-  },
-  {
     localPath: 'public/data/fare-master.json',
     storagePath: 'data/fare-master.json'
   },

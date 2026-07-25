@@ -1,0 +1,15 @@
+{
+  "id": "ama",
+  "mode": "bus",
+  "name": "海士町バス",
+  "agencyName": "海士町",
+  "sourceUrl": "http://www.town.ama.shimane.jp/access/chonai.html",
+  "license": "未確認",
+  "updatePolicy": "自治体公開データを確認し、更新があれば raw に日付付きで保存して current に反映する",
+  "currentRawDate": "2025-12-22",
+  "currentPath": "gtfs/current/bus/ama",
+  "notes": [
+    "R8 PDF 原本は gtfs/pdf/bus/ama/r8 に保管",
+    "scripts/gtfs/convert-ama-r8-pdf.mjs で raw/bus/ama/2025-12-22 と current/bus/ama を生成"
+  ]
+}

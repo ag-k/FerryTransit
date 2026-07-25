@@ -20,10 +20,11 @@
 
     <div
       class="w-full pl-[calc(16px+env(safe-area-inset-left))] pr-[env(safe-area-inset-right)] lg:pr-[calc(16px+env(safe-area-inset-right))]">
-      <div class="flex items-center justify-between h-[44px] lg:h-auto lg:py-4">
+      <div class="flex items-center justify-between h-12 lg:h-auto lg:py-4">
         <div class="flex items-center">
           <NuxtLink
-            class="text-base sm:text-xl font-medium hover:opacity-80 transition-opacity flex items-center h-full py-0 flex-1 lg:flex-none lg:py-2"
+            class="text-base sm:text-xl font-medium hover:opacity-80 transition-opacity flex min-h-12 items-center py-0 flex-1 lg:flex-none lg:py-2"
+            data-testid="app-home-link"
             :to="localePath('/')">
             <span class="hidden lg:inline font-bold">{{ $t('TITLE') }}</span>
             <span class="lg:hidden flex items-center">
@@ -34,7 +35,7 @@
         </div>
 
         <button
-          class="lg:hidden relative min-w-[44px] min-h-[44px] p-2 rounded hover:bg-white/10 dark:hover:bg-white/5 transition-colors z-50 touch-manipulation flex items-center justify-center ml-auto"
+          class="lg:hidden relative min-w-12 min-h-12 p-2 rounded hover:bg-white/10 dark:hover:bg-white/5 transition-colors z-50 touch-manipulation flex items-center justify-center ml-auto"
           type="button"
           aria-controls="navbarNav"
           :aria-expanded="menuOpen"
@@ -116,7 +117,7 @@
                 v-for="lng in locales"
                 :key="lng.code"
                 type="button"
-                class="flex-1 px-3 py-2 rounded-md text-sm font-medium transition-colors touch-manipulation"
+                class="flex-1 min-h-12 px-3 py-2 rounded-md text-sm font-medium transition-colors touch-manipulation"
                 :class="lng.code === locale
                   ? 'bg-app-surface text-app-primary dark:text-white shadow'
                   : 'text-app-muted hover:bg-app-surface/60'"
@@ -184,8 +185,8 @@
       <div
         class="container mx-auto pl-[max(env(safe-area-inset-left),0.5rem)] pr-[max(env(safe-area-inset-right),0.5rem)] sm:pl-[max(env(safe-area-inset-left),1rem)] sm:pr-[max(env(safe-area-inset-right),1rem)] py-2 sm:py-3">
         <!-- Latest News -->
-        <div class="flex items-start space-x-2 sm:space-x-3">
-          <svg class="w-4 h-4 sm:w-5 sm:h-5 text-yellow-600 dark:text-yellow-500 mt-0.5 flex-shrink-0" fill="none"
+        <div class="flex items-center space-x-2 sm:space-x-3">
+          <svg class="w-4 h-4 sm:w-5 sm:h-5 text-yellow-600 dark:text-yellow-500 flex-shrink-0" fill="none"
             stroke="currentColor" viewBox="0 0 24 24">
             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
               d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
@@ -193,7 +194,8 @@
           <div class="flex-1 min-w-0">
             <div class="flex items-center justify-between">
               <NuxtLink :to="localePath(`/news/${latestNews[0].id}`)"
-                class="group flex items-center space-x-2 flex-1 min-w-0">
+                data-testid="app-nav-latest-news-link"
+                class="group flex min-h-12 items-center space-x-2 flex-1 min-w-0">
                 <span class="text-xs text-gray-500 dark:text-gray-300 flex-shrink-0">
                   {{ formatDate(latestNews[0].publishDate) }}
                 </span>
@@ -205,7 +207,8 @@
 
               <!-- Accordion button on the same line -->
               <button v-if="latestNews.length > 1" @click="newsExpanded = !newsExpanded"
-                class="flex items-center text-xs text-blue-700 dark:text-blue-400 hover:text-blue-800 dark:hover:text-blue-300 transition-colors ml-2 flex-shrink-0">
+                data-testid="app-nav-news-expand"
+                class="flex min-h-12 min-w-12 items-center justify-center text-xs text-blue-700 dark:text-blue-400 hover:text-blue-800 dark:hover:text-blue-300 transition-colors ml-2 flex-shrink-0">
                 <svg class="w-3 h-3 sm:w-4 sm:h-4 mr-0.5 sm:mr-1 transform transition-transform"
                   :class="{ 'rotate-90': newsExpanded }" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path>
@@ -220,7 +223,7 @@
             <div v-show="newsExpanded"
               class="mt-1 sm:mt-2 space-y-1 border-t border-yellow-200 dark:border-gray-700 pt-1 sm:pt-2">
               <NuxtLink v-for="item in latestNews.slice(1, 4)" :key="item.id" :to="localePath(`/news/${item.id}`)"
-                class="block group">
+                class="group flex min-h-12 items-center">
                 <div class="flex items-center space-x-2">
                   <span class="text-xs text-gray-500 dark:text-gray-300 flex-shrink-0">
                     {{ formatDate(item.publishDate) }}
@@ -234,7 +237,7 @@
 
               <!-- Link to all news -->
               <NuxtLink :to="localePath('/news')"
-                class="inline-flex items-center text-xs text-blue-700 dark:text-blue-400 hover:text-blue-800 dark:hover:text-blue-300 transition-colors mt-1 sm:mt-2">
+                class="inline-flex min-h-12 items-center text-xs text-blue-700 dark:text-blue-400 hover:text-blue-800 dark:hover:text-blue-300 transition-colors mt-1 sm:mt-2">
                 {{ $t('news.viewAll') }}
                 <svg class="w-3 h-3 ml-0.5 sm:ml-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path>
@@ -251,7 +254,9 @@
 <script setup lang="ts">
 import { useNews } from '~/composables/useNews'
 import { useAndroidNavigation } from '~/composables/useAndroidNavigation'
+import { APP_RESUME_EVENT } from '~/composables/useTodayRollover'
 import { Capacitor } from '@capacitor/core'
+import { savePreferredLocale, type SupportedLocale } from '@/utils/userPreferences'
 
 const { locale, locales, t } = useI18n()
 const route = useRoute()
@@ -280,7 +285,7 @@ const totalTopPadding = computed(() => {
   return Math.max(safeArea, androidStatus, 8) // デスクトップでは最低8pxを確保
 })
 
-const mobileHeaderHeight = 44
+const mobileHeaderHeight = 48
 const navPaddingTop = computed(() => {
   if (isIOSNative.value) return 'env(safe-area-inset-top)'
   return `${totalTopPadding.value}px`
@@ -486,6 +491,34 @@ const newsExpanded = ref(false)
 
 // News composable
 const { publishedNews, fetchNews } = useNews()
+const newsRefreshIntervalMs = 60 * 1000
+let newsRefreshIntervalId: number | undefined
+let newsRefreshPromise: Promise<void> | null = null
+
+const refreshNews = async () => {
+  if (newsRefreshPromise) return newsRefreshPromise
+
+  newsRefreshPromise = fetchNews().finally(() => {
+    newsRefreshPromise = null
+  })
+  return newsRefreshPromise
+}
+
+const triggerNewsRefresh = () => {
+  void refreshNews()
+}
+
+const refreshNewsIfVisible = () => {
+  if (document.visibilityState === 'visible') {
+    triggerNewsRefresh()
+  }
+}
+
+const handleNewsVisibilityChange = () => {
+  if (document.visibilityState === 'visible') {
+    triggerNewsRefresh()
+  }
+}
 
 // Current locale name
 const currentLocaleName = computed(() => {
@@ -530,6 +563,9 @@ const toggleLangMenu = () => {
 
 // Switch locale
 const switchLocale = (code: string) => {
+  if (typeof window !== 'undefined' && (code === 'ja' || code === 'en')) {
+    savePreferredLocale(localStorage, code as SupportedLocale)
+  }
   navigateTo(switchLocalePath(code))
   langMenuOpen.value = false
   menuOpen.value = false
@@ -578,8 +614,15 @@ watch(menuOpen, (open) => {
 let handleClickOutside: ((e: MouseEvent | TouchEvent) => void) | null = null
 
 onMounted(async () => {
+  // 起動済みのアプリでも、復帰・通信回復・表示継続時に最新のお知らせへ更新する。
+  window.addEventListener(APP_RESUME_EVENT, triggerNewsRefresh)
+  window.addEventListener('focus', refreshNewsIfVisible)
+  window.addEventListener('online', triggerNewsRefresh)
+  document.addEventListener('visibilitychange', handleNewsVisibilityChange)
+  newsRefreshIntervalId = window.setInterval(refreshNewsIfVisible, newsRefreshIntervalMs)
+
   // お知らせデータを取得
-  await fetchNews()
+  await refreshNews()
 
   handleClickOutside = (event: MouseEvent | TouchEvent) => {
     const target = event.target as HTMLElement
@@ -605,6 +648,14 @@ onUnmounted(() => {
   }
   window.removeEventListener('keydown', onKeydown)
   window.removeEventListener('resize', updateIsMobile)
+  window.removeEventListener(APP_RESUME_EVENT, triggerNewsRefresh)
+  window.removeEventListener('focus', refreshNewsIfVisible)
+  window.removeEventListener('online', triggerNewsRefresh)
+  document.removeEventListener('visibilitychange', handleNewsVisibilityChange)
+  if (newsRefreshIntervalId !== undefined) {
+    window.clearInterval(newsRefreshIntervalId)
+    newsRefreshIntervalId = undefined
+  }
   // Ensure body scroll is restored
   document.body.style.overflow = ''
 })

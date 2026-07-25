@@ -2,7 +2,8 @@
 
 /**
  * Development Environment Setup Script
- * Sets up Firebase emulators for local development and registers a super admin
+ * Prepares the local environment used with Firebase emulators.
+ * Emulator startup and super-admin registration are handled by separate scripts.
  */
 
 import { execSync } from 'child_process'
@@ -173,4 +174,4 @@ if (skipOxcBindingSetup) {
 }
 
 console.log('\n🎉 Development environment setup complete!')
-console.log('\n💡 Tip: Super admin will be registered automatically when emulators start')
+console.log('\n💡 Tip: Run npm run firebase:emulators:with-admin to start fresh emulators and register the development super admin')

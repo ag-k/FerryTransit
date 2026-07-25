@@ -2,10 +2,10 @@
   <nav
     aria-label="Global navigation"
     class="lg:hidden fixed bottom-0 left-0 right-0 bg-app-surface/80 backdrop-blur border-t border-app-border/70 z-50"
-    style="transform: translateZ(0); -webkit-transform: translateZ(0); padding-bottom: env(safe-area-inset-bottom, 0px);"
+    :style="bottomNavStyle"
   >
     <div class="mx-auto max-w-screen-lg px-2">
-      <div class="grid grid-cols-4">
+      <div class="grid grid-cols-5">
         <NuxtLink 
           v-for="item in navItems" 
           :key="item.path"
@@ -40,7 +40,7 @@
             </svg>
           </span>
 
-          <span class="mt-0.5 truncate w-full text-center text-[11px] leading-tight font-medium">
+          <span class="mt-0.5 flex min-h-7 w-full items-start justify-center whitespace-normal px-0.5 text-center text-[10px] leading-tight font-medium sm:text-[11px]">
             {{ $t(item.label) }}
           </span>
 
@@ -59,6 +59,12 @@
 const route = useRoute()
 const localePath = useLocalePath()
 
+const bottomNavStyle = {
+  transform: 'translateZ(0)',
+  WebkitTransform: 'translateZ(0)',
+  paddingBottom: 'calc(max(env(safe-area-inset-bottom, 0px), var(--android-bottom-offset, 0px)) + 8px)'
+}
+
 // Navigation items for bottom tab
 const navItems = computed(() => [
   {
@@ -75,6 +81,11 @@ const navItems = computed(() => [
     path: localePath('/status'),
     label: 'STATUS',
     icon: 'M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z'
+  },
+  {
+    path: localePath('/favorites'),
+    label: 'favorites.title',
+    icon: 'M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z'
   },
   {
     path: localePath('/settings'),

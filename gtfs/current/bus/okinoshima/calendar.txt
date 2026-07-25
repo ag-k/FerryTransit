@@ -1,0 +1,6 @@
+service_id,monday,tuesday,wednesday,thursday,friday,saturday,sunday,start_date,end_date
+route_daily_except_new_year,1,1,1,1,1,1,1,20260101,20261231
+town_daily_except_new_year,1,1,1,1,1,1,1,20260101,20261231
+town_tsudo_mon_thu,1,0,0,1,0,0,0,20260101,20261231
+town_takugi_tue_fri,0,1,0,0,1,0,0,20260101,20261231
+town_utaki_wed,0,0,1,0,0,0,0,20260101,20261231

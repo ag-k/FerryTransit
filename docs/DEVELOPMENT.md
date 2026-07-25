@@ -31,9 +31,9 @@ npm run dev
 
 ### 3. Access Development Services
 
-- **Application**: http://localhost:3030
+- **Application**: https://ferry-transit.localhost
 - **Firebase Emulator UI**: http://localhost:4000
-- **Firestore Emulator**: localhost:8095
+- **Firestore Emulator**: localhost:8751
 - **Auth Emulator**: http://localhost:9099
 - **Storage Emulator**: localhost:9199
 - **Functions Emulator**: localhost:55002
@@ -44,12 +44,15 @@ npm run dev
 
 The project uses `.env.local` for local development configuration. This file is automatically created from `.env.example` when you run `npm run dev:setup`.
 
+`npm run dev` starts Nuxt through portless at `https://ferry-transit.localhost`. Use `npm run dev:local` when you need the raw Nuxt dev server URL.
+`npm run dev:full` also starts the app through portless. Use `npm run dev:full:local` when you need the full emulator + raw Nuxt setup.
+
 Key emulator settings:
 
 ```env
 NUXT_PUBLIC_FIREBASE_USE_EMULATORS=true
 NUXT_PUBLIC_FIREBASE_EMULATOR_HOST=localhost
-NUXT_PUBLIC_FIRESTORE_EMULATOR_PORT=8095
+NUXT_PUBLIC_FIRESTORE_EMULATOR_PORT=8751
 NUXT_PUBLIC_FIREBASE_AUTH_EMULATOR_PORT=9099
 NUXT_PUBLIC_FIREBASE_STORAGE_EMULATOR_PORT=9199
 NUXT_PUBLIC_FIREBASE_FUNCTIONS_EMULATOR_PORT=55002
@@ -64,7 +67,7 @@ The emulators are configured in `firebase.json`:
   "emulators": {
     "auth": { "port": 9099 },
     "functions": { "port": 55002 },
-    "firestore": { "port": 8095 },
+    "firestore": { "port": 8751 },
     "hosting": { "port": 5000 },
     "storage": { "port": 9199 },
     "ui": { "enabled": true },

@@ -1,0 +1,2 @@
+agency_id,agency_name,agency_url,agency_timezone,agency_lang,agency_phone
+CHIBU_VILLAGE,知夫村,https://www.vill.chibu.lg.jp/,Asia/Tokyo,ja,08514-2-2321

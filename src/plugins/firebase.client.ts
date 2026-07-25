@@ -5,6 +5,8 @@ import { getStorage, connectStorageEmulator } from 'firebase/storage'
 import { getAnalytics, isSupported } from 'firebase/analytics'
 import { getFunctions, connectFunctionsEmulator } from 'firebase/functions'
 import { createLogger } from '~/utils/logger'
+import { resolveFirebaseAnalyticsMeasurementId } from '~/utils/firebaseAnalytics'
+import { isBrowserTestMode } from '~/utils/testMode'
 
 let db: ReturnType<typeof getFirestore>
 
@@ -46,6 +48,12 @@ export default defineNuxtPlugin({
     config.public.firebase.projectId,
     config.public.firebase.useEmulators
   )
+  const analyticsMeasurementId = resolveFirebaseAnalyticsMeasurementId({
+    projectId: config.public.firebase.projectId,
+    measurementId: config.public.firebase.measurementId,
+    useEmulators: config.public.firebase.useEmulators,
+    isCapacitorBuild: __CAPACITOR_BUILD__
+  })
 
   const firebaseConfig = {
     apiKey: config.public.firebase.apiKey,
@@ -54,7 +62,7 @@ export default defineNuxtPlugin({
     storageBucket: resolvedStorageBucket,
     messagingSenderId: config.public.firebase.messagingSenderId,
     appId: config.public.firebase.appId,
-    measurementId: config.public.firebase.measurementId
+    ...(analyticsMeasurementId ? { measurementId: analyticsMeasurementId } : {})
   }
 
   if (normalizedStorageBucket !== configuredStorageBucket) {
@@ -83,6 +91,10 @@ export default defineNuxtPlugin({
     try {
       const host = config.public.firebase.emulatorHost
       const ports = config.public.firebase.ports
+
+      if (!host || !ports) {
+        throw new Error('Firebase emulator configuration is missing')
+      }
       
       // Connect to Firestore emulator
       connectFirestoreEmulator(db, host, ports.firestore)
@@ -102,7 +114,8 @@ export default defineNuxtPlugin({
   
   // Initialize Analytics only in browser
   let analytics = null
-  if (process.client && config.public.firebase.measurementId) {
+  const isTestMode = process.client && isBrowserTestMode()
+  if (process.client && analyticsMeasurementId && !isTestMode) {
     try {
       const supported = await isSupported()
       if (supported) {

@@ -113,7 +113,14 @@ export const publishData = onCall(
 
   const { dataType } = request.data
 
-  if (!dataType || !['timetable', 'fare', 'holidays'].includes(dataType)) {
+  if (dataType === 'timetable') {
+    throw new HttpsError(
+      'failed-precondition',
+      'Timetable publishing is restricted to the code-managed timetable pipeline'
+    )
+  }
+
+  if (!dataType || !['fare', 'holidays'].includes(dataType)) {
     throw new HttpsError('invalid-argument', 'Valid data type is required')
   }
 
@@ -123,10 +130,6 @@ export const publishData = onCall(
 
     // データの準備
     switch (dataType) {
-      case 'timetable':
-        publishData = await prepareTimetableData()
-        fileName = 'timetable.json'
-        break
       case 'fare':
         publishData = await prepareFareData()
         fileName = 'fare-master.json'
@@ -229,6 +232,13 @@ export const rollbackData = onCall(
     }
 
     const history = historyDoc.data()!
+
+    if (history.type === 'timetable') {
+      throw new HttpsError(
+        'failed-precondition',
+        'Timetable rollback is restricted to the code-managed timetable pipeline'
+      )
+    }
     
     // バックアップからデータを復元
     const bucket = admin.storage().bucket()
@@ -244,8 +254,7 @@ export const rollbackData = onCall(
     const data = JSON.parse(backupData.toString())
 
     // 本番環境に復元
-    const fileName = history.type === 'timetable' ? 'timetable.json' :
-                    history.type === 'fare' ? 'fare-master.json' : 'holidays.json'
+    const fileName = history.type === 'fare' ? 'fare-master.json' : 'holidays.json'
     
     const file = bucket.file(`data/${fileName}`)
     await file.save(JSON.stringify(data, null, 2), {
@@ -288,14 +297,6 @@ export const rollbackData = onCall(
 })
 
 // ヘルパー関数
-async function prepareTimetableData() {
-  const snapshot = await admin.firestore().collection('timetables').get()
-  return snapshot.docs.map(doc => ({
-    tripId: doc.id,
-    ...doc.data()
-  }))
-}
-
 async function prepareFareData() {
   const [faresSnapshot, versionsSnapshot, discountsSnapshot] = await Promise.all([
     admin.firestore().collection('fares').get(),

@@ -1,0 +1,22 @@
+{
+  "id": "okinoshima",
+  "mode": "bus",
+  "generatedAt": "2026-07-02T13:08:53.437Z",
+  "feed": {
+    "publisherName": "隠岐の島町",
+    "publisherUrl": "https://www.town.okinoshima.shimane.jp/kanko/tounaikoutuujouhou/7990.html",
+    "lang": "ja",
+    "startDate": "20260101",
+    "endDate": "20261231",
+    "version": "20260302_20260101-20261231"
+  },
+  "counts": {
+    "agencies": 2,
+    "routes": 13,
+    "stops": 69,
+    "trips": 64,
+    "stopTimes": 626,
+    "calendarServices": 5,
+    "calendarDates": 72
+  }
+}
