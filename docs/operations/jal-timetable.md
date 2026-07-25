@@ -39,7 +39,7 @@ GitHub ActionsからGoogle Cloudへは、長期鍵やRepository secretを保存�
 
 ### 初回WIF構成
 
-2026-07-22の読み取り専用監査では、上記Service Account、Pool、Providerはいずれも未作成だった。構成担当者の明示承認後に次を1回だけ実行する。ProviderはGitHubの共通issuerを使うため、リポジトリ、default branch、workflowファイルの3条件をすべて満たすOIDC tokenだけを受け付ける。
+2026-07-25に上記Service Account、Pool、Providerを構成した。ProviderはGitHubの共通issuerを使い、リポジトリ、default branch、workflowファイルの3条件をすべて満たすOIDC tokenだけを受け付ける。以下は再構築時の手順であり、通常運用では再実行しない。
 
 ```bash
 gcloud iam service-accounts create jal-timetable-publisher \
@@ -71,7 +71,7 @@ gcloud storage buckets add-iam-policy-binding \
   --member="serviceAccount:jal-timetable-publisher@oki-ferryguide-dev.iam.gserviceaccount.com"
 ```
 
-構成後は各リソースのIAMを読み返し、サービスアカウント鍵が0件であること、本番project/bucketに同サービスアカウントの権限がないことを確認してから、default branchの`publish_existing`を実行する。
+構成後に各リソースのIAMを読み返し、ユーザー管理のサービスアカウント鍵0件、dev/prod project IAM権限0件、本番bucket権限0件、dev bucketの`roles/storage.objectAdmin`だけであることを確認した。default branchの`publish_existing` run `30146590428`では、JAL公式10便の取得・検証、公開時刻表1,100件の生成、WIF認証、dev manifest公開、Storage smokeがGit SHA `272e9447dd1a248529f853737c656a1fe617004c`で成功した。
 
 workflowのスケジュール実行はGitHubのdefault branchにある定義が使われる。default branchが `master` のため、このworkflow自体は `master` にも反映する必要がある。処理対象と自動コミット先は常に `dev` ブランチ。
 
