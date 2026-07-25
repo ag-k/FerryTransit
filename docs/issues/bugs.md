@@ -6,7 +6,7 @@
 
 **報告日**: 2026年7月19日
 **優先度**: 🔥 高
-**ステータス**: 🧪 検証中
+**ステータス**: ✅ 解決済み
 
 #### 問題の内容
 iOS 26.5 Simulatorのproduction Release版で、起動中のアプリへ`ferrytransit://status`を渡すウォーム起動は運航状況へ遷移する一方、アプリを終了してから`ferrytransit://transit`でコールド起動すると時刻表トップに留まった。URL Schemeの確認ダイアログとアプリ起動までは成功するため、従来の確認では画面遷移の失敗を検出できていなかった。
@@ -313,7 +313,9 @@ Android 6.0（API 23）の公式Google APIs arm64-v8aイメージへproduction�
 #### 修正と検証
 Capacitorの`server.errorPath`へ、スクリプトを含まないES5互換の`unsupported-webview.html`を設定した。最低版未満では通常アプリを読み込まず、日本語・英語でAndroid System WebViewの更新手順とGoogle Playへのリンクを表示する。更新済みWebViewの通常端末には影響しない。
 
-productionアセットを同期したdebug署名APKを同じAPI 23専用エミュレータへ上書き導入し、白画面が更新案内へ置き換わること、アクセシビリティツリーに見出し・説明・更新リンクが現れること、更新ボタンから端末の外部ブラウザでAndroid System WebViewのGoogle Playページを開けることを確認した。対象回帰テスト2件、`npm run cap:android:build`、`:app:assembleDebug`は成功。Google Play内部テスト配布版、実機、WebView更新後のAPI 23で主要機能確認を残すため、ステータスは検証中とする。
+productionアセットを同期したdebug署名APKを同じAPI 23専用エミュレータへ上書き導入し、白画面が更新案内へ置き換わること、アクセシビリティツリーに見出し・説明・更新リンクが現れること、更新ボタンから端末の外部ブラウザでAndroid System WebViewのGoogle Playページを開けることを確認した。対象回帰テスト2件、`npm run cap:android:build`、`:app:assembleDebug`は成功。Android 14〜16では主要機能とGoogle Play内部テスト版が正常動作することを別途確認済み。
+
+2026年7月25日、API 23の対応を維持し、WebView 60未満では更新案内を正式なフォールバックとする方針をユーザーが承認した。WebViewを更新できないAPI 23端末ではアプリ本体を利用できない制約を受容し、解決済みとする。
 
 ---
 
