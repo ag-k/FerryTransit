@@ -1,9 +1,11 @@
 import { describe, expect, it, vi } from 'vitest'
-import { resolve } from 'node:path'
+import { mkdtempSync, rmSync, writeFileSync } from 'node:fs'
+import { tmpdir } from 'node:os'
+import { join, resolve } from 'node:path'
 import { pathToFileURL } from 'node:url'
 
 const moduleUrl = pathToFileURL(resolve('scripts/lib/firebase-storage-publisher.mjs')).href
-const { createFirebaseStoragePublisher, formatTimestampJst } = await import(moduleUrl)
+const { buildFirebaseAdminOptions, createFirebaseStoragePublisher, formatTimestampJst } = await import(moduleUrl)
 
 const createBucket = (initial?: Buffer) => {
   let remote = initial
@@ -67,5 +69,53 @@ describe('firebase storage publisher', () => {
 
   it('バックアップ時刻を日本時間で生成する', () => {
     expect(formatTimestampJst(new Date('2026-07-14T10:20:30Z'))).toBe('20260714-192030')
+  })
+
+  it('サービスアカウント鍵JSONはcert資格情報として読み込む', () => {
+    const directory = mkdtempSync(join(tmpdir(), 'firebase-admin-service-account-'))
+    const credentialPath = join(directory, 'credentials.json')
+    const previousPath = process.env.GOOGLE_APPLICATION_CREDENTIALS
+    const certCredential = vi.fn(() => ({ kind: 'cert' }))
+    const applicationDefaultCredential = vi.fn(() => ({ kind: 'adc' }))
+    writeFileSync(credentialPath, JSON.stringify({ type: 'service_account', project_id: 'test' }))
+    process.env.GOOGLE_APPLICATION_CREDENTIALS = credentialPath
+
+    try {
+      const options = buildFirebaseAdminOptions('test-bucket', {
+        certCredential,
+        applicationDefaultCredential
+      })
+      expect(options.credential).toEqual({ kind: 'cert' })
+      expect(certCredential).toHaveBeenCalledWith({ type: 'service_account', project_id: 'test' })
+      expect(applicationDefaultCredential).not.toHaveBeenCalled()
+    } finally {
+      if (previousPath === undefined) delete process.env.GOOGLE_APPLICATION_CREDENTIALS
+      else process.env.GOOGLE_APPLICATION_CREDENTIALS = previousPath
+      rmSync(directory, { recursive: true, force: true })
+    }
+  })
+
+  it('WIFのexternal_account JSONはApplication Default Credentialsとして読み込む', () => {
+    const directory = mkdtempSync(join(tmpdir(), 'firebase-admin-wif-'))
+    const credentialPath = join(directory, 'credentials.json')
+    const previousPath = process.env.GOOGLE_APPLICATION_CREDENTIALS
+    const certCredential = vi.fn(() => ({ kind: 'cert' }))
+    const applicationDefaultCredential = vi.fn(() => ({ kind: 'adc' }))
+    writeFileSync(credentialPath, JSON.stringify({ type: 'external_account', audience: 'test' }))
+    process.env.GOOGLE_APPLICATION_CREDENTIALS = credentialPath
+
+    try {
+      const options = buildFirebaseAdminOptions('test-bucket', {
+        certCredential,
+        applicationDefaultCredential
+      })
+      expect(options.credential).toEqual({ kind: 'adc' })
+      expect(applicationDefaultCredential).toHaveBeenCalledOnce()
+      expect(certCredential).not.toHaveBeenCalled()
+    } finally {
+      if (previousPath === undefined) delete process.env.GOOGLE_APPLICATION_CREDENTIALS
+      else process.env.GOOGLE_APPLICATION_CREDENTIALS = previousPath
+      rmSync(directory, { recursive: true, force: true })
+    }
   })
 })

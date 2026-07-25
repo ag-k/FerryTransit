@@ -1,7 +1,7 @@
 import { existsSync, readFileSync } from 'node:fs'
 import { posix } from 'node:path'
 import { pathToFileURL } from 'node:url'
-import { cert, getApps, initializeApp } from 'firebase-admin/app'
+import { applicationDefault, cert, getApps, initializeApp } from 'firebase-admin/app'
 import { getStorage } from 'firebase-admin/storage'
 import { resolveFirebasePublishTarget } from './firebase-publish-target.mjs'
 import { sha256 } from './transport-data.mjs'
@@ -15,11 +15,18 @@ export const formatTimestampJst = (date = new Date()) => {
   return `${value.year}${value.month}${value.day}-${value.hour}${value.minute}${value.second}`
 }
 
-export const buildFirebaseAdminOptions = (bucketName) => {
+export const buildFirebaseAdminOptions = (bucketName, dependencies = {}) => {
+  const {
+    applicationDefaultCredential = applicationDefault,
+    certCredential = cert
+  } = dependencies
   const options = { storageBucket: bucketName }
   const credentialPath = process.env.GOOGLE_APPLICATION_CREDENTIALS
   if (credentialPath && existsSync(credentialPath)) {
-    options.credential = cert(JSON.parse(readFileSync(credentialPath, 'utf8')))
+    const credentialConfig = JSON.parse(readFileSync(credentialPath, 'utf8'))
+    options.credential = credentialConfig.type === 'service_account'
+      ? certCredential(credentialConfig)
+      : applicationDefaultCredential()
   }
   return options
 }
