@@ -13,7 +13,7 @@ const REPORT_DIR = join(ROOT, 'gtfs', 'reports', 'bus', 'nishinoshima')
 
 const FEED_START = '20260301'
 const FEED_END = '20261231'
-const FEED_VERSION = '20260220140915710489010da_20260301-20261231_rev20260731'
+const FEED_VERSION = '20260220140915710489010da_20260301-20261231_rev20260731_symbols'
 
 const HOLIDAYS_2026 = new Set([
   '20260320',
@@ -157,11 +157,17 @@ const TRIPS = [
   {
     code: 'T02_MAIN_0653',
     routeId: 'NISHINOSHIMA_MAIN',
-    serviceId: 'daily',
     directionId: '0',
     shortName: '1便',
     desc: '三度・珍崎・国賀・浦郷から別府・島前病院・大山・宇賀方面行き',
-    stops: [[23, '06:53'], [21, '06:57'], [20, '07:01'], [19, '07:03'], [18, '07:08'], [17, '07:09'], [16, '07:10'], [15, '07:11'], [14, '07:12'], [13, '07:13'], [12, '07:13'], [11, '07:15'], [9, '07:17'], [8, '07:21'], [7, '07:22'], [6, '07:23'], [5, '07:25']]
+    stops: [[23, '06:53'], [21, '06:57'], [20, '07:01'], [19, '07:03'], [18, '07:08'], [17, '07:09'], [16, '07:10'], [15, '07:11'], [14, '07:12'], [13, '07:13'], [12, '07:13'], [11, '07:15'], [9, '07:17'], [8, '07:21'], [7, '07:22'], [6, '07:23'], [5, '07:25'], [4, '07:30']],
+    serviceVariants: [
+      { serviceId: 'star_weekday_plus_summer' },
+      {
+        suffix: '_STAR_BASE', serviceId: 'star_base_only', dropLast: 2,
+        desc: '赤ノ江から隠岐汽船（別府港）方面行き（★区間運休日）'
+      }
+    ]
   },
   {
     code: 'T03_CHINZAKI_SANDO_0725',
@@ -193,20 +199,40 @@ const TRIPS = [
   {
     code: 'T06_UGA_1010',
     routeId: 'NISHINOSHIMA_UGA',
-    serviceId: 'daily',
     directionId: '0',
     shortName: '4便',
     desc: '浦郷から宇賀方面行き',
-    stops: [[21, '10:10'], [20, '10:14'], [19, '10:16'], [18, '10:21'], [17, '10:22'], [16, '10:23'], [15, '10:24'], [14, '10:25'], [13, '10:26'], [12, '10:26'], [11, '10:28'], [9, '10:31'], [8, '10:35'], [7, '10:36'], [6, '10:37'], [5, '10:39'], [3, '10:46'], [2, '10:49'], [1, '10:52']]
+    stops: [[21, '10:10'], [20, '10:14'], [19, '10:16'], [18, '10:21'], [17, '10:22'], [16, '10:23'], [15, '10:24'], [14, '10:25'], [13, '10:26'], [12, '10:26'], [11, '10:28'], [9, '10:31'], [8, '10:35'], [7, '10:36'], [6, '10:37'], [5, '10:39'], [3, '10:46'], [2, '10:49'], [1, '10:52']],
+    serviceVariants: [
+      { serviceId: 'star_weekday_plus_summer' },
+      {
+        suffix: '_STAR_BASE', serviceId: 'star_base_only', dropLast: 4,
+        desc: '浦郷から隠岐汽船（別府港）方面行き（★区間運休日）'
+      }
+    ]
   },
   {
     code: 'T07_KUNIGA_1127',
     routeId: 'NISHINOSHIMA_KUNIGA',
-    serviceId: 'kuniga_spring_fall',
     directionId: '0',
     shortName: '5便',
     desc: '国賀から大山方面行き',
-    stops: [[22, '11:27'], [21, '11:34'], [20, '11:38'], [19, '11:40'], [18, '11:45'], [17, '11:46'], [16, '11:47'], [15, '11:48'], [14, '11:49'], [13, '11:50'], [12, '11:50'], [11, '11:52'], [9, '11:55'], [8, '11:59'], [7, '12:00'], [6, '12:01'], [5, '12:03'], [4, '12:08']]
+    stops: [[22, '11:27'], [21, '11:34'], [20, '11:38'], [19, '11:40'], [18, '11:45'], [17, '11:46'], [16, '11:47'], [15, '11:48'], [14, '11:49'], [13, '11:50'], [12, '11:50'], [11, '11:52'], [9, '11:55'], [8, '11:59'], [7, '12:00'], [6, '12:01'], [5, '12:03'], [4, '12:08']],
+    serviceVariants: [
+      { serviceId: 'kuniga_spring_fall_star_on' },
+      {
+        suffix: '_STAR_BASE', serviceId: 'kuniga_spring_fall_star_off', dropLast: 2,
+        desc: '国賀から隠岐汽船（別府港）方面行き（★区間運休日）'
+      },
+      {
+        suffix: '_KUNIGA_BASE', serviceId: 'kuniga_spring_fall_base_star_on', dropFirst: 1,
+        desc: '由良車庫から大山方面行き（◎区間運休期間）'
+      },
+      {
+        suffix: '_BASE', serviceId: 'kuniga_spring_fall_base_star_off', dropFirst: 1, dropLast: 2,
+        desc: '由良車庫から隠岐汽船（別府港）方面行き（◎・★区間運休日）'
+      }
+    ]
   },
   {
     code: 'T08_CHINZAKI_SANDO_1245',
@@ -224,20 +250,37 @@ const TRIPS = [
     directionId: '0',
     shortName: '6便',
     desc: '国賀から島前病院方面行き',
-    seasonalKunigaExtension: {
-      trim: 'first',
-      baseDesc: '由良車庫から島前病院方面行き'
-    },
-    stops: [[22, '12:58'], [21, '13:05'], [20, '13:09'], [19, '13:11'], [18, '13:16'], [17, '13:17'], [16, '13:18'], [15, '13:19'], [14, '13:20'], [13, '13:21'], [12, '13:21'], [11, '13:23'], [10, '13:24'], [9, '13:28'], [8, '13:32'], [7, '13:33'], [6, '13:34'], [5, '13:36']]
+    stops: [[22, '12:58'], [21, '13:05'], [20, '13:09'], [19, '13:11'], [18, '13:16'], [17, '13:17'], [16, '13:18'], [15, '13:19'], [14, '13:20'], [13, '13:21'], [12, '13:21'], [11, '13:23'], [10, '13:24'], [9, '13:28'], [8, '13:32'], [7, '13:33'], [6, '13:34'], [5, '13:36']],
+    serviceVariants: [
+      { serviceId: 'kuniga_summer' },
+      {
+        suffix: '_BASE', serviceId: 'kuniga_summer_base', dropFirst: 1,
+        desc: '由良車庫から島前病院方面行き'
+      }
+    ]
   },
   {
     code: 'T10_KUNIGA_1441',
     routeId: 'NISHINOSHIMA_KUNIGA',
-    serviceId: 'kuniga_spring_fall',
     directionId: '0',
     shortName: '7便',
     desc: '国賀から大山方面行き',
-    stops: [[22, '14:41'], [21, '14:48'], [20, '14:52'], [19, '14:54'], [18, '14:59'], [17, '15:00'], [16, '15:01'], [15, '15:02'], [14, '15:03'], [13, '15:04'], [12, '15:04'], [11, '15:06'], [9, '15:09'], [8, '15:13'], [7, '15:14'], [6, '15:15'], [5, '15:17'], [4, '15:22']]
+    stops: [[22, '14:41'], [21, '14:48'], [20, '14:52'], [19, '14:54'], [18, '14:59'], [17, '15:00'], [16, '15:01'], [15, '15:02'], [14, '15:03'], [13, '15:04'], [12, '15:04'], [11, '15:06'], [9, '15:09'], [8, '15:13'], [7, '15:14'], [6, '15:15'], [5, '15:17'], [4, '15:22']],
+    serviceVariants: [
+      { serviceId: 'kuniga_spring_fall_star_on' },
+      {
+        suffix: '_STAR_BASE', serviceId: 'kuniga_spring_fall_star_off', dropLast: 2,
+        desc: '国賀から隠岐汽船（別府港）方面行き（★区間運休日）'
+      },
+      {
+        suffix: '_KUNIGA_BASE', serviceId: 'kuniga_spring_fall_base_star_on', dropFirst: 1,
+        desc: '由良車庫から大山方面行き（◎区間運休期間）'
+      },
+      {
+        suffix: '_BASE', serviceId: 'kuniga_spring_fall_base_star_off', dropFirst: 1, dropLast: 2,
+        desc: '由良車庫から隠岐汽船（別府港）方面行き（◎・★区間運休日）'
+      }
+    ]
   },
   {
     code: 'T11_CHINZAKI_SANDO_1621',
@@ -255,20 +298,29 @@ const TRIPS = [
     directionId: '0',
     shortName: '8便',
     desc: '国賀から別府方面行き',
-    seasonalKunigaExtension: {
-      trim: 'first',
-      baseDesc: '由良車庫から別府方面行き'
-    },
-    stops: [[22, '16:27'], [21, '16:34'], [20, '16:38'], [19, '16:40'], [18, '16:45'], [17, '16:46'], [16, '16:47'], [15, '16:48'], [14, '16:49'], [13, '16:50'], [12, '16:50'], [11, '16:52'], [10, '16:53'], [9, '16:57'], [8, '17:01'], [7, '17:02'], [6, '17:03']]
+    stops: [[22, '16:27'], [21, '16:34'], [20, '16:38'], [19, '16:40'], [18, '16:45'], [17, '16:46'], [16, '16:47'], [15, '16:48'], [14, '16:49'], [13, '16:50'], [12, '16:50'], [11, '16:52'], [10, '16:53'], [9, '16:57'], [8, '17:01'], [7, '17:02'], [6, '17:03']],
+    serviceVariants: [
+      { serviceId: 'kuniga_summer' },
+      {
+        suffix: '_BASE', serviceId: 'kuniga_summer_base', dropFirst: 1,
+        desc: '由良車庫から別府方面行き'
+      }
+    ]
   },
   {
     code: 'T13_UGA_1709',
     routeId: 'NISHINOSHIMA_UGA',
-    serviceId: 'daily',
     directionId: '0',
     shortName: '9便',
     desc: '浦郷から宇賀方面行き',
-    stops: [[21, '17:09'], [20, '17:13'], [19, '17:15'], [18, '17:20'], [17, '17:21'], [16, '17:22'], [15, '17:23'], [14, '17:24'], [13, '17:25'], [12, '17:25'], [11, '17:27'], [9, '17:29'], [8, '17:33'], [7, '17:34'], [6, '17:35'], [5, '17:37'], [3, '17:45'], [2, '17:48'], [1, '17:51']]
+    stops: [[21, '17:09'], [20, '17:13'], [19, '17:15'], [18, '17:20'], [17, '17:21'], [16, '17:22'], [15, '17:23'], [14, '17:24'], [13, '17:25'], [12, '17:25'], [11, '17:27'], [9, '17:29'], [8, '17:33'], [7, '17:34'], [6, '17:35'], [5, '17:37'], [3, '17:45'], [2, '17:48'], [1, '17:51']],
+    serviceVariants: [
+      { serviceId: 'star_weekday_plus_summer' },
+      {
+        suffix: '_STAR_BASE', serviceId: 'star_base_only', dropLast: 4,
+        desc: '浦郷から隠岐汽船（別府港）方面行き（★区間運休日）'
+      }
+    ]
   },
   {
     code: 'T14_MAIN_1829',
@@ -300,11 +352,17 @@ const TRIPS = [
   {
     code: 'B02_MAIN_0736',
     routeId: 'NISHINOSHIMA_MAIN',
-    serviceId: 'daily',
     directionId: '1',
     shortName: '1便',
     desc: '大山・島前病院・別府から浦郷方面行き',
-    stops: [[4, '07:36'], [5, '07:41'], [7, '07:50'], [6, '07:51'], [8, '07:52'], [9, '07:56'], [11, '07:58'], [12, '08:00'], [13, '08:00'], [14, '08:01'], [15, '08:02'], [16, '08:03'], [17, '08:04'], [18, '08:05'], [19, '08:10'], [20, '08:12'], [21, '08:16']]
+    stops: [[4, '07:36'], [5, '07:41'], [7, '07:50'], [6, '07:51'], [8, '07:52'], [9, '07:56'], [11, '07:58'], [12, '08:00'], [13, '08:00'], [14, '08:01'], [15, '08:02'], [16, '08:03'], [17, '08:04'], [18, '08:05'], [19, '08:10'], [20, '08:12'], [21, '08:16']],
+    serviceVariants: [
+      { serviceId: 'star_weekday_plus_summer' },
+      {
+        suffix: '_STAR_BASE', serviceId: 'star_base_only', dropFirst: 2,
+        desc: '別府交通センターから浦郷方面行き（★区間運休日）'
+      }
+    ]
   },
   {
     code: 'B03_CHINZAKI_SANDO_0707',
@@ -327,33 +385,55 @@ const TRIPS = [
   {
     code: 'B05_KUNIGA_1017',
     routeId: 'NISHINOSHIMA_KUNIGA',
-    serviceId: 'kuniga_spring_fall',
     directionId: '1',
     shortName: '3便',
     desc: '島前病院・別府から国賀方面行き',
-    stops: [[5, '10:17'], [6, '10:19'], [7, '10:20'], [8, '10:21'], [9, '10:25'], [11, '10:27'], [12, '10:30'], [13, '10:30'], [14, '10:31'], [15, '10:32'], [16, '10:33'], [17, '10:34'], [18, '10:35'], [19, '10:40'], [20, '10:42'], [21, '10:46'], [22, '10:53']]
+    stops: [[5, '10:17'], [6, '10:19'], [7, '10:20'], [8, '10:21'], [9, '10:25'], [11, '10:27'], [12, '10:30'], [13, '10:30'], [14, '10:31'], [15, '10:32'], [16, '10:33'], [17, '10:34'], [18, '10:35'], [19, '10:40'], [20, '10:42'], [21, '10:46'], [22, '10:53']],
+    serviceVariants: [
+      { serviceId: 'kuniga_spring_fall' },
+      {
+        suffix: '_BASE', serviceId: 'kuniga_spring_fall_base', dropLast: 1,
+        desc: '島前病院・別府から由良車庫方面行き（◎区間運休期間）'
+      }
+    ]
   },
   {
     code: 'B06_UGA_1100',
     routeId: 'NISHINOSHIMA_UGA',
-    serviceId: 'daily',
     directionId: '1',
     shortName: '4便',
     desc: '宇賀から浦郷方面行き',
-    stops: [[1, '11:00'], [2, '11:03'], [3, '11:06'], [5, '11:14'], [6, '11:16'], [7, '11:17'], [8, '11:18'], [9, '11:22'], [11, '11:24'], [12, '11:27'], [13, '11:27'], [14, '11:28'], [15, '11:29'], [16, '11:30'], [17, '11:31'], [18, '11:32'], [19, '11:37'], [20, '11:39'], [21, '11:43']]
+    stops: [[1, '11:00'], [2, '11:03'], [3, '11:06'], [5, '11:14'], [6, '11:16'], [7, '11:17'], [8, '11:18'], [9, '11:22'], [11, '11:24'], [12, '11:27'], [13, '11:27'], [14, '11:28'], [15, '11:29'], [16, '11:30'], [17, '11:31'], [18, '11:32'], [19, '11:37'], [20, '11:39'], [21, '11:43']],
+    serviceVariants: [
+      { serviceId: 'star_weekday_plus_summer' },
+      {
+        suffix: '_STAR_BASE', serviceId: 'star_base_only', dropFirst: 4,
+        desc: '隠岐汽船（別府港）から浦郷方面行き（★区間運休日）'
+      }
+    ]
   },
   {
     code: 'B07_KUNIGA_1212',
     routeId: 'NISHINOSHIMA_KUNIGA',
-    serviceId: 'kuniga_summer',
     directionId: '1',
     shortName: '5便',
     desc: '大山・島前病院・別府から国賀方面行き',
-    seasonalKunigaExtension: {
-      trim: 'last',
-      baseDesc: '大山・島前病院・別府から由良車庫方面行き'
-    },
-    stops: [[4, '12:12'], [5, '12:17'], [6, '12:19'], [7, '12:20'], [8, '12:21'], [9, '12:25'], [11, '12:27'], [12, '12:30'], [13, '12:30'], [14, '12:31'], [15, '12:32'], [16, '12:33'], [17, '12:34'], [18, '12:35'], [19, '12:40'], [20, '12:42'], [21, '12:46'], [22, '12:53']]
+    stops: [[4, '12:12'], [5, '12:17'], [6, '12:19'], [7, '12:20'], [8, '12:21'], [9, '12:25'], [11, '12:27'], [12, '12:30'], [13, '12:30'], [14, '12:31'], [15, '12:32'], [16, '12:33'], [17, '12:34'], [18, '12:35'], [19, '12:40'], [20, '12:42'], [21, '12:46'], [22, '12:53']],
+    serviceVariants: [
+      { serviceId: 'kuniga_summer_star_on' },
+      {
+        suffix: '_STAR_BASE', serviceId: 'kuniga_summer_star_off', dropFirst: 2,
+        desc: '隠岐汽船（別府港）から国賀方面行き（★区間運休日）'
+      },
+      {
+        suffix: '_KUNIGA_BASE', serviceId: 'kuniga_summer_base_star_on', dropLast: 1,
+        desc: '大山・島前病院・別府から由良車庫方面行き（●区間運休期間）'
+      },
+      {
+        suffix: '_BASE', serviceId: 'kuniga_summer_base_star_off', dropFirst: 2, dropLast: 1,
+        desc: '隠岐汽船（別府港）から由良車庫方面行き（●・★区間運休日）'
+      }
+    ]
   },
   {
     code: 'B08_CHINZAKI_SANDO_1227',
@@ -367,24 +447,40 @@ const TRIPS = [
   {
     code: 'B09_KUNIGA_1358',
     routeId: 'NISHINOSHIMA_KUNIGA',
-    serviceId: 'kuniga_spring_fall',
     directionId: '1',
     shortName: '6便',
     desc: '島前病院・別府から国賀方面行き',
-    stops: [[5, '13:58'], [6, '14:00'], [7, '14:01'], [8, '14:02'], [9, '14:06'], [10, '14:09'], [11, '14:10'], [12, '14:13'], [13, '14:13'], [14, '14:14'], [15, '14:15'], [16, '14:16'], [17, '14:17'], [18, '14:18'], [19, '14:23'], [20, '14:25'], [21, '14:29'], [22, '14:36']]
+    stops: [[5, '13:58'], [6, '14:00'], [7, '14:01'], [8, '14:02'], [9, '14:06'], [10, '14:09'], [11, '14:10'], [12, '14:13'], [13, '14:13'], [14, '14:14'], [15, '14:15'], [16, '14:16'], [17, '14:17'], [18, '14:18'], [19, '14:23'], [20, '14:25'], [21, '14:29'], [22, '14:36']],
+    serviceVariants: [
+      { serviceId: 'kuniga_spring_fall' },
+      {
+        suffix: '_BASE', serviceId: 'kuniga_spring_fall_base', dropLast: 1,
+        desc: '島前病院・別府から由良車庫方面行き（◎区間運休期間）'
+      }
+    ]
   },
   {
     code: 'B10_KUNIGA_1528',
     routeId: 'NISHINOSHIMA_KUNIGA',
-    serviceId: 'kuniga_summer',
     directionId: '1',
     shortName: '7便',
     desc: '大山・島前病院・別府から国賀方面行き',
-    seasonalKunigaExtension: {
-      trim: 'last',
-      baseDesc: '大山・島前病院・別府から由良車庫方面行き'
-    },
-    stops: [[4, '15:28'], [5, '15:33'], [6, '15:35'], [7, '15:36'], [8, '15:37'], [9, '15:41'], [11, '15:43'], [12, '15:46'], [13, '15:46'], [14, '15:47'], [15, '15:48'], [16, '15:49'], [17, '15:50'], [18, '15:51'], [19, '15:56'], [20, '15:58'], [21, '16:02'], [22, '16:09']]
+    stops: [[4, '15:28'], [5, '15:33'], [6, '15:35'], [7, '15:36'], [8, '15:37'], [9, '15:41'], [11, '15:43'], [12, '15:46'], [13, '15:46'], [14, '15:47'], [15, '15:48'], [16, '15:49'], [17, '15:50'], [18, '15:51'], [19, '15:56'], [20, '15:58'], [21, '16:02'], [22, '16:09']],
+    serviceVariants: [
+      { serviceId: 'kuniga_summer_star_on' },
+      {
+        suffix: '_STAR_BASE', serviceId: 'kuniga_summer_star_off', dropFirst: 2,
+        desc: '隠岐汽船（別府港）から国賀方面行き（★区間運休日）'
+      },
+      {
+        suffix: '_KUNIGA_BASE', serviceId: 'kuniga_summer_base_star_on', dropLast: 1,
+        desc: '大山・島前病院・別府から由良車庫方面行き（●区間運休期間）'
+      },
+      {
+        suffix: '_BASE', serviceId: 'kuniga_summer_base_star_off', dropFirst: 2, dropLast: 1,
+        desc: '隠岐汽船（別府港）から由良車庫方面行き（●・★区間運休日）'
+      }
+    ]
   },
   {
     code: 'B11_CHINZAKI_SANDO_1603',
@@ -407,11 +503,17 @@ const TRIPS = [
   {
     code: 'B13_UGA_1815',
     routeId: 'NISHINOSHIMA_UGA',
-    serviceId: 'daily',
     directionId: '1',
     shortName: '9便',
     desc: '宇賀から浦郷方面行き',
-    stops: [[1, '18:15'], [2, '18:18'], [3, '18:21'], [5, '18:29'], [6, '18:31'], [7, '18:32'], [8, '18:33'], [9, '18:37'], [11, '18:39'], [12, '18:41'], [13, '18:41'], [14, '18:42'], [15, '18:43'], [16, '18:44'], [17, '18:45'], [18, '18:46'], [19, '18:51'], [20, '18:53'], [21, '18:57']]
+    stops: [[1, '18:15'], [2, '18:18'], [3, '18:21'], [5, '18:29'], [6, '18:31'], [7, '18:32'], [8, '18:33'], [9, '18:37'], [11, '18:39'], [12, '18:41'], [13, '18:41'], [14, '18:42'], [15, '18:43'], [16, '18:44'], [17, '18:45'], [18, '18:46'], [19, '18:51'], [20, '18:53'], [21, '18:57']],
+    serviceVariants: [
+      { serviceId: 'star_weekday_plus_summer' },
+      {
+        suffix: '_STAR_BASE', serviceId: 'star_base_only', dropFirst: 4,
+        desc: '隠岐汽船（別府港）から浦郷方面行き（★区間運休日）'
+      }
+    ]
   },
   {
     code: 'B14_MAIN_1908',
@@ -528,22 +630,19 @@ function normalizeStopSpecs(stops) {
 
 function tripSpecs() {
   return TRIPS.flatMap((spec) => {
-    if (!spec.seasonalKunigaExtension) return [spec]
+    if (!spec.serviceVariants) return [spec]
 
-    const baseStops = spec.seasonalKunigaExtension.trim === 'first'
-      ? spec.stops.slice(1)
-      : spec.stops.slice(0, -1)
-
-    return [
-      spec,
-      {
-        ...spec,
-        code: `${spec.code}_BASE`,
-        serviceId: 'kuniga_summer_base',
-        desc: spec.seasonalKunigaExtension.baseDesc,
-        stops: baseStops
+    const { serviceVariants, ...baseSpec } = spec
+    return serviceVariants.map((variant) => {
+      const { suffix = '', dropFirst = 0, dropLast = 0, ...overrides } = variant
+      const end = dropLast > 0 ? spec.stops.length - dropLast : spec.stops.length
+      return {
+        ...baseSpec,
+        ...overrides,
+        code: `${spec.code}${suffix}`,
+        stops: spec.stops.slice(dropFirst, end)
       }
-    ]
+    })
   })
 }
 
@@ -611,6 +710,16 @@ function inRange(ymd, start, end) {
   return ymd >= start && ymd <= end
 }
 
+function isStarServiceDate(ymd) {
+  return inRange(ymd, '20260718', '20260817') || (!isWeekend(ymd) && !HOLIDAYS_2026.has(ymd))
+}
+
+function addDateOnlyServiceRows(rows, serviceId, predicate) {
+  for (const date of dateRange(FEED_START, FEED_END)) {
+    if (predicate(date)) rows.push({ service_id: serviceId, date, exception_type: '1' })
+  }
+}
+
 function calendarRows() {
   return [
     row('daily', [1, 1, 1, 1, 1, 1, 1], FEED_START, FEED_END),
@@ -674,6 +783,37 @@ function calendarDateRows() {
   for (const date of dateRange('20260701', '20260831')) {
     rows.push({ service_id: 'kuniga_summer_base', date, exception_type: '2' })
   }
+
+  addDateOnlyServiceRows(rows, 'star_base_only', date => !isStarServiceDate(date))
+  addDateOnlyServiceRows(rows, 'kuniga_spring_fall_base', date => (
+    !inRange(date, '20260415', '20261021')
+  ))
+
+  addDateOnlyServiceRows(rows, 'kuniga_spring_fall_star_on', date => (
+    inRange(date, '20260415', '20261021') && isStarServiceDate(date)
+  ))
+  addDateOnlyServiceRows(rows, 'kuniga_spring_fall_star_off', date => (
+    inRange(date, '20260415', '20261021') && !isStarServiceDate(date)
+  ))
+  addDateOnlyServiceRows(rows, 'kuniga_spring_fall_base_star_on', date => (
+    !inRange(date, '20260415', '20261021') && isStarServiceDate(date)
+  ))
+  addDateOnlyServiceRows(rows, 'kuniga_spring_fall_base_star_off', date => (
+    !inRange(date, '20260415', '20261021') && !isStarServiceDate(date)
+  ))
+
+  addDateOnlyServiceRows(rows, 'kuniga_summer_star_on', date => (
+    inRange(date, '20260701', '20260831') && isStarServiceDate(date)
+  ))
+  addDateOnlyServiceRows(rows, 'kuniga_summer_star_off', date => (
+    inRange(date, '20260701', '20260831') && !isStarServiceDate(date)
+  ))
+  addDateOnlyServiceRows(rows, 'kuniga_summer_base_star_on', date => (
+    !inRange(date, '20260701', '20260831') && isStarServiceDate(date)
+  ))
+  addDateOnlyServiceRows(rows, 'kuniga_summer_base_star_off', date => (
+    !inRange(date, '20260701', '20260831') && !isStarServiceDate(date)
+  ))
 
   return rows
 }
@@ -886,8 +1026,11 @@ function main() {
       'PDF の主要時刻表欄を GTFS trip/stop_times に転記',
       '同一停留所・同一時刻が連続する折り返し点は stop_times 出力時に1件へ正規化',
       '★印は平日運行を基本とし、PDF 注記に従って 2026-07-18〜2026-08-17 は全日運行として calendar_dates に反映',
+      '★印が一部停留所だけに付く10便は、★区間運休日も記号のない通常区間を運行するよう trip を分割',
       '※印の直行便土日祝ダイヤは 2026-07-18〜2026-08-17 を運休として calendar_dates に反映',
+      '◎印は国賀の時刻だけに適用し、2026-04-15〜2026-10-21 以外も国賀を除く通常区間を運行',
       '●印は国賀の時刻だけに適用し、2026-07-01〜2026-08-31 以外も国賀を除く通常区間を運行',
+      '◎または●と★が同じ便にある場合は、各記号の運行条件を独立して組み合わせた相互排他的な trip に分割',
       '波止と浦郷観光船のりばは停留所マップ掲載停留所として stops.txt に追加'
     ]
   }

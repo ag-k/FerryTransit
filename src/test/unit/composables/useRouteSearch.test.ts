@@ -642,7 +642,39 @@ describe("useRouteSearch", () => {
         arrivalType: "AIRPORT",
       });
       expect(results[0].segments[0].fare).toBe(0);
+      expect(results[0].segments[0].fareStatus).toBe("VARIABLE");
+      expect(results[0].fareStatus).toBe("VARIABLE");
+      expect(results[0].knownFareTotal).toBe(0);
       expect(results[0].transferCount).toBe(0);
+    });
+
+    it("should use a registered JAL price as a known airfare", async () => {
+      const store = useFerryStore();
+      store.timetableData = [{
+        ...createJalOkiToItamiTrip(),
+        price: 12340,
+      }] as any;
+
+      const { searchRoutes } = useRouteSearch();
+      const results = await searchRoutes(
+        "AIRPORT_OKI",
+        "AIRPORT_ITAMI",
+        new Date("2026-06-08T00:00:00+09:00"),
+        "14:00",
+        false
+      );
+
+      expect(results).toHaveLength(1);
+      expect(results[0].segments[0]).toMatchObject({
+        fare: 12340,
+        passengerFare: 12340,
+        fareStatus: "KNOWN",
+      });
+      expect(results[0]).toMatchObject({
+        totalFare: 12340,
+        knownFareTotal: 12340,
+        fareStatus: "KNOWN",
+      });
     });
 
     it("should find direct Oki airport shuttle bus routes with fare", async () => {
@@ -798,6 +830,7 @@ describe("useRouteSearch", () => {
         departure: "AIRPORT_OKI",
         arrival: "AIRPORT_ITAMI",
         fare: 0,
+        fareStatus: "VARIABLE",
       });
       expect(transferRoute?.segments[0]?.departureTime.getHours()).toBe(14);
       expect(transferRoute?.segments[0]?.departureTime.getMinutes()).toBe(15);
@@ -806,6 +839,8 @@ describe("useRouteSearch", () => {
       expect(transferRoute?.segments[1]?.departureTime.getHours()).toBe(15);
       expect(transferRoute?.segments[1]?.departureTime.getMinutes()).toBe(5);
       expect(transferRoute?.totalFare).toBe(520);
+      expect(transferRoute?.knownFareTotal).toBe(520);
+      expect(transferRoute?.fareStatus).toBe("VARIABLE");
       expect(transferRoute?.transferCount).toBe(1);
     });
 

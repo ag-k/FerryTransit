@@ -56,6 +56,34 @@
       </div>
     </div>
 
+    <!-- 集計単位 -->
+    <div class="mb-6 flex flex-wrap items-center gap-3">
+      <span class="text-sm font-medium text-gray-700 dark:text-gray-300">
+        推移の集計単位
+      </span>
+      <div class="inline-flex rounded-md shadow-sm" role="group" aria-label="推移の集計単位">
+        <button
+          v-for="granularity in granularities"
+          :key="granularity.value"
+          type="button"
+          :data-test="`granularity-${granularity.value}`"
+          :aria-pressed="selectedGranularity === granularity.value"
+          :class="[
+            'border px-4 py-2 text-sm transition-colors first:rounded-l-md last:rounded-r-md',
+            selectedGranularity === granularity.value
+              ? 'border-blue-600 bg-blue-600 text-white'
+              : 'border-gray-300 bg-white text-gray-700 hover:bg-gray-50 dark:border-gray-600 dark:bg-gray-700 dark:text-gray-300 dark:hover:bg-gray-600'
+          ]"
+          @click="selectGranularity(granularity.value)"
+        >
+          {{ granularity.label }}
+        </button>
+      </div>
+      <span class="text-xs text-gray-500 dark:text-gray-400">
+        週は月曜日から日曜日までを合算します
+      </span>
+    </div>
+
     <!-- ローディング状態 -->
     <div v-if="isLoading" class="flex justify-center items-center py-12" aria-live="polite">
       <div class="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>
@@ -73,14 +101,16 @@
     <div v-else class="space-y-6">
       <!-- 1. PV推移（折れ線） -->
       <div class="bg-white dark:bg-gray-800 rounded-lg shadow p-6">
-        <h3 class="text-lg font-medium text-gray-900 dark:text-white mb-4">PV推移</h3>
+        <h3 class="text-lg font-medium text-gray-900 dark:text-white mb-4">
+          PV推移（{{ selectedGranularityLabel }}）
+        </h3>
         <AnalyticsLineChart :data="pvTrendData" />
       </div>
 
       <!-- 2. 検索回数（折れ線） -->
       <div class="bg-white dark:bg-gray-800 rounded-lg shadow p-6">
         <h3 class="text-lg font-medium text-gray-900 dark:text-white mb-1">
-          検索対象日別の検索回数推移
+          検索対象{{ selectedGranularityLabel }}の検索回数推移
         </h3>
         <p class="mb-4 text-xs text-gray-500 dark:text-gray-400">
           検索を実行した日ではなく、検索条件で指定された乗船日を集計しています。
@@ -187,7 +217,13 @@
 
 <script setup lang="ts">
 import { startOfDay, endOfDay, subDays, startOfMonth, endOfMonth, format } from 'date-fns'
-import type { PeriodPreset, ChartData, MultiSeriesChartData, PopularRoute } from '~/types/analytics'
+import type {
+  AnalyticsTrendGranularity,
+  PeriodPreset,
+  ChartData,
+  MultiSeriesChartData,
+  PopularRoute
+} from '~/types/analytics'
 import { useAnalytics } from '~/composables/useAnalytics'
 import { createLogger } from '~/utils/logger'
 import { PORTS_DATA } from '~/data/ports'
@@ -219,9 +255,21 @@ const presets: Array<{ label: string; value: PeriodPreset }> = [
   { label: 'カスタム', value: 'custom' }
 ]
 
+const granularities: Array<{ label: string; value: AnalyticsTrendGranularity }> = [
+  { label: '日', value: 'daily' },
+  { label: '週', value: 'weekly' },
+  { label: '月', value: 'monthly' }
+]
+
 const selectedPreset = ref<PeriodPreset>('today')
+const selectedGranularity = ref<AnalyticsTrendGranularity>('daily')
 const customStartDate = ref('')
 const customEndDate = ref('')
+const appliedCustomPeriod = ref<{ startDate: Date; endDate: Date } | null>(null)
+
+const selectedGranularityLabel = computed(() => {
+  return granularities.find(item => item.value === selectedGranularity.value)?.label ?? '日'
+})
 
 const isLoading = ref(false)
 const hasData = ref(false)
@@ -272,8 +320,31 @@ const getCurrentPeriod = (): { startDate: Date; endDate: Date } => {
 const selectPreset = (preset: PeriodPreset) => {
   selectedPreset.value = preset
   if (preset !== 'custom') {
+    appliedCustomPeriod.value = null
     loadAnalyticsData()
   }
+}
+
+/**
+ * 推移の集計単位を選択
+ */
+const selectGranularity = (granularity: AnalyticsTrendGranularity) => {
+  if (selectedGranularity.value === granularity) {
+    return
+  }
+
+  selectedGranularity.value = granularity
+  if (selectedPreset.value === 'custom') {
+    if (appliedCustomPeriod.value) {
+      loadAnalyticsData(
+        appliedCustomPeriod.value.startDate,
+        appliedCustomPeriod.value.endDate
+      )
+    }
+    return
+  }
+
+  loadAnalyticsData()
 }
 
 /**
@@ -298,6 +369,7 @@ const applyCustomPeriod = () => {
     return
   }
   
+  appliedCustomPeriod.value = { startDate, endDate }
   loadAnalyticsData(startDate, endDate)
 }
 
@@ -323,7 +395,7 @@ const loadAnalyticsData = async (customStart?: Date, customEnd?: Date) => {
     
     // データを並列取得
     const [pvTrend, hourlyDist, popular, portDist] = await Promise.all([
-      getPvTrend(startDate, endDate),
+      getPvTrend(startDate, endDate, selectedGranularity.value),
       getHourlyDistribution(startDate, endDate),
       getPopularRoutes(startDate, endDate, 3),
       getPortDistribution(startDate, endDate)
@@ -331,13 +403,13 @@ const loadAnalyticsData = async (customStart?: Date, customEnd?: Date) => {
     
     // PV推移データ
     pvTrendData.value = pvTrend.map(item => ({
-      label: format(new Date(item.date), 'M/d'),
+      label: formatTrendLabel(item.date),
       value: item.pv
     }))
     
     // 検索推移データ
     searchTrendData.value = pvTrend.map(item => ({
-      label: format(new Date(item.date), 'M/d'),
+      label: formatTrendLabel(item.date),
       value: item.search
     }))
     
@@ -382,6 +454,18 @@ const loadAnalyticsData = async (customStart?: Date, customEnd?: Date) => {
   } finally {
     isLoading.value = false
   }
+}
+
+/**
+ * 集計単位に応じたグラフラベルを生成
+ */
+const formatTrendLabel = (dateKey: string): string => {
+  if (selectedGranularity.value === 'monthly') {
+    return format(new Date(`${dateKey}-01T00:00:00`), 'yyyy/M')
+  }
+
+  const label = format(new Date(`${dateKey}T00:00:00`), 'M/d')
+  return selectedGranularity.value === 'weekly' ? `${label}週` : label
 }
 
 /**

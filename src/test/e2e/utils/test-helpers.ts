@@ -44,6 +44,8 @@ export interface StubOptions {
   shipStatusApi?: string
   initialDeparture?: string
   initialArrival?: string
+  language?: 'ja' | 'en'
+  theme?: 'light' | 'dark' | 'system'
 }
 
 /**
@@ -73,6 +75,14 @@ export const selectPort = async (page: Page, label: string, portCode: string) =>
 }
 
 export const setupPublicPageStubs = async (page: Page, options: StubOptions = {}) => {
+  await page.route('https://apis.google.com/**', async (route) => {
+    await route.fulfill({
+      status: 200,
+      contentType: 'application/javascript',
+      body: ''
+    })
+  })
+
   // Surface client-side crashes in Playwright output (helps keep E2E stable)
   page.on('pageerror', (error) => {
     // eslint-disable-next-line no-console
@@ -80,8 +90,39 @@ export const setupPublicPageStubs = async (page: Page, options: StubOptions = {}
   })
   page.on('console', (msg) => {
     if (msg.type() === 'error') {
+      // WebKit はコンテキスト終了時に Nuxt の遅延 import を中断すると、この汎用エラーだけを
+      // console へ出す。実際の読込失敗は pageerror / requestfailed で別途検出する。
+      if (
+        msg.text() === 'TypeError: Importing a module script failed.' &&
+        page.context().browser()?.browserType().name() === 'webkit'
+      ) {
+        return
+      }
       // eslint-disable-next-line no-console
-      console.error('[console.error]', msg.text())
+      console.error('[console.error]', msg.text(), { page: page.url(), location: msg.location() })
+    }
+  })
+  page.on('requestfailed', (request) => {
+    if (request.resourceType() === 'script') {
+      const pageUrl = page.url()
+      const failureText = request.failure()?.errorText
+      const isCancelledLocalImport = [
+        'cancelled',
+        'net::ERR_ABORTED',
+        'NS_BINDING_ABORTED'
+      ].includes(failureText ?? '') &&
+        pageUrl.startsWith('http') &&
+        new URL(request.url()).origin === new URL(pageUrl).origin
+      if (isCancelledLocalImport) {
+        return
+      }
+      if (failureText === 'cancelled') return
+      // eslint-disable-next-line no-console
+      console.error('[script.requestfailed]', {
+        page: page.url(),
+        url: request.url(),
+        failure: request.failure()
+      })
     }
   })
 
@@ -109,7 +150,9 @@ export const setupPublicPageStubs = async (page: Page, options: StubOptions = {}
       holidaysData,
       busData,
       initialDeparture,
-      initialArrival
+      initialArrival,
+      language,
+      theme
     }) => {
       const originalFetch = window.fetch.bind(window)
       try {
@@ -140,7 +183,21 @@ export const setupPublicPageStubs = async (page: Page, options: StubOptions = {}
         const decodedUrl = decodeURIComponent(url)
         const busSearchName = decodedUrl.match(/data\/bus-search\/([^?&/]+\.json)/)?.[1]
 
+        if (decodedUrl.includes('api.iconify.design/')) {
+          return Promise.resolve(jsonResponse({
+            prefix: 'mdi',
+            lastModified: 0,
+            width: 24,
+            height: 24,
+            icons: {
+              airplane: { body: '<path d="M3 12h18v1H3z"/>' },
+              bus: { body: '<path d="M4 4h16v16H4z"/>' },
+              ferry: { body: '<path d="M3 12h18l-3 6H6z"/>' }
+            }
+          }))
+        }
         if (busSearchName) return Promise.resolve(jsonResponse(busData[busSearchName] ?? {}))
+        if (decodedUrl.includes('data/news.json')) return Promise.resolve(jsonResponse([]))
         if (decodedUrl.includes('fare-master.json')) return Promise.resolve(jsonResponse(fareData))
         if (decodedUrl.includes('holidays.json')) return Promise.resolve(jsonResponse(holidaysData))
         if (decodedUrl.includes('timetable.json') || decodedUrl.endsWith('/api/timetable')) {
@@ -148,6 +205,7 @@ export const setupPublicPageStubs = async (page: Page, options: StubOptions = {}
         }
         if (decodedUrl.endsWith('/status-kankou')) return Promise.resolve(jsonResponse(shipStatusKankouData))
         if (decodedUrl.endsWith('/status')) return Promise.resolve(jsonResponse(shipStatusData))
+        if (decodedUrl.includes('/trackAnalytics')) return Promise.resolve(jsonResponse({ success: true }))
         if (decodedUrl.includes('firebase.googleapis.com/v1alpha/projects/-/apps/')) {
           return Promise.resolve(jsonResponse({
             projectId: 'test',
@@ -170,14 +228,16 @@ export const setupPublicPageStubs = async (page: Page, options: StubOptions = {}
       }
 
       try {
-        Object.defineProperty(navigator, 'language', { value: 'ja-JP', configurable: true })
-        Object.defineProperty(navigator, 'languages', { value: ['ja-JP'], configurable: true })
+        const browserLanguage = language === 'en' ? 'en-US' : 'ja-JP'
+        Object.defineProperty(navigator, 'language', { value: browserLanguage, configurable: true })
+        Object.defineProperty(navigator, 'languages', { value: [browserLanguage], configurable: true })
       } catch {
         // ignore if readonly
       }
-      document.cookie = 'ferry-transit-locale=ja; path=/'
-      window.localStorage.setItem('ferry-transit-locale', 'ja')
-      window.localStorage.setItem('i18n_redirected', 'ja')
+      document.cookie = `ferry-transit-locale=${language}; path=/`
+      window.localStorage.setItem('ferry-transit-locale', language)
+      window.localStorage.setItem('i18n_redirected', language)
+      window.localStorage.setItem('theme', theme)
       window.localStorage.setItem('rawTimetable', JSON.stringify(timetableData))
       window.localStorage.setItem('rawTimetable_time', Date.now().toString())
       // 画面の初期選択（PortSelectorを操作せずに安定させる）
@@ -217,8 +277,8 @@ export const setupPublicPageStubs = async (page: Page, options: StubOptions = {}
         mapEnabled: false,
         mapShowRoutes: true,
         mapAutoCenter: true,
-        theme: 'system',
-        language: 'ja',
+        theme,
+        language,
         notifications: true,
         autoUpdate: true
       }))
@@ -233,7 +293,9 @@ export const setupPublicPageStubs = async (page: Page, options: StubOptions = {}
       holidaysData: holidays,
       busData: busSearchData,
       initialDeparture: options.initialDeparture,
-      initialArrival: options.initialArrival
+      initialArrival: options.initialArrival,
+      language: options.language ?? 'ja',
+      theme: options.theme ?? 'system'
     }
   )
 

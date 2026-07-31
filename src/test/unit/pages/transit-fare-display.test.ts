@@ -608,6 +608,176 @@ describe('Transit Page - Fare Display', () => {
     })
   })
 
+  describe('JAL fare states', () => {
+    const mountJalFarePage = () => mountWithI18n(Transit, {
+      messages: {
+        ja: {
+          AIR_FARE_SEPARATE_VARIABLE: '航空運賃は別途（変動）',
+          KNOWN_FARE_PLUS_VARIABLE: '{fare} + 航空運賃（変動）',
+          KNOWN_FARE_PLUS_UNAVAILABLE: '{fare} + 未取得運賃',
+          FARE_UNAVAILABLE: '料金不明',
+          FARE_FREE: '無料'
+        }
+      },
+      global: {
+        plugins: [router],
+        stubs: {
+          PortSelector: true,
+          DatePicker: true,
+          CommonShipModal: true,
+          StatusAlerts: true,
+          FavoriteButton: true,
+          RouteMapModal: true
+        }
+      }
+    })
+
+    it('変動航空運賃、既知額との合算、登録済み航空運賃を区別して表示する', async () => {
+      const wrapper = mountJalFarePage()
+      wrapper.vm.departure = 'AIRPORT_ITAMI'
+      wrapper.vm.arrival = 'SAIGO'
+      wrapper.vm.hasSearched = true
+      wrapper.vm.searchResults = [
+        {
+          segments: [{
+            tripId: 'jal-variable',
+            ship: 'JAL_OKI_ITAMI',
+            mode: 'AIR',
+            departure: 'AIRPORT_ITAMI',
+            arrival: 'AIRPORT_OKI',
+            departureTime: new Date('2026-07-31T13:45:00+09:00'),
+            arrivalTime: new Date('2026-07-31T14:35:00+09:00'),
+            status: 0,
+            fare: 0,
+            fareStatus: 'VARIABLE'
+          }],
+          departureTime: new Date('2026-07-31T13:45:00+09:00'),
+          arrivalTime: new Date('2026-07-31T14:35:00+09:00'),
+          totalFare: 0,
+          transferCount: 0
+        },
+        {
+          segments: [
+            {
+              tripId: 'jal-transfer',
+              ship: 'JAL_OKI_ITAMI',
+              mode: 'AIR',
+              departure: 'AIRPORT_ITAMI',
+              arrival: 'AIRPORT_OKI',
+              departureTime: new Date('2026-07-31T13:45:00+09:00'),
+              arrivalTime: new Date('2026-07-31T14:35:00+09:00'),
+              status: 0,
+              fare: 0,
+              fareStatus: 'VARIABLE'
+            },
+            {
+              tripId: 'airport-bus',
+              ship: 'OKI_AIRPORT_BUS',
+              mode: 'BUS',
+              departure: 'AIRPORT_OKI',
+              arrival: 'SAIGO',
+              departureTime: new Date('2026-07-31T14:50:00+09:00'),
+              arrivalTime: new Date('2026-07-31T15:00:00+09:00'),
+              status: 0,
+              fare: 520,
+              fareStatus: 'KNOWN'
+            }
+          ],
+          departureTime: new Date('2026-07-31T13:45:00+09:00'),
+          arrivalTime: new Date('2026-07-31T15:00:00+09:00'),
+          totalFare: 520,
+          transferCount: 1
+        },
+        {
+          segments: [{
+            tripId: 'jal-known',
+            ship: 'JAL_OKI_ITAMI',
+            mode: 'AIR',
+            departure: 'AIRPORT_ITAMI',
+            arrival: 'AIRPORT_OKI',
+            departureTime: new Date('2026-07-31T15:00:00+09:00'),
+            arrivalTime: new Date('2026-07-31T15:50:00+09:00'),
+            status: 0,
+            fare: 12340,
+            fareStatus: 'KNOWN'
+          }],
+          departureTime: new Date('2026-07-31T15:00:00+09:00'),
+          arrivalTime: new Date('2026-07-31T15:50:00+09:00'),
+          totalFare: 12340,
+          transferCount: 0
+        }
+      ]
+
+      await wrapper.vm.$nextTick()
+
+      const routeFares = wrapper.findAll('[data-testid="transit-route-fare"]').map(node => node.text())
+      expect(routeFares).toContain('AIR_FARE_SEPARATE_VARIABLE')
+      expect(routeFares).toContain('KNOWN_FARE_PLUS_VARIABLE')
+      expect(routeFares).toContain('¥12,340')
+      expect(routeFares).not.toContain('¥520')
+
+      const fareLinks = wrapper.findAll('a').filter(link => link.text().includes('CHECK_AIRFARE'))
+      expect(fareLinks.length).toBeGreaterThan(0)
+      expect(fareLinks[0].attributes('href')).toBe('https://www.jal.co.jp/domestic/ja-jp/flights-from-oki')
+      expect(fareLinks[0].attributes('target')).toBe('_blank')
+      expect(fareLinks[0].attributes('rel')).toBe('noopener noreferrer')
+    })
+
+    it.each(['cheap', 'fast', 'easy', 'recommended'])(
+      '%s順の同条件比較では変動航空運賃を確定額より後ろに並べる',
+      async (sortOption) => {
+      const wrapper = mountJalFarePage()
+      wrapper.vm.hasSearched = true
+      wrapper.vm.searchResults = [
+        {
+          segments: [{
+            tripId: 'jal-variable',
+            ship: 'JAL_OKI_ITAMI',
+            mode: 'AIR',
+            departure: 'AIRPORT_ITAMI',
+            arrival: 'AIRPORT_OKI',
+            departureTime: new Date('2026-07-31T09:00:00+09:00'),
+            arrivalTime: new Date('2026-07-31T10:00:00+09:00'),
+            status: 0,
+            fare: 0,
+            fareStatus: 'VARIABLE'
+          }],
+          departureTime: new Date('2026-07-31T09:00:00+09:00'),
+          arrivalTime: new Date('2026-07-31T10:00:00+09:00'),
+          totalFare: 0,
+          transferCount: 0
+        },
+        {
+          segments: [{
+            tripId: 'known-bus',
+            ship: 'OKI_AIRPORT_BUS',
+            mode: 'BUS',
+            departure: 'SAIGO',
+            arrival: 'AIRPORT_OKI',
+            departureTime: new Date('2026-07-31T09:00:00+09:00'),
+            arrivalTime: new Date('2026-07-31T10:00:00+09:00'),
+            status: 0,
+            fare: 520,
+            fareStatus: 'KNOWN'
+          }],
+          departureTime: new Date('2026-07-31T09:00:00+09:00'),
+          arrivalTime: new Date('2026-07-31T10:00:00+09:00'),
+          totalFare: 520,
+          transferCount: 0
+        }
+      ]
+      wrapper.vm.sortOption = sortOption
+
+      await wrapper.vm.$nextTick()
+
+      expect(wrapper.vm.sortedResults.map((route: any) => route.segments[0].tripId)).toEqual([
+        'known-bus',
+        'jal-variable'
+      ])
+      }
+    )
+  })
+
   describe('Operation Status Date Guard', () => {
     it('should not show ship status alert icon on non-today date (JST)', async () => {
       vi.useFakeTimers()

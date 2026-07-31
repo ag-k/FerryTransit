@@ -1,7 +1,14 @@
 <template>
-  <div class="relative">
+  <div
+    data-test="line-chart-viewport"
+    class="relative mx-auto w-full max-w-5xl overflow-x-auto"
+  >
     <!-- 折れ線グラフ（SVGベース） -->
-    <svg viewBox="0 0 800 200" class="w-full h-64 text-gray-500 dark:text-gray-400" preserveAspectRatio="none">
+    <svg
+      viewBox="0 0 800 200"
+      class="block h-auto min-w-[40rem] w-full text-gray-500 dark:text-gray-400"
+      preserveAspectRatio="xMidYMid meet"
+    >
       <!-- Y軸グリッド線 -->
       <line
         v-for="i in 5"
@@ -56,7 +63,7 @@
     </svg>
     
     <!-- X軸ラベル -->
-    <div class="flex justify-between text-xs text-gray-500 dark:text-gray-400 mt-2 px-2">
+    <div class="mt-2 flex min-w-[40rem] justify-between px-2 text-xs text-gray-500 dark:text-gray-400">
       <span
         v-for="(point, index) in normalizedData"
         :key="'label-' + index"

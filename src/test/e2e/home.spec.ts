@@ -2,6 +2,12 @@ import { expect, test } from '@playwright/test'
 import { setupPublicPageStubs } from './utils/test-helpers'
 
 test.describe('トップページ', () => {
+  test.afterEach(async ({ page }) => {
+    // WebKitがNuxtLinkの可視範囲プリフェッチを完了してからページを閉じる。
+    await page.waitForLoadState('networkidle')
+    await page.waitForTimeout(1000)
+  })
+
   test('バスの出発地・目的地選択にはバス停だけを表示する', async ({ page }) => {
     await setupPublicPageStubs(page)
     await page.goto('/')

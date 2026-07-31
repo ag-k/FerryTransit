@@ -79,6 +79,7 @@ export enum TripStatus {
 
 export type TransportMode = 'FERRY' | 'BUS' | 'AIR' | 'WALK'
 export type LocationType = 'PORT' | 'STOP' | 'AIRPORT'
+export type FareStatus = 'KNOWN' | 'VARIABLE' | 'UNAVAILABLE' | 'FREE' | 'WALK'
 
 // Trip interface
 export interface Trip {
@@ -278,6 +279,7 @@ export interface TransitSegment {
   gate?: string;
   status: number;
   fare: number;
+  fareStatus?: FareStatus;
   passengerFare?: number;
   vehicleFare?: number;
 }
@@ -287,6 +289,8 @@ export interface TransitRoute {
   departureTime: Date;
   arrivalTime: Date;
   totalFare: number;
+  knownFareTotal?: number;
+  fareStatus?: FareStatus;
   transferCount: number;
 }
 

@@ -13,15 +13,27 @@
   },
   {
     "routeId": "NISHINOSHIMA_MAIN",
-    "serviceId": "daily",
+    "serviceId": "star_weekday_plus_summer",
     "tripId": "T02_MAIN_0653",
-    "headsign": "島前病院",
+    "headsign": "大山",
     "directionId": 0,
     "blockId": "",
     "shortName": "1便",
     "shapeId": "",
     "jpTripDesc": "三度・珍崎・国賀・浦郷から別府・島前病院・大山・宇賀方面行き",
     "jpPatternId": "T02_MAIN_0653"
+  },
+  {
+    "routeId": "NISHINOSHIMA_MAIN",
+    "serviceId": "star_base_only",
+    "tripId": "T02_MAIN_0653_STAR_BASE",
+    "headsign": "隠岐汽船（別府港）",
+    "directionId": 0,
+    "blockId": "",
+    "shortName": "1便",
+    "shapeId": "",
+    "jpTripDesc": "赤ノ江から隠岐汽船（別府港）方面行き（★区間運休日）",
+    "jpPatternId": "T02_MAIN_0653_STAR_BASE"
   },
   {
     "routeId": "NISHINOSHIMA_CHINZAKI_SANDO",
@@ -61,7 +73,7 @@
   },
   {
     "routeId": "NISHINOSHIMA_UGA",
-    "serviceId": "daily",
+    "serviceId": "star_weekday_plus_summer",
     "tripId": "T06_UGA_1010",
     "headsign": "宇賀",
     "directionId": 0,
@@ -72,8 +84,20 @@
     "jpPatternId": "T06_UGA_1010"
   },
   {
+    "routeId": "NISHINOSHIMA_UGA",
+    "serviceId": "star_base_only",
+    "tripId": "T06_UGA_1010_STAR_BASE",
+    "headsign": "隠岐汽船（別府港）",
+    "directionId": 0,
+    "blockId": "",
+    "shortName": "4便",
+    "shapeId": "",
+    "jpTripDesc": "浦郷から隠岐汽船（別府港）方面行き（★区間運休日）",
+    "jpPatternId": "T06_UGA_1010_STAR_BASE"
+  },
+  {
     "routeId": "NISHINOSHIMA_KUNIGA",
-    "serviceId": "kuniga_spring_fall",
+    "serviceId": "kuniga_spring_fall_star_on",
     "tripId": "T07_KUNIGA_1127",
     "headsign": "大山",
     "directionId": 0,
@@ -82,6 +106,42 @@
     "shapeId": "",
     "jpTripDesc": "国賀から大山方面行き",
     "jpPatternId": "T07_KUNIGA_1127"
+  },
+  {
+    "routeId": "NISHINOSHIMA_KUNIGA",
+    "serviceId": "kuniga_spring_fall_star_off",
+    "tripId": "T07_KUNIGA_1127_STAR_BASE",
+    "headsign": "隠岐汽船（別府港）",
+    "directionId": 0,
+    "blockId": "",
+    "shortName": "5便",
+    "shapeId": "",
+    "jpTripDesc": "国賀から隠岐汽船（別府港）方面行き（★区間運休日）",
+    "jpPatternId": "T07_KUNIGA_1127_STAR_BASE"
+  },
+  {
+    "routeId": "NISHINOSHIMA_KUNIGA",
+    "serviceId": "kuniga_spring_fall_base_star_on",
+    "tripId": "T07_KUNIGA_1127_KUNIGA_BASE",
+    "headsign": "大山",
+    "directionId": 0,
+    "blockId": "",
+    "shortName": "5便",
+    "shapeId": "",
+    "jpTripDesc": "由良車庫から大山方面行き（◎区間運休期間）",
+    "jpPatternId": "T07_KUNIGA_1127_KUNIGA_BASE"
+  },
+  {
+    "routeId": "NISHINOSHIMA_KUNIGA",
+    "serviceId": "kuniga_spring_fall_base_star_off",
+    "tripId": "T07_KUNIGA_1127_BASE",
+    "headsign": "隠岐汽船（別府港）",
+    "directionId": 0,
+    "blockId": "",
+    "shortName": "5便",
+    "shapeId": "",
+    "jpTripDesc": "由良車庫から隠岐汽船（別府港）方面行き（◎・★区間運休日）",
+    "jpPatternId": "T07_KUNIGA_1127_BASE"
   },
   {
     "routeId": "NISHINOSHIMA_CHINZAKI_SANDO",
@@ -121,7 +181,7 @@
   },
   {
     "routeId": "NISHINOSHIMA_KUNIGA",
-    "serviceId": "kuniga_spring_fall",
+    "serviceId": "kuniga_spring_fall_star_on",
     "tripId": "T10_KUNIGA_1441",
     "headsign": "大山",
     "directionId": 0,
@@ -130,6 +190,42 @@
     "shapeId": "",
     "jpTripDesc": "国賀から大山方面行き",
     "jpPatternId": "T10_KUNIGA_1441"
+  },
+  {
+    "routeId": "NISHINOSHIMA_KUNIGA",
+    "serviceId": "kuniga_spring_fall_star_off",
+    "tripId": "T10_KUNIGA_1441_STAR_BASE",
+    "headsign": "隠岐汽船（別府港）",
+    "directionId": 0,
+    "blockId": "",
+    "shortName": "7便",
+    "shapeId": "",
+    "jpTripDesc": "国賀から隠岐汽船（別府港）方面行き（★区間運休日）",
+    "jpPatternId": "T10_KUNIGA_1441_STAR_BASE"
+  },
+  {
+    "routeId": "NISHINOSHIMA_KUNIGA",
+    "serviceId": "kuniga_spring_fall_base_star_on",
+    "tripId": "T10_KUNIGA_1441_KUNIGA_BASE",
+    "headsign": "大山",
+    "directionId": 0,
+    "blockId": "",
+    "shortName": "7便",
+    "shapeId": "",
+    "jpTripDesc": "由良車庫から大山方面行き（◎区間運休期間）",
+    "jpPatternId": "T10_KUNIGA_1441_KUNIGA_BASE"
+  },
+  {
+    "routeId": "NISHINOSHIMA_KUNIGA",
+    "serviceId": "kuniga_spring_fall_base_star_off",
+    "tripId": "T10_KUNIGA_1441_BASE",
+    "headsign": "隠岐汽船（別府港）",
+    "directionId": 0,
+    "blockId": "",
+    "shortName": "7便",
+    "shapeId": "",
+    "jpTripDesc": "由良車庫から隠岐汽船（別府港）方面行き（◎・★区間運休日）",
+    "jpPatternId": "T10_KUNIGA_1441_BASE"
   },
   {
     "routeId": "NISHINOSHIMA_CHINZAKI_SANDO",
@@ -169,7 +265,7 @@
   },
   {
     "routeId": "NISHINOSHIMA_UGA",
-    "serviceId": "daily",
+    "serviceId": "star_weekday_plus_summer",
     "tripId": "T13_UGA_1709",
     "headsign": "宇賀",
     "directionId": 0,
@@ -178,6 +274,18 @@
     "shapeId": "",
     "jpTripDesc": "浦郷から宇賀方面行き",
     "jpPatternId": "T13_UGA_1709"
+  },
+  {
+    "routeId": "NISHINOSHIMA_UGA",
+    "serviceId": "star_base_only",
+    "tripId": "T13_UGA_1709_STAR_BASE",
+    "headsign": "隠岐汽船（別府港）",
+    "directionId": 0,
+    "blockId": "",
+    "shortName": "9便",
+    "shapeId": "",
+    "jpTripDesc": "浦郷から隠岐汽船（別府港）方面行き（★区間運休日）",
+    "jpPatternId": "T13_UGA_1709_STAR_BASE"
   },
   {
     "routeId": "NISHINOSHIMA_MAIN",
@@ -217,7 +325,7 @@
   },
   {
     "routeId": "NISHINOSHIMA_MAIN",
-    "serviceId": "daily",
+    "serviceId": "star_weekday_plus_summer",
     "tripId": "B02_MAIN_0736",
     "headsign": "由良車庫",
     "directionId": 1,
@@ -226,6 +334,18 @@
     "shapeId": "",
     "jpTripDesc": "大山・島前病院・別府から浦郷方面行き",
     "jpPatternId": "B02_MAIN_0736"
+  },
+  {
+    "routeId": "NISHINOSHIMA_MAIN",
+    "serviceId": "star_base_only",
+    "tripId": "B02_MAIN_0736_STAR_BASE",
+    "headsign": "由良車庫",
+    "directionId": 1,
+    "blockId": "",
+    "shortName": "1便",
+    "shapeId": "",
+    "jpTripDesc": "別府交通センターから浦郷方面行き（★区間運休日）",
+    "jpPatternId": "B02_MAIN_0736_STAR_BASE"
   },
   {
     "routeId": "NISHINOSHIMA_CHINZAKI_SANDO",
@@ -264,8 +384,20 @@
     "jpPatternId": "B05_KUNIGA_1017"
   },
   {
+    "routeId": "NISHINOSHIMA_KUNIGA",
+    "serviceId": "kuniga_spring_fall_base",
+    "tripId": "B05_KUNIGA_1017_BASE",
+    "headsign": "由良車庫",
+    "directionId": 1,
+    "blockId": "",
+    "shortName": "3便",
+    "shapeId": "",
+    "jpTripDesc": "島前病院・別府から由良車庫方面行き（◎区間運休期間）",
+    "jpPatternId": "B05_KUNIGA_1017_BASE"
+  },
+  {
     "routeId": "NISHINOSHIMA_UGA",
-    "serviceId": "daily",
+    "serviceId": "star_weekday_plus_summer",
     "tripId": "B06_UGA_1100",
     "headsign": "由良車庫",
     "directionId": 1,
@@ -276,8 +408,20 @@
     "jpPatternId": "B06_UGA_1100"
   },
   {
+    "routeId": "NISHINOSHIMA_UGA",
+    "serviceId": "star_base_only",
+    "tripId": "B06_UGA_1100_STAR_BASE",
+    "headsign": "由良車庫",
+    "directionId": 1,
+    "blockId": "",
+    "shortName": "4便",
+    "shapeId": "",
+    "jpTripDesc": "隠岐汽船（別府港）から浦郷方面行き（★区間運休日）",
+    "jpPatternId": "B06_UGA_1100_STAR_BASE"
+  },
+  {
     "routeId": "NISHINOSHIMA_KUNIGA",
-    "serviceId": "kuniga_summer",
+    "serviceId": "kuniga_summer_star_on",
     "tripId": "B07_KUNIGA_1212",
     "headsign": "国賀",
     "directionId": 1,
@@ -289,14 +433,38 @@
   },
   {
     "routeId": "NISHINOSHIMA_KUNIGA",
-    "serviceId": "kuniga_summer_base",
+    "serviceId": "kuniga_summer_star_off",
+    "tripId": "B07_KUNIGA_1212_STAR_BASE",
+    "headsign": "国賀",
+    "directionId": 1,
+    "blockId": "",
+    "shortName": "5便",
+    "shapeId": "",
+    "jpTripDesc": "隠岐汽船（別府港）から国賀方面行き（★区間運休日）",
+    "jpPatternId": "B07_KUNIGA_1212_STAR_BASE"
+  },
+  {
+    "routeId": "NISHINOSHIMA_KUNIGA",
+    "serviceId": "kuniga_summer_base_star_on",
+    "tripId": "B07_KUNIGA_1212_KUNIGA_BASE",
+    "headsign": "由良車庫",
+    "directionId": 1,
+    "blockId": "",
+    "shortName": "5便",
+    "shapeId": "",
+    "jpTripDesc": "大山・島前病院・別府から由良車庫方面行き（●区間運休期間）",
+    "jpPatternId": "B07_KUNIGA_1212_KUNIGA_BASE"
+  },
+  {
+    "routeId": "NISHINOSHIMA_KUNIGA",
+    "serviceId": "kuniga_summer_base_star_off",
     "tripId": "B07_KUNIGA_1212_BASE",
     "headsign": "由良車庫",
     "directionId": 1,
     "blockId": "",
     "shortName": "5便",
     "shapeId": "",
-    "jpTripDesc": "大山・島前病院・別府から由良車庫方面行き",
+    "jpTripDesc": "隠岐汽船（別府港）から由良車庫方面行き（●・★区間運休日）",
     "jpPatternId": "B07_KUNIGA_1212_BASE"
   },
   {
@@ -325,7 +493,19 @@
   },
   {
     "routeId": "NISHINOSHIMA_KUNIGA",
-    "serviceId": "kuniga_summer",
+    "serviceId": "kuniga_spring_fall_base",
+    "tripId": "B09_KUNIGA_1358_BASE",
+    "headsign": "由良車庫",
+    "directionId": 1,
+    "blockId": "",
+    "shortName": "6便",
+    "shapeId": "",
+    "jpTripDesc": "島前病院・別府から由良車庫方面行き（◎区間運休期間）",
+    "jpPatternId": "B09_KUNIGA_1358_BASE"
+  },
+  {
+    "routeId": "NISHINOSHIMA_KUNIGA",
+    "serviceId": "kuniga_summer_star_on",
     "tripId": "B10_KUNIGA_1528",
     "headsign": "国賀",
     "directionId": 1,
@@ -337,14 +517,38 @@
   },
   {
     "routeId": "NISHINOSHIMA_KUNIGA",
-    "serviceId": "kuniga_summer_base",
+    "serviceId": "kuniga_summer_star_off",
+    "tripId": "B10_KUNIGA_1528_STAR_BASE",
+    "headsign": "国賀",
+    "directionId": 1,
+    "blockId": "",
+    "shortName": "7便",
+    "shapeId": "",
+    "jpTripDesc": "隠岐汽船（別府港）から国賀方面行き（★区間運休日）",
+    "jpPatternId": "B10_KUNIGA_1528_STAR_BASE"
+  },
+  {
+    "routeId": "NISHINOSHIMA_KUNIGA",
+    "serviceId": "kuniga_summer_base_star_on",
+    "tripId": "B10_KUNIGA_1528_KUNIGA_BASE",
+    "headsign": "由良車庫",
+    "directionId": 1,
+    "blockId": "",
+    "shortName": "7便",
+    "shapeId": "",
+    "jpTripDesc": "大山・島前病院・別府から由良車庫方面行き（●区間運休期間）",
+    "jpPatternId": "B10_KUNIGA_1528_KUNIGA_BASE"
+  },
+  {
+    "routeId": "NISHINOSHIMA_KUNIGA",
+    "serviceId": "kuniga_summer_base_star_off",
     "tripId": "B10_KUNIGA_1528_BASE",
     "headsign": "由良車庫",
     "directionId": 1,
     "blockId": "",
     "shortName": "7便",
     "shapeId": "",
-    "jpTripDesc": "大山・島前病院・別府から由良車庫方面行き",
+    "jpTripDesc": "隠岐汽船（別府港）から由良車庫方面行き（●・★区間運休日）",
     "jpPatternId": "B10_KUNIGA_1528_BASE"
   },
   {
@@ -373,7 +577,7 @@
   },
   {
     "routeId": "NISHINOSHIMA_UGA",
-    "serviceId": "daily",
+    "serviceId": "star_weekday_plus_summer",
     "tripId": "B13_UGA_1815",
     "headsign": "由良車庫",
     "directionId": 1,
@@ -382,6 +586,18 @@
     "shapeId": "",
     "jpTripDesc": "宇賀から浦郷方面行き",
     "jpPatternId": "B13_UGA_1815"
+  },
+  {
+    "routeId": "NISHINOSHIMA_UGA",
+    "serviceId": "star_base_only",
+    "tripId": "B13_UGA_1815_STAR_BASE",
+    "headsign": "由良車庫",
+    "directionId": 1,
+    "blockId": "",
+    "shortName": "9便",
+    "shapeId": "",
+    "jpTripDesc": "隠岐汽船（別府港）から浦郷方面行き（★区間運休日）",
+    "jpPatternId": "B13_UGA_1815_STAR_BASE"
   },
   {
     "routeId": "NISHINOSHIMA_MAIN",

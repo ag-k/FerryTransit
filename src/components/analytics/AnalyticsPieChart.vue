@@ -2,7 +2,11 @@
   <div class="flex flex-col items-center">
     <!-- 円グラフ -->
     <div class="relative w-48 h-48">
-      <svg viewBox="0 0 100 100" class="transform -rotate-90">
+      <svg
+        viewBox="0 0 100 100"
+        class="h-full w-full transform -rotate-90"
+        preserveAspectRatio="xMidYMid meet"
+      >
         <circle
           v-for="(segment, index) in pieSegments"
           :key="index"
@@ -110,7 +114,7 @@ const pieSegments = computed(() => {
     const percentage = (item[props.valueField] / total) * 100
     const segment = {
       length: percentage,
-      offset: offset,
+      offset,
       color: pieColors[index % pieColors.length]
     }
     offset += percentage

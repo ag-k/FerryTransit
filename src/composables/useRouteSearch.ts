@@ -25,6 +25,7 @@ import {
   loadBusTransferCandidateTripsForRoute,
   loadBusTripsForRoute,
 } from "@/utils/gtfsBusTimetable";
+import { summarizeTransitRouteFare } from "@/utils/transitFare";
 
 const WALK_TRANSFER_MINUTES = 3;
 const WALK_SEGMENT_SHIP = "WALK";
@@ -350,7 +351,7 @@ export const useRouteSearch = () => {
       );
     }
 
-    return filteredRoutes;
+    return filteredRoutes.map(summarizeTransitRouteFare);
   };
 
   // Find direct routes
@@ -427,7 +428,8 @@ export const useRouteSearch = () => {
           trip.arrival,
           departureTime,
           withCar,
-          vehicleLengthMeters
+          vehicleLengthMeters,
+          trip.price
         );
 
         const segment: TransitSegment = {
@@ -510,7 +512,8 @@ export const useRouteSearch = () => {
       trip.arrival,
       departureTime,
       false,
-      vehicleLengthMeters
+      vehicleLengthMeters,
+      trip.price
     );
 
     return {
@@ -556,6 +559,7 @@ export const useRouteSearch = () => {
       arrivalTime,
       status: 0,
       fare: 0,
+      fareStatus: "WALK",
       passengerFare: 0,
     };
   };
@@ -1245,7 +1249,8 @@ export const useRouteSearch = () => {
               t.arrival,
               depTime,
               withCar,
-              vehicleLengthMeters
+              vehicleLengthMeters,
+              t.price
             );
             totalFare += fareFields.fare;
             maxStatus = Math.max(maxStatus, status);
@@ -1325,7 +1330,8 @@ export const useRouteSearch = () => {
             finalTrip.arrival,
             firstDepartureTime,
             withCar,
-            vehicleLengthMeters
+            vehicleLengthMeters,
+            firstTrip.price
           );
 
           const segment: TransitSegment = {
@@ -1365,7 +1371,8 @@ export const useRouteSearch = () => {
             firstTrip.arrival,
             firstDepartureTime,
             withCar,
-            vehicleLengthMeters
+            vehicleLengthMeters,
+            firstTrip.price
           );
 
           const fareFields2 = await calculateSegmentFareFields(
@@ -1374,7 +1381,8 @@ export const useRouteSearch = () => {
             finalTrip.arrival,
             secondDepartureTime,
             withCar,
-            vehicleLengthMeters
+            vehicleLengthMeters,
+            secondTrip.price
           );
 
           const segment1: TransitSegment = {
@@ -1535,7 +1543,8 @@ export const useRouteSearch = () => {
             firstLegCandidate.finalTrip.arrival,
             firstDepartureTime,
             withCar,
-            vehicleLengthMeters
+            vehicleLengthMeters,
+            firstLegStartTrip.price
           );
 
           const fareFields2 = await calculateSegmentFareFields(
@@ -1544,7 +1553,8 @@ export const useRouteSearch = () => {
             finalTrip.arrival,
             secondDepartureTime,
             withCar,
-            vehicleLengthMeters
+            vehicleLengthMeters,
+            secondTrip.price
           );
 
           const segment1: TransitSegment = {
@@ -1710,13 +1720,36 @@ export const useRouteSearch = () => {
     arrival: string,
     date: Date | undefined,
     withCar: boolean,
-    vehicleLengthMeters: number
-  ): Promise<Pick<TransitSegment, "fare" | "passengerFare" | "vehicleFare">> => {
+    vehicleLengthMeters: number,
+    tripPrice?: number
+  ): Promise<Pick<TransitSegment, "fare" | "fareStatus" | "passengerFare" | "vehicleFare">> => {
+    if (ship === "JAL_OKI_ITAMI" || ship === "JAL_OKI_IZUMO") {
+      if (Number.isFinite(tripPrice) && tripPrice! > 0) {
+        return {
+          fare: tripPrice!,
+          fareStatus: "KNOWN",
+          passengerFare: tripPrice!,
+        };
+      }
+      if (tripPrice === 0) {
+        return {
+          fare: 0,
+          fareStatus: "FREE",
+          passengerFare: 0,
+        };
+      }
+      return {
+        fare: 0,
+        fareStatus: "VARIABLE",
+      };
+    }
+
     const passengerFare = await calculateFare(ship, departure, arrival, date);
 
     if (!withCar) {
       return {
         fare: passengerFare,
+        fareStatus: passengerFare > 0 ? "KNOWN" : "UNAVAILABLE",
         passengerFare,
       };
     }
@@ -1731,6 +1764,7 @@ export const useRouteSearch = () => {
 
     return {
       fare: vehicleFare ?? 0,
+      fareStatus: vehicleFare !== null ? (vehicleFare > 0 ? "KNOWN" : "FREE") : "UNAVAILABLE",
       passengerFare,
       vehicleFare: vehicleFare ?? undefined,
     };
@@ -1767,10 +1801,6 @@ export const useRouteSearch = () => {
     if (ship === "OKI_AIRPORT_BUS") {
       return 520;
     }
-    if (ship === "JAL_OKI_ITAMI" || ship === "JAL_OKI_IZUMO") {
-      return 0;
-    }
-
     // Ensure fare data is loaded
     if (!fareStore) {
       logger.warn(`FareStore is not available (server-side rendering?)`);

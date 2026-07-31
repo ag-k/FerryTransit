@@ -9,6 +9,7 @@ import {
   DEFAULT_OUTPUT_FILE,
   PUBLIC_TIMETABLE_SOURCES
 } from './build-public-timetable.mjs'
+import { validateJalFarePolicy } from './validate-jal-fares.mjs'
 
 const ROOT = process.cwd()
 const JAL_INPUT_FILE = join(ROOT, 'gtfs', 'raw', 'air', 'jal_oki_timetable.json')
@@ -59,6 +60,7 @@ export const buildTimetablePipeline = ({
       : source
   ))
   const result = buildPublicTimetable(sources, { root })
+  const jalFareSummary = validateJalFarePolicy(result.trips)
 
   if (!dryRun) {
     writeJson(airportBusOutputFile, busTrips)
@@ -67,6 +69,7 @@ export const buildTimetablePipeline = ({
 
   return {
     ...result,
+    jalFareSummary,
     busTrips,
     jalInputFile,
     airportBusOutputFile,
@@ -90,6 +93,7 @@ const main = () => {
   console.log(`total=${result.summary.total}`)
   console.log(`byName=${JSON.stringify(result.summary.byName)}`)
   console.log(`byMode=${JSON.stringify(result.summary.byMode)}`)
+  console.log(`jalFares=${JSON.stringify(result.jalFareSummary)}`)
 
   if (result.dryRun) {
     console.log('[dry-run] 管理対象ファイルへの書き込みは行いません')
@@ -103,4 +107,3 @@ const main = () => {
 if (process.argv[1] && import.meta.url === pathToFileURL(resolve(process.argv[1])).href) {
   main()
 }
-

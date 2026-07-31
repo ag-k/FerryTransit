@@ -50,8 +50,13 @@
                   </div>
                   <div class="text-right">
                     <p class="text-sm text-gray-600 dark:text-gray-300">{{ $t('TOTAL_FARE') }}</p>
-                    <p class="text-lg font-medium text-gray-900 dark:text-white">
-                      ¥{{ route.totalFare.toLocaleString() }}
+                    <p
+                      class="text-lg font-medium"
+                      :class="isRouteFareUncertain
+                        ? 'text-yellow-700 dark:text-yellow-300'
+                        : 'text-gray-900 dark:text-white'"
+                    >
+                      {{ routeFareLabel }}
                     </p>
                   </div>
                 </div>
@@ -68,6 +73,7 @@
 import type { TransitRoute } from '@/types'
 import { useRouteSearch } from '@/composables/useRouteSearch'
 import TimetableMap from '@/components/map/TimetableMap.vue'
+import { summarizeTransitRouteFare } from '@/utils/transitFare'
 
 interface Props {
   visible: boolean
@@ -80,6 +86,32 @@ const emit = defineEmits<{
 }>()
 
 const { calculateDuration } = useRouteSearch()
+const { t } = useI18n()
+
+const routeFareLabel = computed(() => {
+  if (!props.route) return '-'
+  const route = summarizeTransitRouteFare(props.route)
+  const fare = `¥${route.knownFareTotal?.toLocaleString() ?? '0'}`
+  if (route.fareStatus === 'VARIABLE') {
+    return route.knownFareTotal
+      ? t('KNOWN_FARE_PLUS_VARIABLE', { fare })
+      : t('AIR_FARE_SEPARATE_VARIABLE')
+  }
+  if (route.fareStatus === 'UNAVAILABLE') {
+    return route.knownFareTotal
+      ? t('KNOWN_FARE_PLUS_UNAVAILABLE', { fare })
+      : t('FARE_UNAVAILABLE')
+  }
+  if (route.fareStatus === 'FREE') return t('FARE_FREE')
+  if (route.fareStatus === 'WALK') return '-'
+  return fare
+})
+
+const isRouteFareUncertain = computed(() => {
+  if (!props.route) return false
+  const status = summarizeTransitRouteFare(props.route).fareStatus
+  return status === 'VARIABLE' || status === 'UNAVAILABLE'
+})
 
 const mapRouteSegments = computed(() => {
   if (!props.route) return []

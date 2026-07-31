@@ -162,9 +162,12 @@ v-for="option in sortOptions" :key="option.value" type="button" role="tab"
                 <!-- 2行目（モバイル）: 所要時間/料金 -->
                 <span class="text-sm text-app-fg truncate" data-testid="transit-header-summary">
                   {{ calculateDuration(route.departureTime, route.arrivalTime) }} /
-                  <span v-if="route.totalFare > 0">¥{{ route.totalFare.toLocaleString() }}</span>
-                  <span v-else-if="isWalkOnlyRoute(route)" class="text-app-muted">-</span>
-                  <span v-else class="text-yellow-700 dark:text-yellow-300">{{ $t('FARE_UNAVAILABLE') }}</span>
+                  <span
+                    :class="isRouteFareUncertain(route) ? 'text-yellow-700 dark:text-yellow-300' : ''"
+                    data-testid="transit-route-fare"
+                  >
+                    {{ formatRouteFare(route) }}
+                  </span>
                 </span>
               </div>
 
@@ -330,6 +333,16 @@ href="#" class="inline-flex items-center gap-1.5 text-app-primary dark:text-whit
                             >
                               {{ $t('CHECK_SEAT_AVAILABILITY') }}
                             </a>
+                            <a
+                              v-if="getJalFareUrl(segment)"
+                              :href="getJalFareUrl(segment) || undefined"
+                              class="inline-flex items-center rounded border border-app-primary dark:border-white text-app-primary dark:text-white text-xs px-2 py-0.5 whitespace-nowrap hover:bg-app-primary/10 dark:hover:bg-white/10 focus:outline-none focus-visible:ring-2 focus-visible:ring-app-primary/60 dark:focus-visible:ring-white/60"
+                              target="_blank"
+                              rel="noopener noreferrer"
+                              :aria-label="$t('CHECK_AIRFARE')"
+                            >
+                              {{ $t('CHECK_AIRFARE') }}
+                            </a>
                           </div>
                           <span v-if="formatSegmentMeta(segment)" class="text-xs text-app-muted mt-0.5">
                             {{ formatSegmentMeta(segment) }}
@@ -338,12 +351,15 @@ href="#" class="inline-flex items-center gap-1.5 text-app-primary dark:text-whit
                       </div>
                     </td>
                     <td class="py-2 text-app-fg">
-                    <span v-if="segment.fare > 0">
-                      <span v-if="withCar" class="block text-xs text-app-muted">{{ $t('VEHICLE_FARE_WITH_DRIVER') }}</span>
-                      ¥{{ segment.fare.toLocaleString() }}
+                    <span v-if="withCar && segment.fare > 0" class="block text-xs text-app-muted">
+                      {{ $t('VEHICLE_FARE_WITH_DRIVER') }}
                     </span>
-                    <span v-else-if="normalizeTransportMode(segment.mode) === 'WALK'" class="text-app-muted">-</span>
-                    <span v-else class="text-app-muted">{{ $t('FARE_UNAVAILABLE') }}</span>
+                    <span
+                      :class="isSegmentFareUncertain(segment) ? 'text-yellow-700 dark:text-yellow-300' : 'text-app-muted'"
+                      data-testid="transit-segment-fare"
+                    >
+                      {{ formatSegmentFare(segment) }}
+                    </span>
                   </td>
                   </tr>
 
@@ -387,12 +403,15 @@ href="#" class="text-app-primary dark:text-white group inline-flex items-center 
                     </a>
                   </td>
                   <td class="py-2 font-medium text-app-fg">
-                    <span v-if="route.totalFare > 0">
-                      <span v-if="withCar" class="block text-xs font-normal text-app-muted">{{ $t('VEHICLE_FARE_WITH_DRIVER') }}</span>
-                      {{ $t('TOTAL') }}: ¥{{ route.totalFare.toLocaleString() }}
+                    <span v-if="withCar && route.totalFare > 0" class="block text-xs font-normal text-app-muted">
+                      {{ $t('VEHICLE_FARE_WITH_DRIVER') }}
                     </span>
-                    <span v-else-if="isWalkOnlyRoute(route)" class="text-app-muted">-</span>
-                    <span v-else class="text-app-muted">{{ $t('FARE_UNAVAILABLE') }}</span>
+                    <span
+                      :class="isRouteFareUncertain(route) ? 'text-yellow-700 dark:text-yellow-300' : 'text-app-muted'"
+                      data-testid="transit-route-total-fare"
+                    >
+                      <template v-if="!isWalkOnlyRoute(route)">{{ $t('TOTAL') }}: </template>{{ formatRouteFare(route) }}
+                    </span>
                   </td>
                 </tr>
               </tbody>
@@ -467,6 +486,15 @@ v-else-if="hasSearched && !isSearching"
                   <small v-if="formatSegmentMeta(segment)" class="text-gray-500 dark:text-gray-300 block mt-1">
                     {{ formatSegmentMeta(segment) }}
                   </small>
+                  <a
+                    v-if="getJalFareUrl(segment)"
+                    :href="getJalFareUrl(segment) || undefined"
+                    class="inline-flex mt-1 text-xs text-app-primary dark:text-white underline underline-offset-2 focus:outline-none focus-visible:ring-2 focus-visible:ring-app-primary/60"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                  >
+                    {{ $t('CHECK_AIRFARE') }}
+                  </a>
                 </div>
                 <div class="md:col-span-2 text-right dark:text-gray-300">
                   <strong>{{ formatTime(segment.arrivalTime) }}</strong><br>
@@ -482,12 +510,10 @@ v-else-if="hasSearched && !isSearching"
               <div class="mt-2">
                 <small class="text-gray-500 dark:text-gray-300">
                   {{ $t('FARE') }}: 
-                  <span v-if="segment.fare > 0">
-                    <span v-if="withCar">{{ $t('VEHICLE_FARE_WITH_DRIVER') }}: </span>
-                    ¥{{ segment.fare.toLocaleString() }}
+                  <span v-if="withCar && segment.fare > 0">{{ $t('VEHICLE_FARE_WITH_DRIVER') }}: </span>
+                  <span :class="isSegmentFareUncertain(segment) ? 'text-yellow-700 dark:text-yellow-300' : 'text-gray-500'">
+                    {{ formatSegmentFare(segment) }}
                   </span>
-                  <span v-else-if="normalizeTransportMode(segment.mode) === 'WALK'" class="text-gray-500">-</span>
-                  <span v-else class="text-gray-500">{{ $t('FARE_UNAVAILABLE') }}</span>
                 </small>
               </div>
             </div>
@@ -502,12 +528,10 @@ v-else-if="hasSearched && !isSearching"
             </div>
             <div class="text-right dark:text-gray-300">
               <strong>{{ $t('TOTAL_FARE') }}:</strong>
-              <span v-if="selectedRoute.totalFare > 0">
-                <span v-if="withCar">{{ $t('VEHICLE_FARE_WITH_DRIVER') }}: </span>
-                ¥{{ selectedRoute.totalFare.toLocaleString() }}
+              <span v-if="withCar && selectedRoute.totalFare > 0">{{ $t('VEHICLE_FARE_WITH_DRIVER') }}: </span>
+              <span :class="isRouteFareUncertain(selectedRoute) ? 'text-yellow-700 dark:text-yellow-300' : 'text-gray-500'">
+                {{ formatRouteFare(selectedRoute) }}
               </span>
-              <span v-else-if="isWalkOnlyRoute(selectedRoute)" class="text-gray-500">-</span>
-              <span v-else class="text-gray-500">{{ $t('FARE_UNAVAILABLE') }}</span>
             </div>
           </div>
         </div>
@@ -569,6 +593,12 @@ import {
   getBusStopTownLabelKey,
   getLocationTypeForCode
 } from '@/utils/gtfsBusTimetable'
+import {
+  getRouteFareSortRank,
+  resolveSegmentFareStatus,
+  summarizeTransitRouteFare
+} from '@/utils/transitFare'
+import { SHIP_DETAILS, type ShipId } from '@/data/ships'
 
 // Stores
 const ferryStore = process.client ? useFerryStore() : null
@@ -721,6 +751,11 @@ const formatSegmentMeta = (segment: TransitSegment) => {
   return parts.join(' / ')
 }
 
+const getJalFareUrl = (segment: TransitSegment): string | null => {
+  if (!segment.ship.startsWith('JAL_')) return null
+  return SHIP_DETAILS[segment.ship as ShipId]?.fareUrl ?? null
+}
+
 const formatVehicleLengthOptionLabel = (length: number) => {
   const key = getVehicleLengthLabelKey(length)
   return key ? t(key) : t('VEHICLE_LENGTH_METERS', { meters: length })
@@ -771,18 +806,21 @@ const compareByRecommended = (a: TransitRoute, b: TransitRoute): number => {
     return transferDiff
   }
 
+  const fareRankDiff = getRouteFareSortRank(a) - getRouteFareSortRank(b)
+  if (fareRankDiff !== 0) return fareRankDiff
   return a.totalFare - b.totalFare
 }
 
 const cloneRouteForState = (route: TransitRoute): TransitRoute => {
-  const segments = Array.isArray(route.segments)
-    ? route.segments.map(segment => markRaw({
+  const normalizedRoute = summarizeTransitRouteFare(route)
+  const segments = Array.isArray(normalizedRoute.segments)
+    ? normalizedRoute.segments.map(segment => markRaw({
       ...segment
     }))
     : []
 
   return markRaw({
-    ...route,
+    ...normalizedRoute,
     segments
   })
 }
@@ -865,6 +903,44 @@ const isWalkOnlyRoute = (route: TransitRoute): boolean => {
     route.segments.every(segment => normalizeTransportMode(segment.mode) === 'WALK')
 }
 
+const formatCurrency = (fare: number): string => `¥${fare.toLocaleString()}`
+
+const formatSegmentFare = (segment: TransitSegment): string => {
+  const status = resolveSegmentFareStatus(segment)
+  if (status === 'VARIABLE') return String(t('AIR_FARE_SEPARATE_VARIABLE'))
+  if (status === 'UNAVAILABLE') return String(t('FARE_UNAVAILABLE'))
+  if (status === 'FREE') return String(t('FARE_FREE'))
+  if (status === 'WALK') return '-'
+  return formatCurrency(segment.fare)
+}
+
+const formatRouteFare = (route: TransitRoute): string => {
+  const normalized = summarizeTransitRouteFare(route)
+  if (normalized.fareStatus === 'VARIABLE') {
+    return normalized.knownFareTotal
+      ? String(t('KNOWN_FARE_PLUS_VARIABLE', { fare: formatCurrency(normalized.knownFareTotal) }))
+      : String(t('AIR_FARE_SEPARATE_VARIABLE'))
+  }
+  if (normalized.fareStatus === 'UNAVAILABLE') {
+    return normalized.knownFareTotal
+      ? String(t('KNOWN_FARE_PLUS_UNAVAILABLE', { fare: formatCurrency(normalized.knownFareTotal) }))
+      : String(t('FARE_UNAVAILABLE'))
+  }
+  if (normalized.fareStatus === 'FREE') return String(t('FARE_FREE'))
+  if (normalized.fareStatus === 'WALK') return '-'
+  return formatCurrency(normalized.totalFare)
+}
+
+const isSegmentFareUncertain = (segment: TransitSegment): boolean => {
+  const status = resolveSegmentFareStatus(segment)
+  return status === 'VARIABLE' || status === 'UNAVAILABLE'
+}
+
+const isRouteFareUncertain = (route: TransitRoute): boolean => {
+  const status = summarizeTransitRouteFare(route).fareStatus
+  return status === 'VARIABLE' || status === 'UNAVAILABLE'
+}
+
 const filteredResults = computed(() => searchResults.value)
 
 const sortedResults = computed(() => {
@@ -892,6 +968,10 @@ const sortedResults = computed(() => {
     if (diff !== 0) {
       return diff
     }
+    const fareRankDiff = getRouteFareSortRank(a) - getRouteFareSortRank(b)
+    if (fareRankDiff !== 0) {
+      return fareRankDiff
+    }
     const fareDiff = a.totalFare - b.totalFare
     if (fareDiff !== 0) {
       return fareDiff
@@ -900,6 +980,10 @@ const sortedResults = computed(() => {
   }
 
   const compareByFare = (a: TransitRoute, b: TransitRoute): number => {
+    const rankDiff = getRouteFareSortRank(a) - getRouteFareSortRank(b)
+    if (rankDiff !== 0) {
+      return rankDiff
+    }
     const diff = a.totalFare - b.totalFare
     if (diff !== 0) {
       return diff
@@ -912,6 +996,10 @@ const sortedResults = computed(() => {
     const diff = a.transferCount - b.transferCount
     if (diff !== 0) {
       return diff
+    }
+    const fareRankDiff = getRouteFareSortRank(a) - getRouteFareSortRank(b)
+    if (fareRankDiff !== 0) {
+      return fareRankDiff
     }
     // 同じ乗り換え回数の場合は時系列順（出発時刻順）
     return compareByDepartureTime(a, b)

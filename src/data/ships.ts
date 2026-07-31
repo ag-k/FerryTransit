@@ -37,6 +37,7 @@ export type ShipDetails = {
   stops?: string[]
   sourceUrl?: string
   timetableUrl?: string
+  fareUrl?: string
 }
 
 export const SHIP_DETAILS: Record<ShipId, ShipDetails> = {
@@ -135,7 +136,8 @@ export const SHIP_DETAILS: Record<ShipId, ShipDetails> = {
     },
     stops: ['隠岐空港', '大阪（伊丹）空港'],
     sourceUrl: 'https://www.oki-airport.jp/news/archives/14',
-    timetableUrl: 'https://www.jal.co.jp/jp/ja/dom/route/time/'
+    timetableUrl: 'https://www.jal.co.jp/jp/ja/dom/route/time/',
+    fareUrl: 'https://www.jal.co.jp/domestic/ja-jp/flights-from-oki'
   },
   JAL_OKI_IZUMO: {
     operatorKey: 'JAL',
@@ -148,6 +150,7 @@ export const SHIP_DETAILS: Record<ShipId, ShipDetails> = {
     },
     stops: ['隠岐空港', '出雲空港'],
     sourceUrl: 'https://www.oki-airport.jp/news/archives/14',
-    timetableUrl: 'https://www.izumo-airport.co.jp/flight/flight-time'
+    timetableUrl: 'https://www.izumo-airport.co.jp/flight/flight-time',
+    fareUrl: 'https://www.jal.co.jp/domestic/ja-jp/flights-from-oki'
   }
 }

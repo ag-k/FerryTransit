@@ -6,6 +6,7 @@ import { createFirebaseStoragePublisher } from '../lib/firebase-storage-publishe
 import { FIREBASE_STORAGE_BUCKETS } from '../lib/firebase-publish-target.mjs'
 import { createPublishManifest, requireReleaseGitSha, sha256 } from '../lib/transport-data.mjs'
 import { summarizeTimetable, validateTimetable } from './build-public-timetable.mjs'
+import { validateJalFarePolicy } from './validate-jal-fares.mjs'
 
 const ROOT = process.cwd()
 const DEFAULT_SOURCE_FILE = join(ROOT, 'gtfs', 'generated', 'public', 'timetable.json')
@@ -78,6 +79,7 @@ const readSourceTimetable = (sourceFile) => {
     throw new Error(`公開JSONは配列である必要があります: ${sourceFile}`)
   }
   validateTimetable(data)
+  validateJalFarePolicy(data)
 
   return {
     buffer,

@@ -30,7 +30,7 @@ describe('Admin Analytics Page', () => {
         stubs: {
           AnalyticsLineChart: {
             props: ['data'],
-            template: '<div data-test="line-chart">{{ data.length }}</div>'
+            template: '<div data-test="line-chart">{{ data.map(item => item.label).join(",") }}</div>'
           },
           AnalyticsMultiLineChart: {
             props: ['data'],
@@ -81,6 +81,23 @@ describe('Admin Analytics Page', () => {
     expect(wrapper.find('[data-test="multi-line-chart"]').text()).toBe('2')
     expect(wrapper.findAll('[data-test="pie-chart"]')).toHaveLength(3)
     expect(mockGetHourlyDistribution).toHaveBeenCalledOnce()
+  })
+
+  it('週単位を選択すると週次集計で再取得する', async () => {
+    const wrapper = await mountPage()
+    const weeklyButton = wrapper.get('[data-test="granularity-weekly"]')
+
+    await weeklyButton.trigger('click')
+    await flushPromises()
+
+    expect(mockGetPvTrend).toHaveBeenLastCalledWith(
+      expect.any(Date),
+      expect.any(Date),
+      'weekly'
+    )
+    expect(wrapper.text()).toContain('PV推移（週）')
+    expect(wrapper.text()).toContain('検索対象週の検索回数推移')
+    expect(wrapper.find('[data-test="line-chart"]').text()).toContain('7/29週')
   })
 
   it('取得に失敗した場合はエラー通知し、データなし表示に戻る', async () => {

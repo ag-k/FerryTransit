@@ -1,7 +1,8 @@
-import { format } from 'date-fns'
+import { format, parseISO, startOfWeek } from 'date-fns'
 import { toZonedTime } from 'date-fns-tz'
 import { collection, doc, getDoc, getDocs, orderBy, query, where } from 'firebase/firestore'
 import { httpsCallable } from 'firebase/functions'
+import type { AnalyticsTrendGranularity } from '~/types/analytics'
 import { createLogger } from '~/utils/logger'
 
 export const getAnalyticsCounterMap = (
@@ -239,13 +240,40 @@ export const useAnalytics = () => {
     }
   }
 
-  const getPvTrend = async (startDate: Date, endDate: Date) => {
+  const getPvTrend = async (
+    startDate: Date,
+    endDate: Date,
+    granularity: AnalyticsTrendGranularity = 'daily'
+  ) => {
     const documents = await getAnalyticsInRange(startDate, endDate, 'daily')
-    return documents.map(document => ({
-      date: typeof document.dateKey === 'string' ? document.dateKey : document.id,
-      pv: typeof document.pvTotal === 'number' ? document.pvTotal : 0,
-      search: typeof document.searchTotal === 'number' ? document.searchTotal : 0
-    }))
+    const buckets = new Map<string, { date: string; pv: number; search: number }>()
+
+    documents.forEach((document) => {
+      const dateKey = typeof document.dateKey === 'string' ? document.dateKey : document.id
+      let bucketKey = dateKey
+
+      if (granularity === 'weekly') {
+        bucketKey = format(
+          startOfWeek(parseISO(dateKey), { weekStartsOn: 1 }),
+          'yyyy-MM-dd'
+        )
+      } else if (granularity === 'monthly') {
+        bucketKey = dateKey.slice(0, 7)
+      }
+
+      const bucket = buckets.get(bucketKey) ?? {
+        date: bucketKey,
+        pv: 0,
+        search: 0
+      }
+      bucket.pv += typeof document.pvTotal === 'number' ? document.pvTotal : 0
+      bucket.search += typeof document.searchTotal === 'number' ? document.searchTotal : 0
+      buckets.set(bucketKey, bucket)
+    })
+
+    return [...buckets.values()].sort((first, second) => {
+      return first.date.localeCompare(second.date)
+    })
   }
 
   return {

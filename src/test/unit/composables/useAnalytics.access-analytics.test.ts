@@ -555,6 +555,62 @@ describe('useAnalytics - アクセス統計機能', () => {
       expect(result[0].pv).toBe(0)
       expect(result[0].search).toBe(0)
     })
+
+    it('日次データを月曜始まりの週単位に集計できる', async () => {
+      const analytics = useAnalytics()
+      const mockDocs = [
+        { id: '2025-01-12', dateKey: '2025-01-12', pvTotal: 10, searchTotal: 2 },
+        { id: '2025-01-13', dateKey: '2025-01-13', pvTotal: 20, searchTotal: 4 },
+        { id: '2025-01-19', dateKey: '2025-01-19', pvTotal: 30, searchTotal: 6 },
+        { id: '2025-01-20', dateKey: '2025-01-20', pvTotal: 40, searchTotal: 8 }
+      ]
+
+      mockGetDocs.mockResolvedValue({
+        docs: mockDocs.map(doc => ({
+          id: doc.id,
+          data: () => doc
+        }))
+      })
+
+      const result = await analytics.getPvTrend(
+        new Date('2025-01-12'),
+        new Date('2025-01-20'),
+        'weekly'
+      )
+
+      expect(result).toEqual([
+        { date: '2025-01-06', pv: 10, search: 2 },
+        { date: '2025-01-13', pv: 50, search: 10 },
+        { date: '2025-01-20', pv: 40, search: 8 }
+      ])
+    })
+
+    it('日次データを月単位に集計できる', async () => {
+      const analytics = useAnalytics()
+      const mockDocs = [
+        { id: '2024-12-31', dateKey: '2024-12-31', pvTotal: 10, searchTotal: 1 },
+        { id: '2025-01-01', dateKey: '2025-01-01', pvTotal: 20, searchTotal: 2 },
+        { id: '2025-01-31', dateKey: '2025-01-31', pvTotal: 30, searchTotal: 3 }
+      ]
+
+      mockGetDocs.mockResolvedValue({
+        docs: mockDocs.map(doc => ({
+          id: doc.id,
+          data: () => doc
+        }))
+      })
+
+      const result = await analytics.getPvTrend(
+        new Date('2024-12-31'),
+        new Date('2025-01-31'),
+        'monthly'
+      )
+
+      expect(result).toEqual([
+        { date: '2024-12', pv: 10, search: 1 },
+        { date: '2025-01', pv: 50, search: 5 }
+      ])
+    })
   })
 
 })

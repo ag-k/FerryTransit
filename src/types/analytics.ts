@@ -80,6 +80,14 @@ export type PeriodPreset =
   | 'custom'     // カスタム期間
 
 /**
+ * PV・検索推移の表示単位
+ */
+export type AnalyticsTrendGranularity =
+  | 'daily'   // 日単位
+  | 'weekly'  // 週単位（月曜始まり）
+  | 'monthly' // 月単位
+
+/**
  * カスタム期間
  */
 export interface CustomPeriod {
