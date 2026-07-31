@@ -60,6 +60,18 @@
     "end_date": "20260831"
   },
   {
+    "service_id": "kuniga_summer_base",
+    "monday": "1",
+    "tuesday": "1",
+    "wednesday": "1",
+    "thursday": "1",
+    "friday": "1",
+    "saturday": "1",
+    "sunday": "1",
+    "start_date": "20260301",
+    "end_date": "20261231"
+  },
+  {
     "service_id": "range_0808_0816",
     "monday": "1",
     "tuesday": "1",

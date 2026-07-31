@@ -1,22 +1,22 @@
 {
   "id": "nishinoshima",
   "mode": "bus",
-  "generatedAt": "2026-07-02T13:08:53.433Z",
+  "generatedAt": "2026-07-31T05:48:15.051Z",
   "feed": {
     "publisherName": "西ノ島町",
     "publisherUrl": "https://www.town.nishinoshima.shimane.jp/bunya/b_kurashi/b_kotsu/47",
     "lang": "ja",
     "startDate": "20260301",
     "endDate": "20261231",
-    "version": "20260220140915710489010da_20260301-20261231"
+    "version": "20260220140915710489010da_20260301-20261231_rev20260731"
   },
   "counts": {
     "agencies": 1,
     "routes": 6,
     "stops": 27,
-    "trips": 37,
-    "stopTimes": 467,
-    "calendarServices": 6,
-    "calendarDates": 57
+    "trips": 41,
+    "stopTimes": 534,
+    "calendarServices": 7,
+    "calendarDates": 119
   }
 }

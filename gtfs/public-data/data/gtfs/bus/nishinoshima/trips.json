@@ -109,6 +109,18 @@
   },
   {
     "routeId": "NISHINOSHIMA_KUNIGA",
+    "serviceId": "kuniga_summer_base",
+    "tripId": "T09_KUNIGA_1258_BASE",
+    "headsign": "島前病院",
+    "directionId": 0,
+    "blockId": "",
+    "shortName": "6便",
+    "shapeId": "",
+    "jpTripDesc": "由良車庫から島前病院方面行き",
+    "jpPatternId": "T09_KUNIGA_1258_BASE"
+  },
+  {
+    "routeId": "NISHINOSHIMA_KUNIGA",
     "serviceId": "kuniga_spring_fall",
     "tripId": "T10_KUNIGA_1441",
     "headsign": "大山",
@@ -142,6 +154,18 @@
     "shapeId": "",
     "jpTripDesc": "国賀から別府方面行き",
     "jpPatternId": "T12_KUNIGA_1627"
+  },
+  {
+    "routeId": "NISHINOSHIMA_KUNIGA",
+    "serviceId": "kuniga_summer_base",
+    "tripId": "T12_KUNIGA_1627_BASE",
+    "headsign": "隠岐汽船（別府港）",
+    "directionId": 0,
+    "blockId": "",
+    "shortName": "8便",
+    "shapeId": "",
+    "jpTripDesc": "由良車庫から別府方面行き",
+    "jpPatternId": "T12_KUNIGA_1627_BASE"
   },
   {
     "routeId": "NISHINOSHIMA_UGA",
@@ -264,6 +288,18 @@
     "jpPatternId": "B07_KUNIGA_1212"
   },
   {
+    "routeId": "NISHINOSHIMA_KUNIGA",
+    "serviceId": "kuniga_summer_base",
+    "tripId": "B07_KUNIGA_1212_BASE",
+    "headsign": "由良車庫",
+    "directionId": 1,
+    "blockId": "",
+    "shortName": "5便",
+    "shapeId": "",
+    "jpTripDesc": "大山・島前病院・別府から由良車庫方面行き",
+    "jpPatternId": "B07_KUNIGA_1212_BASE"
+  },
+  {
     "routeId": "NISHINOSHIMA_CHINZAKI_SANDO",
     "serviceId": "star_weekday_plus_summer",
     "tripId": "B08_CHINZAKI_SANDO_1227",
@@ -298,6 +334,18 @@
     "shapeId": "",
     "jpTripDesc": "大山・島前病院・別府から国賀方面行き",
     "jpPatternId": "B10_KUNIGA_1528"
+  },
+  {
+    "routeId": "NISHINOSHIMA_KUNIGA",
+    "serviceId": "kuniga_summer_base",
+    "tripId": "B10_KUNIGA_1528_BASE",
+    "headsign": "由良車庫",
+    "directionId": 1,
+    "blockId": "",
+    "shortName": "7便",
+    "shapeId": "",
+    "jpTripDesc": "大山・島前病院・別府から由良車庫方面行き",
+    "jpPatternId": "B10_KUNIGA_1528_BASE"
   },
   {
     "routeId": "NISHINOSHIMA_CHINZAKI_SANDO",

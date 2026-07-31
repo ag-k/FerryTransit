@@ -1,23 +1,24 @@
 {
-  "convertedAt": "2026-05-22T11:53:30.115Z",
+  "convertedAt": "2026-07-31T05:59:09.396Z",
   "sourcePdf": "/Users/ag/works/FerryTransit/gtfs/pdf/bus/nishinoshima/20260220140915710489010da.pdf",
   "outputDir": "/Users/ag/works/FerryTransit/gtfs/raw/bus/nishinoshima/2026-01-01",
   "currentUpdated": true,
   "feedStartDate": "20260301",
   "feedEndDate": "20261231",
-  "feedVersion": "20260220140915710489010da_20260301-20261231",
+  "feedVersion": "20260220140915710489010da_20260301-20261231_rev20260731",
   "counts": {
     "routes": 6,
     "stops": 27,
-    "services": 7,
-    "trips": 37,
-    "stopTimes": 467
+    "services": 8,
+    "trips": 41,
+    "stopTimes": 534
   },
   "notes": [
     "PDF の主要時刻表欄を GTFS trip/stop_times に転記",
     "同一停留所・同一時刻が連続する折り返し点は stop_times 出力時に1件へ正規化",
     "★印は平日運行を基本とし、PDF 注記に従って 2026-07-18〜2026-08-17 は全日運行として calendar_dates に反映",
     "※印の直行便土日祝ダイヤは 2026-07-18〜2026-08-17 を運休として calendar_dates に反映",
+    "●印は国賀の時刻だけに適用し、2026-07-01〜2026-08-31 以外も国賀を除く通常区間を運行",
     "波止と浦郷観光船のりばは停留所マップ掲載停留所として stops.txt に追加"
   ]
 }

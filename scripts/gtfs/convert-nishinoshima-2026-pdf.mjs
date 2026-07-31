@@ -13,7 +13,7 @@ const REPORT_DIR = join(ROOT, 'gtfs', 'reports', 'bus', 'nishinoshima')
 
 const FEED_START = '20260301'
 const FEED_END = '20261231'
-const FEED_VERSION = '20260220140915710489010da_20260301-20261231'
+const FEED_VERSION = '20260220140915710489010da_20260301-20261231_rev20260731'
 
 const HOLIDAYS_2026 = new Set([
   '20260320',
@@ -224,6 +224,10 @@ const TRIPS = [
     directionId: '0',
     shortName: '6便',
     desc: '国賀から島前病院方面行き',
+    seasonalKunigaExtension: {
+      trim: 'first',
+      baseDesc: '由良車庫から島前病院方面行き'
+    },
     stops: [[22, '12:58'], [21, '13:05'], [20, '13:09'], [19, '13:11'], [18, '13:16'], [17, '13:17'], [16, '13:18'], [15, '13:19'], [14, '13:20'], [13, '13:21'], [12, '13:21'], [11, '13:23'], [10, '13:24'], [9, '13:28'], [8, '13:32'], [7, '13:33'], [6, '13:34'], [5, '13:36']]
   },
   {
@@ -251,6 +255,10 @@ const TRIPS = [
     directionId: '0',
     shortName: '8便',
     desc: '国賀から別府方面行き',
+    seasonalKunigaExtension: {
+      trim: 'first',
+      baseDesc: '由良車庫から別府方面行き'
+    },
     stops: [[22, '16:27'], [21, '16:34'], [20, '16:38'], [19, '16:40'], [18, '16:45'], [17, '16:46'], [16, '16:47'], [15, '16:48'], [14, '16:49'], [13, '16:50'], [12, '16:50'], [11, '16:52'], [10, '16:53'], [9, '16:57'], [8, '17:01'], [7, '17:02'], [6, '17:03']]
   },
   {
@@ -341,6 +349,10 @@ const TRIPS = [
     directionId: '1',
     shortName: '5便',
     desc: '大山・島前病院・別府から国賀方面行き',
+    seasonalKunigaExtension: {
+      trim: 'last',
+      baseDesc: '大山・島前病院・別府から由良車庫方面行き'
+    },
     stops: [[4, '12:12'], [5, '12:17'], [6, '12:19'], [7, '12:20'], [8, '12:21'], [9, '12:25'], [11, '12:27'], [12, '12:30'], [13, '12:30'], [14, '12:31'], [15, '12:32'], [16, '12:33'], [17, '12:34'], [18, '12:35'], [19, '12:40'], [20, '12:42'], [21, '12:46'], [22, '12:53']]
   },
   {
@@ -368,6 +380,10 @@ const TRIPS = [
     directionId: '1',
     shortName: '7便',
     desc: '大山・島前病院・別府から国賀方面行き',
+    seasonalKunigaExtension: {
+      trim: 'last',
+      baseDesc: '大山・島前病院・別府から由良車庫方面行き'
+    },
     stops: [[4, '15:28'], [5, '15:33'], [6, '15:35'], [7, '15:36'], [8, '15:37'], [9, '15:41'], [11, '15:43'], [12, '15:46'], [13, '15:46'], [14, '15:47'], [15, '15:48'], [16, '15:49'], [17, '15:50'], [18, '15:51'], [19, '15:56'], [20, '15:58'], [21, '16:02'], [22, '16:09']]
   },
   {
@@ -510,6 +526,27 @@ function normalizeStopSpecs(stops) {
   })
 }
 
+function tripSpecs() {
+  return TRIPS.flatMap((spec) => {
+    if (!spec.seasonalKunigaExtension) return [spec]
+
+    const baseStops = spec.seasonalKunigaExtension.trim === 'first'
+      ? spec.stops.slice(1)
+      : spec.stops.slice(0, -1)
+
+    return [
+      spec,
+      {
+        ...spec,
+        code: `${spec.code}_BASE`,
+        serviceId: 'kuniga_summer_base',
+        desc: spec.seasonalKunigaExtension.baseDesc,
+        stops: baseStops
+      }
+    ]
+  })
+}
+
 function addTrip(context, spec) {
   const tripId = spec.code
   const stopRows = normalizeStopSpecs(spec.stops).map(([number, time], index) => ({
@@ -581,6 +618,7 @@ function calendarRows() {
     row('holiday_direct_except_summer', [0, 0, 0, 0, 0, 1, 1], FEED_START, FEED_END),
     row('kuniga_spring_fall', [1, 1, 1, 1, 1, 1, 1], '20260415', '20261021'),
     row('kuniga_summer', [1, 1, 1, 1, 1, 1, 1], '20260701', '20260831'),
+    row('kuniga_summer_base', [1, 1, 1, 1, 1, 1, 1], FEED_START, FEED_END),
     row('range_0808_0816', [1, 1, 1, 1, 1, 1, 1], '20260808', '20260816')
   ]
 }
@@ -631,6 +669,10 @@ function calendarDateRows() {
     ...dateRange('20260808', '20260816')
   ]) {
     rows.push({ service_id: 'range_0501_0506_0808_0816', date, exception_type: '1' })
+  }
+
+  for (const date of dateRange('20260701', '20260831')) {
+    rows.push({ service_id: 'kuniga_summer_base', date, exception_type: '2' })
   }
 
   return rows
@@ -809,7 +851,8 @@ function main() {
     trips: [],
     stopTimes: []
   }
-  for (const trip of TRIPS) {
+  const trips = tripSpecs()
+  for (const trip of trips) {
     addTrip(context, trip)
   }
 
@@ -836,7 +879,7 @@ function main() {
         ...calendarRows().map(row => row.service_id),
         ...calendarDateRows().map(row => row.service_id)
       ]).size,
-      trips: context.trips.length,
+      trips: trips.length,
       stopTimes: context.stopTimes.length
     },
     notes: [
@@ -844,6 +887,7 @@ function main() {
       '同一停留所・同一時刻が連続する折り返し点は stop_times 出力時に1件へ正規化',
       '★印は平日運行を基本とし、PDF 注記に従って 2026-07-18〜2026-08-17 は全日運行として calendar_dates に反映',
       '※印の直行便土日祝ダイヤは 2026-07-18〜2026-08-17 を運休として calendar_dates に反映',
+      '●印は国賀の時刻だけに適用し、2026-07-01〜2026-08-31 以外も国賀を除く通常区間を運行',
       '波止と浦郷観光船のりばは停留所マップ掲載停留所として stops.txt に追加'
     ]
   }
@@ -853,7 +897,7 @@ function main() {
   if (args.updateCurrent) {
     console.log(`current も更新しました: ${CURRENT_DIR}`)
   }
-  console.log(`routes=${ROUTES.length}, stops=${stopNames.size}, trips=${context.trips.length}, stop_times=${context.stopTimes.length}`)
+  console.log(`routes=${ROUTES.length}, stops=${stopNames.size}, trips=${trips.length}, stop_times=${context.stopTimes.length}`)
 }
 
 main()
