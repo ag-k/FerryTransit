@@ -11,7 +11,7 @@ FerryTransit は、隠岐諸島の各港間のフェリースケジュールを�
 ```
 FerryTransit/
 ├── src/                   # Nuxt3版（メイン開発）
-├── archive/               # AngularJS版（レガシー、参照のみ）
+├── archive/               # AngularJS版（レガシー、参照のみ・実行禁止）
 ├── config/                # 設定ファイル
 └── docs/                  # プロジェクトドキュメント
 ```
