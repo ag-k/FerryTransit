@@ -118,11 +118,10 @@ FerryTransit/
 │   ├── stores/             # Piniaストア
 │   ├── server/             # サーバーAPI
 │   └── test/               # テストファイル
-├── docs/                    # ドキュメント
+└── docs/                    # ドキュメント
 │   ├── phase-plans/        # フェーズ計画
 │   ├── work-logs/          # 作業ログ
 │   └── migration/          # 移行ドキュメント
-└── archive/                 # AngularJS版（レガシー）
 ```
 
 ## Firebase設定

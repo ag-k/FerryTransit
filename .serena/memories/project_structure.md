@@ -4,7 +4,6 @@
 ```
 FerryTransit/
 ├── src/                    # Nuxt3アプリケーション本体
-├── archive/                # AngularJS版（レガシー、参照のみ）
 ├── i18n/                   # 多言語対応
 │   └── locales/           # ロケールファイル
 │       ├── ja.json        # 日本語

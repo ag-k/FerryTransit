@@ -30,7 +30,6 @@ FerryTransitは、島根県隠岐諸島のフェリー時刻表と航路情報�
 ```
 FerryTransit/
 ├── src/                   # Nuxt3版（メイン開発）
-├── archive/               # AngularJS版（レガシー、参照のみ）
 ├── config/                # 設定ファイル
 ├── docs/                  # プロジェクトドキュメント
 └── i18n/                  # 多言語対応
