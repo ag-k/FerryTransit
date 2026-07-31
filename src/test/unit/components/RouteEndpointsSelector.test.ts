@@ -101,15 +101,21 @@ describe('RouteEndpointsSelector', () => {
     expect(wrapper.emitted('update:arrival')!.at(-1)![0]).toBe('')
   })
 
-  it('disables mainland ports when the other side is mainland', () => {
+  it('七類港が選択済みの場合は境港だけを本土側候補として許可する', () => {
     const wrapper = mountComponent({ departure: '', arrival: 'HONDO_SHICHIRUI' })
     const stubs = wrapper.findAllComponents(PortSelectorStub)
     const depStub = stubs[0]
-    expect(depStub.props('disabledPorts')).toEqual(expect.arrayContaining(['HONDO', 'HONDO_SHICHIRUI', 'HONDO_SAKAIMINATO']))
+    expect(depStub.props('disabledPorts')).toEqual(expect.arrayContaining(['HONDO', 'HONDO_SHICHIRUI']))
+    expect(depStub.props('disabledPorts')).not.toContain('HONDO_SAKAIMINATO')
   })
 
-  it('auto-clears arrival when both departure and arrival are mainland ports', () => {
+  it('七類港と境港の組み合わせは連絡バス検索のため維持する', () => {
     const wrapper = mountComponent({ departure: 'HONDO_SHICHIRUI', arrival: 'HONDO_SAKAIMINATO' })
+    expect(wrapper.emitted('update:arrival')).toBeFalsy()
+  })
+
+  it('対応していない本土港同士の組み合わせは目的地をクリアする', () => {
+    const wrapper = mountComponent({ departure: 'HONDO', arrival: 'HONDO_SAKAIMINATO' })
     expect(wrapper.emitted('update:arrival')).toBeTruthy()
     expect(wrapper.emitted('update:arrival')!.at(-1)![0]).toBe('')
   })

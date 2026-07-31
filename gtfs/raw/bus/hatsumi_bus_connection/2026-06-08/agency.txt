@@ -1,0 +1,2 @@
+agency_id,agency_name,agency_url,agency_timezone,agency_lang,agency_phone
+agency_hatsumi_bus,はつみ交通株式会社,https://okikouiki.jp/oki-route/bus/,Asia/Tokyo,ja,0852-76-2845

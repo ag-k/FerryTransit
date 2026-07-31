@@ -1,0 +1,28 @@
+{
+  "convertedAt": "2026-07-31T06:25:33.865Z",
+  "sourceUrl": "https://hatsumi-koutsu.co.jp/wp-content/uploads/2026/06/7133035432d40c6d6bb59ad6e25b4aed.pdf",
+  "sourcePageUrl": "https://okikouiki.jp/oki-route/bus/",
+  "outputDir": "/Users/ag/works/FerryTransit/gtfs/raw/bus/hatsumi_bus_connection/2026-06-08",
+  "currentUpdated": true,
+  "feedStartDate": "20260608",
+  "feedEndDate": "20261231",
+  "feedVersion": "hatsumi_20260608-20261231",
+  "routeId": "route_hatsumi_bus_connection_shichirui_sakaiminato",
+  "agencyId": "agency_hatsumi_bus",
+  "counts": {
+    "agencies": 1,
+    "routes": 1,
+    "stops": 2,
+    "services": 6,
+    "calendarDates": 0,
+    "trips": 31,
+    "stopTimes": 62
+  },
+  "notes": [
+    "2026年6月8日から12月31日までのはつみ交通公式PDFをGTFSに転記",
+    "6月8日-8月7日、8月8日-16日、8月17日-31日、9月1日-10月31日、11月、12月の6期間を収録",
+    "隠岐汽船欠航時は接続バスも運休するが、静的GTFSではリアルタイム運休として表現しない",
+    "接続する船舶時刻はjp_trip_descに保持し、stop_timesはバス停発着時刻のみを出力",
+    "運賃は大人片道500円をfare_attributesとbus-searchに保持"
+  ]
+}

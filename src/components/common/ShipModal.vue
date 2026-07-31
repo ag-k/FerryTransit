@@ -421,6 +421,10 @@ const operatorInfo = computed(() => {
       nameKey: 'ICHIBATA_BUS',
       url: 'https://bus.ichibata.co.jp/oki-kisen/oki-kisen-sichirui/'
     },
+    HATSUMI_BUS: {
+      nameKey: 'HATSUMI_BUS',
+      url: 'https://hatsumi-koutsu.co.jp/'
+    },
     OKI_ICHIBATA: {
       nameKey: 'OKI_ICHIBATA',
       url: 'https://oki.ichibata.co.jp/'

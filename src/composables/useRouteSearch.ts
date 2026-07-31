@@ -217,6 +217,7 @@ export const useRouteSearch = () => {
     });
     let busDirectTrips: Trip[] = [];
     let busTransferCandidateTrips: Trip[] = [];
+    let portConnectedBusTrips: Trip[] = [];
     if (!withCar) {
       try {
         busDirectTrips = await loadBusTripsForRoute(departure, arrival, searchDateStr);
@@ -231,18 +232,54 @@ export const useRouteSearch = () => {
             searchDateStr
           );
         }
+
+        if (!isBusStopCode(departure) && !isBusStopCode(arrival)) {
+          const departureStops = getConnectedBusStopsForPort(departure);
+          const arrivalStops = getConnectedBusStopsForPort(arrival);
+          const connectedTrips = await Promise.all(
+            departureStops.flatMap(departureStop =>
+              arrivalStops.map(arrivalStop =>
+                loadBusTripsForRoute(departureStop, arrivalStop, searchDateStr)
+              )
+            )
+          );
+          const seenTrips = new Set<string>();
+          portConnectedBusTrips = connectedTrips
+            .flat()
+            .filter((trip) => {
+              const key = [
+                trip.name,
+                trip.operatorId,
+                trip.serviceId,
+                trip.vehicleId,
+                trip.departureTime,
+                trip.arrivalTime
+              ].join("|");
+              if (seenTrips.has(key)) return false;
+              seenTrips.add(key);
+              return true;
+            })
+            .map(trip => ({
+              ...trip,
+              departure,
+              departureType: "PORT",
+              arrival,
+              arrivalType: "PORT",
+            }));
+        }
       } catch (error) {
         logger.warn("Failed to load bus search data", error);
       }
     }
     const searchableTimetable = withCar
       ? dayTimetable.filter((trip) => isVehicleSearchShip(trip.name))
-      : [...dayTimetable, ...busDirectTrips, ...busTransferCandidateTrips];
+      : [...dayTimetable, ...busDirectTrips, ...busTransferCandidateTrips, ...portConnectedBusTrips];
 
     logger.debug("Filtered timetable for date range", {
       count: dayTimetable.length,
       busDirectCount: busDirectTrips.length,
       busTransferCandidateCount: busTransferCandidateTrips.length,
+      portConnectedBusCount: portConnectedBusTrips.length,
       searchableCount: searchableTimetable.length,
       searchDate: searchDateStr,
     });
@@ -1723,6 +1760,9 @@ export const useRouteSearch = () => {
     }
     if (ship === "ICHIBATA_BUS_CONNECTION") {
       return 1200;
+    }
+    if (ship === "HATSUMI_BUS_CONNECTION") {
+      return 500;
     }
     if (ship === "OKI_AIRPORT_BUS") {
       return 520;

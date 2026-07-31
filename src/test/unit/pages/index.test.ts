@@ -823,7 +823,7 @@ describe("IndexPage (時刻表ページ)", () => {
       expect(tabs[1]).toBeTruthy();
       await tabs[1]!.trigger("click");
 
-      expect(form().props("allowedLocationType")).toBe("ALL");
+      expect(form().props("allowedLocationType")).toBe("STOP");
 
       expect(tabs[2]).toBeTruthy();
       await tabs[2]!.trigger("click");
@@ -856,7 +856,7 @@ describe("IndexPage (時刻表ページ)", () => {
       expect(tabs[1]!.attributes("aria-selected")).toBe("true");
     });
 
-    it("空港と港を結ぶ空港連絡バスの発着地とバスタブを保持する", async () => {
+    it("バス選択時は既存の空港・港をクリアして停留所だけを選択対象にする", async () => {
       mockGtfsBusTimetable.getLocationTypeForCode.mockImplementation((value?: string) => {
         if (typeof value === "string" && value.startsWith("AIRPORT_")) return "AIRPORT";
         if (typeof value === "string" && value.startsWith("BUS_")) return "STOP";
@@ -884,11 +884,9 @@ describe("IndexPage (時刻表ページ)", () => {
 
       const tabs = wrapper.findAll('[role="tab"]');
       expect(tabs[1]!.attributes("aria-selected")).toBe("true");
-      expect(wrapper.findComponent({ name: "TimetableForm" }).props("allowedLocationType")).toBe("ALL");
-      expect(mockFerryStore.setDeparture).not.toHaveBeenCalledWith("");
-      expect(mockFerryStore.setArrival).not.toHaveBeenCalledWith("");
-      expect(wrapper.text()).toContain("隠岐空港連絡バス");
-      expect(wrapper.text()).toContain("14:50");
+      expect(wrapper.findComponent({ name: "TimetableForm" }).props("allowedLocationType")).toBe("STOP");
+      expect(mockFerryStore.setDeparture).toHaveBeenCalledWith("");
+      expect(mockFerryStore.setArrival).toHaveBeenCalledWith("");
     });
   });
 

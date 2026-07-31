@@ -61,6 +61,18 @@ export const BUS_FEED_REGISTRY = Object.freeze({
       "tripIdBase": 7000000,
       "fare": 1200,
       "routeNameStrategy": "ichibata_bus_connection"
+    },
+    {
+      "id": "hatsumi_bus_connection",
+      "sourceId": "oki-kouiki-bus",
+      "basePath": "data/gtfs/bus/hatsumi_bus_connection",
+      "stopPrefix": "BUS_HATSUMI_CONNECTION_",
+      "operatorId": "HATSUMI_BUS",
+      "townLabelKey": "MAINLAND",
+      "tripName": "HATSUMI_BUS_CONNECTION",
+      "tripIdBase": 8000000,
+      "fare": 500,
+      "routeNameStrategy": "hatsumi_bus_connection"
     }
   ]
 })

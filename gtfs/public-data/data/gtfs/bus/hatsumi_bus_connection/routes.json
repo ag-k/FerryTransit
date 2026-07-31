@@ -1,0 +1,12 @@
+[
+  {
+    "routeId": "route_hatsumi_bus_connection_shichirui_sakaiminato",
+    "agencyId": "agency_hatsumi_bus",
+    "shortName": "七類港⇔境港駅",
+    "longName": "はつみ交通・隠岐汽船連絡バス（七類・境港線）",
+    "description": "隠岐汽船のフェリー・高速船に接続する七類港―境港駅間の連絡バス",
+    "type": 3,
+    "color": "005BAC",
+    "textColor": "FFFFFF"
+  }
+]

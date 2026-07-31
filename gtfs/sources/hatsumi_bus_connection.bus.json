@@ -1,0 +1,21 @@
+{
+  "id": "hatsumi_bus_connection",
+  "mode": "bus",
+  "name": "はつみ交通・隠岐汽船連絡バス",
+  "agencyName": "はつみ交通株式会社",
+  "sourceUrl": "https://hatsumi-koutsu.co.jp/wp-content/uploads/2026/06/7133035432d40c6d6bb59ad6e25b4aed.pdf",
+  "sourcePageUrl": "https://okikouiki.jp/oki-route/bus/",
+  "license": "未確認",
+  "updatePolicy": "はつみ交通および隠岐広域連合の公式時刻表を確認し、更新があれば raw に適用開始日付きで保存して current に反映する",
+  "currentRawDate": "2026-06-08",
+  "currentPath": "gtfs/current/bus/hatsumi_bus_connection",
+  "routeId": "route_hatsumi_bus_connection_shichirui_sakaiminato",
+  "routeStatus": "ready",
+  "documentReviewStatus": "reviewed",
+  "notes": [
+    "2026年6月8日から12月31日までの公式PDFを scripts/gtfs/convert-hatsumi-bus-connection-2026.mjs でGTFS化",
+    "七類港-境港駅間の隠岐汽船連絡バスのみを収録し、接続するフェリー・高速船は jp_trip_desc に保持",
+    "大人片道運賃500円を fare_attributes と bus-search に保持",
+    "隠岐汽船欠航時は接続バスも運休する注記あり。静的GTFSではリアルタイム欠航連動を表現しない"
+  ]
+}

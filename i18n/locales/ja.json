@@ -81,6 +81,8 @@
   "OKINOSHIMA_TOWN_BUS": "隠岐の島町営バス",
   "ICHIBATA_BUS": "一畑バス",
   "ICHIBATA_BUS_CONNECTION": "一畑バス 隠岐汽船接続バス",
+  "HATSUMI_BUS": "はつみ交通",
+  "HATSUMI_BUS_CONNECTION": "はつみ交通 隠岐汽船連絡バス",
   "OKI_AIRPORT_BUS": "隠岐空港連絡バス",
   "JAL": "日本航空（JAL）",
   "JAL_OKI_ITAMI": "JAL 大阪（伊丹）線",
@@ -660,6 +662,10 @@
       "ichibataBusConnection": {
         "route": "松江駅・七類港・境港",
         "summary": "隠岐汽船の七類港・境港発着便に接続する本土側の連絡バスです。"
+      },
+      "hatsumiBusConnection": {
+        "route": "七類港・境港駅",
+        "summary": "はつみ交通が運行する、隠岐汽船のフェリー・高速船に接続する連絡バスです。"
       },
       "okiAirportBus": {
         "route": "隠岐一畑交通・西郷港（隠岐ポートプラザ前）・隠岐空港",

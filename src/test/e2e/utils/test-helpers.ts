@@ -91,11 +91,11 @@ export const setupPublicPageStubs = async (page: Page, options: StubOptions = {}
     loadJsonFixture('api/ship-status.json'),
     loadJsonFixture('api/ship-status-kankou.json'),
     loadPublicData('data/holidays.json'),
-    ...['ama', 'chibu', 'ichibata_bus_connection', 'nishinoshima', 'okinoshima', 'stops']
+    ...['ama', 'chibu', 'hatsumi_bus_connection', 'ichibata_bus_connection', 'nishinoshima', 'okinoshima', 'stops']
       .map((name) => loadGtfsPublicData(`bus-search/${name}.json`))
   ])
   const busSearchData = Object.fromEntries(
-    ['ama', 'chibu', 'ichibata_bus_connection', 'nishinoshima', 'okinoshima', 'stops']
+    ['ama', 'chibu', 'hatsumi_bus_connection', 'ichibata_bus_connection', 'nishinoshima', 'okinoshima', 'stops']
       .map((name, index) => [`${name}.json`, busSearchFiles[index]])
   )
 

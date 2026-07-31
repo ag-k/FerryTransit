@@ -91,6 +91,11 @@ npm run transport:promote -- --from dev --target prod \
   - 事業者: 一畑バス株式会社
   - 元データ日付: `2026-04-01`
   - GTFS フィード期間: `2026-04-01` から `2026-12-31`
+- 種別: `bus`
+  - ID: `hatsumi_bus_connection`
+  - 事業者: はつみ交通株式会社
+  - 元データ日付: `2026-06-08`
+  - GTFS フィード期間: `2026-06-08` から `2026-12-31`
 
 ## R8 PDF からの変換
 
@@ -139,6 +144,18 @@ npm run gtfs:build -- bus ichibata_bus_connection
 ```
 
 変換処理は松江駅-七類港、松江駅-境港の接続バス固定時刻を `trips.txt` / `stop_times.txt` に転記します。隠岐汽船欠航時は接続バスも運休する注記がありますが、静的 GTFS ではリアルタイム運休として表現せず、接続船情報を `jp_trip_desc` に保持します。
+
+## はつみ交通・隠岐汽船連絡バス PDF からの変換
+
+はつみ交通および隠岐広域連合が公開する2026年6月8日版「隠岐汽船連絡バス（七類・境港線）」時刻表からGTFSを生成します。
+
+```bash
+npm run gtfs:convert:hatsumi:2026 -- --current
+npm run gtfs:validate -- bus hatsumi_bus_connection
+npm run gtfs:build -- bus hatsumi_bus_connection
+```
+
+変換処理は2026年6月8日から12月31日までの6期間について、七類港-境港駅間15分の固定時刻を `trips.txt` / `stop_times.txt` に転記します。大人片道運賃500円を保持し、接続するフェリー・高速船は `jp_trip_desc` に記録します。隠岐汽船欠航時の運休は静的GTFSではリアルタイム反映しません。
 
 ## 隠岐空港連絡バスの生成
 

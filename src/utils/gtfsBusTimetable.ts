@@ -9,12 +9,20 @@ const NISHINOSHIMA_BUS_DEFINITION = BUS_FEED_DEFINITION_BY_ID.nishinoshima
 const CHIBU_BUS_DEFINITION = BUS_FEED_DEFINITION_BY_ID.chibu
 const OKINOSHIMA_BUS_DEFINITION = BUS_FEED_DEFINITION_BY_ID.okinoshima
 const ICHIBATA_BUS_CONNECTION_DEFINITION = BUS_FEED_DEFINITION_BY_ID.ichibata_bus_connection
+const HATSUMI_BUS_CONNECTION_DEFINITION = BUS_FEED_DEFINITION_BY_ID.hatsumi_bus_connection
 
 const AMA_BUS_STOP_PREFIX = AMA_BUS_DEFINITION.stopPrefix
 const NISHINOSHIMA_BUS_STOP_PREFIX = NISHINOSHIMA_BUS_DEFINITION.stopPrefix
 const CHIBU_BUS_STOP_PREFIX = CHIBU_BUS_DEFINITION.stopPrefix
 const OKINOSHIMA_BUS_STOP_PREFIX = OKINOSHIMA_BUS_DEFINITION.stopPrefix
 const ICHIBATA_BUS_CONNECTION_STOP_PREFIX = ICHIBATA_BUS_CONNECTION_DEFINITION.stopPrefix
+const HATSUMI_BUS_CONNECTION_STOP_PREFIX = HATSUMI_BUS_CONNECTION_DEFINITION.stopPrefix
+const AMA_BUS_NAME = AMA_BUS_DEFINITION.tripName
+const NISHINOSHIMA_BUS_NAME = NISHINOSHIMA_BUS_DEFINITION.tripName
+const CHIBU_BUS_NAME = CHIBU_BUS_DEFINITION.tripName
+const OKINOSHIMA_BUS_NAME = OKINOSHIMA_BUS_DEFINITION.tripName
+const ICHIBATA_BUS_CONNECTION_NAME = ICHIBATA_BUS_CONNECTION_DEFINITION.tripName
+const HATSUMI_BUS_CONNECTION_NAME = HATSUMI_BUS_CONNECTION_DEFINITION.tripName
 const BUS_SEARCH_BASE_PATH = 'data/bus-search'
 
 type GtfsRoute = {
@@ -220,12 +228,18 @@ const ICHIBATA_BUS_CONNECTION_CONFIG: BusFeedConfig = {
   formatRouteName: (_route, trip) => normalizeIchibataBusConnectionRouteName(trip.shortName || trip.headsign)
 }
 
+const HATSUMI_BUS_CONNECTION_CONFIG: BusFeedConfig = {
+  ...HATSUMI_BUS_CONNECTION_DEFINITION,
+  formatRouteName: (_route, trip) => normalizeHatsumiBusConnectionRouteName(trip.shortName || trip.headsign)
+}
+
 const BUS_FEED_CONFIGS: Record<BusFeedId, BusFeedConfig> = {
   ama: AMA_BUS_CONFIG,
   nishinoshima: NISHINOSHIMA_BUS_CONFIG,
   chibu: CHIBU_BUS_CONFIG,
   okinoshima: OKINOSHIMA_BUS_CONFIG,
-  ichibata_bus_connection: ICHIBATA_BUS_CONNECTION_CONFIG
+  ichibata_bus_connection: ICHIBATA_BUS_CONNECTION_CONFIG,
+  hatsumi_bus_connection: HATSUMI_BUS_CONNECTION_CONFIG
 }
 
 const busSearchFeedPromises = new Map<BusFeedId, Promise<BusSearchFeed>>()
@@ -250,12 +264,17 @@ export const isIchibataBusConnectionStopCode = (value?: string): boolean => {
   return typeof value === 'string' && value.startsWith(ICHIBATA_BUS_CONNECTION_STOP_PREFIX)
 }
 
+export const isHatsumiBusConnectionStopCode = (value?: string): boolean => {
+  return typeof value === 'string' && value.startsWith(HATSUMI_BUS_CONNECTION_STOP_PREFIX)
+}
+
 export const isBusStopCode = (value?: string): boolean => {
   return isAmaBusStopCode(value) ||
     isNishinoshimaBusStopCode(value) ||
     isChibuBusStopCode(value) ||
     isOkinoshimaBusStopCode(value) ||
-    isIchibataBusConnectionStopCode(value)
+    isIchibataBusConnectionStopCode(value) ||
+    isHatsumiBusConnectionStopCode(value)
 }
 
 export const isAirportCode = (value?: string): boolean => {
@@ -282,6 +301,10 @@ export const toIchibataBusConnectionStopCode = (stopId: string): string => {
   return `${ICHIBATA_BUS_CONNECTION_STOP_PREFIX}${stopId.replace(/[^a-zA-Z0-9]/g, '_')}`
 }
 
+export const toHatsumiBusConnectionStopCode = (stopId: string): string => {
+  return `${HATSUMI_BUS_CONNECTION_STOP_PREFIX}${stopId.replace(/[^a-zA-Z0-9]/g, '_')}`
+}
+
 const BUS_STOP_PORT_CONNECTIONS: Record<string, { portId: string; portLabel: string }> = {
   [toAmaBusStopCode('126_01')]: { portId: 'HISHIURA', portLabel: '菱浦港' },
   [toNishinoshimaBusStopCode('nishinoshima_006')]: { portId: 'BEPPU', portLabel: '別府港' },
@@ -292,7 +315,9 @@ const BUS_STOP_PORT_CONNECTIONS: Record<string, { portId: string; portLabel: str
   [toOkinoshimaBusStopCode('port_mae')]: { portId: 'SAIGO', portLabel: '西郷港' },
   [toOkinoshimaBusStopCode('nakamachi')]: { portId: 'SAIGO', portLabel: '西郷港' },
   [toIchibataBusConnectionStopCode('shichirui_port')]: { portId: 'HONDO_SHICHIRUI', portLabel: '七類港' },
-  [toIchibataBusConnectionStopCode('sakaiminato_port')]: { portId: 'HONDO_SAKAIMINATO', portLabel: '境港' }
+  [toIchibataBusConnectionStopCode('sakaiminato_port')]: { portId: 'HONDO_SAKAIMINATO', portLabel: '境港' },
+  [toHatsumiBusConnectionStopCode('shichirui_port')]: { portId: 'HONDO_SHICHIRUI', portLabel: '七類港' },
+  [toHatsumiBusConnectionStopCode('sakaiminato_station')]: { portId: 'HONDO_SAKAIMINATO', portLabel: '境港' }
 }
 
 export const getBusStopTownLabelKey = (value?: string): string | null => {
@@ -301,6 +326,7 @@ export const getBusStopTownLabelKey = (value?: string): string | null => {
   if (isChibuBusStopCode(value)) return 'CHIBU_MURA'
   if (isOkinoshimaBusStopCode(value)) return 'OKINOSHIMA_CHO'
   if (isIchibataBusConnectionStopCode(value)) return 'MAINLAND'
+  if (isHatsumiBusConnectionStopCode(value)) return 'MAINLAND'
   return null
 }
 
@@ -361,6 +387,12 @@ export const normalizeIchibataBusConnectionRouteName = (routeName?: string): str
   return value
 }
 
+export const normalizeHatsumiBusConnectionRouteName = (routeName?: string): string => {
+  const value = String(routeName ?? '').trim()
+  if (!value || value === '隠岐汽船連絡バス（七類・境港線）') return ''
+  return value
+}
+
 export const isTripActiveOnDate = (trip: Trip, _date: Date, dateYmd: string): boolean => {
   const normalizeYmd = (value: string): string => {
     return value.replace(/\//g, '-').slice(0, 10)
@@ -403,6 +435,10 @@ export const loadIchibataBusConnectionTimetable = (): Promise<BusTimetableData> 
   return loadGtfsBusTimetable(ICHIBATA_BUS_CONNECTION_CONFIG)
 }
 
+export const loadHatsumiBusConnectionTimetable = (): Promise<BusTimetableData> => {
+  return loadGtfsBusTimetable(HATSUMI_BUS_CONNECTION_CONFIG)
+}
+
 export const clearBusSearchFeedCacheForTests = () => {
   busSearchFeedPromises.clear()
 }
@@ -413,6 +449,7 @@ export const getBusFeedIdForStopCode = (value?: string): BusFeedId | null => {
   if (isChibuBusStopCode(value)) return 'chibu'
   if (isOkinoshimaBusStopCode(value)) return 'okinoshima'
   if (isIchibataBusConnectionStopCode(value)) return 'ichibata_bus_connection'
+  if (isHatsumiBusConnectionStopCode(value)) return 'hatsumi_bus_connection'
   return null
 }
 
@@ -533,6 +570,7 @@ const normalizeFallbackBusRouteLabel = (tripName: string): string => {
   if (tripName === CHIBU_BUS_NAME) return '知夫村営バス'
   if (tripName === OKINOSHIMA_BUS_NAME) return '隠岐の島町営バス'
   if (tripName === ICHIBATA_BUS_CONNECTION_NAME) return '一畑バス連絡バス'
+  if (tripName === HATSUMI_BUS_CONNECTION_NAME) return 'はつみ交通連絡バス'
   return tripName
 }
 

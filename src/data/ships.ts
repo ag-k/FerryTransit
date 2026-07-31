@@ -6,11 +6,18 @@ export type ShipId =
   | 'ISOKAZE'
   | 'FERRY_DOZEN'
   | 'ICHIBATA_BUS_CONNECTION'
+  | 'HATSUMI_BUS_CONNECTION'
   | 'OKI_AIRPORT_BUS'
   | 'JAL_OKI_ITAMI'
   | 'JAL_OKI_IZUMO'
 
-type ShipOperatorKey = 'OKI_KISEN' | 'OKI_DOUZEN' | 'ICHIBATA_BUS' | 'OKI_ICHIBATA' | 'JAL'
+type ShipOperatorKey =
+  | 'OKI_KISEN'
+  | 'OKI_DOUZEN'
+  | 'ICHIBATA_BUS'
+  | 'HATSUMI_BUS'
+  | 'OKI_ICHIBATA'
+  | 'JAL'
 
 export type ShipDetails = {
   operatorKey: ShipOperatorKey
@@ -87,6 +94,21 @@ export const SHIP_DETAILS: Record<ShipId, ShipDetails> = {
     stops: ['松江駅', '附属学園入口', 'レインボープラザ前', '七類港', '境港'],
     sourceUrl: 'https://bus.ichibata.co.jp/oki-kisen/oki-kisen-sichirui/',
     timetableUrl: 'https://bus.ichibata.co.jp/media/r8_0718_kisen_dia.pdf'
+  },
+  HATSUMI_BUS_CONNECTION: {
+    operatorKey: 'HATSUMI_BUS',
+    mode: 'bus',
+    routeSummaryKey: 'ship.modal.hatsumiBusConnection.summary',
+    routeNameKey: 'ship.modal.hatsumiBusConnection.route',
+    fareTypeKey: 'BUS_ADULT_ONE_WAY_FARE',
+    fare: 500,
+    servicePeriod: {
+      startDate: '20260608',
+      endDate: '20261231'
+    },
+    stops: ['七類港', '境港駅'],
+    sourceUrl: 'https://okikouiki.jp/oki-route/bus/',
+    timetableUrl: 'https://hatsumi-koutsu.co.jp/wp-content/uploads/2026/06/7133035432d40c6d6bb59ad6e25b4aed.pdf'
   },
   OKI_AIRPORT_BUS: {
     operatorKey: 'OKI_ICHIBATA',

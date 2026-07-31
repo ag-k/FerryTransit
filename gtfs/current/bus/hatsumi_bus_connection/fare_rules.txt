@@ -1,0 +1,2 @@
+fare_id,route_id,origin_id,destination_id,contains_id
+HATSUMI_CONNECTION_ADULT,route_hatsumi_bus_connection_shichirui_sakaiminato,,,

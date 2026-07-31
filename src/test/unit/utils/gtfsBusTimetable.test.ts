@@ -11,6 +11,7 @@ import {
   getLocationTypeForCode,
   isAmaBusStopCode,
   isChibuBusStopCode,
+  isHatsumiBusConnectionStopCode,
   isIchibataBusConnectionStopCode,
   isNishinoshimaBusStopCode,
   isOkinoshimaBusStopCode,
@@ -27,11 +28,13 @@ import {
   loadOkinoshimaBusTimetable,
   normalizeAmaBusRouteName,
   normalizeChibuBusRouteName,
+  normalizeHatsumiBusConnectionRouteName,
   normalizeIchibataBusConnectionRouteName,
   normalizeNishinoshimaBusRouteName,
   normalizeOkinoshimaBusRouteName,
   toAmaBusStopCode,
   toChibuBusStopCode,
+  toHatsumiBusConnectionStopCode,
   toIchibataBusConnectionStopCode,
   toNishinoshimaBusStopCode,
   toOkinoshimaBusStopCode
@@ -126,6 +129,29 @@ describe('gtfsBusTimetable', () => {
     expect(getBusStopConnectedPortId(sakaiminatoPort)).toBe('HONDO_SAKAIMINATO')
   })
 
+  it('はつみ交通接続便の本土停留所コードを港へ接続する', () => {
+    const shichiruiPort = toHatsumiBusConnectionStopCode('shichirui_port')
+    const sakaiminatoStation = toHatsumiBusConnectionStopCode('sakaiminato_station')
+
+    expect(shichiruiPort).toBe('BUS_HATSUMI_CONNECTION_shichirui_port')
+    expect(isHatsumiBusConnectionStopCode(shichiruiPort)).toBe(true)
+    expect(isHatsumiBusConnectionStopCode('BUS_ICHIBATA_CONNECTION_shichirui_port')).toBe(false)
+    expect(getLocationTypeForCode(sakaiminatoStation)).toBe('STOP')
+    expect(getBusStopTownLabelKey(sakaiminatoStation)).toBe('MAINLAND')
+    expect(getBusStopPortBadgeLabel(shichiruiPort)).toBe('七類港')
+    expect(getBusStopConnectedPortId(shichiruiPort)).toBe('HONDO_SHICHIRUI')
+    expect(getBusStopPortBadgeLabel(sakaiminatoStation)).toBe('境港')
+    expect(getBusStopConnectedPortId(sakaiminatoStation)).toBe('HONDO_SAKAIMINATO')
+    expect(getConnectedBusStopsForPort('HONDO_SHICHIRUI')).toEqual(expect.arrayContaining([
+      'BUS_ICHIBATA_CONNECTION_shichirui_port',
+      shichiruiPort
+    ]))
+    expect(getConnectedBusStopsForPort('HONDO_SAKAIMINATO')).toEqual(expect.arrayContaining([
+      'BUS_ICHIBATA_CONNECTION_sakaiminato_port',
+      sakaiminatoStation
+    ]))
+  })
+
   it('空港コードを空港として扱う', () => {
     expect(getLocationTypeForCode('AIRPORT_OKI')).toBe('AIRPORT')
     expect(getLocationTypeForCode('AIRPORT_ITAMI')).toBe('AIRPORT')
@@ -154,6 +180,11 @@ describe('gtfsBusTimetable', () => {
     expect(normalizeOkinoshimaBusRouteName('隠岐一畑交通 五箇線')).toBe('五箇線')
     expect(normalizeOkinoshimaBusRouteName('隠岐の島町営バス 都万西部線')).toBe('都万西部線')
     expect(normalizeOkinoshimaBusRouteName('町営バス')).toBe('')
+  })
+
+  it('はつみ交通の路線名を表示用に整える', () => {
+    expect(normalizeHatsumiBusConnectionRouteName('七類港⇔境港駅')).toBe('七類港⇔境港駅')
+    expect(normalizeHatsumiBusConnectionRouteName('隠岐汽船連絡バス（七類・境港線）')).toBe('')
   })
 
   it('一畑バス接続便の路線名を表示用に整える', () => {
@@ -811,6 +842,12 @@ describe('gtfsBusTimetable', () => {
       'ama.json': emptyFeed('ama', 'AMA_TOWN', 'AMA_CHO', 'AMA_TOWN_BUS'),
       'nishinoshima.json': emptyFeed('nishinoshima', 'NISHINOSHIMA_TOWN', 'NISHINOSHIMA_CHO', 'NISHINOSHIMA_TOWN_BUS'),
       'chibu.json': emptyFeed('chibu', 'CHIBU_VILLAGE', 'CHIBU_MURA', 'CHIBU_VILLAGE_BUS'),
+      'hatsumi_bus_connection.json': emptyFeed(
+        'hatsumi_bus_connection',
+        'HATSUMI_BUS',
+        'MAINLAND',
+        'HATSUMI_BUS_CONNECTION'
+      ),
       'okinoshima.json': {
         version: 1,
         feedId: 'okinoshima',

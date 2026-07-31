@@ -318,7 +318,7 @@ describe('fare.vue', () => {
 
     expect(busTransportTab!.attributes('aria-selected')).toBe('true')
     const busTabs = wrapper.findAll('[aria-controls="fare-tabpanel-bus"]')
-    expect(busTabs).toHaveLength(7)
+    expect(busTabs).toHaveLength(8)
 
     const nishinoshimaTab = busTabs.find(tab => tab.text() === 'NISHINOSHIMA_TOWN_BUS')
     expect(nishinoshimaTab).toBeDefined()
@@ -329,5 +329,13 @@ describe('fare.vue', () => {
     expect(busPanel.text()).toContain('NISHINOSHIMA_TOWN_BUS')
     expect(busPanel.text()).toContain('BUS_FLAT_FARE')
     expect(busPanel.text()).toContain('¥200')
+
+    const hatsumiTab = busTabs.find(tab => tab.text() === 'HATSUMI_BUS_CONNECTION')
+    expect(hatsumiTab).toBeDefined()
+    await hatsumiTab!.trigger('click')
+
+    expect(busPanel.text()).toContain('HATSUMI_BUS_CONNECTION')
+    expect(busPanel.text()).toContain('BUS_ADULT_ONE_WAY_FARE')
+    expect(busPanel.text()).toContain('¥500')
   })
 })

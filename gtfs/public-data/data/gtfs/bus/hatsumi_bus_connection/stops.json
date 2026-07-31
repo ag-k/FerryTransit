@@ -1,0 +1,26 @@
+[
+  {
+    "stopId": "shichirui_port",
+    "code": "shichirui_port",
+    "name": "七類港",
+    "description": "七類港ターミナル正面バス停。高速船到着便は接岸岸壁から発車",
+    "lat": 35.57113300000003,
+    "lon": 133.23002099999997,
+    "zoneId": "",
+    "url": "",
+    "locationType": 0,
+    "platformCode": ""
+  },
+  {
+    "stopId": "sakaiminato_station",
+    "code": "sakaiminato_station",
+    "name": "境港駅",
+    "description": "境港駅前バス停",
+    "lat": 35.54510346994129,
+    "lon": 133.22338314132912,
+    "zoneId": "",
+    "url": "",
+    "locationType": 0,
+    "platformCode": ""
+  }
+]

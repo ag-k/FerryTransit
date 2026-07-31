@@ -514,11 +514,7 @@ const isRouteCompatibleWithMode = (mode: TransportModeFilterValue, locations: st
   const locationTypes = locations.map(locationId => getLocationTypeForCode(locationId))
   if (mode === 'FERRY') return locationTypes.every(type => type === 'PORT')
   if (mode === 'AIR') return locationTypes.every(type => type === 'AIRPORT')
-
-  // 島内バスに加え、空港連絡バスや港連絡バスは
-  // STOP / PORT / AIRPORT をまたぐ。同種別の港間・空港間は船・航空を優先する。
-  if (locations.length < 2) return true
-  return locationTypes.includes('STOP') || new Set(locationTypes).size > 1
+  return locationTypes.every(type => type === 'STOP')
 }
 
 watch(transportModeOptions, (options) => {
@@ -560,7 +556,7 @@ watch([preferredTransportModeForRoute, transportModeOptions], ([preferredMode, o
 }, { immediate: true })
 
 const selectedLocationType = computed<LocationType | 'ALL'>(() => {
-  if (selectedTransportMode.value === 'BUS') return 'ALL'
+  if (selectedTransportMode.value === 'BUS') return 'STOP'
   if (selectedTransportMode.value === 'AIR') return 'AIRPORT'
   return 'PORT'
 })
@@ -698,6 +694,7 @@ const getBusTransportName = (name: string) => {
   if (name === 'OKI_ICHIBATA_BUS') return '隠岐一畑交通'
   if (name === 'OKINOSHIMA_TOWN_BUS') return '隠岐の島町営バス'
   if (name === 'ICHIBATA_BUS_CONNECTION') return '一畑バス 隠岐汽船接続バス'
+  if (name === 'HATSUMI_BUS_CONNECTION') return 'はつみ交通 隠岐汽船連絡バス'
   if (name === 'OKI_AIRPORT_BUS') return '隠岐空港連絡バス'
   return translated
 }
@@ -791,8 +788,11 @@ watch(selectedTransportMode, (mode) => {
     return
   }
 
-  const allowedType = mode === 'AIR' ? 'AIRPORT' : 'PORT'
-  if (mode === 'BUS') return
+  const allowedType = mode === 'BUS'
+    ? 'STOP'
+    : mode === 'AIR'
+      ? 'AIRPORT'
+      : 'PORT'
   if (departure.value && getLocationTypeForCode(departure.value) !== allowedType) {
     ferryStore.setDeparture('')
   }

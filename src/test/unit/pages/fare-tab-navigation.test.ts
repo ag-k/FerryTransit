@@ -71,6 +71,7 @@ describe("FarePage Tab Navigation", () => {
     expect(fileContent).toContain("operatorKey: 'OKI_ICHIBATA_BUS', fareTypeKey: 'BUS_MAX_FARE', fare: 500");
     expect(fileContent).toContain("operatorKey: 'OKINOSHIMA_TOWN_BUS', fareTypeKey: 'BUS_FLAT_FARE', fare: 300");
     expect(fileContent).toContain("operatorKey: 'ICHIBATA_BUS_CONNECTION', fareTypeKey: 'BUS_MAX_FARE', fare: 1200");
+    expect(fileContent).toContain("operatorKey: 'HATSUMI_BUS_CONNECTION', fareTypeKey: 'BUS_ADULT_ONE_WAY_FARE', fare: 500");
     expect(fileContent).toContain("operatorKey: 'OKI_AIRPORT_BUS', fareTypeKey: 'BUS_ADULT_ONE_WAY_FARE', fare: 520");
   });
 });

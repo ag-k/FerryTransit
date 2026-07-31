@@ -16,6 +16,25 @@ const runTransitSearch = async (page: Page) => {
 }
 
 test.describe('乗換案内', () => {
+  test('境港から七類港へはつみ交通の直行便を表示する', async ({ page }) => {
+    await setupPublicPageStubs(page, {
+      initialDeparture: 'HONDO_SAKAIMINATO',
+      initialArrival: 'HONDO_SHICHIRUI'
+    })
+    await page.goto('/transit')
+
+    await page.locator('input[type="date"]').fill('2026-07-31')
+    await page.locator('input[type="time"]').fill('08:00')
+    await page.getByRole('button', { name: '検索', exact: true }).click()
+
+    await expect(page.getByRole('heading', { level: 3, name: '検索結果' })).toBeVisible({ timeout: 15000 })
+    const firstResult = page.getByTestId('transit-result-header').first()
+    await expect(firstResult).toContainText('8:24')
+    await expect(firstResult).toContainText('8:39')
+    await expect(firstResult).toContainText('¥500')
+    await expect(page.getByText(/はつみ交通 隠岐汽船連絡バス/).first()).toBeVisible()
+  })
+
   test('検索条件を入力すると経路候補が表示される', async ({ page }) => {
     await runTransitSearch(page)
 

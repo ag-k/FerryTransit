@@ -285,6 +285,7 @@ const getBusTransportName = (name: string) => {
   if (name === 'OKI_ICHIBATA_BUS') return '隠岐一畑交通'
   if (name === 'OKINOSHIMA_TOWN_BUS') return '隠岐の島町営バス'
   if (name === 'ICHIBATA_BUS_CONNECTION') return '一畑バス 隠岐汽船接続バス'
+  if (name === 'HATSUMI_BUS_CONNECTION') return 'はつみ交通 隠岐汽船連絡バス'
   if (name === 'OKI_AIRPORT_BUS') return '隠岐空港連絡バス'
   return translated
 }

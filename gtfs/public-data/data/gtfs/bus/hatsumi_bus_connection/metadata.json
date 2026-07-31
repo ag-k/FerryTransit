@@ -1,0 +1,22 @@
+{
+  "id": "hatsumi_bus_connection",
+  "mode": "bus",
+  "generatedAt": "2026-07-31T06:25:33.904Z",
+  "feed": {
+    "publisherName": "はつみ交通株式会社",
+    "publisherUrl": "https://okikouiki.jp/oki-route/bus/",
+    "lang": "ja",
+    "startDate": "20260608",
+    "endDate": "20261231",
+    "version": "hatsumi_20260608-20261231"
+  },
+  "counts": {
+    "agencies": 1,
+    "routes": 1,
+    "stops": 2,
+    "trips": 31,
+    "stopTimes": 62,
+    "calendarServices": 6,
+    "calendarDates": 0
+  }
+}

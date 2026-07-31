@@ -2,6 +2,30 @@ import { expect, test } from '@playwright/test'
 import { setupPublicPageStubs } from './utils/test-helpers'
 
 test.describe('トップページ', () => {
+  test('バスの出発地・目的地選択にはバス停だけを表示する', async ({ page }) => {
+    await setupPublicPageStubs(page)
+    await page.goto('/')
+
+    await page.getByRole('tab', { name: 'バス', exact: true }).click()
+    const endpoints = page.getByTestId('route-endpoints-selector')
+    await endpoints.getByRole('button', { name: '出発地', exact: true }).click()
+
+    const modal = page.getByTestId('port-selector-modal')
+    await expect(modal).toBeVisible()
+    await expect(modal.getByTestId('port-section-busStops')).toBeVisible()
+    await expect(modal.getByTestId('port-section-mainland')).toHaveCount(0)
+    await expect(modal.getByTestId('port-section-dozen')).toHaveCount(0)
+    await expect(modal.getByTestId('port-section-dogo')).toHaveCount(0)
+    await expect(modal.getByTestId('port-section-airports')).toHaveCount(0)
+
+    await modal.getByRole('button', { name: 'Close' }).click()
+    await endpoints.getByRole('button', { name: '目的地', exact: true }).click()
+    await expect(modal).toBeVisible()
+    await expect(modal.getByTestId('port-section-busStops')).toBeVisible()
+    await expect(modal.getByTestId('port-section-mainland')).toHaveCount(0)
+    await expect(modal.getByTestId('port-section-airports')).toHaveCount(0)
+  })
+
   test('港を選択すると時刻表が表示される', async ({ page }) => {
     await setupPublicPageStubs(page, { initialDeparture: 'HONDO_SHICHIRUI', initialArrival: 'SAIGO' })
     await page.goto('/')

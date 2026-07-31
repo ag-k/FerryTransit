@@ -82,6 +82,7 @@
     "gtfs:convert:chibu:2023": "node scripts/gtfs/convert-chibu-2023-image.mjs",
     "gtfs:convert:okinoshima:2026": "node scripts/gtfs/convert-okinoshima-2026.mjs",
     "gtfs:convert:ichibata:2026": "node scripts/gtfs/convert-ichibata-bus-connection-2026.mjs",
+    "gtfs:convert:hatsumi:2026": "node scripts/gtfs/convert-hatsumi-bus-connection-2026.mjs",
     "gtfs:generate:oki-airport-bus": "node scripts/gtfs/generate-oki-airport-bus.mjs",
     "timetable:fetch:jal": "node scripts/timetable/fetch-jal-oki-timetable.mjs",
     "timetable:fetch:jal:dry-run": "node scripts/timetable/fetch-jal-oki-timetable.mjs --dry-run",

@@ -1,0 +1,2 @@
+feed_publisher_name,feed_publisher_url,feed_lang,feed_start_date,feed_end_date,feed_version
+はつみ交通株式会社,https://okikouiki.jp/oki-route/bus/,ja,20260608,20261231,hatsumi_20260608-20261231

@@ -22,7 +22,11 @@ export const TRANSPORT_SOURCE_OPERATIONS = Object.freeze({
     sourceUrl: 'http://www.chibu.jp/access.html',
     feedId: 'chibu', conversionTask: 'npm run gtfs:convert:chibu:2023', conversionArgs: ['--current']
   }),
-  'oki-kouiki-bus': Object.freeze({ id: 'oki-kouiki-bus', sourceType: 'web', officialUrl: 'https://okikouiki.jp/' }),
+  'oki-kouiki-bus': Object.freeze({
+    id: 'oki-kouiki-bus', sourceType: 'gtfs', officialUrl: 'https://okikouiki.jp/oki-route/bus/',
+    sourceUrl: 'https://hatsumi-koutsu.co.jp/wp-content/uploads/2026/06/7133035432d40c6d6bb59ad6e25b4aed.pdf',
+    feedId: 'hatsumi_bus_connection', conversionTask: 'npm run gtfs:convert:hatsumi:2026', conversionArgs: ['--current']
+  }),
   'jal-oki-flights': Object.freeze({
     id: 'jal-oki-flights', sourceType: 'timetable', officialUrl: 'https://www.jal.co.jp/jp/ja/dom/route/time/',
     timetableUrl: 'https://www.jal.co.jp/jp/ja/dom/route/time/timeTable.html',

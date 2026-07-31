@@ -181,12 +181,19 @@ const isMainlandPort = (port: string | undefined): boolean => {
   return mainlandPorts.value.includes(port)
 }
 
+const isHatsumiConnectionPair = (departure: string | undefined, arrival: string | undefined): boolean => {
+  return (departure === 'HONDO_SHICHIRUI' && arrival === 'HONDO_SAKAIMINATO') ||
+    (departure === 'HONDO_SAKAIMINATO' && arrival === 'HONDO_SHICHIRUI')
+}
+
 const disabledDeparturePorts = computed(() => {
   const disabledPorts = new Set<string>()
   if (props.arrival) disabledPorts.add(props.arrival)
-  // 本土港同士の組み合わせを禁止: 目的地が本土港なら、出発地側は本土港を選べない
+  // 七類港-境港駅の連絡バス区間だけは本土港同士でも選択できる
   if (isMainlandPort(props.arrival)) {
-    for (const p of mainlandPorts.value) disabledPorts.add(p)
+    for (const p of mainlandPorts.value) {
+      if (!isHatsumiConnectionPair(p, props.arrival)) disabledPorts.add(p)
+    }
   }
   return Array.from(disabledPorts)
 })
@@ -194,9 +201,11 @@ const disabledDeparturePorts = computed(() => {
 const disabledArrivalPorts = computed(() => {
   const disabledPorts = new Set<string>()
   if (props.departure) disabledPorts.add(props.departure)
-  // 本土港同士の組み合わせを禁止: 出発地が本土港なら、目的地側は本土港を選べない
+  // 七類港-境港駅の連絡バス区間だけは本土港同士でも選択できる
   if (isMainlandPort(props.departure)) {
-    for (const p of mainlandPorts.value) disabledPorts.add(p)
+    for (const p of mainlandPorts.value) {
+      if (!isHatsumiConnectionPair(props.departure, p)) disabledPorts.add(p)
+    }
   }
   return Array.from(disabledPorts)
 })
@@ -218,14 +227,14 @@ const handleSelectRoute = (route: FavoriteRoute) => {
   emit('update:arrival', route.arrival)
 }
 
-// 既に本土港同士になっている状態（URL/地図/履歴など経由）を補正
+// 対応していない本土港同士の状態（URL/地図/履歴など経由）を補正
 watch(
   () => [props.departure, props.arrival] as const,
   ([dep, arr]) => {
     // SSRでは window が無いので何もしない（CSR/テスト環境のみ補正）
     if (typeof window === 'undefined') return
     if (!dep || !arr) return
-    if (isMainlandPort(dep) && isMainlandPort(arr)) {
+    if (isMainlandPort(dep) && isMainlandPort(arr) && !isHatsumiConnectionPair(dep, arr)) {
       // ルール違反時は目的地側を優先的にクリア
       emit('update:arrival', '')
     }
