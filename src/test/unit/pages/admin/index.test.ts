@@ -7,8 +7,6 @@ const mockGetPvTrend = vi.fn()
 const mockGetDailyAnalytics = vi.fn()
 const mockGetMonthlyAnalytics = vi.fn()
 const mockGetPopularRoutes = vi.fn()
-const mockGetUniqueUsersCount = vi.fn()
-const mockGetErrorStats = vi.fn()
 
 const mockGetCollection = vi.fn()
 const mockGetDocument = vi.fn()
@@ -18,9 +16,7 @@ vi.mock('~/composables/useAnalytics', () => ({
     getPvTrend: (...args: any[]) => mockGetPvTrend(...args),
     getDailyAnalytics: (...args: any[]) => mockGetDailyAnalytics(...args),
     getMonthlyAnalytics: (...args: any[]) => mockGetMonthlyAnalytics(...args),
-    getPopularRoutes: (...args: any[]) => mockGetPopularRoutes(...args),
-    getUniqueUsersCount: (...args: any[]) => mockGetUniqueUsersCount(...args),
-    getErrorStats: (...args: any[]) => mockGetErrorStats(...args)
+    getPopularRoutes: (...args: any[]) => mockGetPopularRoutes(...args)
   })
 }))
 
@@ -52,8 +48,8 @@ describe('Admin Dashboard Page', () => {
       { date: '2024-01-01', pv: 120, search: 30 },
       { date: '2024-01-02', pv: 180, search: 45 }
     ])
-    mockGetDailyAnalytics.mockResolvedValue({ pvTotal: 120 })
-    mockGetMonthlyAnalytics.mockResolvedValue({ pvTotal: 450 })
+    mockGetDailyAnalytics.mockResolvedValue({ pvTotal: 120, searchTotal: 30 })
+    mockGetMonthlyAnalytics.mockResolvedValue({ pvTotal: 450, searchTotal: 90 })
     mockGetPopularRoutes.mockResolvedValue([
       {
         routeKey: 'SAIGO-HONDO_SHICHIRUI',
@@ -62,9 +58,6 @@ describe('Admin Dashboard Page', () => {
         count: 20
       }
     ])
-    mockGetUniqueUsersCount.mockResolvedValue(12)
-    mockGetErrorStats.mockResolvedValue({ 500: 2 })
-
     mockGetCollection.mockResolvedValue([
       {
         id: 'log-1',
@@ -96,6 +89,7 @@ describe('Admin Dashboard Page', () => {
     const stats = wrapper.find('[data-test="dashboard-stats"]')
     expect(stats.exists()).toBe(true)
     expect(stats.text()).toContain('今日のアクセス数')
+    expect(stats.text()).toContain('今日を指定した検索数')
 
     const popularRoutes = wrapper.find('[data-test="dashboard-popular-routes"]')
     expect(popularRoutes.text()).toContain('人気航路ランキング')

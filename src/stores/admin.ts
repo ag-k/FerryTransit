@@ -46,9 +46,7 @@ export const useAdminStore = defineStore('admin', {
         const { 
           getDailyAnalytics, 
           getMonthlyAnalytics, 
-          getPopularRoutes,
-          getUniqueUsersCount,
-          getErrorStats
+          getPopularRoutes
         } = useAnalytics()
 
         const now = new Date()
@@ -61,15 +59,11 @@ export const useAdminStore = defineStore('admin', {
         const [
           dailyAnalytics,
           monthlyAnalytics,
-          popularRoutesRaw,
-          activeUsers,
-          errorStats
+          popularRoutesRaw
         ] = await Promise.all([
           getDailyAnalytics(dateKey),
           getMonthlyAnalytics(monthKey),
-          getPopularRoutes(rangeStart, rangeEnd, 5),
-          getUniqueUsersCount(rangeStart, rangeEnd),
-          getErrorStats(rangeStart, rangeEnd)
+          getPopularRoutes(rangeStart, rangeEnd, 5)
         ])
 
         const mappedRoutes = (popularRoutesRaw || []).map((route: AnalyticsPopularRoute) => {
@@ -89,24 +83,12 @@ export const useAdminStore = defineStore('admin', {
           percentage: maxCount > 0 ? Math.round((route.count / maxCount) * 100) : 0
         }))
 
-        const errorCount = errorStats
-          ? Object.values(errorStats).reduce((sum, value) => {
-            if (typeof value !== 'number') return sum
-            return sum + value
-          }, 0)
-          : 0
-
         this.dashboardStats = {
           dailyAccess: dailyAnalytics?.pvTotal ?? 0,
           monthlyAccess: monthlyAnalytics?.pvTotal ?? 0,
-          activeUsers: activeUsers ?? 0,
-          popularRoutes,
-          favoriteStats: {
-            totalFavorites: 0,
-            routeFavorites: 0,
-            portFavorites: 0
-          },
-          errorCount
+          dailySearches: dailyAnalytics?.searchTotal ?? 0,
+          monthlySearches: monthlyAnalytics?.searchTotal ?? 0,
+          popularRoutes
         }
       } catch (error: any) {
         this.error = error.message || '統計データの取得に失敗しました'

@@ -6,7 +6,7 @@ Web、iOS、Android のリリースに必要な作業をバージョン単位で
 
 - 保存場所: `docs/releases/`
 - ファイル名: `v<major>.<minor>.md` または `v<major>.<minor>.<patch>.md`
-- 最新TODO: [`v2.4.md`](./v2.4.md)
+- 最新TODO: [`v2.5.md`](./v2.5.md)
 - リリースノートは従来どおり `docs/reports/` に保存し、TODOファイルからリンクする。
 
 ## 運用ルール

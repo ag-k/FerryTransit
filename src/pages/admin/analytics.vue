@@ -13,6 +13,8 @@
         <button
           v-for="preset in presets"
           :key="preset.value"
+          type="button"
+          :aria-pressed="selectedPreset === preset.value"
           :class="[
             'px-3 py-2 text-sm rounded-md transition-colors',
             selectedPreset === preset.value
@@ -25,18 +27,27 @@
         </button>
       </div>
       <div v-if="selectedPreset === 'custom'" class="flex space-x-2 items-center">
+        <label for="analytics-start-date" class="text-sm text-gray-700 dark:text-gray-300">
+          開始日
+        </label>
         <input
+          id="analytics-start-date"
           v-model="customStartDate"
           type="date"
           class="rounded-md border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white px-3 py-2"
         >
         <span class="text-gray-500 dark:text-gray-400">〜</span>
+        <label for="analytics-end-date" class="text-sm text-gray-700 dark:text-gray-300">
+          終了日
+        </label>
         <input
+          id="analytics-end-date"
           v-model="customEndDate"
           type="date"
           class="rounded-md border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white px-3 py-2"
         >
         <button
+          type="button"
           class="px-3 py-2 bg-blue-600 text-white text-sm rounded-md hover:bg-blue-700 transition-colors"
           @click="applyCustomPeriod"
         >
@@ -46,7 +57,7 @@
     </div>
 
     <!-- ローディング状態 -->
-    <div v-if="isLoading" class="flex justify-center items-center py-12">
+    <div v-if="isLoading" class="flex justify-center items-center py-12" aria-live="polite">
       <div class="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>
       <span class="ml-3 text-gray-600 dark:text-gray-400">読み込み中...</span>
     </div>
@@ -68,7 +79,12 @@
 
       <!-- 2. 検索回数（折れ線） -->
       <div class="bg-white dark:bg-gray-800 rounded-lg shadow p-6">
-        <h3 class="text-lg font-medium text-gray-900 dark:text-white mb-4">検索回数推移</h3>
+        <h3 class="text-lg font-medium text-gray-900 dark:text-white mb-1">
+          検索対象日別の検索回数推移
+        </h3>
+        <p class="mb-4 text-xs text-gray-500 dark:text-gray-400">
+          検索を実行した日ではなく、検索条件で指定された乗船日を集計しています。
+        </p>
         <AnalyticsLineChart :data="searchTrendData" :color="'#10b981'" />
       </div>
 
@@ -80,6 +96,9 @@
             （期間平均）
           </span>
         </h3>
+        <p class="mb-4 text-xs text-gray-500 dark:text-gray-400">
+          PVはアクセス時刻、検索は検索条件で指定された乗船時刻を集計しています。
+        </p>
         <AnalyticsMultiLineChart :data="hourlyDistributionData" />
       </div>
 
@@ -169,7 +188,9 @@
 <script setup lang="ts">
 import { startOfDay, endOfDay, subDays, startOfMonth, endOfMonth, format } from 'date-fns'
 import type { PeriodPreset, ChartData, MultiSeriesChartData, PopularRoute } from '~/types/analytics'
+import { useAnalytics } from '~/composables/useAnalytics'
 import { createLogger } from '~/utils/logger'
+import { PORTS_DATA } from '~/data/ports'
 
 definePageMeta({
   layout: 'admin',
@@ -186,7 +207,7 @@ const {
 const logger = createLogger('AdminAnalyticsPage')
 
 // プリセット定義
-const presets = [
+const presets: Array<{ label: string; value: PeriodPreset }> = [
   { label: '今日', value: 'today' },
   { label: '昨日', value: 'yesterday' },
   { label: '直近7日', value: 'last7days' },
@@ -198,7 +219,7 @@ const presets = [
   { label: 'カスタム', value: 'custom' }
 ]
 
-const selectedPreset = ref<PeriodPreset>('last7days')
+const selectedPreset = ref<PeriodPreset>('today')
 const customStartDate = ref('')
 const customEndDate = ref('')
 
@@ -331,7 +352,16 @@ const loadAnalyticsData = async (customStart?: Date, customEnd?: Date) => {
     popularRoutes.value = popular
     
     // 港別分布
-    portDistribution.value = portDist
+    portDistribution.value = {
+      departure: portDist.departure.map(item => ({
+        ...item,
+        name: getPortName(item.id)
+      })),
+      arrival: portDist.arrival.map(item => ({
+        ...item,
+        name: getPortName(item.id)
+      }))
+    }
     
     // 時間帯別円グラフ用データ
     hourlyChartData.value = hourlyDist
@@ -355,11 +385,10 @@ const loadAnalyticsData = async (customStart?: Date, customEnd?: Date) => {
 }
 
 /**
- * 港名を取得（簡易版）
+ * 港名を取得
  */
 const getPortName = (portId: string): string => {
-  // TODO: 実際は港マスタから名前を取得
-  return portId
+  return PORTS_DATA[portId]?.name || portId
 }
 
 // 初期データの読み込み

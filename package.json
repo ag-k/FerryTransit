@@ -27,6 +27,7 @@
     "test:api:watch": "vitest src/test/unit/api/",
     "test:integration": "vitest run src/test/integration/",
     "test:integration:watch": "vitest src/test/integration/",
+    "test:firestore-rules": "firebase emulators:exec --only firestore --project demo-ferry-transit \"node scripts/test-analytics-firestore-rules.mjs\"",
     "test:helpers": "vitest run src/test/unit/api/helpers.test.ts",
     "test:all": "vitest run src/test/unit/api/ src/test/integration/",
     "test:e2e": "playwright test --workers=1",
@@ -104,6 +105,7 @@
     "transport:check:timetable": "node scripts/transport/check-timetable.mjs",
     "transport:smoke:storage": "node scripts/transport/smoke-storage.mjs",
     "transport:promote": "node scripts/transport/promote.mjs",
+    "analytics:migrate-aggregates": "node scripts/migrate-analytics-aggregates.mjs",
     "fare:promote:prod": "node scripts/fare/promote-dev-fare-to-prod.mjs"
   },
   "portless": {
@@ -145,6 +147,7 @@
   },
   "devDependencies": {
     "@capacitor/cli": "^7.6.7",
+    "@firebase/rules-unit-testing": "^4.0.1",
     "@nuxtjs/eslint-config-typescript": "^12.1.0",
     "@nuxtjs/tailwindcss": "^7.0.0-beta.0",
     "@pinia/testing": "^1.0.3",

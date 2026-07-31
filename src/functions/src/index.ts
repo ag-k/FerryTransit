@@ -1,5 +1,6 @@
 import { getTimetable } from "./timetable";
 import { ensureAdminApp } from "./utils/adminApp";
+export { trackAnalytics } from "./analytics";
 
 // Initialize Firebase Admin (lazy / Secret Manager対応)
 ensureAdminApp();

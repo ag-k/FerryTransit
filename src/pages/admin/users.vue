@@ -9,27 +9,7 @@
       </p>
     </div>
 
-    <!-- タブ切り替え -->
-    <div class="mb-6">
-      <nav class="flex space-x-4" aria-label="Tabs">
-        <button
-          v-for="tab in tabs"
-          :key="tab.id"
-          :class="[
-            activeTab === tab.id
-              ? 'bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-200'
-              : 'text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200',
-            'px-3 py-2 font-medium text-sm rounded-md'
-          ]"
-          @click="activeTab = tab.id"
-        >
-          {{ tab.name }}
-        </button>
-      </nav>
-    </div>
-
-    <!-- ユーザー一覧タブ -->
-    <div v-if="activeTab === 'users'">
+    <div>
       <!-- フィルタ -->
       <Card class="mb-6" padding="sm">
         <div class="flex flex-wrap gap-4">
@@ -161,11 +141,6 @@
       </Card>
     </div>
 
-    <!-- アナリティクスタブ -->
-    <div v-else-if="activeTab === 'analytics'">
-      <AnalyticsExample />
-    </div>
-
     <!-- ユーザー編集モーダル -->
     <FormModal
       v-if="editingUser"
@@ -265,12 +240,6 @@ const { getCollection, updateDocument } = useAdminFirestore()
 const { setAdminClaim, setUserDisabled, deleteUser: deleteUserFunc } = useCloudFunctions()
 const logger = createLogger('AdminUsersPage')
 
-const tabs = [
-  { id: 'users', name: 'ユーザー一覧' },
-  { id: 'analytics', name: 'アクセス分析' }
-]
-
-const activeTab = ref('users')
 const loading = ref(false)
 const error = ref<string | null>(null)
 const users = ref<User[]>([])

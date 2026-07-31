@@ -10,7 +10,6 @@
 import { describe, it, expect, beforeEach, vi, afterEach } from 'vitest'
 
 // Firestore モック
-const mockSetDoc = vi.fn()
 const mockGetDoc = vi.fn()
 const mockGetDocs = vi.fn()
 const mockDoc = vi.fn()
@@ -18,7 +17,8 @@ const mockCollection = vi.fn()
 const mockQuery = vi.fn()
 const mockWhere = vi.fn()
 const mockOrderBy = vi.fn()
-const mockIncrement = vi.fn((val: number) => ({ _increment: val }))
+const mockTrackAnalytics = vi.fn()
+const mockHttpsCallable = vi.fn(() => mockTrackAnalytics)
 
 // date-fns-tz モック（vi.mockより先に定義）
 vi.mock('date-fns-tz', () => ({
@@ -32,17 +32,20 @@ vi.mock('firebase/firestore', () => ({
   collection: (...args: any[]) => mockCollection(...args),
   query: (...args: any[]) => mockQuery(...args),
   where: (...args: any[]) => mockWhere(...args),
-  orderBy: (...args: any[]) => mockOrderBy(...args),
-  setDoc: (...args: any[]) => mockSetDoc(...args),
-  increment: (val: number) => mockIncrement(val)
+  orderBy: (...args: any[]) => mockOrderBy(...args)
+}))
+
+vi.mock('firebase/functions', () => ({
+  httpsCallable: (functions: unknown, name: string) => mockHttpsCallable(functions, name)
 }))
 
 // useNuxtApp モック
 const mockDb = {}
+const mockFunctions = {}
 let mockIsOffline = false
 
 vi.stubGlobal('useNuxtApp', () => ({
-  $firebase: { db: mockDb },
+  $firebase: { db: mockDb, functions: mockFunctions },
   $isOffline: mockIsOffline
 }))
 
@@ -52,6 +55,10 @@ describe('useAnalytics - アクセス統計機能', () => {
   beforeEach(async () => {
     vi.clearAllMocks()
     mockIsOffline = false
+    vi.stubGlobal('useNuxtApp', () => ({
+      $firebase: { db: mockDb, functions: mockFunctions },
+      $isOffline: mockIsOffline
+    }))
 
     // composableを動的インポート
     const mod = await import('~/composables/useAnalytics')
@@ -63,83 +70,19 @@ describe('useAnalytics - アクセス統計機能', () => {
   })
 
   // ========================================
-  // ユーティリティ関数のテスト
-  // ========================================
-
-  describe('日付キー生成', () => {
-    it('日付キーが YYYY-MM-DD 形式で生成される', async () => {
-      const analytics = useAnalytics()
-      const testDate = new Date('2025-01-15T10:30:00')
-
-      // trackPageViewを呼び出して日付キーをテスト
-      mockSetDoc.mockResolvedValue(undefined)
-      await analytics.trackPageView({ pagePath: '/test' })
-
-      // setDocが呼ばれたことを確認
-      expect(mockSetDoc).toHaveBeenCalled()
-
-      // 最初の呼び出しで日付キーを含むドキュメントパスが使用されていること
-      const firstCall = mockDoc.mock.calls[0]
-      expect(firstCall[1]).toMatch(/analytics_daily/)
-    })
-  })
-
-  // ========================================
   // トラッキング機能のテスト
   // ========================================
 
   describe('trackPageView', () => {
-    it('PVが正しくインクリメントされる', async () => {
+    it('PVイベントをCallable Functionへ送信する', async () => {
       const analytics = useAnalytics()
-      mockSetDoc.mockResolvedValue(undefined)
+      mockTrackAnalytics.mockResolvedValue({ data: { success: true } })
 
       await analytics.trackPageView({ pagePath: '/transit' })
 
-      // 日次、月次、時間別の3回setDocが呼ばれる
-      expect(mockSetDoc).toHaveBeenCalledTimes(3)
-    })
-
-    it('日次統計が正しいフィールドでインクリメントされる', async () => {
-      const analytics = useAnalytics()
-      mockSetDoc.mockResolvedValue(undefined)
-
-      await analytics.trackPageView({ pagePath: '/transit' })
-
-      // 最初の呼び出し（日次統計）を確認
-      const dailyCall = mockSetDoc.mock.calls[0]
-      const dailyData = dailyCall[1]
-
-      expect(dailyData).toHaveProperty('dateKey')
-      expect(dailyData).toHaveProperty('pvTotal')
-      expect(dailyData).toHaveProperty('updatedAt')
-    })
-
-    it('月次統計が正しくインクリメントされる', async () => {
-      const analytics = useAnalytics()
-      mockSetDoc.mockResolvedValue(undefined)
-
-      await analytics.trackPageView({ pagePath: '/transit' })
-
-      // 2番目の呼び出し（月次統計）を確認
-      const monthlyCall = mockSetDoc.mock.calls[1]
-      const monthlyData = monthlyCall[1]
-
-      expect(monthlyData).toHaveProperty('monthKey')
-      expect(monthlyData).toHaveProperty('pvTotal')
-    })
-
-    it('時間別統計が正しくインクリメントされる', async () => {
-      const analytics = useAnalytics()
-      mockSetDoc.mockResolvedValue(undefined)
-
-      await analytics.trackPageView({ pagePath: '/transit' })
-
-      // 3番目の呼び出し（時間別統計）を確認
-      const hourlyCall = mockSetDoc.mock.calls[2]
-      const hourlyData = hourlyCall[1]
-
-      expect(hourlyData).toHaveProperty('hourKey')
-      expect(hourlyData).toHaveProperty('pvTotal')
+      expect(mockHttpsCallable).toHaveBeenCalledWith(mockFunctions, 'trackAnalytics')
+      expect(mockTrackAnalytics).toHaveBeenCalledOnce()
+      expect(mockTrackAnalytics).toHaveBeenCalledWith({ type: 'page_view' })
     })
 
     it('オフライン時はスキップされる', async () => {
@@ -148,7 +91,7 @@ describe('useAnalytics - アクセス統計機能', () => {
       // モジュールをリロード
       vi.resetModules()
       vi.stubGlobal('useNuxtApp', () => ({
-        $firebase: { db: mockDb },
+        $firebase: { db: mockDb, functions: mockFunctions },
         $isOffline: true
       }))
 
@@ -157,108 +100,41 @@ describe('useAnalytics - アクセス統計機能', () => {
 
       await analytics.trackPageView({ pagePath: '/transit' })
 
-      expect(mockSetDoc).not.toHaveBeenCalled()
+      expect(mockTrackAnalytics).not.toHaveBeenCalled()
     })
 
     it('エラーが発生してもユーザーには通知しない', async () => {
-      // 新しくモジュールをインポートしてエラーハンドリングをテスト
-      vi.resetModules()
-      vi.stubGlobal('useNuxtApp', () => ({
-        $firebase: { db: mockDb },
-        $isOffline: false
-      }))
+      const analytics = useAnalytics()
+      mockTrackAnalytics.mockRejectedValueOnce(new Error('Functions error'))
 
-      mockSetDoc.mockRejectedValueOnce(new Error('Firestore error'))
-
-      const mod = await import('~/composables/useAnalytics')
-      const analytics = mod.useAnalytics()
-
-      // エラーがスローされないことを確認
       await expect(analytics.trackPageView({ pagePath: '/transit' })).resolves.not.toThrow()
-
-      // setDocが呼ばれたことを確認（エラーが発生してもcatchで処理される）
-      expect(mockSetDoc).toHaveBeenCalled()
+      expect(mockTrackAnalytics).toHaveBeenCalledOnce()
     })
   })
 
   describe('trackSearch', () => {
-    it('検索が正しくインクリメントされる', async () => {
-      // モジュールをリセットして新しい状態でテスト
-      vi.resetModules()
-      vi.stubGlobal('useNuxtApp', () => ({
-        $firebase: { db: mockDb },
-        $isOffline: false
-      }))
-      mockSetDoc.mockClear()
-      mockSetDoc.mockResolvedValue(undefined)
-
-      const mod = await import('~/composables/useAnalytics')
-      const analytics = mod.useAnalytics()
+    it('検索条件をCallable Functionへ送信する', async () => {
+      const analytics = useAnalytics()
+      mockTrackAnalytics.mockResolvedValue({ data: { success: true } })
 
       await analytics.trackSearch({
         depId: 'saigo',
         arrId: 'shichirui',
-        datetime: '2025-01-15T10:30:00'
+        datetime: '2025-01-15T10:30:00.000Z'
       })
 
-      // 日次、月次、時間別の3回setDocが呼ばれる
-      expect(mockSetDoc).toHaveBeenCalledTimes(3)
-    })
-
-    it('日次統計に検索関連フィールドが含まれる', async () => {
-      vi.resetModules()
-      vi.stubGlobal('useNuxtApp', () => ({
-        $firebase: { db: mockDb },
-        $isOffline: false
-      }))
-      mockSetDoc.mockClear()
-      mockSetDoc.mockResolvedValue(undefined)
-
-      const mod = await import('~/composables/useAnalytics')
-      const analytics = mod.useAnalytics()
-
-      await analytics.trackSearch({
-        depId: 'saigo',
-        arrId: 'shichirui'
-      })
-
-      const dailyCall = mockSetDoc.mock.calls[0]
-      const dailyData = dailyCall[1]
-
-      expect(dailyData).toHaveProperty('searchTotal')
-      expect(dailyData).toHaveProperty('routeCounts.saigo-shichirui')
-      expect(dailyData).toHaveProperty('departureCounts.saigo')
-      expect(dailyData).toHaveProperty('arrivalCounts.shichirui')
-    })
-
-    it('時間帯カウントが正しく設定される', async () => {
-      vi.resetModules()
-      vi.stubGlobal('useNuxtApp', () => ({
-        $firebase: { db: mockDb },
-        $isOffline: false
-      }))
-      mockSetDoc.mockClear()
-      mockSetDoc.mockResolvedValue(undefined)
-
-      const mod = await import('~/composables/useAnalytics')
-      const analytics = mod.useAnalytics()
-
-      await analytics.trackSearch({
+      expect(mockTrackAnalytics).toHaveBeenCalledWith({
+        type: 'search',
         depId: 'saigo',
         arrId: 'shichirui',
-        datetime: '2025-01-15T14:30:00' // 14時
+        datetime: '2025-01-15T10:30:00.000Z'
       })
-
-      const dailyCall = mockSetDoc.mock.calls[0]
-      const dailyData = dailyCall[1]
-
-      expect(dailyData).toHaveProperty('hourCounts.14')
     })
 
     it('オフライン時はスキップされる', async () => {
       vi.resetModules()
       vi.stubGlobal('useNuxtApp', () => ({
-        $firebase: { db: mockDb },
+        $firebase: { db: mockDb, functions: mockFunctions },
         $isOffline: true
       }))
 
@@ -270,28 +146,26 @@ describe('useAnalytics - アクセス統計機能', () => {
         arrId: 'shichirui'
       })
 
-      expect(mockSetDoc).not.toHaveBeenCalled()
+      expect(mockTrackAnalytics).not.toHaveBeenCalled()
     })
 
     it('datetimeが省略された場合は現在時刻を使用する', async () => {
-      vi.resetModules()
-      vi.stubGlobal('useNuxtApp', () => ({
-        $firebase: { db: mockDb },
-        $isOffline: false
-      }))
-      mockSetDoc.mockClear()
-      mockSetDoc.mockResolvedValue(undefined)
-
-      const mod = await import('~/composables/useAnalytics')
-      const analytics = mod.useAnalytics()
+      const analytics = useAnalytics()
+      mockTrackAnalytics.mockResolvedValue({ data: { success: true } })
 
       await analytics.trackSearch({
         depId: 'saigo',
         arrId: 'shichirui'
-        // datetimeを省略
       })
 
-      expect(mockSetDoc).toHaveBeenCalledTimes(3)
+      expect(mockTrackAnalytics).toHaveBeenCalledOnce()
+      const payload = mockTrackAnalytics.mock.calls[0]?.[0] as Record<string, string>
+      expect(payload).toMatchObject({
+        type: 'search',
+        depId: 'saigo',
+        arrId: 'shichirui'
+      })
+      expect(Number.isNaN(new Date(payload.datetime).getTime())).toBe(false)
     })
   })
 
@@ -511,45 +385,36 @@ describe('useAnalytics - アクセス統計機能', () => {
   })
 
   describe('getHourlyDistribution', () => {
-    it('時間帯別分布を正しく取得できる', async () => {
+    it('時間帯別分布を1回の範囲クエリで取得できる', async () => {
       const analytics = useAnalytics()
 
-      // 3時間分のデータをモック
-      mockGetDoc
-        .mockResolvedValueOnce({
-          exists: () => true,
-          data: () => ({ hourKey: '2025-01-15-08', pvTotal: 10, searchTotal: 5 })
-        })
-        .mockResolvedValueOnce({
-          exists: () => true,
-          data: () => ({ hourKey: '2025-01-15-09', pvTotal: 20, searchTotal: 10 })
-        })
-        .mockResolvedValueOnce({
-          exists: () => true,
-          data: () => ({ hourKey: '2025-01-15-10', pvTotal: 30, searchTotal: 15 })
-        })
-        .mockResolvedValue({ exists: () => false })
+      const hourlyDocs = [
+        { hourKey: '2025-01-15-08', pvTotal: 10, searchTotal: 5 },
+        { hourKey: '2025-01-15-09', pvTotal: 20, searchTotal: 10 },
+        { hourKey: '2025-01-15-10', pvTotal: 30, searchTotal: 15 }
+      ]
+      mockGetDocs.mockResolvedValue({
+        docs: hourlyDocs.map((data, index) => ({
+          id: `hour-${index}`,
+          data: () => data
+        }))
+      })
 
       const startDate = new Date('2025-01-15T08:00:00')
       const endDate = new Date('2025-01-15T10:00:00')
       const result = await analytics.getHourlyDistribution(startDate, endDate)
 
-      // 24時間分のデータが返される
       expect(result).toHaveLength(24)
-
-      // 各時間帯にhour, pv, searchプロパティがある
-      result.forEach(item => {
-        expect(item).toHaveProperty('hour')
-        expect(item).toHaveProperty('pv')
-        expect(item).toHaveProperty('search')
-      })
+      expect(result[8]).toEqual({ hour: 8, pv: 10, search: 5 })
+      expect(result[10]).toEqual({ hour: 10, pv: 30, search: 15 })
+      expect(mockGetDocs).toHaveBeenCalledOnce()
+      expect(mockGetDoc).not.toHaveBeenCalled()
     })
 
     it('欠損時間帯は0で補完される', async () => {
       const analytics = useAnalytics()
 
-      // 全て存在しない場合
-      mockGetDoc.mockResolvedValue({ exists: () => false })
+      mockGetDocs.mockResolvedValue({ docs: [] })
 
       const startDate = new Date('2025-01-15T00:00:00')
       const endDate = new Date('2025-01-15T23:59:59')
@@ -611,6 +476,33 @@ describe('useAnalytics - アクセス統計機能', () => {
       expect(result.departure).toHaveLength(0)
       expect(result.arrival).toHaveLength(0)
     })
+
+    it('旧形式のドット付きフィールドと新形式のマップを合算する', async () => {
+      const analytics = useAnalytics()
+      const mockData = {
+        departureCounts: { SAIGO: 3 },
+        arrivalCounts: { HISHIURA: 4 },
+        'departureCounts.SAIGO': 2,
+        'departureCounts.HISHIURA': 1,
+        'arrivalCounts.HISHIURA': 2
+      }
+      mockGetDocs.mockResolvedValue({
+        docs: [{ id: '2025-01-15', data: () => mockData }]
+      })
+
+      const result = await analytics.getPortDistribution(
+        new Date('2025-01-15'),
+        new Date('2025-01-15')
+      )
+
+      expect(result.departure).toEqual([
+        expect.objectContaining({ id: 'SAIGO', count: 5 }),
+        expect.objectContaining({ id: 'HISHIURA', count: 1 })
+      ])
+      expect(result.arrival).toEqual([
+        expect.objectContaining({ id: 'HISHIURA', count: 6 })
+      ])
+    })
   })
 
   describe('getPvTrend', () => {
@@ -665,52 +557,4 @@ describe('useAnalytics - アクセス統計機能', () => {
     })
   })
 
-  // ========================================
-  // レガシー互換性のテスト
-  // ========================================
-
-  describe('レガシーAPIの互換性', () => {
-    it('getAccessTrendsがダミーデータを返す', async () => {
-      const analytics = useAnalytics()
-      const startDate = new Date('2025-01-13')
-      const endDate = new Date('2025-01-15')
-
-      const result = await analytics.getAccessTrends(startDate, endDate)
-
-      expect(result).toHaveProperty('total')
-      expect(result).toHaveProperty('uniqueUsers')
-      expect(result).toHaveProperty('avgSessionDuration')
-      expect(result).toHaveProperty('bounceRate')
-    })
-
-    it('getPopularPagesが空配列を返す', async () => {
-      const analytics = useAnalytics()
-      const startDate = new Date('2025-01-13')
-      const endDate = new Date('2025-01-15')
-
-      const result = await analytics.getPopularPages(startDate, endDate)
-
-      expect(result).toEqual([])
-    })
-
-    it('getDeviceStatsがダミーデータを返す', async () => {
-      const analytics = useAnalytics()
-
-      const result = await analytics.getDeviceStats()
-
-      expect(result).toHaveProperty('deviceTypes')
-      expect(result).toHaveProperty('browsers')
-      expect(result).toHaveProperty('os')
-    })
-
-    it('calculateKPIsがダミーデータを返す', async () => {
-      const analytics = useAnalytics()
-
-      const result = await analytics.calculateKPIs('month')
-
-      expect(result).toHaveProperty('current')
-      expect(result).toHaveProperty('previous')
-      expect(result).toHaveProperty('trends')
-    })
-  })
 })

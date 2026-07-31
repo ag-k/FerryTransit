@@ -1,4 +1,5 @@
 import { isBrowserTestMode } from '~/utils/testMode'
+import { shouldTrackAnalyticsPath } from '~/utils/analyticsTracking'
 
 /**
  * Analytics Tracking Plugin
@@ -10,25 +11,16 @@ export default defineNuxtPlugin({
   dependsOn: ['firebase'],
   setup: () => {
     const { trackPageView } = useAnalytics()
-    const shouldSkipTracking = (path?: string) => {
-      if (!path) {
-        return true
-      }
-      if (isBrowserTestMode()) {
-        return true
-      }
-      if (__CAPACITOR_BUILD__) {
-        return false
-      }
-      return path.startsWith('/admin')
-    }
-  
     // ルート遷移の監視
     const router = useRouter()
   
     // ルート遷移ごとにPVを記録
     router.afterEach((to) => {
-      if (shouldSkipTracking(to.path)) {
+      if (!shouldTrackAnalyticsPath({
+        path: to.path,
+        isTestMode: isBrowserTestMode(),
+        isCapacitorBuild: __CAPACITOR_BUILD__
+      })) {
         return
       }
       trackPageView({ pagePath: to.path })

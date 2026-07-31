@@ -5,19 +5,12 @@ export interface PopularRoute {
   percentage: number
 }
 
-export interface FavoriteStats {
-  totalFavorites: number
-  routeFavorites: number
-  portFavorites: number
-}
-
 export interface DashboardStats {
   dailyAccess: number
   monthlyAccess: number
-  activeUsers: number
+  dailySearches: number
+  monthlySearches: number
   popularRoutes: PopularRoute[]
-  favoriteStats: FavoriteStats
-  errorCount: number
 }
 
 export interface AccessLog {

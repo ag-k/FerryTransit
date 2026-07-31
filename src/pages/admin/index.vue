@@ -98,8 +98,8 @@
       </div>
     </div>
 
-    <div class="mt-8 grid grid-cols-1 gap-5 lg:grid-cols-3">
-      <Card class="lg:col-span-2" data-test="dashboard-popular-routes">
+    <div class="mt-8">
+      <Card data-test="dashboard-popular-routes">
         <div class="flex items-center justify-between mb-4">
           <h2 class="text-lg font-medium text-gray-900 dark:text-white">
             人気航路ランキング
@@ -139,22 +139,6 @@
           </div>
         </div>
       </Card>
-
-      <div>
-        <StatisticsChart
-          v-if="hasFavoriteBreakdown"
-          title="お気に入り内訳"
-          type="pie"
-          :data="favoriteBreakdown"
-          data-test="dashboard-favorite-chart"
-        />
-        <div
-          v-else
-          class="h-64 flex items-center justify-center rounded-lg bg-white dark:bg-gray-800 shadow text-sm text-gray-500 dark:text-gray-200"
-        >
-          お気に入りのデータがありません
-        </div>
-      </div>
     </div>
 
     <div class="mt-8 grid grid-cols-1 gap-5 lg:grid-cols-2">
@@ -227,10 +211,9 @@
 <script setup lang="ts">
 import { 
   ArrowPathIcon,
-  UserGroupIcon,
   ChartBarIcon,
-  StarIcon,
   CalendarDaysIcon,
+  MagnifyingGlassIcon,
   PencilIcon,
   TrashIcon,
   DocumentArrowUpIcon,
@@ -280,12 +263,13 @@ const buildTrend = (values: number[]) => {
   if (values.length < 2) return null
   const current = values[values.length - 1]
   const previous = values[values.length - 2]
-  if (previous === 0) return null
+  if (current === undefined || previous === undefined || previous === 0) return null
   const diff = current - previous
   const percent = Math.round((diff / previous) * 1000) / 10
+  const changeType: 'increase' | 'decrease' = diff >= 0 ? 'increase' : 'decrease'
   return {
     change: `${diff >= 0 ? '+' : ''}${percent}%`,
-    changeType: (diff >= 0 ? 'increase' : 'decrease') as const
+    changeType
   }
 }
 
@@ -307,14 +291,14 @@ const dashboardCards = computed(() => {
       icon: CalendarDaysIcon
     },
     {
-      name: 'アクティブユーザー',
-      value: formatNumber(stats.activeUsers),
-      icon: UserGroupIcon
+      name: '今日を指定した検索数',
+      value: formatNumber(stats.dailySearches),
+      icon: MagnifyingGlassIcon
     },
     {
-      name: 'お気に入り総数',
-      value: formatNumber(stats.favoriteStats.totalFavorites),
-      icon: StarIcon
+      name: '今月を指定した検索数',
+      value: formatNumber(stats.monthlySearches),
+      icon: MagnifyingGlassIcon
     }
   ]
 })
@@ -346,28 +330,8 @@ const searchChartData = computed<ChartData[]>(() => {
 const hasPvTrend = computed(() => pvTrendRaw.value.some(item => item.pv > 0))
 const hasSearchTrend = computed(() => pvTrendRaw.value.some(item => item.search > 0))
 
-const favoriteBreakdown = computed<ChartData[]>(() => {
-  const favorites = adminStore.dashboardStats?.favoriteStats
-  if (!favorites) return []
-  const routeFavorites = favorites.routeFavorites ?? 0
-  const portFavorites = favorites.portFavorites ?? 0
-  const total = favorites.totalFavorites ?? routeFavorites + portFavorites
-  const other = Math.max(total - routeFavorites - portFavorites, 0)
-  const data = [
-    { label: '航路', value: routeFavorites },
-    { label: '港', value: portFavorites }
-  ]
-  if (other > 0) {
-    data.push({ label: 'その他', value: other })
-  }
-  return data
-})
-
-const hasFavoriteBreakdown = computed(() => favoriteBreakdown.value.some(item => item.value > 0))
-
 const systemStatusItems = computed(() => {
   const settings = adminStore.systemSettings
-  const errorCount = adminStore.dashboardStats?.errorCount
   if (!settings) return []
   return [
     {
@@ -385,10 +349,6 @@ const systemStatusItems = computed(() => {
     {
       label: 'バックアップ頻度',
       value: settings.backupSchedule || '未設定'
-    },
-    {
-      label: 'エラー検知',
-      value: errorCount !== undefined ? `${formatNumber(errorCount)}件` : '未集計'
     }
   ]
 })
