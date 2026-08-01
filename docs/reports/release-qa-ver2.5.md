@@ -89,13 +89,14 @@
 | iOS Release Archive | 成功 | 固定SHA `19aab26378b820c88747bf404db8ed83175090b9`、`/tmp/FerryTransit-v25-b25002.xcarchive`、v2.5（build 25002）、Apple Development署名 |
 | iOS配布候補内容検証 | 成功 | Archive内の生成JavaScriptにJALの`fareStatus` / `knownFareTotal`、はつみ交通`HATSUMI_BUS_CONNECTION`・500円処理を確認。時刻表データ非同梱チェック成功 |
 | iOS App Store配布用IPA | 成功 | v2.5（build 25002）、Apple Distribution署名、Store provisioning profile、`beta-reports-active=true`、`get-task-allow=false` |
-| App Store Connectアップロード | 成功 | 2026-08-01 12:55 JST。`xcodebuild -exportArchive`が`Upload succeeded`を返し、Apple側の処理開始を確認。Web画面は再ログインが必要なため処理完了は未確認 |
+| App Store Connectアップロード | 成功 | 2026-08-01 12:55 JST。`xcodebuild -exportArchive`が`Upload succeeded`を返した |
+| App Store Connect処理完了 | 成功 | 2026-08-01 12:57 JST。Appleから「Version 2.5 (25002) ... has completed processing.」通知を受信したことを、build番号・アプリ名へ限定したメール検索で確認 |
 | `npm run cap:android:build` | 成功 | productionアセット生成、Capacitor同期、非同梱チェック成功 |
 | Android `bundleRelease` | 未完了 | 署名用4環境変数が未設定のため、Gradleが意図どおり停止 |
 
 iOSビルドではCapacitor/Cordovaの`WKProcessPool`非推奨警告とAppIntents未使用警告がある。Android AAB生成には`FERRYTRANSIT_ANDROID_KEYSTORE_PATH`、`FERRYTRANSIT_ANDROID_KEYSTORE_PASSWORD`、`FERRYTRANSIT_ANDROID_KEY_ALIAS`、`FERRYTRANSIT_ANDROID_KEY_PASSWORD`が必要で、秘密値は記録していない。
 
-2026-08-01の再確認では、Developer Mode有効のiPhone実機2台をXcodeBuildMCPで認識した。XcodeのDevices画面で接続中の`ePhone`にv2.4（build 24001）がインストール済みであることを確認したため、TestFlight build 25002が利用可能になれば更新保持QAを実施できる。ただしTestFlight版はまだ未インストールで、開発版による上書きは行っていない。Android SDKのADBは利用可能だが、接続中のAndroid端末は0台だった。Android署名環境変数4件とApp Store Connect API設定は未設定だったが、Xcodeに設定済みの開発者アカウントを利用した自動署名・アップロードには成功した。
+2026-08-01の再確認では、Developer Mode有効のiPhone実機2台をXcodeBuildMCPで認識した。XcodeのDevices画面で接続中の`ePhone`にv2.4（build 24001）がインストール済みであることを確認したため、処理完了済みのTestFlight build 25002を更新インストールすれば保持QAを実施できる。ただしTestFlight版はまだ未インストールで、開発版による上書きは行っていない。Android SDKのADBは利用可能だが、接続中のAndroid端末は0台だった。Android署名環境変数4件とApp Store Connect API設定は未設定だったが、Xcodeに設定済みの開発者アカウントを利用した自動署名・アップロードには成功した。
 
 最初にアップロードしたbuild 25001のArchive作成日時は2026-07-31 16:30 JSTで、JAL運賃表示などをまとめたWeb / Storage公開コミット（同日20:47 JST）より前だった。最終変更を含む配布候補として使用できないためbuild 25001を配布対象外とし、build番号を25002へ更新した固定SHA `19aab26378b820c88747bf404db8ed83175090b9`から再生成・再アップロードした。
 
@@ -113,7 +114,7 @@ iOSビルドではCapacitor/Cordovaの`WKProcessPool`非推奨警告とAppIntent
 | ID | 重要度 | 内容 | 影響 / 回避策 | 完了条件 |
 | --- | --- | --- | --- | --- |
 | REL-25-01 | リリース阻止 | Android署名環境変数未設定 | AABを生成・内部テスト配布できない。署名担当環境で実行する | `bundleRelease`成功とAAB検証 |
-| REL-25-02 | リリース阻止 | iOS build 25002はApp Store Connectへアップロード済みだが、処理完了・TestFlight実機QAとGoogle Play内部テストが未実施 | WebView外部リンク、オフライン、更新保持を最終確認できない | iOS処理完了後のTestFlight実機チェックとGoogle Play内部配布・実機チェック |
+| REL-25-02 | リリース阻止 | iOS build 25002はApp Store Connectで処理完了済みだが、TestFlight実機QAとGoogle Play内部テストが未実施 | WebView外部リンク、オフライン、更新保持を最終確認できない | TestFlight build 25002の実機チェックとGoogle Play内部配布・実機チェック |
 | REL-25-04 | リリース阻止 | QA責任者、リリース責任者の承認未記録 | Web / Storage公開SHAは固定済み。最終Go判定は未成立 | 両責任者承認 |
 
-現時点で今回のWeb / Storage本番反映に重大・高優先度の既知プロダクト不具合は確認していない。ただしiOSの処理完了・TestFlight実機QA、Google Play配布・実機QA、承認ゲートが未完了のため、v2.5全体の判定はNo-Go（準備継続）とする。
+現時点で今回のWeb / Storage本番反映に重大・高優先度の既知プロダクト不具合は確認していない。ただしiOSのTestFlight実機QA、Google Play配布・実機QA、承認ゲートが未完了のため、v2.5全体の判定はNo-Go（準備継続）とする。
