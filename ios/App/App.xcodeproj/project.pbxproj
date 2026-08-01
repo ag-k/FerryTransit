@@ -316,7 +316,7 @@
 				CODE_SIGN_IDENTITY = "Apple Development";
 				"CODE_SIGN_IDENTITY[sdk=iphoneos*]" = "iPhone Developer";
 				CODE_SIGN_STYLE = Manual;
-				CURRENT_PROJECT_VERSION = 25001;
+				CURRENT_PROJECT_VERSION = 25002;
 				DEVELOPMENT_TEAM = "";
 				"DEVELOPMENT_TEAM[sdk=iphoneos*]" = FY9C3PKTGA;
 				INFOPLIST_FILE = App/Base.lproj/Info.plist;
@@ -344,7 +344,7 @@
 				CODE_SIGN_IDENTITY = "Apple Development";
 				"CODE_SIGN_IDENTITY[sdk=iphoneos*]" = "iPhone Developer";
 				CODE_SIGN_STYLE = Manual;
-				CURRENT_PROJECT_VERSION = 25001;
+				CURRENT_PROJECT_VERSION = 25002;
 				DEVELOPMENT_TEAM = "";
 				"DEVELOPMENT_TEAM[sdk=iphoneos*]" = FY9C3PKTGA;
 				INFOPLIST_FILE = App/Base.lproj/Info.plist;
