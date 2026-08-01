@@ -93,11 +93,13 @@
 | App Store Connect処理完了 | 成功 | 2026-08-01 17:38 JST。Appleから「Version 2.5 (25003) ... has completed processing.」通知を受信したことを、送信元・アプリ名・build番号へ限定したメール検索で確認 |
 | TestFlight更新インストール | 成功 | 2026-08-01 17:43 JST。接続中の`ePhone`をbuild 25002から修正版build 25003へTestFlightの「アップデート」で更新し、TestFlight表示`2.5 (25003)`と「開く」からの起動成功を確認 |
 | `npm run cap:android:build` | 成功 | productionアセット生成、Capacitor同期、非同梱チェック成功 |
-| Android `bundleRelease` | 未完了 | 署名用4環境変数が未設定のため、Gradleが意図どおり停止 |
+| Android `bundleRelease` | 成功 | macOSキーチェーンから既存署名情報4項目を同一シェルへ読み込み、`bundleRelease` / `lintVitalRelease` / `signReleaseBundle`に成功 |
+| Android AAB検証 | 成功 | `output/releases/ferrytransit-v2.5-25003-1db1ba1.aab`（10,219,703 bytes、SHA-256 `ddf7e8ff341093df2c9449d4d2cb0317fa7850e1a99203e1b0793e736dd401a8`）。bundletool 1.18.3 validate成功、Application ID `com.naturebotlab.ferrytransit`、v2.5 / 25003、minSdk 23 / targetSdk 36、署名証明書SHA-256はPlay登録値と一致、時刻表・GTFS・bus-search・source map禁止エントリ0件 |
+| Google Play内部テスト | 未完了 | Play Consoleは対象アカウントの再認証が必要。別のログイン済みChromeアカウントはデベロッパー登録前かつ2段階認証設定要求のため、認証・規約同意・アップロードを実施していない |
 
-iOSビルドではCapacitor/Cordovaの`WKProcessPool`非推奨警告とAppIntents未使用警告がある。Android AAB生成には`FERRYTRANSIT_ANDROID_KEYSTORE_PATH`、`FERRYTRANSIT_ANDROID_KEYSTORE_PASSWORD`、`FERRYTRANSIT_ANDROID_KEY_ALIAS`、`FERRYTRANSIT_ANDROID_KEY_PASSWORD`が必要で、秘密値は記録していない。
+iOSビルドではCapacitor/Cordovaの`WKProcessPool`非推奨警告とAppIntents未使用警告がある。AndroidビルドではflatDir、Capacitor StatusBar、MainActivityの既存警告があるが、Release lintとAAB生成は成功した。Android署名情報はmacOSキーチェーンから一時的に読み込み、秘密値は記録していない。
 
-2026-08-01の再確認では、Developer Mode有効のiPhone実機2台をXcodeBuildMCPで認識した。接続中の`ePhone`にv2.4（build 24001）がインストール済みであることを確認後、14:38 JSTにTestFlightからv2.5（build 25002）を更新インストールした。`devicectl device info apps`で`com.naturebot-lab.FerryTransit`のVersion `2.5`、Bundle Version `25002`を確認し、TestFlightの「開く」から時刻表画面の起動にも成功した。Android SDKのADBは利用可能だが、接続中のAndroid端末は0台だった。Android署名環境変数4件とApp Store Connect API設定は未設定だったが、Xcodeに設定済みの開発者アカウントを利用した自動署名・アップロードには成功した。
+2026-08-01の再確認では、Developer Mode有効のiPhone実機2台をXcodeBuildMCPで認識した。接続中の`ePhone`にv2.4（build 24001）がインストール済みであることを確認後、14:38 JSTにTestFlightからv2.5（build 25002）を更新インストールした。`devicectl device info apps`で`com.naturebot-lab.FerryTransit`のVersion `2.5`、Bundle Version `25002`を確認し、TestFlightの「開く」から時刻表画面の起動にも成功した。Android SDKのADBは利用可能だが、接続中のAndroid実機は0台だった。Android署名情報は後続作業でmacOSキーチェーンから安全に読み込み、AAB生成に成功した。App Store Connect API設定は未設定だったが、Xcodeに設定済みの開発者アカウントを利用した自動署名・アップロードには成功した。
 
 ### iOS TestFlight実機追加QA（2026-08-01 15:09–15:40 JST）
 
@@ -141,6 +143,15 @@ iOSビルドではCapacitor/Cordovaの`WKProcessPool`非推奨警告とAppIntent
 - 両ブラウザで「バス」タブへ切り替え、出発地選択ダイアログを表示した。ダイアログは「バス停」区分、地域・路線絞り込み、停留所一覧で構成され、港・空港などの非バス停候補は表示されなかった。
 - 判定: モバイルSafari / Chromeの本番表示・主要操作QAは合格。
 
+### Android Release成果物・エミュレータ補助QA（2026-08-01 18:01–18:21 JST）
+
+- 署名済みAABを生成し、bundletool 1.18.3、`jarsigner`、証明書SHA-256、manifest、禁止データ非同梱を検証した。提出用コピーは`output/releases/ferrytransit-v2.5-25003-1db1ba1.aab`へ固定した。
+- API 23クリーンAVDではRelease APKがクラッシュせず、古いAndroid System WebViewを検出して日本語・英語の更新案内とGoogle Play更新ボタンを表示した。Google APIsイメージには更新可能なPlay Storeがないため機能画面QAはAPI 34へ移した。
+- API 34クリーンAVDへ同じ署名済みRelease構成のAPKを導入。コールド起動、時刻表、バスタブ、バス停だけの出発地・目的地ダイアログを確認した。
+- 境港駅→七類港で`08:24→08:39`、`13:25→13:40`、`16:07→16:22`を取得。便詳細でHatsumi Kotsu、片道`¥500`、公開期間`2026/06/08–2026/12/31`を確認した。
+- 大阪（伊丹）空港→隠岐空港でJAL2331 `12:15→13:05`、`Airfare charged separately (variable)`、合計も変動運賃であることを確認した。「Check fare on JAL」押下でCapacitor Browserが起動し、Activityログで`https://www.jal.co.jp/...`のVIEW IntentをChromeへ渡したことを確認した。クリーンAVDのChrome初回規約画面で停止し、規約同意は実施していない。
+- 最終プロセスログにクラッシュ、ANR、SSL、Capacitorの致命的例外は確認されなかった。本確認はエミュレータ補助QAであり、Google Play内部テスト版のAndroid実機QAを代替しない。
+
 最初にアップロードしたbuild 25001のArchive作成日時は2026-07-31 16:30 JSTで、JAL運賃表示などをまとめたWeb / Storage公開コミット（同日20:47 JST）より前だった。最終変更を含む配布候補として使用できないためbuild 25001を配布対象外とし、build番号を25002へ更新した固定SHA `19aab26378b820c88747bf404db8ed83175090b9`から再生成・再アップロードした。
 
 ## 影響レビュー
@@ -156,8 +167,8 @@ iOSビルドではCapacitor/Cordovaの`WKProcessPool`非推奨警告とAppIntent
 
 | ID | 重要度 | 内容 | 影響 / 回避策 | 完了条件 |
 | --- | --- | --- | --- | --- |
-| REL-25-01 | リリース阻止 | Android署名環境変数未設定 | AABを生成・内部テスト配布できない。署名担当環境で実行する | `bundleRelease`成功とAAB検証 |
-| REL-25-02 | リリース阻止 | iOS build 25003の主要経路・保持QAは実施済みだが、完全オフラインとGoogle Play内部テストが未実施 | iOSの完全オフラインとAndroid実機を最終確認できない | iOS完全オフラインQAとGoogle Play内部配布・実機チェック |
+| REL-25-01 | 解決済み | macOSキーチェーンから既存署名情報を読み込み、署名済みAABを生成・検証した | 影響なし | 2026-08-01確認済み |
+| REL-25-02 | リリース阻止 | iOS build 25003の主要経路・保持QAは実施済みだが、完全オフラインとGoogle Play内部テストが未実施。提出用AABは生成済みだがPlay Consoleの対象アカウント再認証が必要 | iOSの完全オフラインとAndroid実機を最終確認できない | Play Console再認証後のGoogle Play内部配布・実機チェックとiOS完全オフラインQA |
 | REL-25-05 | 解決済み | build 25003へ更新し、伊丹・出雲の両経路からJAL公式ページへ遷移できることを実機確認 | 影響なし | 2026-08-01実機確認済み |
 | REL-25-06 | 解決済み | build 25003へ更新し、既存のはつみ交通履歴が`境港駅 → 七類港`と表示され、内部IDが露出しないことを実機確認 | 影響なし | 2026-08-01実機確認済み |
 | REL-25-04 | リリース阻止 | QA責任者、リリース責任者の承認未記録 | Web / Storage公開SHAは固定済み。最終Go判定は未成立 | 両責任者承認 |
