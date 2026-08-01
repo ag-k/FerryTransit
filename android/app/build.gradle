@@ -31,7 +31,7 @@ android {
         applicationId "com.naturebotlab.ferrytransit"
         minSdkVersion rootProject.ext.minSdkVersion
         targetSdkVersion rootProject.ext.targetSdkVersion
-        versionCode 25002
+        versionCode 25003
         versionName "2.5"
         testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
         aaptOptions {
