@@ -91,7 +91,7 @@
 | iOS App Store配布用IPA | 成功 | `xcodebuild -exportArchive`のApp Store Connect分析・再署名・アップロード検証が成功し、build番号25003を維持 |
 | App Store Connectアップロード | 成功 | 2026-08-01 17:30 JST。`xcodebuild -exportArchive`が`Uploaded App` / `Upload succeeded`を返した |
 | App Store Connect処理完了 | 成功 | 2026-08-01 17:38 JST。Appleから「Version 2.5 (25003) ... has completed processing.」通知を受信したことを、送信元・アプリ名・build番号へ限定したメール検索で確認 |
-| TestFlight更新インストール | 成功 | 2026-08-01 14:38 JST。接続中の`ePhone`をv2.4（build 24001）からv2.5（build 25002）へ更新し、`devicectl`でVersion / Bundle Versionを確認後、TestFlightの「開く」から起動成功 |
+| TestFlight更新インストール | 成功 | 2026-08-01 17:43 JST。接続中の`ePhone`をbuild 25002から修正版build 25003へTestFlightの「アップデート」で更新し、TestFlight表示`2.5 (25003)`と「開く」からの起動成功を確認 |
 | `npm run cap:android:build` | 成功 | productionアセット生成、Capacitor同期、非同梱チェック成功 |
 | Android `bundleRelease` | 未完了 | 署名用4環境変数が未設定のため、Gradleが意図どおり停止 |
 
@@ -125,6 +125,15 @@ iOSビルドではCapacitor/Cordovaの`WKProcessPool`非推奨警告とAppIntent
 - `npm run typecheck`は今回の変更箇所以外を含む既存のリポジトリ全体エラーで失敗した。今回追加・変更したファイルに起因するエラーは出ていない。
 - build 25002には本修正が含まれない。修正を含むbuild 25003は17:30 JSTにApp Store Connectへアップロードし、17:38 JSTに処理完了した。REL-25-05 / REL-25-06の完了には、build 25003を実機へ更新してJAL公式ページ遷移・履歴の「七類港」「境港駅」表示を再確認する必要がある。
 
+### iOS TestFlight build 25003再QA（2026-08-01 17:43–17:50 JST）
+
+- 対象: `ePhone`（iPhone18,3 / iOS 26.5.2）、TestFlight v2.5（build 25003）。TestFlight一覧の`2.5 (25003)`、「アップデート」完了後の「開く」、アプリ起動を確認した。CoreDeviceの一時的な初期化タイムアウトにより`devicectl`の二重確認はできなかったが、TestFlight自身のbuild表示を更新前後で確認した。
+- REL-25-06: build 25002で内部IDが露出していた既存のはつみ交通履歴が、build 25003では`境港駅 → 七類港`と表示された。更新前履歴をそのまま使用しており、データ移行後の表示も合格した。
+- REL-25-05（伊丹）: 更新前履歴から大阪（伊丹）空港`12:15`→西郷`13:30`を再検索し、`¥520 + 航空運賃（変動）`を確認。「JALで運賃を確認」をタップしてCapacitor Browser内の`jal.co.jp`・隠岐空港発航空券ページへ到達した。
+- REL-25-05（出雲）: 更新前履歴から出雲空港`09:00`→西郷`09:55`を再検索し、`¥520 + 航空運賃（変動）`を確認。同じリンクから`jal.co.jp`へ到達した。
+- 更新保持: 日本語、ダークテーマ、お気に入り`別府 → 菱浦`、更新前の検索履歴がbuild 25003更新後も保持された。履歴から伊丹・出雲の検索条件を復元して再検索できた。
+- 判定: REL-25-05 / REL-25-06はbuild 25003の実機で解決確認済み。iOSのJAL外部リンク・履歴表示に関するリリース阻止を解除する。
+
 最初にアップロードしたbuild 25001のArchive作成日時は2026-07-31 16:30 JSTで、JAL運賃表示などをまとめたWeb / Storage公開コミット（同日20:47 JST）より前だった。最終変更を含む配布候補として使用できないためbuild 25001を配布対象外とし、build番号を25002へ更新した固定SHA `19aab26378b820c88747bf404db8ed83175090b9`から再生成・再アップロードした。
 
 ## 影響レビュー
@@ -141,9 +150,9 @@ iOSビルドではCapacitor/Cordovaの`WKProcessPool`非推奨警告とAppIntent
 | ID | 重要度 | 内容 | 影響 / 回避策 | 完了条件 |
 | --- | --- | --- | --- | --- |
 | REL-25-01 | リリース阻止 | Android署名環境変数未設定 | AABを生成・内部テスト配布できない。署名担当環境で実行する | `bundleRelease`成功とAAB検証 |
-| REL-25-02 | リリース阻止 | iOS build 25002の主要経路・保持QAは実施済みだが、完全オフライン／通信復帰とGoogle Play内部テストが未実施 | iOSの通信切替とAndroid実機を最終確認できない | iOS通信切替QAとGoogle Play内部配布・実機チェック |
-| REL-25-05 | リリース阻止 | iOS TestFlight build 25002でJAL公式運賃リンクをタップしても遷移しない。Capacitor Browserによる修正版build 25003は処理完了済み | build 25002では利用者がアプリ内導線からJAL運賃を確認できない | build 25003を実機へ更新し、JAL公式ページ表示を確認 |
-| REL-25-06 | リリース阻止 | iOS TestFlight build 25002では、はつみ交通を含む検索履歴に内部停留所コードが露出する。履歴修正版build 25003は処理完了済み | build 25002では履歴の可読性が低下するが条件復元は可能 | build 25003を実機へ更新し、「七類港」「境港駅」表示を確認 |
+| REL-25-02 | リリース阻止 | iOS build 25003の主要経路・保持QAは実施済みだが、完全オフラインとGoogle Play内部テストが未実施 | iOSの完全オフラインとAndroid実機を最終確認できない | iOS完全オフラインQAとGoogle Play内部配布・実機チェック |
+| REL-25-05 | 解決済み | build 25003へ更新し、伊丹・出雲の両経路からJAL公式ページへ遷移できることを実機確認 | 影響なし | 2026-08-01実機確認済み |
+| REL-25-06 | 解決済み | build 25003へ更新し、既存のはつみ交通履歴が`境港駅 → 七類港`と表示され、内部IDが露出しないことを実機確認 | 影響なし | 2026-08-01実機確認済み |
 | REL-25-04 | リリース阻止 | QA責任者、リリース責任者の承認未記録 | Web / Storage公開SHAは固定済み。最終Go判定は未成立 | 両責任者承認 |
 
-Web / Storage本番反映に重大不具合は確認していない。iOS TestFlight実機QAで確認したJAL外部リンク遷移不良と履歴の内部コード露出は修正し、build 25003のApp Store Connect処理も完了したが、実機更新・再確認が未完了である。加えて完全オフライン、Google Play配布・実機QA、承認ゲートが未完了のため、v2.5全体の判定はNo-Go（確認継続）とする。
+Web / Storage本番反映に重大不具合は確認していない。iOS TestFlight実機QAで確認したJAL外部リンク遷移不良と履歴の内部コード露出は、build 25003の実機再QAで解決確認した。完全オフライン、Google Play配布・実機QA、モバイル実ブラウザ、全プラットフォーム同一SHA、承認ゲートが未完了のため、v2.5全体の判定はNo-Go（確認継続）とする。
