@@ -152,6 +152,15 @@ iOSビルドではCapacitor/Cordovaの`WKProcessPool`非推奨警告とAppIntent
 - 大阪（伊丹）空港→隠岐空港でJAL2331 `12:15→13:05`、`Airfare charged separately (variable)`、合計も変動運賃であることを確認した。「Check fare on JAL」押下でCapacitor Browserが起動し、Activityログで`https://www.jal.co.jp/...`のVIEW IntentをChromeへ渡したことを確認した。クリーンAVDのChrome初回規約画面で停止し、規約同意は実施していない。
 - 最終プロセスログにクラッシュ、ANR、SSL、Capacitorの致命的例外は確認されなかった。本確認はエミュレータ補助QAであり、Google Play内部テスト版のAndroid実機QAを代替しない。
 
+### Android Release完全オフライン・通信復帰QA（2026-08-01 18:26–18:32 JST）
+
+- 対象: Android API 34クリーンAVD、v2.5（25003）の署名済みRelease APK。オンラインで大阪（伊丹）空港→隠岐空港を検索し、JAL2331 `12:15→13:05`と`Airfare charged separately (variable)`を基準表示として確認した。
+- Wi-Fiとモバイルデータを停止し、外部IPへのpingが100% lossになることを確認した。機内モードのシステムブロードキャストはshell権限で拒否されたが、対象AVDの外部通信は遮断できている。
+- 完全オフラインでアプリをforce-stopしてコールド起動した。検索条件は大阪空港（伊丹）→隠岐空港のまま保持され、地図失敗と「最後に取得した時刻表データを表示する」旨の利用者向け警告を表示した。
+- オフラインのまま乗換検索を再実行し、JAL2331 `12:15→13:05`、区間・合計とも`Airfare charged separately (variable)`を表示した。固定額への誤変換はなかった。
+- Wi-Fiとモバイルデータを復帰し、外部IPへのping成功後にコールド再起動した。検索条件を保持したまま地図タイルを再取得し、通信復帰を確認した。
+- QA中および復帰後のログにクラッシュ、ANR、SSLHandshakeException、Capacitorの致命的例外はなかった。この確認は運賃状態TODOの完全オフライン部分を補完するが、Google Play内部テスト版のAndroid実機QAは引き続き別ゲートとして残す。
+
 最初にアップロードしたbuild 25001のArchive作成日時は2026-07-31 16:30 JSTで、JAL運賃表示などをまとめたWeb / Storage公開コミット（同日20:47 JST）より前だった。最終変更を含む配布候補として使用できないためbuild 25001を配布対象外とし、build番号を25002へ更新した固定SHA `19aab26378b820c88747bf404db8ed83175090b9`から再生成・再アップロードした。
 
 ## 影響レビュー
@@ -168,9 +177,9 @@ iOSビルドではCapacitor/Cordovaの`WKProcessPool`非推奨警告とAppIntent
 | ID | 重要度 | 内容 | 影響 / 回避策 | 完了条件 |
 | --- | --- | --- | --- | --- |
 | REL-25-01 | 解決済み | macOSキーチェーンから既存署名情報を読み込み、署名済みAABを生成・検証した | 影響なし | 2026-08-01確認済み |
-| REL-25-02 | リリース阻止 | iOS build 25003の主要経路・保持QAは実施済みだが、完全オフラインとGoogle Play内部テストが未実施。提出用AABは生成済みだがPlay Consoleの対象アカウント再認証が必要 | iOSの完全オフラインとAndroid実機を最終確認できない | Play Console再認証後のGoogle Play内部配布・実機チェックとiOS完全オフラインQA |
+| REL-25-02 | リリース阻止 | iOS build 25003の主要経路・保持QAと、Android Release構成を併用した完全オフライン・通信復帰QAは実施済み。提出用AABは生成済みだがPlay Consoleの対象アカウント再認証が必要 | Google Play内部テスト版をAndroid実機で最終確認できない | Play Console再認証後のGoogle Play内部配布・実機チェック |
 | REL-25-05 | 解決済み | build 25003へ更新し、伊丹・出雲の両経路からJAL公式ページへ遷移できることを実機確認 | 影響なし | 2026-08-01実機確認済み |
 | REL-25-06 | 解決済み | build 25003へ更新し、既存のはつみ交通履歴が`境港駅 → 七類港`と表示され、内部IDが露出しないことを実機確認 | 影響なし | 2026-08-01実機確認済み |
 | REL-25-04 | リリース阻止 | QA責任者、リリース責任者の承認未記録 | Web / Storage公開SHAは固定済み。最終Go判定は未成立 | 両責任者承認 |
 
-Web / Storage本番反映に重大不具合は確認していない。iOS TestFlight実機QAで確認したJAL外部リンク遷移不良と履歴の内部コード露出は、build 25003の実機再QAで解決確認した。モバイルSafari / Chromeの実機QAも合格した。完全オフライン、Google Play配布・実機QA、全プラットフォーム同一SHA、承認ゲートが未完了のため、v2.5全体の判定はNo-Go（確認継続）とする。
+Web / Storage本番反映に重大不具合は確認していない。iOS TestFlight実機QAで確認したJAL外部リンク遷移不良と履歴の内部コード露出は、build 25003の実機再QAで解決確認した。モバイルSafari / Chromeの実機QA、Android Release構成による完全オフライン・通信復帰QAも合格した。Google Play配布・実機QA、全プラットフォーム同一SHA、提出記録、承認ゲートが未完了のため、v2.5全体の判定はNo-Go（確認継続）とする。
