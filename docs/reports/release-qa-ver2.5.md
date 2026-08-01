@@ -119,7 +119,7 @@ iOSビルドではCapacitor/Cordovaの`WKProcessPool`非推奨警告とAppIntent
 
 - REL-25-05: `@capacitor/browser`を追加し、ネイティブ環境では`target="_blank"`の外部HTTP(S)リンクをCapacitor Browserで開く共通処理へ変更した。JALリンクだけでなく、運賃表・運航情報・関連サイト等の外部リンクにも適用される。
 - REL-25-06: 検索履歴の出発地・目的地表示でも`ferryStore.getLocationLabel`を参照し、bus-search由来の利用者向け停留所名（例: `境港駅`）を内部IDより優先するよう変更した。
-- 回帰テスト: 外部リンクの対象判定（外部HTTP(S)、同一オリジン、非HTTP、`target`差異）と、はつみ交通の内部IDが履歴に露出しないことを追加。`npm run lint`、`npm run test`（123 files、1,015 passed、1 skipped）、`npm run build-prod`、`npx cap sync ios`は成功した。
+- 回帰テスト: 外部リンクの対象判定（外部HTTP(S)、同一オリジン、非HTTP、`target`差異）と、はつみ交通の内部IDが履歴に露出しないことを追加。`npm run lint`、`npm run test`（123 files、1,015 passed、1 skipped）、`npm run build-prod`、`npm run cap:ios:build`、`npm run cap:android:build`は成功し、両OSへCapacitor Browserを同期した。
 - iOSネイティブ整合性: Capacitor Browser同期後、iPhone 16 Pro / iOS 26.5 Simulator向けのscheme `App`・Releaseビルドが成功し、Swift Package依存を含むコンパイルを確認した。
 - 本番静的成果物をローカル実ブラウザで確認し、ページタイトル・主要DOM・エラーオーバーレイなし・外部リンクの表示と`target="_blank"`を確認した。外部Firebase Storageへの接続が制限された環境のため、通信失敗ログとフォールバック表示は確認対象外の既知環境差として記録した。
 - `npm run typecheck`は今回の変更箇所以外を含む既存のリポジトリ全体エラーで失敗した。今回追加・変更したファイルに起因するエラーは出ていない。
