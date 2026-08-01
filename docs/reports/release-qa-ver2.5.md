@@ -7,11 +7,12 @@
 - 作業ブランチ: `dev`
 - 作業開始時HEAD: `185171a82e425f8e04ac55e05ce80a92c0350d82`
 - Web / Storage公開コミット: `c75e4c02cf007c86606b43e10ffe5802c358b36c`
+- iOS / Android配布候補コミット: `19aab26378b820c88747bf404db8ed83175090b9`
 - Node.js: `v22.21.1`
 - npm: `11.11.0`
 - Web: `2.5.0`
-- iOS: `2.5 (25001)`
-- Android: `2.5 (25001)`
+- iOS: `2.5 (25002)`
+- Android: `2.5 (25002)`
 - 追跡Issue: [#76](https://github.com/ag-k/FerryTransit/issues/76)
 
 ## 対象
@@ -27,7 +28,7 @@
 | 項目 | 結果 | 証跡 |
 | --- | --- | --- |
 | `npm ci --prefer-offline --no-audit` | 成功 | 1,397 packages、postinstall / `nuxt prepare`成功 |
-| `npm run release:config:verify` | 成功 | Web 2.5.0、iOS / Android 2.5 (25001)、本番Firebase alias一致 |
+| `npm run release:config:verify` | 成功 | Web 2.5.0、iOS / Android 2.5 (25002)、本番Firebase alias一致（2026-08-01再実行） |
 | `npm run timetable:validate:jal-fares` | 成功 | JAL 10便、変動運賃10便、登録済み運賃0便 |
 | `npm run lint` | 成功 | ESLintエラー0件 |
 | `npm run test` | 成功 | 122 files、1,010 passed、1 skipped |
@@ -59,17 +60,44 @@
 - 西ノ島町営バス: 2026-09-01の由良車庫→島前病院を本番実データで検索し、6便の記号なし区間`13:05→13:36`が表示されることを確認した。
 - バックアップ: 変更されたStorageオブジェクトは公開処理が自動作成する`backups/`配下へ保存した。
 
+### 公開後追加QA（2026-08-01）
+
+- 本番URL `https://oki-ferryguide.web.app` をCodex In-app Browserで確認した。ページタイトル、主要DOM、エラーオーバーレイなし、オンライン時の関連console error / warning 0件を確認した。
+- 実MacのChrome 150.0.7871.187、Safari 26.5、Firefox 153.0、Edge 150.0.4078.105で本番URLのページタイトル・主要DOM・交通手段の「バス」タブ選択を確認した。Chromeでは関連console error / warning 0件、Safari / Firefox / Edgeではアクセシビリティツリーと画面表示にエラー画面がないことを確認した。検証用に開いたタブは終了後に閉じた。
+- モバイルSafari / ChromeはPlaywrightのWebKit / Chromium・390×844では確認済みだが、物理端末ブラウザでの確認は未完了項目として継続する。
+- 2026-08-01の本番実データで、七類港→境港駅は`10:05→10:20`・`18:10→18:25`、境港駅→七類港は`08:24→08:39`・`13:25→13:40`・`16:07→16:22`を表示した。
+- はつみ交通の詳細で、事業者名、七類港・境港駅、大人片道`¥500`、掲載期間、はつみ交通Webサイト、隠岐広域連合の公式ページ、PDF時刻表を確認した。
+- 390×844で横方向のoverflowがないことを確認した。バス選択ダイアログの本土タブにはバス停だけが表示され、はつみ交通路線へ絞り込めることを確認した。
+- CDPでオフライン状態を一時的に再現し、再読み込み後もアプリシェルと検索条件が表示され、通信失敗を利用者向けアラートで通知することを確認した。検証後はオンライン設定へ復旧した。外部通信失敗に伴うService Worker、News、Firebase Analytics等のログは期待されたオフライン時ログとして記録した。
+- 本番実データで大阪（伊丹）空港→西郷を検索し、JAL2331、隠岐空港での15分乗換、空港連絡バス`¥520`、経路合計`¥520 + 航空運賃（変動）`を確認した。
+- JAL公式リンクは`target="_blank"`・`rel="noopener noreferrer"`で、リンク先がJALの隠岐発航空券ページとして表示され、大阪（伊丹）・出雲の対象路線を案内していることを確認した。
+- GitHubの未解決Issueはリリース追跡Issue #75・#76のみで、重大・高優先度の未解決プロダクト不具合は0件だった。ストア配布・実機QA・責任者承認のリリース阻止ゲートは継続する。
+
+### Webアクセシビリティ追加QA（2026-08-01）
+
+- 実Chromeでトップの「設定」リンクへキーボードのEnterで遷移し、フォーカス対象と遷移先URLが一致することを確認した。
+- 設定画面の「システム設定に従う」をキーボードで選択し、選択スタイルとフォーカスリングを確認した。OSのカラースキームはライトだったため、画面もライト表示になった。
+- 2036px幅のChromeに対してCSS viewportを1018px、device pixel ratioを2へ設定し、200%拡大相当のリフローを再現した。設定画面・乗換案内画面とも`scrollWidth === innerWidth`で横はみ出し0件、エラーオーバーレイなし、関連console error / warning 0件だった。
+- 検証後はページ倍率とviewport overrideを解除し、テーマをライトへ復旧した。
+
 ## iOS / Android
 
 | 項目 | 結果 | 備考 |
 | --- | --- | --- |
 | `npm run cap:ios:build` | 成功 | productionアセット生成、Capacitor同期、非同梱チェック成功 |
 | iOS Release Simulator build | 成功 | scheme `App`、iOS Simulator Release |
-| iOS Release Archive | 成功 | `/tmp/FerryTransit-v25.xcarchive`、Apple Development署名 |
+| iOS Release Archive | 成功 | 固定SHA `19aab26378b820c88747bf404db8ed83175090b9`、`/tmp/FerryTransit-v25-b25002.xcarchive`、v2.5（build 25002）、Apple Development署名 |
+| iOS配布候補内容検証 | 成功 | Archive内の生成JavaScriptにJALの`fareStatus` / `knownFareTotal`、はつみ交通`HATSUMI_BUS_CONNECTION`・500円処理を確認。時刻表データ非同梱チェック成功 |
+| iOS App Store配布用IPA | 成功 | v2.5（build 25002）、Apple Distribution署名、Store provisioning profile、`beta-reports-active=true`、`get-task-allow=false` |
+| App Store Connectアップロード | 成功 | 2026-08-01 12:55 JST。`xcodebuild -exportArchive`が`Upload succeeded`を返し、Apple側の処理開始を確認。Web画面は再ログインが必要なため処理完了は未確認 |
 | `npm run cap:android:build` | 成功 | productionアセット生成、Capacitor同期、非同梱チェック成功 |
 | Android `bundleRelease` | 未完了 | 署名用4環境変数が未設定のため、Gradleが意図どおり停止 |
 
 iOSビルドではCapacitor/Cordovaの`WKProcessPool`非推奨警告とAppIntents未使用警告がある。Android AAB生成には`FERRYTRANSIT_ANDROID_KEYSTORE_PATH`、`FERRYTRANSIT_ANDROID_KEYSTORE_PASSWORD`、`FERRYTRANSIT_ANDROID_KEY_ALIAS`、`FERRYTRANSIT_ANDROID_KEY_PASSWORD`が必要で、秘密値は記録していない。
+
+2026-08-01の再確認では、Developer Mode有効のiPhone実機2台をXcodeBuildMCPで認識した。XcodeのDevices画面で接続中の`ePhone`にv2.4（build 24001）がインストール済みであることを確認したため、TestFlight build 25002が利用可能になれば更新保持QAを実施できる。ただしTestFlight版はまだ未インストールで、開発版による上書きは行っていない。Android SDKのADBは利用可能だが、接続中のAndroid端末は0台だった。Android署名環境変数4件とApp Store Connect API設定は未設定だったが、Xcodeに設定済みの開発者アカウントを利用した自動署名・アップロードには成功した。
+
+最初にアップロードしたbuild 25001のArchive作成日時は2026-07-31 16:30 JSTで、JAL運賃表示などをまとめたWeb / Storage公開コミット（同日20:47 JST）より前だった。最終変更を含む配布候補として使用できないためbuild 25001を配布対象外とし、build番号を25002へ更新した固定SHA `19aab26378b820c88747bf404db8ed83175090b9`から再生成・再アップロードした。
 
 ## 影響レビュー
 
@@ -85,7 +113,7 @@ iOSビルドではCapacitor/Cordovaの`WKProcessPool`非推奨警告とAppIntent
 | ID | 重要度 | 内容 | 影響 / 回避策 | 完了条件 |
 | --- | --- | --- | --- | --- |
 | REL-25-01 | リリース阻止 | Android署名環境変数未設定 | AABを生成・内部テスト配布できない。署名担当環境で実行する | `bundleRelease`成功とAAB検証 |
-| REL-25-02 | リリース阻止 | TestFlight / Google Play内部テストと実機QA未実施 | WebView外部リンク、オフライン、更新保持を最終確認できない | 両ストア内部配布と実機チェック |
+| REL-25-02 | リリース阻止 | iOS build 25002はApp Store Connectへアップロード済みだが、処理完了・TestFlight実機QAとGoogle Play内部テストが未実施 | WebView外部リンク、オフライン、更新保持を最終確認できない | iOS処理完了後のTestFlight実機チェックとGoogle Play内部配布・実機チェック |
 | REL-25-04 | リリース阻止 | QA責任者、リリース責任者の承認未記録 | Web / Storage公開SHAは固定済み。最終Go判定は未成立 | 両責任者承認 |
 
-現時点で今回のWeb / Storage本番反映に重大・高優先度の既知プロダクト不具合は確認していない。ただしストア配布・実機QA・承認ゲートが未完了のため、v2.5全体の判定はNo-Go（準備継続）とする。
+現時点で今回のWeb / Storage本番反映に重大・高優先度の既知プロダクト不具合は確認していない。ただしiOSの処理完了・TestFlight実機QA、Google Play配布・実機QA、承認ゲートが未完了のため、v2.5全体の判定はNo-Go（準備継続）とする。
