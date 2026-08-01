@@ -1,4 +1,5 @@
 import { App } from '@capacitor/app'
+import { Browser } from '@capacitor/browser'
 import { StatusBar } from '@capacitor/status-bar'
 import { SplashScreen } from '@capacitor/splash-screen'
 import { Capacitor } from '@capacitor/core'
@@ -8,11 +9,22 @@ import { createLogger } from '~/utils/logger'
 import { navigateToDeepLink, parseDeepLinkPath } from '~/utils/deepLink'
 import { isAppRootPath, isIOSBackSwipe, type SwipeCoordinates } from '~/utils/nativeNavigation'
 import { APP_RESUME_EVENT } from '~/composables/useTodayRollover'
+import { getExternalHttpUrl } from '~/utils/externalLinks'
 
 export default defineNuxtPlugin(() => {
   const logger = createLogger('CapacitorPlugin')
   if (Capacitor.isNativePlatform()) {
     const router = useRouter()
+
+    document.addEventListener('click', (event) => {
+      const url = getExternalHttpUrl(event.target, window.location.href)
+      if (!url) return
+
+      event.preventDefault()
+      Browser.open({ url }).catch(error => {
+        logger.error('Failed to open external link', { url, error })
+      })
+    })
 
     const handleDeepLink = async (url?: string | null) => {
       const path = parseDeepLinkPath(url)

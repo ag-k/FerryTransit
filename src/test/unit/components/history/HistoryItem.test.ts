@@ -66,6 +66,25 @@ describe('HistoryItem', () => {
     expect(text).toContain('七類港')
   })
 
+  it('should show a bus stop label instead of its internal location ID', async () => {
+    ferryStore.locationLabels = {
+      BUS_HATSUMI_CONNECTION_sakaiminato_station: '境港駅'
+    }
+    await wrapper.setProps({
+      history: {
+        id: '2',
+        type: 'route',
+        departure: 'BUS_HATSUMI_CONNECTION_sakaiminato_station',
+        arrival: 'HONDO_SHICHIRUI',
+        date: new Date(),
+        searchedAt: new Date()
+      }
+    })
+
+    expect(wrapper.text()).toContain('境港駅')
+    expect(wrapper.text()).not.toContain('BUS_HATSUMI_CONNECTION_sakaiminato_station')
+  })
+
   it('should return port ID as fallback for unknown ports', () => {
     wrapper = mount(HistoryItem, {
       global: {

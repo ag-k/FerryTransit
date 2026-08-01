@@ -31,7 +31,7 @@
 | `npm run release:config:verify` | 成功 | Web 2.5.0、iOS / Android 2.5 (25002)、本番Firebase alias一致（2026-08-01再実行） |
 | `npm run timetable:validate:jal-fares` | 成功 | JAL 10便、変動運賃10便、登録済み運賃0便 |
 | `npm run lint` | 成功 | ESLintエラー0件 |
-| `npm run test` | 成功 | 122 files、1,010 passed、1 skipped |
+| `npm run test` | 成功 | 123 files、1,015 passed、1 skipped（2026-08-01の不具合修正後に再実行） |
 | `npm run gtfs:validate -- bus nishinoshima --check` | 成功 | 6 routes、27 stops、59 trips、817 stop_times |
 | `npm run gtfs:validate -- bus hatsumi_bus_connection --check` | 成功 | 1 route、2 stops、31 trips、62 stop_times |
 | `npm run build-prod` | 成功 | `.env.production`、Firebase `prod/default`で静的生成成功 |
@@ -91,12 +91,39 @@
 | iOS App Store配布用IPA | 成功 | v2.5（build 25002）、Apple Distribution署名、Store provisioning profile、`beta-reports-active=true`、`get-task-allow=false` |
 | App Store Connectアップロード | 成功 | 2026-08-01 12:55 JST。`xcodebuild -exportArchive`が`Upload succeeded`を返した |
 | App Store Connect処理完了 | 成功 | 2026-08-01 12:57 JST。Appleから「Version 2.5 (25002) ... has completed processing.」通知を受信したことを、build番号・アプリ名へ限定したメール検索で確認 |
+| TestFlight更新インストール | 成功 | 2026-08-01 14:38 JST。接続中の`ePhone`をv2.4（build 24001）からv2.5（build 25002）へ更新し、`devicectl`でVersion / Bundle Versionを確認後、TestFlightの「開く」から起動成功 |
 | `npm run cap:android:build` | 成功 | productionアセット生成、Capacitor同期、非同梱チェック成功 |
 | Android `bundleRelease` | 未完了 | 署名用4環境変数が未設定のため、Gradleが意図どおり停止 |
 
 iOSビルドではCapacitor/Cordovaの`WKProcessPool`非推奨警告とAppIntents未使用警告がある。Android AAB生成には`FERRYTRANSIT_ANDROID_KEYSTORE_PATH`、`FERRYTRANSIT_ANDROID_KEYSTORE_PASSWORD`、`FERRYTRANSIT_ANDROID_KEY_ALIAS`、`FERRYTRANSIT_ANDROID_KEY_PASSWORD`が必要で、秘密値は記録していない。
 
-2026-08-01の再確認では、Developer Mode有効のiPhone実機2台をXcodeBuildMCPで認識した。XcodeのDevices画面で接続中の`ePhone`にv2.4（build 24001）がインストール済みであることを確認したため、処理完了済みのTestFlight build 25002を更新インストールすれば保持QAを実施できる。ただしTestFlight版はまだ未インストールで、開発版による上書きは行っていない。Android SDKのADBは利用可能だが、接続中のAndroid端末は0台だった。Android署名環境変数4件とApp Store Connect API設定は未設定だったが、Xcodeに設定済みの開発者アカウントを利用した自動署名・アップロードには成功した。
+2026-08-01の再確認では、Developer Mode有効のiPhone実機2台をXcodeBuildMCPで認識した。接続中の`ePhone`にv2.4（build 24001）がインストール済みであることを確認後、14:38 JSTにTestFlightからv2.5（build 25002）を更新インストールした。`devicectl device info apps`で`com.naturebot-lab.FerryTransit`のVersion `2.5`、Bundle Version `25002`を確認し、TestFlightの「開く」から時刻表画面の起動にも成功した。Android SDKのADBは利用可能だが、接続中のAndroid端末は0台だった。Android署名環境変数4件とApp Store Connect API設定は未設定だったが、Xcodeに設定済みの開発者アカウントを利用した自動署名・アップロードには成功した。
+
+### iOS TestFlight実機追加QA（2026-08-01 15:09–15:40 JST）
+
+- 対象: `ePhone`（iPhone18,3 / iOS 26.5.2）、TestFlight v2.5（build 25002）、日本語・ダークテーマ。
+- 更新保持: 更新前からの日本語・ダーク設定、お気に入り`別府→菱浦`、検索履歴`別府→菱浦`が更新後も残っていた。お気に入りと履歴から検索条件を復元でき、出雲線履歴の再検索でも`¥520 + 航空運賃（変動）`を維持した。
+- バス停選択: バスタブの選択ダイアログにはバス停だけが表示され、`七類港⇔境港駅`で路線を絞り込めた。
+- はつみ交通直行便: 七類港→境港駅`10:05→10:20`・`18:10→18:25`、境港駅→七類港`08:24→08:39`を表示。乗換案内でも境港駅`16:07`→七類港`16:22`、15分、`¥500`を確認した。
+- はつみ交通詳細: 事業者名、区間、片道`¥500`、運行期間`2026/06/08–2026/12/31`、公式ページ・PDF時刻表の表示を確認した。
+- 船→バス: 西郷`15:40`→フェリーおき→七類`18:05`→徒歩3分→はつみ交通`18:10`→境港駅`18:25`、合計`¥4,370`（船`¥3,870` + バス`¥500`）を確認した。
+- バス→船: 境港駅`16:07`→はつみ交通→七類`16:22`→徒歩3分→レインボージェット`16:50`→西郷`17:59`を確認し、バス区間`¥500`を表示した。
+- JAL: 大阪（伊丹）`12:15`→隠岐空港→西郷`13:30`、出雲`09:00`→隠岐空港→西郷`09:55`を表示。いずれも経路合計`¥520 + 航空運賃（変動）`、JAL区間`航空運賃は別途（変動）`、空港連絡バス`¥520`を確認した。
+- 復帰・日付: アプリをホームへ移してからアプリスイッチャーで復帰し、検索条件・結果を保持した。出雲線を2026-08-01から08-02へ変更して再検索しても変動運賃表示を維持した。
+- オフライン試行: 承認後にePhoneの機内モードをオンにしたところ、iPhoneミラーリング自体が即時切断された。ミラーリングはBluetoothとWi-Fiを必要とするため、完全オフライン中のアプリ操作はこの方法では実施できなかった。端末側で機内モードをオフ、Wi-Fi・Bluetoothをオン、端末をロックした後にミラーリングへ再接続できた。
+- 通信復帰: 再接続後にRouteGuideを起動し、検索条件とお気に入り状態の保持を確認した。オンラインで`別府 16:40→菱浦 16:52`、12分、`¥300`を再検索でき、通信復帰後の検索は成功した。
+- 不具合1: はつみ交通を含む検索履歴で`BUS_HATSUMI_CONNECTION_sakaiminato...`等の内部停留所コードが表示される。条件復元は可能。
+- 不具合2: 伊丹・出雲の両経路で「JALで運賃を確認」は表示されるが、TestFlight実機でタップしても外部ページへ遷移しない。複数回、画面中央へスクロールした状態でも再現した。
+
+### 実機QA検出不具合のコード対応（2026-08-01）
+
+- REL-25-05: `@capacitor/browser`を追加し、ネイティブ環境では`target="_blank"`の外部HTTP(S)リンクをCapacitor Browserで開く共通処理へ変更した。JALリンクだけでなく、運賃表・運航情報・関連サイト等の外部リンクにも適用される。
+- REL-25-06: 検索履歴の出発地・目的地表示でも`ferryStore.getLocationLabel`を参照し、bus-search由来の利用者向け停留所名（例: `境港駅`）を内部IDより優先するよう変更した。
+- 回帰テスト: 外部リンクの対象判定（外部HTTP(S)、同一オリジン、非HTTP、`target`差異）と、はつみ交通の内部IDが履歴に露出しないことを追加。`npm run lint`、`npm run test`（123 files、1,015 passed、1 skipped）、`npm run build-prod`、`npx cap sync ios`は成功した。
+- iOSネイティブ整合性: Capacitor Browser同期後、iPhone 16 Pro / iOS 26.5 Simulator向けのscheme `App`・Releaseビルドが成功し、Swift Package依存を含むコンパイルを確認した。
+- 本番静的成果物をローカル実ブラウザで確認し、ページタイトル・主要DOM・エラーオーバーレイなし・外部リンクの表示と`target="_blank"`を確認した。外部Firebase Storageへの接続が制限された環境のため、通信失敗ログとフォールバック表示は確認対象外の既知環境差として記録した。
+- `npm run typecheck`は今回の変更箇所以外を含む既存のリポジトリ全体エラーで失敗した。今回追加・変更したファイルに起因するエラーは出ていない。
+- build 25002には本修正が含まれない。REL-25-05 / REL-25-06の完了にはbuild 25003以降のTestFlight配布と、JAL公式ページ遷移・履歴の「七類港」「境港駅」表示の実機再確認が必要。
 
 最初にアップロードしたbuild 25001のArchive作成日時は2026-07-31 16:30 JSTで、JAL運賃表示などをまとめたWeb / Storage公開コミット（同日20:47 JST）より前だった。最終変更を含む配布候補として使用できないためbuild 25001を配布対象外とし、build番号を25002へ更新した固定SHA `19aab26378b820c88747bf404db8ed83175090b9`から再生成・再アップロードした。
 
@@ -114,7 +141,9 @@ iOSビルドではCapacitor/Cordovaの`WKProcessPool`非推奨警告とAppIntent
 | ID | 重要度 | 内容 | 影響 / 回避策 | 完了条件 |
 | --- | --- | --- | --- | --- |
 | REL-25-01 | リリース阻止 | Android署名環境変数未設定 | AABを生成・内部テスト配布できない。署名担当環境で実行する | `bundleRelease`成功とAAB検証 |
-| REL-25-02 | リリース阻止 | iOS build 25002はApp Store Connectで処理完了済みだが、TestFlight実機QAとGoogle Play内部テストが未実施 | WebView外部リンク、オフライン、更新保持を最終確認できない | TestFlight build 25002の実機チェックとGoogle Play内部配布・実機チェック |
+| REL-25-02 | リリース阻止 | iOS build 25002の主要経路・保持QAは実施済みだが、完全オフライン／通信復帰とGoogle Play内部テストが未実施 | iOSの通信切替とAndroid実機を最終確認できない | iOS通信切替QAとGoogle Play内部配布・実機チェック |
+| REL-25-05 | リリース阻止 | iOS TestFlight build 25002でJAL公式運賃リンクをタップしても遷移しない。Capacitor Browserによる外部リンク処理はコード修正済み | build 25002では利用者がアプリ内導線からJAL運賃を確認できない | build 25003以降でJAL公式ページ表示を実機確認 |
+| REL-25-06 | リリース阻止 | iOS TestFlight build 25002では、はつみ交通を含む検索履歴に内部停留所コードが露出する。履歴ラベルはコード修正済み | build 25002では履歴の可読性が低下するが条件復元は可能 | build 25003以降で「七類港」「境港駅」表示を実機確認 |
 | REL-25-04 | リリース阻止 | QA責任者、リリース責任者の承認未記録 | Web / Storage公開SHAは固定済み。最終Go判定は未成立 | 両責任者承認 |
 
-現時点で今回のWeb / Storage本番反映に重大・高優先度の既知プロダクト不具合は確認していない。ただしiOSのTestFlight実機QA、Google Play配布・実機QA、承認ゲートが未完了のため、v2.5全体の判定はNo-Go（準備継続）とする。
+Web / Storage本番反映に重大不具合は確認していない。iOS TestFlight実機QAで確認したJAL外部リンク遷移不良と履歴の内部コード露出はコード修正済みだが、build 25003以降の再配布・実機確認が未完了である。加えて完全オフライン、Google Play配布・実機QA、承認ゲートが未完了のため、v2.5全体の判定はNo-Go（確認継続）とする。

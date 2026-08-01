@@ -203,6 +203,11 @@ const getPortLabel = (portId?: string) => {
     return t('HONDO')
   }
 
+  const locationLabel = ferryStore.getLocationLabel(portId)
+  if (locationLabel) {
+    return locationLabel
+  }
+
   const translated = String(t(portId))
   if (translated && translated !== portId) {
     return translated
