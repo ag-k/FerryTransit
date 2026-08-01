@@ -161,6 +161,16 @@ iOSビルドではCapacitor/Cordovaの`WKProcessPool`非推奨警告とAppIntent
 - Wi-Fiとモバイルデータを復帰し、外部IPへのping成功後にコールド再起動した。検索条件を保持したまま地図タイルを再取得し、通信復帰を確認した。
 - QA中および復帰後のログにクラッシュ、ANR、SSLHandshakeException、Capacitorの致命的例外はなかった。この確認は運賃状態TODOの完全オフライン部分を補完するが、Google Play内部テスト版のAndroid実機QAは引き続き別ゲートとして残す。
 
+### 同一アプリソースのWeb公開前QA（2026-08-01 18:38–18:41 JST）
+
+- 配布済みiOS build 25003の基準SHA `1db1ba1a4d543a358587ff6738adb7f21c8870a5`から現HEADまでを監査した。`src`、`package.json`、`package-lock.json`、Nuxt・Firebase・iOS設定に差分はなく、アプリ関連差分はAndroidへCapacitor Browserを同期した生成設定2ファイルだけだった。Web/iOSのアプリコードは基準SHAと同一である。
+- Node.js `v22.21.1`で`npm run release:config:verify`と`npm run build-prod`が成功した。Firebaseはprod/default alias `oki-ferryguide`、Web `2.5.0`、iOS/Android `2.5 (25003)`の整合を再確認した。
+- `.output/public`は159ファイルで、source map、GTFS、時刻表JSON、bus-search JSONの禁止エントリは0件だった。既存のsourcemap生成・chunk size警告は出たが、生成エラーはなかった。
+- Firebase Hosting Emulator `http://127.0.0.1:5002`で本番成果物を確認した。デスクトップで時刻表の初期画面、船→バスタブ切替、出発地ダイアログ展開を確認し、390×844では横スクロール0、乗換案内フォームと下部ナビゲーションの重なり・切れなしを確認した。
+- `/transit`への直リンクと再読み込み後も、タイトル、乗換案内フォーム、交通条件、検索ボタンが描画され、SPA rewriteが機能した。フレームワークエラーオーバーレイと白画面はなかった。
+- ローカルoriginからFirebase Storageへの取得は失敗し、時刻表・運賃・ニュース・バス停一覧のオンライン実データQAには使用できなかった。利用者向け通信失敗表示と関連ログを確認し、オンライン実データは同日に実施済みの本番URL QAを証跡とする。
+- 本番Hostingの更新は未実施。同一ソース成果物の公開と公開後スモークQAを完了するまで、全プラットフォーム同一SHAゲートは未完了のままとする。
+
 最初にアップロードしたbuild 25001のArchive作成日時は2026-07-31 16:30 JSTで、JAL運賃表示などをまとめたWeb / Storage公開コミット（同日20:47 JST）より前だった。最終変更を含む配布候補として使用できないためbuild 25001を配布対象外とし、build番号を25002へ更新した固定SHA `19aab26378b820c88747bf404db8ed83175090b9`から再生成・再アップロードした。
 
 ## 影響レビュー
