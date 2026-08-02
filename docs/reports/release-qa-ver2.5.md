@@ -169,7 +169,16 @@ iOSビルドではCapacitor/Cordovaの`WKProcessPool`非推奨警告とAppIntent
 - Firebase Hosting Emulator `http://127.0.0.1:5002`で本番成果物を確認した。デスクトップで時刻表の初期画面、船→バスタブ切替、出発地ダイアログ展開を確認し、390×844では横スクロール0、乗換案内フォームと下部ナビゲーションの重なり・切れなしを確認した。
 - `/transit`への直リンクと再読み込み後も、タイトル、乗換案内フォーム、交通条件、検索ボタンが描画され、SPA rewriteが機能した。フレームワークエラーオーバーレイと白画面はなかった。
 - ローカルoriginからFirebase Storageへの取得は失敗し、時刻表・運賃・ニュース・バス停一覧のオンライン実データQAには使用できなかった。利用者向け通信失敗表示と関連ログを確認し、オンライン実データは同日に実施済みの本番URL QAを証跡とする。
-- 本番Hostingの更新は未実施。同一ソース成果物の公開と公開後スモークQAを完了するまで、全プラットフォーム同一SHAゲートは未完了のままとする。
+- 本番Hostingの更新は2026-08-02に実施し、次節の公開後QAで同一ソースゲートを完了した。
+
+### 同一アプリソースの本番Hosting公開後QA（2026-08-02 19:03–19:04 JST）
+
+- Node.js `v22.21.1`とproduction Firebase alias `prod`を使用し、固定SHA `1db1ba1a4d543a358587ff6738adb7f21c8870a5`と同一のアプリコードから`npm run build-prod`を再実行した。`.output/public`の159ファイルをFirebase Hosting `oki-ferryguide`へ公開し、liveリリース時刻`2026-08-02 19:03:00 JST`を確認した。
+- デプロイ直前の`.output/public`全ファイル集約SHA-256は`810935a92d3976bb0a1fa1a7e480e9a53622dbe63f91014aecdf6bf4a25914cb`。Firebase CLIは71新規ファイルのアップロード、version finalize、live releaseをすべて成功として返した。
+- `https://oki-ferryguide.web.app/`と`/transit`は公開後HTTP 200。`/sw.js`はHTTP 200で`Cache-Control: no-cache, no-store, must-revalidate`、`Last-Modified: Sun, 02 Aug 2026 10:03:00 GMT`を返した。
+- 既存Playwright E2Eを`PLAYWRIGHT_BASE_URL=https://oki-ferryguide.web.app`へ向け、Chromiumでトップと乗換案内の17件を実行して全件合格した。バス停だけの選択、港選択、入替、乗換遷移、伊丹・出雲の変動運賃、はつみ交通、英語・ダーク・狭幅、ソート、地図・港詳細を確認した。
+- Playwright CLIラッパーは`@playwright/mcp`側に`playwright-cli`実行ファイルがなく利用できなかったため、リポジトリ既存の`@playwright/test`環境を使用した。テストコードの追加・変更は行っていない。
+- 公開後の新規クラッシュ、白画面、HTTPエラー、SPA直リンク失敗は確認されず、Web / iOS / Androidの同一アプリソースゲートを合格とする。
 
 ### Google Play内部テスト配布（2026-08-02 15:08 JST）
 
@@ -225,4 +234,4 @@ iOSビルドではCapacitor/Cordovaの`WKProcessPool`非推奨警告とAppIntent
 | REL-25-06 | 解決済み | build 25003へ更新し、既存のはつみ交通履歴が`境港駅 → 七類港`と表示され、内部IDが露出しないことを実機確認 | 影響なし | 2026-08-01実機確認済み |
 | REL-25-04 | リリース阻止 | QA責任者、リリース責任者の承認未記録 | Web / Storage公開SHAは固定済み。最終Go判定は未成立 | 両責任者承認 |
 
-Web / Storage本番反映に重大不具合は確認していない。iOS TestFlight実機QAで確認したJAL外部リンク遷移不良と履歴の内部コード露出は、build 25003の実機再QAで解決確認した。モバイルSafari / Chromeの実機QA、Android Release構成による完全オフライン・通信復帰QA、Google Play内部テスト配布、Android実機の版番号・バス停選択・はつみ交通・船乗換・JAL経路・外部リンク・保持QAも合格した。全プラットフォーム同一SHAの本番Web公開、全TODO確認、QA・リリース承認ゲートが未完了のため、v2.5全体の判定はNo-Go（確認継続）とする。
+Web / Storage本番反映に重大不具合は確認していない。iOS TestFlight実機QAで確認したJAL外部リンク遷移不良と履歴の内部コード露出は、build 25003の実機再QAで解決確認した。モバイルSafari / Chromeの実機QA、Android Release構成による完全オフライン・通信復帰QA、Google Play内部テスト配布、Android実機の版番号・バス停選択・はつみ交通・船乗換・JAL経路・外部リンク・保持QA、同一アプリソースの本番Hosting公開後QAも合格した。全TODO確認、QA・リリース承認ゲートが未完了のため、v2.5全体の判定はNo-Go（確認継続）とする。
