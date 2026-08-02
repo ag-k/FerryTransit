@@ -95,7 +95,7 @@
 | `npm run cap:android:build` | 成功 | productionアセット生成、Capacitor同期、非同梱チェック成功 |
 | Android `bundleRelease` | 成功 | macOSキーチェーンから既存署名情報4項目を同一シェルへ読み込み、`bundleRelease` / `lintVitalRelease` / `signReleaseBundle`に成功 |
 | Android AAB検証 | 成功 | `output/releases/ferrytransit-v2.5-25003-1db1ba1.aab`（10,219,703 bytes、SHA-256 `ddf7e8ff341093df2c9449d4d2cb0317fa7850e1a99203e1b0793e736dd401a8`）。bundletool 1.18.3 validate成功、Application ID `com.naturebotlab.ferrytransit`、v2.5 / 25003、minSdk 23 / targetSdk 36、署名証明書SHA-256はPlay登録値と一致、時刻表・GTFS・bus-search・source map禁止エントリ0件 |
-| Google Play内部テスト | 未完了 | Play Consoleは対象アカウントの再認証が必要。別のログイン済みChromeアカウントはデベロッパー登録前かつ2段階認証設定要求のため、認証・規約同意・アップロードを実施していない |
+| Google Play内部テスト | 成功 | 2026-08-02 15:08 JST。対象アカウントで再認証し、v2.5（25003）を内部テスターへ公開。minSdk 23 / targetSdk 36、対応端末数の減少0件、日英リリースノートを確認 |
 
 iOSビルドではCapacitor/Cordovaの`WKProcessPool`非推奨警告とAppIntents未使用警告がある。AndroidビルドではflatDir、Capacitor StatusBar、MainActivityの既存警告があるが、Release lintとAAB生成は成功した。Android署名情報はmacOSキーチェーンから一時的に読み込み、秘密値は記録していない。
 
@@ -171,6 +171,15 @@ iOSビルドではCapacitor/Cordovaの`WKProcessPool`非推奨警告とAppIntent
 - ローカルoriginからFirebase Storageへの取得は失敗し、時刻表・運賃・ニュース・バス停一覧のオンライン実データQAには使用できなかった。利用者向け通信失敗表示と関連ログを確認し、オンライン実データは同日に実施済みの本番URL QAを証跡とする。
 - 本番Hostingの更新は未実施。同一ソース成果物の公開と公開後スモークQAを完了するまで、全プラットフォーム同一SHAゲートは未完了のままとする。
 
+### Google Play内部テスト配布（2026-08-02 15:08 JST）
+
+- 対象アカウントでGoogle本人確認を完了し、`Oki Islands Ferry Guide`（`com.naturebotlab.ferrytransit`）の内部テストトラックを確認した。直前の内部テスト版はv2.4（24001）だった。
+- SHA-256 `ddf7e8ff341093df2c9449d4d2cb0317fa7850e1a99203e1b0793e736dd401a8`の`ferrytransit-v2.5-25003-1db1ba1.aab`をアップロードし、Google Playの配信用最適化完了後にv2.5（25003）、API 23以上、target SDK 36を再確認した。
+- 前版からサポート対象外になった端末は全フォームファクタで0件。電話13,334台、タブレット6,781台を含む対象数を維持した。新規インストール8.48 MB、アップデート3.16 MBと表示された。
+- 日本語・英語のリリースノートを登録し、2026-08-02 15:08 JSTに「内部テスターに公開」へ移行した。内部テスト参加用Webリンクが設定済みであることも確認した。
+- 検証メッセージは難読化解除ファイル未登録の警告1件だけだった。Release設定は`minifyEnabled false`でR8 / ProGuard難読化を使用していないため、解析不能になる新規リスクではなく、配布阻止にはしない。
+- 配布直後のADB接続端末は0台だった。Google Play経由の更新インストール、はつみ交通、JAL運賃・外部リンク、設定・お気に入り・履歴保持はAndroid実機ゲートとして残す。
+
 最初にアップロードしたbuild 25001のArchive作成日時は2026-07-31 16:30 JSTで、JAL運賃表示などをまとめたWeb / Storage公開コミット（同日20:47 JST）より前だった。最終変更を含む配布候補として使用できないためbuild 25001を配布対象外とし、build番号を25002へ更新した固定SHA `19aab26378b820c88747bf404db8ed83175090b9`から再生成・再アップロードした。
 
 ## 影響レビュー
@@ -187,9 +196,9 @@ iOSビルドではCapacitor/Cordovaの`WKProcessPool`非推奨警告とAppIntent
 | ID | 重要度 | 内容 | 影響 / 回避策 | 完了条件 |
 | --- | --- | --- | --- | --- |
 | REL-25-01 | 解決済み | macOSキーチェーンから既存署名情報を読み込み、署名済みAABを生成・検証した | 影響なし | 2026-08-01確認済み |
-| REL-25-02 | リリース阻止 | iOS build 25003の主要経路・保持QAと、Android Release構成を併用した完全オフライン・通信復帰QAは実施済み。提出用AABは生成済みだがPlay Consoleの対象アカウント再認証が必要 | Google Play内部テスト版をAndroid実機で最終確認できない | Play Console再認証後のGoogle Play内部配布・実機チェック |
+| REL-25-02 | リリース阻止 | iOS build 25003の主要経路・保持QAとAndroid Release構成のオフラインQAを実施し、Google Play内部テストへv2.5（25003）を公開済み。接続中のAndroid実機は0台 | Google Play内部テスト版をAndroid実機で最終確認できない | Android実機で更新インストール、主要経路、外部リンク、保持を確認 |
 | REL-25-05 | 解決済み | build 25003へ更新し、伊丹・出雲の両経路からJAL公式ページへ遷移できることを実機確認 | 影響なし | 2026-08-01実機確認済み |
 | REL-25-06 | 解決済み | build 25003へ更新し、既存のはつみ交通履歴が`境港駅 → 七類港`と表示され、内部IDが露出しないことを実機確認 | 影響なし | 2026-08-01実機確認済み |
 | REL-25-04 | リリース阻止 | QA責任者、リリース責任者の承認未記録 | Web / Storage公開SHAは固定済み。最終Go判定は未成立 | 両責任者承認 |
 
-Web / Storage本番反映に重大不具合は確認していない。iOS TestFlight実機QAで確認したJAL外部リンク遷移不良と履歴の内部コード露出は、build 25003の実機再QAで解決確認した。モバイルSafari / Chromeの実機QA、Android Release構成による完全オフライン・通信復帰QAも合格した。Google Play配布・実機QA、全プラットフォーム同一SHA、提出記録、承認ゲートが未完了のため、v2.5全体の判定はNo-Go（確認継続）とする。
+Web / Storage本番反映に重大不具合は確認していない。iOS TestFlight実機QAで確認したJAL外部リンク遷移不良と履歴の内部コード露出は、build 25003の実機再QAで解決確認した。モバイルSafari / Chromeの実機QA、Android Release構成による完全オフライン・通信復帰QA、Google Play内部テスト配布も合格した。Android実機QA、全プラットフォーム同一SHA、承認ゲートが未完了のため、v2.5全体の判定はNo-Go（確認継続）とする。
