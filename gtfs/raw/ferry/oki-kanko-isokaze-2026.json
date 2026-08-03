@@ -179,14 +179,14 @@
     {
       "id": "three-vessel-summer",
       "pattern_id": "three-vessel-summer",
-      "first_trip_id": 1041,
+      "first_trip_id": 3000,
       "start_date": "2026/08/08",
       "end_date": "2026/08/16"
     },
     {
       "id": "two-vessel-regular-august",
       "pattern_id": "two-vessel-regular",
-      "first_trip_id": 1087,
+      "first_trip_id": 3046,
       "start_date": "2026/08/17",
       "end_date": "2026/08/31"
     },

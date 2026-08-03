@@ -39,11 +39,21 @@ describe('島前内航船いそかぜ2026年6月変更ダイヤ', () => {
 
     expect(firstTripIdByPeriod).toEqual({
       'two-vessel-regular-early': 539,
-      'three-vessel-summer': 1041,
-      'two-vessel-regular-august': 1087,
+      'three-vessel-summer': 3000,
+      'two-vessel-regular-august': 3046,
       'two-vessel-september': 677,
       'two-vessel-regular-late': 585
     })
+  })
+
+  it('運航状況から追加する臨時便の予約ID帯を正式便に使用しない', () => {
+    const trips = buildIsokazeTrips(source)
+    const reservedTrips = trips.filter((trip) => {
+      const tripId = Number(trip.trip_id)
+      return tripId >= 1000 && tripId < 3000
+    })
+
+    expect(reservedTrips).toHaveLength(0)
   })
 
   it('6月1日から12月30日まで空白なく46区間を提供する', () => {
