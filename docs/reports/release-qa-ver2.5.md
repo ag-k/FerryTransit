@@ -7,12 +7,13 @@
 - 作業ブランチ: `dev`
 - 作業開始時HEAD: `185171a82e425f8e04ac55e05ce80a92c0350d82`
 - Web / Storage公開コミット: `c75e4c02cf007c86606b43e10ffe5802c358b36c`
-- iOS / Android配布候補コミット: `1db1ba1a4d543a358587ff6738adb7f21c8870a5`
+- 従来版iOS / Android配布候補コミット: `1db1ba1a4d543a358587ff6738adb7f21c8870a5`（build 25003）
+- 恒久修正版Web / iOS / Android配布候補コミット: `bbecab9b9b001841d118f0090b48c77297bda429`（build 25004）
 - Node.js: `v22.21.1`
 - npm: `11.11.0`
 - Web: `2.5.0`
-- iOS: `2.5 (25003)`
-- Android: `2.5 (25003)`
+- iOS: `2.5 (25004)`
+- Android: `2.5 (25004)`
 - 追跡Issue: [#76](https://github.com/ag-k/FerryTransit/issues/76)
 
 ## 対象
@@ -22,6 +23,19 @@
 - JAL航空運賃の状態表示、既知額合算、料金順、公式リンク
 - 西ノ島町営バスの●・◎・★が付いた停留所区間の運行日修正
 - v2.5版番号とWeb / iOS / Androidのローカルリリース成果物
+- いそかぜ・フェリーどうぜんの予定便と運航状況由来の臨時便の分離、既存v2.4 / v2.5とのデータ互換性
+
+## 恒久修正版 build 25004 再QA（2026-08-03）
+
+8月9日以降のいそかぜが表示されない原因は、iOS / Android v2.4・v2.5が運航状況の臨時便削除用として扱うID範囲`1000–2999`へ、公式時刻表のいそかぜ・フェリーどうぜん予定便が入ったことだった。恒久修正版では、公式予定便と運航状況由来の臨時便を別状態で管理し、表示時だけ統合する。運航状況更新時は臨時便だけを置換し、公式予定便を削除しない。あわせて公式データ検証で、いそかぜ・フェリーどうぜんの予定便に予約範囲`1000–2999`が使われた場合は生成を失敗させる。
+
+- 固定SHA: `bbecab9b9b001841d118f0090b48c77297bda429`。互換データでは公式いそかぜ予定便を`3000–3091`へ割り当て済みで、既存v2.4 / v2.5は従来どおり単一の時刻表データを取得できる。データ配信先を版別に複製していない。
+- 自動ゲート: Node.js `v22.21.1` / npm `11.11.0`で`npm ci`、`release:config:verify`、`lint`、`test`（123 files、1,024 passed、1 skipped）、`timetable:build:dry-run`（1,100便）、`build-prod`、`cap:assert:no-timetable`、`test:e2e`（63件）、production成果物の`test:e2e:prod`（63件）がすべて成功した。
+- iOS: Simulator Release、端末向けRelease、Archive、App Store用IPA生成に成功。IPA SHA-256は`556d7d2984e734b0ed0f7e28a55b558c7fae97152472b40c35a037a9db0866e4`。Apple Distribution署名、App Storeプロファイル、`get-task-allow=false`、時刻表・GTFS・bus-searchデータ非同梱を確認した。2026-08-03 20:40 JSTにApp Store Connectへのアップロードが成功したが、Apple側の処理完了は未確認。
+- Android: production同期、`bundleRelease`、Release lint、署名、bundletool 1.18.3検証に成功。AABは`output/releases/ferrytransit-v2.5-25004-bbecab9.aab`、SHA-256は`d4686486b0b9d205dd618252aee3bb5c7df69b3453bad23416de4be1b7d85f09`。Application ID、v2.5 / 25004、minSdk 23 / targetSdk 36、Play登録証明書、禁止データ非同梱を確認し、2026-08-03 20:56 JSTにGoogle Play内部テスターへ公開した。端末除外の増加は0件。R8難読化解除ファイル未添付の警告は、minify無効のため非阻止と判断した。
+- iOS Simulatorではproduction時刻表画面の起動・表示に成功し、アプリクラッシュ、SSL、通信の致命的エラーはなかった。
+- 未完了: 接続可能なiOS / Android実機がなく、build 25004の更新インストール、8月9日以降のいそかぜ、運航状況臨時便、オフライン・復帰、設定・お気に入り・履歴保持を再確認できていない。恒久修正版Webの本番Firebase Hosting公開は明示承認待ち。
+- 判定: No-Go。両ストアへの配布登録は完了したが、build 25004実機QA、本番Hosting公開後QA、App Store Connect処理完了確認、責任者承認が必要。
 
 ## 自動品質ゲート
 
@@ -232,6 +246,8 @@ iOSビルドではCapacitor/Cordovaの`WKProcessPool`非推奨警告とAppIntent
 | REL-25-02 | 解決済み | Google Play内部テスト版v2.5（25003）をmoto g05 / Android 15で起動し、versionCode、バス停選択、はつみ交通の両方向検索・500円運賃・船との双方向乗換、伊丹・出雲JAL経路と外部リンク、設定・お気に入り・履歴のコールド再起動保持、クラッシュなしを確認した | 影響なし | 2026-08-02実機確認済み |
 | REL-25-05 | 解決済み | build 25003へ更新し、伊丹・出雲の両経路からJAL公式ページへ遷移できることを実機確認 | 影響なし | 2026-08-01実機確認済み |
 | REL-25-06 | 解決済み | build 25003へ更新し、既存のはつみ交通履歴が`境港駅 → 七類港`と表示され、内部IDが露出しないことを実機確認 | 影響なし | 2026-08-01実機確認済み |
+| REL-25-07 | リリース阻止 | 恒久修正版build 25004のiOS / Android実機QA未完了 | build 25003の主要機能QAは合格済み。build 25004で予定便・運航状況臨時便の分離、更新保持、主要経路を再確認する | 接続可能な実機待ち |
+| REL-25-08 | リリース阻止 | 固定SHA `bbecab9`の本番Hosting公開未完了 | 現行Webと互換データで利用は継続可能。本番デプロイの明示承認後に公開・スモークQAする | ユーザー承認待ち |
 | REL-25-04 | リリース阻止 | QA責任者、リリース責任者の承認未記録 | Web / Storage公開SHAは固定済み。最終Go判定は未成立 | 両責任者承認 |
 
-Web / Storage本番反映に重大不具合は確認していない。iOS TestFlight実機QAで確認したJAL外部リンク遷移不良と履歴の内部コード露出は、build 25003の実機再QAで解決確認した。モバイルSafari / Chromeの実機QA、Android Release構成による完全オフライン・通信復帰QA、Google Play内部テスト配布、Android実機の版番号・バス停選択・はつみ交通・船乗換・JAL経路・外部リンク・保持QA、同一アプリソースの本番Hosting公開後QAも合格した。全TODO確認、QA・リリース承認ゲートが未完了のため、v2.5全体の判定はNo-Go（確認継続）とする。
+従来build 25003ではWeb / Storage本番反映、iOS / Android実機、オフライン・復帰を含む主要QAが合格している。恒久修正版build 25004も全自動ゲート、iOS / Android Release成果物、両ストアへの配布登録まで合格した。一方、build 25004実機QA、同一SHAの本番Hosting公開後QA、App Store Connect処理完了確認、全TODO確認、QA・リリース承認ゲートが未完了のため、v2.5全体の判定はNo-Go（確認継続）とする。
