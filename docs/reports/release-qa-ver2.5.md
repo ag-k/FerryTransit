@@ -31,11 +31,11 @@
 
 - 固定SHA: `bbecab9b9b001841d118f0090b48c77297bda429`。互換データでは公式いそかぜ予定便を`3000–3091`へ割り当て済みで、既存v2.4 / v2.5は従来どおり単一の時刻表データを取得できる。データ配信先を版別に複製していない。
 - 自動ゲート: Node.js `v22.21.1` / npm `11.11.0`で`npm ci`、`release:config:verify`、`lint`、`test`（123 files、1,024 passed、1 skipped）、`timetable:build:dry-run`（1,100便）、`build-prod`、`cap:assert:no-timetable`、`test:e2e`（63件）、production成果物の`test:e2e:prod`（63件）がすべて成功した。
-- iOS: Simulator Release、端末向けRelease、Archive、App Store用IPA生成に成功。IPA SHA-256は`556d7d2984e734b0ed0f7e28a55b558c7fae97152472b40c35a037a9db0866e4`。Apple Distribution署名、App Storeプロファイル、`get-task-allow=false`、時刻表・GTFS・bus-searchデータ非同梱を確認した。2026-08-03 20:40 JSTにApp Store Connectへのアップロードが成功したが、Apple側の処理完了は未確認。
+- iOS: Simulator Release、端末向けRelease、Archive、App Store用IPA生成に成功。IPA SHA-256は`556d7d2984e734b0ed0f7e28a55b558c7fae97152472b40c35a037a9db0866e4`。Apple Distribution署名、App Storeプロファイル、`get-task-allow=false`、時刻表・GTFS・bus-searchデータ非同梱を確認した。2026-08-03 20:40 JSTにApp Store Connectへのアップロードが成功し、20:42 JSTの処理完了通知と20:43 JSTのTestFlight配信可能通知を確認した。
 - Android: production同期、`bundleRelease`、Release lint、署名、bundletool 1.18.3検証に成功。AABは`output/releases/ferrytransit-v2.5-25004-bbecab9.aab`、SHA-256は`d4686486b0b9d205dd618252aee3bb5c7df69b3453bad23416de4be1b7d85f09`。Application ID、v2.5 / 25004、minSdk 23 / targetSdk 36、Play登録証明書、禁止データ非同梱を確認し、2026-08-03 20:56 JSTにGoogle Play内部テスターへ公開した。端末除外の増加は0件。R8難読化解除ファイル未添付の警告は、minify無効のため非阻止と判断した。
 - iOS Simulatorではproduction時刻表画面の起動・表示に成功し、アプリクラッシュ、SSL、通信の致命的エラーはなかった。
-- 未完了: 接続可能なiOS / Android実機がなく、build 25004の更新インストール、8月9日以降のいそかぜ、運航状況臨時便、オフライン・復帰、設定・お気に入り・履歴保持を再確認できていない。恒久修正版Webの本番Firebase Hosting公開は明示承認待ち。
-- 判定: No-Go。両ストアへの配布登録は完了したが、build 25004実機QA、本番Hosting公開後QA、App Store Connect処理完了確認、責任者承認が必要。
+- 未完了: 2026-08-03 21:04 JST時点でiOS実機はすべてオフライン、AndroidはADB接続0台のため、build 25004の更新インストール、8月9日以降のいそかぜ、運航状況臨時便、オフライン・復帰、設定・お気に入り・履歴保持を再確認できていない。恒久修正版Webの本番Firebase Hosting公開は明示承認待ち。
+- 判定: No-Go。両ストアへの配布登録とApp Store Connect処理は完了したが、build 25004実機QA、本番Hosting公開後QA、責任者承認が必要。
 
 ## 自動品質ゲート
 
@@ -250,4 +250,4 @@ iOSビルドではCapacitor/Cordovaの`WKProcessPool`非推奨警告とAppIntent
 | REL-25-08 | リリース阻止 | 固定SHA `bbecab9`の本番Hosting公開未完了 | 現行Webと互換データで利用は継続可能。本番デプロイの明示承認後に公開・スモークQAする | ユーザー承認待ち |
 | REL-25-04 | リリース阻止 | QA責任者、リリース責任者の承認未記録 | Web / Storage公開SHAは固定済み。最終Go判定は未成立 | 両責任者承認 |
 
-従来build 25003ではWeb / Storage本番反映、iOS / Android実機、オフライン・復帰を含む主要QAが合格している。恒久修正版build 25004も全自動ゲート、iOS / Android Release成果物、両ストアへの配布登録まで合格した。一方、build 25004実機QA、同一SHAの本番Hosting公開後QA、App Store Connect処理完了確認、全TODO確認、QA・リリース承認ゲートが未完了のため、v2.5全体の判定はNo-Go（確認継続）とする。
+従来build 25003ではWeb / Storage本番反映、iOS / Android実機、オフライン・復帰を含む主要QAが合格している。恒久修正版build 25004も全自動ゲート、iOS / Android Release成果物、両ストアへの配布登録、App Store Connect処理完了まで合格した。一方、build 25004実機QA、同一SHAの本番Hosting公開後QA、全TODO確認、QA・リリース承認ゲートが未完了のため、v2.5全体の判定はNo-Go（確認継続）とする。
