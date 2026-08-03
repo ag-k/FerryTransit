@@ -124,6 +124,8 @@ flowchart LR
 
 `npm run timetable:build` は、JAL JSONから空港連絡バスをメモリ上で生成し、船・JAL・空港連絡バスを1回で検証・出力する。`npm run timetable:build:dry-run` は同じ処理を行うが、管理対象ファイルへ書き込まない。
 
+公開済みのv2.4との互換性を維持するため、`ISOKAZE`と`FERRY_DOZEN`の公式便ではtrip ID `1000`〜`2999`を使用しない。この範囲は旧アプリが運航状況API由来の臨時便へ割り当てる予約帯であり、公開時刻表の共通検証で混入を拒否する。新しいアプリも同じ単一の`data/timetable.json`を取得するが、実行時は公式時刻表と運航状況由来の臨時便を別々に保持する。
+
 `npm run transport:publish -- --source jal-oki-flights --target dev --git-sha <commit-sha>` は生成済み公開時刻表を再ビルドせず、検証、既存データとの差分確認、バックアップ、アップロード、manifest生成、アップロード後のSHA-256検証だけを行う。本番への直接publishは拒否し、dev manifestから昇格する。
 
 ### 3. JAL定期更新

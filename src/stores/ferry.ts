@@ -185,7 +185,23 @@ const normalizeTimetableTrip = (trip: any): Trip => {
 export const useFerryStore = defineStore("ferry", () => {
   const logger = createLogger("ferryStore");
   // State
-  const timetableData = ref<Trip[]>([]);
+  const scheduledTimetableData = ref<Trip[]>([]);
+  const statusExtraTrips = ref<Trip[]>([]);
+  const timetableData = computed<Trip[]>({
+    get: () => [
+      ...scheduledTimetableData.value,
+      ...statusExtraTrips.value,
+    ],
+    set: (trips) => {
+      // 既存の公開インターフェースから時刻表を差し替える場合は、
+      // その値を公式時刻表として扱い、動的な臨時便はリセットする。
+      scheduledTimetableData.value = trips;
+      statusExtraTrips.value = [];
+    },
+  });
+  const hasScheduledTimetable = computed(
+    () => scheduledTimetableData.value.length > 0
+  );
   const shipStatus = ref<ShipStatusStoreState>({
     isokaze: null as ShipStatus | null,
     dozen: null as ShipStatus | null,
@@ -579,7 +595,7 @@ export const useFerryStore = defineStore("ferry", () => {
   // Actions
   const fetchTimetable = async (force = false) => {
     const nativeAtEntry = process.client && isNativeClientPlatform();
-    if (!force && !isDataStale.value && timetableData.value.length > 0) {
+    if (!force && !isDataStale.value && hasScheduledTimetable.value) {
       return; // キャッシュが有効な場合はスキップ
     }
 
@@ -665,7 +681,7 @@ export const useFerryStore = defineStore("ferry", () => {
       }
 
       // Map API response fields to expected format
-      timetableData.value = data.map(normalizeTimetableTrip);
+      scheduledTimetableData.value = data.map(normalizeTimetableTrip);
 
       lastFetchTime.value = new Date();
 
@@ -697,7 +713,7 @@ export const useFerryStore = defineStore("ferry", () => {
           if (cached) {
             const data = JSON.parse(cached) as any[];
             // Map cached data to expected format
-            timetableData.value = data.map(normalizeTimetableTrip);
+            scheduledTimetableData.value = data.map(normalizeTimetableTrip);
             error.value = "OFFLINE_TIMETABLE_ERROR";
             loadedFallbackTimetable = true;
           }
@@ -707,7 +723,7 @@ export const useFerryStore = defineStore("ferry", () => {
       }
 
       if (!loadedFallbackTimetable) {
-        timetableData.value = [];
+        scheduledTimetableData.value = [];
       }
     } finally {
       isLoading.value = false;
@@ -846,21 +862,13 @@ export const useFerryStore = defineStore("ferry", () => {
 
   const processExtraShips = () => {
     const dateStr = formatDateLocal(selectedDate.value);
-
-    // 既存の臨時便を削除
-    timetableData.value = timetableData.value.filter((trip) => {
-      const isExtraShip =
-        trip.tripId >= 1000 &&
-        trip.tripId < 3000 &&
-        (trip.name === "ISOKAZE" || trip.name === "FERRY_DOZEN");
-      return !isExtraShip;
-    });
+    const nextExtraTrips: Trip[] = [];
 
     // いそかぜの臨時便
     if (shipStatus.value.isokaze?.extraShips) {
       let tripId = 1000;
       shipStatus.value.isokaze.extraShips.forEach((trip) => {
-        timetableData.value.push({
+        nextExtraTrips.push({
           tripId,
           startDate: dateStr,
           endDate: dateStr,
@@ -880,7 +888,7 @@ export const useFerryStore = defineStore("ferry", () => {
     if (shipStatus.value.dozen?.extraShips) {
       let tripId = 2000;
       shipStatus.value.dozen.extraShips.forEach((trip) => {
-        timetableData.value.push({
+        nextExtraTrips.push({
           tripId,
           startDate: dateStr,
           endDate: dateStr,
@@ -895,6 +903,9 @@ export const useFerryStore = defineStore("ferry", () => {
         tripId++;
       });
     }
+
+    // 運航状況API由来の臨時便だけを置換し、公式時刻表には触れない。
+    statusExtraTrips.value = nextExtraTrips;
   };
 
   const setDeparture = (port: string) => {
@@ -965,6 +976,9 @@ export const useFerryStore = defineStore("ferry", () => {
   return {
     // State
     timetableData,
+    scheduledTimetableData,
+    statusExtraTrips,
+    hasScheduledTimetable,
     shipStatus,
     selectedDate,
     departure,

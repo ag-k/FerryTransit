@@ -9,6 +9,7 @@
 - JAL便の航空運賃が未登録の場合に「航空運賃は別途（変動）」と表示し、空港連絡バスの運賃だけを全行程の確定総額に見せないよう改善しました。
 - JAL便の運賃確認ページへの案内と、変動運賃を考慮した料金順の並び替えを追加しました。
 - 西ノ島町営バスの●・◎・★の運行注記が、記号のない後続停留所まで誤って適用される問題を修正しました。
+- いそかぜ・フェリーどうぜんの公式時刻表と臨時便を分離し、運航状況の更新時に公式便が消えることがある問題を修正しました。
 
 ### データ・品質改善
 
@@ -33,3 +34,4 @@
 - Added pre-publication validation for missing, registered, and invalid JAL fare values.
 - Expanded regression coverage for Hatsumi Kotsu, bus-stop selection, airfare states, connecting fares, and sorting.
 - Added full-year regression coverage for all 14 symbol-marked Nishinoshima town bus trips.
+- Separated scheduled Isokaze and Ferry Dozen services from status-based extra trips so scheduled services are not removed during operation-status updates.

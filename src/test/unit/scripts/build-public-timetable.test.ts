@@ -138,4 +138,21 @@ describe("buildPublicTimetable", () => {
       createTrip({ trip_id: "1", name: "RAINBOWJET" }),
     ])).toThrow(/trip_id が重複/);
   });
+
+  it.each([
+    ["ISOKAZE", "1000"],
+    ["ISOKAZE", "2999"],
+    ["FERRY_DOZEN", "1000"],
+    ["FERRY_DOZEN", "2999"],
+  ])("%s の公式便で旧アプリの臨時便予約ID %sを拒否する", (name, tripId) => {
+    expect(() => validateTimetable([
+      createTrip({ trip_id: tripId, name }),
+    ])).toThrow(/旧アプリの臨時便予約ID帯 1000〜2999/);
+  });
+
+  it.each(["999", "3000"])("予約ID帯の境界外 %s は利用できる", (tripId) => {
+    expect(() => validateTimetable([
+      createTrip({ trip_id: tripId, name: "ISOKAZE" }),
+    ])).not.toThrow();
+  });
 });

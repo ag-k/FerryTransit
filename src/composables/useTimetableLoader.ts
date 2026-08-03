@@ -14,7 +14,7 @@ export const useTimetableLoader = () => {
       return inFlightPromise
     }
 
-    const hasTimetable = ferryStore.timetableData.length > 0
+    const hasTimetable = ferryStore.hasScheduledTimetable
     const isStale = isFerryStoreDataStale(ferryStore)
     const shouldFetch = force || !hasTimetable || isStale
 

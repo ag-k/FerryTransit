@@ -267,6 +267,93 @@ describe("Ferry Store", () => {
       );
     });
 
+    it("keeps status extra ships when the scheduled timetable finishes loading later", async () => {
+      const store = useFerryStore();
+      const statusWithExtraShip = {
+        ...mockShipStatus,
+        status: 0,
+        extraShips: [
+          {
+            departure: "BEPPU",
+            departure_time: "10:15",
+            arrival: "HISHIURA",
+            arrival_time: "10:25",
+          },
+        ],
+      };
+
+      (global.$fetch as any).mockImplementation((url: string) => {
+        if (url.includes("/status-kankou")) return Promise.resolve(null);
+        return Promise.resolve([statusWithExtraShip, null, null]);
+      });
+
+      await store.fetchShipStatus();
+      expect(store.timetableData.filter((trip) => trip.status === 4)).toHaveLength(1);
+
+      mockGetCachedJsonFile.mockResolvedValueOnce(mockTrips.map((trip) => ({
+        trip_id: trip.tripId.toString(),
+        start_date: trip.startDate,
+        end_date: trip.endDate,
+        name: trip.name,
+        departure: trip.departure,
+        departure_time: trip.departureTime,
+        arrival: trip.arrival,
+        arrival_time: trip.arrivalTime,
+        status: trip.status.toString(),
+      })));
+
+      await store.fetchTimetable();
+
+      expect(store.hasScheduledTimetable).toBe(true);
+      expect(store.timetableData.filter((trip) => trip.status === 4)).toHaveLength(1);
+      expect(store.timetableData).toHaveLength(mockTrips.length + 1);
+    });
+
+    it("replaces status extra ships without duplication and removes only those trips", async () => {
+      const store = useFerryStore();
+      const scheduledTrip: Trip = {
+        tripId: 3000,
+        startDate: "2026-08-09",
+        endDate: "2026-08-09",
+        name: "ISOKAZE",
+        departure: "BEPPU",
+        departureTime: "07:00",
+        arrival: "HISHIURA",
+        arrivalTime: "07:10",
+        status: 0,
+      };
+      store.timetableData = [scheduledTrip];
+
+      let extraShips = [
+        {
+          departure: "BEPPU",
+          departure_time: "10:15",
+          arrival: "HISHIURA",
+          arrival_time: "10:25",
+        },
+      ];
+      (global.$fetch as any).mockImplementation((url: string) => {
+        if (url.includes("/status-kankou")) return Promise.resolve(null);
+        return Promise.resolve([
+          { ...mockShipStatus, status: 0, extraShips },
+          null,
+          null,
+        ]);
+      });
+
+      await store.fetchShipStatus();
+      await store.fetchShipStatus();
+
+      expect(store.timetableData.filter((trip) => trip.tripId === 1000)).toHaveLength(1);
+      expect(store.timetableData).toContainEqual(scheduledTrip);
+
+      extraShips = [];
+      await store.fetchShipStatus();
+
+      expect(store.timetableData.find((trip) => trip.tripId === 1000)).toBeUndefined();
+      expect(store.timetableData).toEqual([scheduledTrip]);
+    });
+
     it("should restore cached ship status when the API is offline", async () => {
       const store = useFerryStore();
       const cachedAt = "2026-07-19T06:30:00.000Z";
@@ -498,7 +585,7 @@ describe("Ferry Store", () => {
       expect(extraTrip?.departureTime).toBe("10:15");
     });
 
-    it("keeps scheduled Rainbow Jet trips when clearing extra ships", async () => {
+    it("keeps scheduled trips even when their IDs overlap the legacy runtime range", async () => {
       const store = useFerryStore();
       store.selectedDate = new Date("2026-07-24T00:00:00+09:00");
       store.timetableData = [
@@ -551,7 +638,7 @@ describe("Ferry Store", () => {
         store.timetableData.find(
           (trip) => trip.tripId === 1000 && trip.name === "ISOKAZE"
         )
-      ).toBeUndefined();
+      ).toBeDefined();
       expect(
         store.timetableData
           .filter((trip) => trip.name === "RAINBOWJET")

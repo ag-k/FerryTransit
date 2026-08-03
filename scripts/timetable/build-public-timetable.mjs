@@ -40,6 +40,9 @@ const REQUIRED_FIELDS = [
 
 const DATE_PATTERN = /^\d{4}[-/]\d{1,2}[-/]\d{1,2}$/
 const TIME_PATTERN = /^\d{1,2}:\d{2}(?::\d{2})?$/
+const LEGACY_EXTRA_SHIP_NAMES = new Set(['ISOKAZE', 'FERRY_DOZEN'])
+const LEGACY_EXTRA_SHIP_ID_MIN = 1000
+const LEGACY_EXTRA_SHIP_ID_MAX_EXCLUSIVE = 3000
 
 const parseArgs = (argv) => {
   const args = {
@@ -126,6 +129,19 @@ export const validateTimetable = (trips) => {
     } else {
       seenIds.add(tripId)
       ids.add(tripId)
+    }
+
+    const numericTripId = Number(tripId)
+    if (
+      LEGACY_EXTRA_SHIP_NAMES.has(getTripName(trip)) &&
+      Number.isInteger(numericTripId) &&
+      numericTripId >= LEGACY_EXTRA_SHIP_ID_MIN &&
+      numericTripId < LEGACY_EXTRA_SHIP_ID_MAX_EXCLUSIVE
+    ) {
+      errors.push(
+        `trip_id=${tripId || index}: ${getTripName(trip)} の公式便には旧アプリの臨時便予約ID帯 ` +
+        `${LEGACY_EXTRA_SHIP_ID_MIN}〜${LEGACY_EXTRA_SHIP_ID_MAX_EXCLUSIVE - 1} を使用できません`
+      )
     }
 
     if (trip.start_date && !DATE_PATTERN.test(String(trip.start_date))) {
