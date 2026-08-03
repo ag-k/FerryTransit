@@ -37,6 +37,17 @@
 - 未完了: 2026-08-03 21:04 JST時点でiOS実機はすべてオフライン、AndroidはADB接続0台のため、build 25004の更新インストール、8月9日以降のいそかぜ、運航状況臨時便、オフライン・復帰、設定・お気に入り・履歴保持を再確認できていない。恒久修正版Webの本番Firebase Hosting公開は明示承認待ち。
 - 判定: No-Go。両ストアへの配布登録とApp Store Connect処理は完了したが、build 25004実機QA、本番Hosting公開後QA、責任者承認が必要。
 
+### 恒久修正版の本番Hosting公開後QA（2026-08-03 23:20–23:25 JST）
+
+- 固定SHA `bbecab9b9b001841d118f0090b48c77297bda429`から文書コミットを除いたアプリソース差分が0件であることを確認し、Node.js `v22.21.1`で`release:config:verify`、`build-prod`、`cap:assert:no-timetable`を再実行した。
+- Firebase production alias `prod`を使用し、`.output/public`の159ファイルを`oki-ferryguide`へ公開した。71新規ファイルのアップロード、version finalize、live releaseが成功した。公開URLは`https://oki-ferryguide.web.app`。
+- `/`、`/transit`、`/sw.js`はいずれもHTTP 200。Service Workerは`Cache-Control: no-cache, no-store, must-revalidate`、公開成果物の`Last-Modified`は2026-08-03 23:20:40 JSTだった。
+- 公開URLへ向けてChromium / Firefox / WebKitの既存E2E 63件を実行し、全件合格した。テスト終了時に6ページでNuxt遅延import中断メッセージが出たが、全アサーション合格、script request failureなし、対象JSはHTTP 200であり、ページ破棄時のテストハーネス由来と切り分けた。
+- 実ブラウザーでページタイトル、主要DOM、エラーオーバーレイなしを確認した。別府→菱浦、2026-08-09でいそかぜ13便とフェリーどうぜん各便を本番実データから表示した。代表便はいそかぜ`08:25→08:32`、`09:17→09:24`、`10:02→10:09`。
+- 伊丹→西郷、2026-08-04 12:00以降を検索し、JAL2331 `12:15→13:05`、隠岐空港15分乗換、空港連絡バス、西郷`13:30`、合計`¥520 + 航空運賃（変動）`を確認した。JAL公式リンクは`https://www.jal.co.jp/domestic/ja-jp/flights-from-oki`、`target=_blank`だった。
+- 実ブラウザーのconsole error / warningはトップ、いそかぜ検索、JAL乗換検索の全確認で0件だった。
+- 判定: Web版は合格。REL-25-08を解決済みとする。v2.5全体はbuild 25004実機QAと責任者承認待ちのためNo-Goを継続する。
+
 ## 自動品質ゲート
 
 | 項目 | 結果 | 証跡 |
@@ -247,7 +258,7 @@ iOSビルドではCapacitor/Cordovaの`WKProcessPool`非推奨警告とAppIntent
 | REL-25-05 | 解決済み | build 25003へ更新し、伊丹・出雲の両経路からJAL公式ページへ遷移できることを実機確認 | 影響なし | 2026-08-01実機確認済み |
 | REL-25-06 | 解決済み | build 25003へ更新し、既存のはつみ交通履歴が`境港駅 → 七類港`と表示され、内部IDが露出しないことを実機確認 | 影響なし | 2026-08-01実機確認済み |
 | REL-25-07 | リリース阻止 | 恒久修正版build 25004のiOS / Android実機QA未完了 | build 25003の主要機能QAは合格済み。build 25004で予定便・運航状況臨時便の分離、更新保持、主要経路を再確認する | 接続可能な実機待ち |
-| REL-25-08 | リリース阻止 | 固定SHA `bbecab9`の本番Hosting公開未完了 | 現行Webと互換データで利用は継続可能。本番デプロイの明示承認後に公開・スモークQAする | ユーザー承認待ち |
+| REL-25-08 | 解決済み | 固定SHA `bbecab9`と同一アプリソースの本番Hosting公開・スモークQA完了 | 影響なし | 2026-08-03 23:20–23:25 JST確認済み |
 | REL-25-04 | リリース阻止 | QA責任者、リリース責任者の承認未記録 | Web / Storage公開SHAは固定済み。最終Go判定は未成立 | 両責任者承認 |
 
-従来build 25003ではWeb / Storage本番反映、iOS / Android実機、オフライン・復帰を含む主要QAが合格している。恒久修正版build 25004も全自動ゲート、iOS / Android Release成果物、両ストアへの配布登録、App Store Connect処理完了まで合格した。一方、build 25004実機QA、同一SHAの本番Hosting公開後QA、全TODO確認、QA・リリース承認ゲートが未完了のため、v2.5全体の判定はNo-Go（確認継続）とする。
+従来build 25003ではWeb / Storage本番反映、iOS / Android実機、オフライン・復帰を含む主要QAが合格している。恒久修正版build 25004も全自動ゲート、iOS / Android Release成果物、両ストアへの配布登録、App Store Connect処理完了、同一アプリソースの本番Hosting公開後QAまで合格した。一方、build 25004実機QA、全TODO確認、QA・リリース承認ゲートが未完了のため、v2.5全体の判定はNo-Go（確認継続）とする。
