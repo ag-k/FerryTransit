@@ -28,6 +28,9 @@ const state = {
   snapshot: null,
   gtfs: null,
   codex: null,
+  coverage: null,
+  coverageYear: new Date().getFullYear(),
+  coverageCenteredYear: null,
   activeTab: initialTab,
   group: restoredViewState?.group || 'すべて',
   type: FILTER_TYPES.includes(restoredViewState?.type) ? restoredViewState.type : 'all',
@@ -53,6 +56,10 @@ const elements = {
   changedStatus: document.querySelector('#changedStatus'),
   noticeCount: document.querySelector('#noticeCount'),
   noticeStatus: document.querySelector('#noticeStatus'),
+  coverageBody: document.querySelector('#coverageBody'),
+  coverageYear: document.querySelector('#coverageYear'),
+  coverageTodayBtn: document.querySelector('#coverageTodayBtn'),
+  coverageReloadBtn: document.querySelector('#coverageReloadBtn'),
   lastFetched: document.querySelector('#lastFetched'),
   errorBanner: document.querySelector('#errorBanner'),
   sourcePanelMeta: document.querySelector('#sourcePanelMeta'),
@@ -85,6 +92,12 @@ elements.saveBtn.addEventListener('click', () => collect({ save: true, download:
 elements.downloadBtn.addEventListener('click', () => collect({ save: true, download: true }))
 elements.gtfsCreateDraftBtn.addEventListener('click', createGtfsDraft)
 elements.gtfsExportBtn.addEventListener('click', exportGtfs)
+elements.coverageYear.addEventListener('change', () => {
+  state.coverageYear = Number(elements.coverageYear.value)
+  loadTimetableCoverage()
+})
+elements.coverageTodayBtn.addEventListener('click', () => scrollCoverageToToday({ smooth: true }))
+elements.coverageReloadBtn.addEventListener('click', loadTimetableCoverage)
 elements.mainTabs.forEach((button) => {
   button.addEventListener('click', () => setActiveTab(button.dataset.mainTab, { scrollTop: true }))
 })
@@ -128,6 +141,7 @@ renderTabs()
 
 loadLatest()
 loadGtfs()
+loadTimetableCoverage()
 
 async function loadLatest() {
   setBusy(true)
@@ -177,6 +191,20 @@ async function loadGtfs() {
     showError(error.message)
   } finally {
     setGtfsBusy(false)
+  }
+}
+
+async function loadTimetableCoverage() {
+  setCoverageBusy(true)
+  try {
+    const coverage = await fetchJson(`/api/timetable-coverage?year=${encodeURIComponent(state.coverageYear)}`)
+    state.coverage = coverage
+    state.coverageYear = coverage.year
+    renderTimetableCoverage()
+  } catch (error) {
+    elements.coverageBody.innerHTML = `<div class="coverage-error">配信中の時刻表を読み込めませんでした。<small>${escapeHtml(error.message)}</small></div>`
+  } finally {
+    setCoverageBusy(false)
   }
 }
 
@@ -472,6 +500,102 @@ function renderSummary(summary) {
   elements.noticeCount.textContent = summary.noticeCount
   elements.noticeStatus.textContent = `新着 ${summary.newNotices}`
   elements.lastFetched.textContent = `取得: ${formatDateTime(summary.collectedAt)}`
+}
+
+function renderTimetableCoverage() {
+  const coverage = state.coverage
+  if (!coverage) return
+  const { dates, months, rows, source, summary } = coverage
+  const sourceClass = source.fallback ? 'fallback' : 'production'
+  const sourceDetail = [
+    source.tripCount != null ? `${formatNumber(source.tripCount)}便` : '',
+    source.busTripCount != null ? `バス ${formatNumber(source.busTripCount)}便 / ${formatNumber(source.busFeedCount)}配信` : '',
+    source.publishedAt ? `配信更新 ${formatDateTime(source.publishedAt)}` : '',
+    source.gitSha ? `commit ${shortSha(source.gitSha)}` : ''
+  ].filter(Boolean).join(' ・ ')
+  const monthAxis = months.map((month) => (
+    `<span class="coverage-month" style="--month-days:${month.dayCount}">${escapeHtml(month.label)}</span>`
+  )).join('')
+  const dayAxis = dates.map((date) => {
+    const label = date.day === 1 || date.day === 15 ? date.day : ''
+    return `<span class="coverage-day-tick ${date.weekend ? 'weekend' : ''} ${date.today ? 'today' : ''} ${date.monthStart ? 'month-start' : ''}" title="${escapeAttr(date.ymd)}">${label}</span>`
+  }).join('')
+
+  let previousOperator = null
+  const routeRows = rows.map((row) => {
+    const groupStart = row.operatorId !== previousOperator
+    previousOperator = row.operatorId
+    const cells = [...row.coverage].map((value, index) => {
+      const date = dates[index]
+      const available = value === '1'
+      const title = `${date.ymd} ${row.serviceName}: ${available ? '有効な時刻表あり' : '有効な時刻表なし'}`
+      return `<span class="coverage-cell ${available ? 'available' : 'missing'} ${date.weekend ? 'weekend' : ''} ${date.today ? 'today' : ''} ${date.monthStart ? 'month-start' : ''}" title="${escapeAttr(title)}"></span>`
+    }).join('')
+    const routeSummary = row.routes.map((route) => route.routeLabel || `${route.departureLabel}→${route.arrivalLabel}`).join('、')
+    const rowLabel = `${row.operatorName}、${row.serviceName}、${dates.length}日中${row.availableDays}日に有効な時刻表あり`
+    return `<div class="coverage-route-row ${groupStart ? 'operator-start' : ''}" role="row" aria-label="${escapeAttr(rowLabel)}">
+      <div class="coverage-route-label" role="rowheader" title="対象路線: ${escapeAttr(routeSummary)}">
+        <span class="coverage-operator">${escapeHtml(row.operatorName)}</span>
+        <span class="coverage-route"><strong>${escapeHtml(row.serviceName)}</strong></span>
+        <span class="coverage-route-score ${row.missingDays ? 'has-gap' : 'complete'}">${row.availableDays}/${dates.length}日</span>
+      </div>
+      <div class="coverage-days" style="--coverage-day-count:${dates.length}" aria-hidden="true">${cells}</div>
+    </div>`
+  }).join('')
+
+  elements.coverageYear.innerHTML = coverage.years.map((year) => (
+    `<option value="${year}" ${year === coverage.year ? 'selected' : ''}>${year}年</option>`
+  )).join('')
+  elements.coverageTodayBtn.disabled = !dates.some((date) => date.today)
+  elements.coverageBody.innerHTML = `
+    <div class="coverage-overview">
+      <div class="coverage-stat coverage-rate"><span>全交通機関カバー率</span><strong>${formatNumber(summary.coverageRate)}%</strong></div>
+      <div class="coverage-stat"><span>有効データなし</span><strong>${formatNumber(summary.missingServiceDays)}<small> 交通機関日</small></strong></div>
+      <div class="coverage-stat"><span>監視対象</span><strong>${formatNumber(summary.operatorCount)}<small> 事業者</small> / ${formatNumber(summary.serviceCount)}<small> 交通機関</small></strong></div>
+      <div class="coverage-source">
+        <span class="coverage-source-badge ${sourceClass}">${escapeHtml(source.label)}</span>
+        <strong>${escapeHtml(sourceDetail || source.path || '')}</strong>
+        ${source.warning ? `<small>${escapeHtml(source.warning)}</small>` : ''}
+      </div>
+      <div class="coverage-legend" aria-label="凡例">
+        <span><i class="coverage-swatch available"></i>あり</span>
+        <span><i class="coverage-swatch missing"></i>なし</span>
+        <span><i class="coverage-swatch today"></i>本日</span>
+      </div>
+    </div>
+    <div id="coverageScroller" class="coverage-scroller" tabindex="0" aria-label="${coverage.year}年の時刻表カバレッジ。左右にスクロールできます">
+      <div class="coverage-grid" role="grid" aria-rowcount="${rows.length + 1}">
+        <div class="coverage-axis-row" role="row">
+          <div class="coverage-route-label coverage-axis-label" role="columnheader">事業者 / 交通機関</div>
+          <div class="coverage-axis" style="--coverage-day-count:${dates.length}" aria-hidden="true">
+            <div class="coverage-months">${monthAxis}</div>
+            <div class="coverage-day-ticks">${dayAxis}</div>
+          </div>
+        </div>
+        ${routeRows || '<div class="coverage-empty">表示できる区間がありません</div>'}
+      </div>
+    </div>
+    <p class="coverage-footnote">各交通機関に、その日に有効な便が1件以上あれば「あり」です。運航期間・曜日・追加日・除外日を反映しています。</p>
+  `
+
+  if (state.coverageCenteredYear !== coverage.year) {
+    state.coverageCenteredYear = coverage.year
+    requestAnimationFrame(() => scrollCoverageToToday({ smooth: false }))
+  }
+}
+
+function scrollCoverageToToday({ smooth }) {
+  const coverage = state.coverage
+  const scroller = document.querySelector('#coverageScroller')
+  if (!coverage || !scroller) return
+  const todayIndex = coverage.dates.findIndex((date) => date.today)
+  if (todayIndex < 0) return
+  const routeLabelWidth = Number.parseFloat(getComputedStyle(scroller).getPropertyValue('--coverage-label-width')) || 280
+  const dayWidth = Number.parseFloat(getComputedStyle(scroller).getPropertyValue('--coverage-day-width')) || 10
+  scroller.scrollTo({
+    left: Math.max(0, routeLabelWidth + todayIndex * dayWidth - scroller.clientWidth * 0.42),
+    behavior: smooth ? 'smooth' : 'auto'
+  })
 }
 
 function renderSources(sources) {
@@ -1213,6 +1337,14 @@ function setGtfsBusy(isBusy) {
   })
 }
 
+function setCoverageBusy(isBusy) {
+  elements.coverageYear.disabled = isBusy
+  elements.coverageReloadBtn.disabled = isBusy
+  if (isBusy && !state.coverage) {
+    elements.coverageBody.innerHTML = '<div class="coverage-loading" aria-label="時刻表カバレッジを読み込み中"><span></span><span></span><span></span></div>'
+  }
+}
+
 function showError(message) {
   elements.errorBanner.textContent = message
   elements.errorBanner.classList.remove('hidden')
@@ -1534,6 +1666,15 @@ function formatDateTime(value) {
     hour: '2-digit',
     minute: '2-digit'
   }).format(new Date(value))
+}
+
+function formatNumber(value) {
+  const number = Number(value)
+  return Number.isFinite(number) ? new Intl.NumberFormat('ja-JP', { maximumFractionDigits: 1 }).format(number) : '-'
+}
+
+function shortSha(value) {
+  return String(value || '').slice(0, 8)
 }
 
 function formatGtfsDate(value) {

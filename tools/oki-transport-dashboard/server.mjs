@@ -26,6 +26,7 @@ import {
 } from './src/gtfs.mjs'
 import { attachReflectionState } from './src/reflectionState.mjs'
 import { attachReviewState, loadReviewStore, setReviewStatus } from './src/reviews.mjs'
+import { loadPublishedTimetableCoverage } from './src/timetableCoverage.mjs'
 
 const PUBLIC_DIR = join(ROOT_DIR, 'public')
 const PORT = Number(process.env.PORT || 4177)
@@ -50,6 +51,11 @@ const server = http.createServer(async (request, response) => {
     if (url.pathname === '/api/latest') {
       const latest = await loadDashboardLatestSnapshot()
       return sendJson(response, await withDashboardState(latest || EMPTY_SNAPSHOT))
+    }
+    if (url.pathname === '/api/timetable-coverage') {
+      return sendJson(response, await loadPublishedTimetableCoverage({
+        year: url.searchParams.get('year') || undefined
+      }))
     }
     if (url.pathname === '/api/change-history') {
       const limit = Number(url.searchParams.get('limit') || 100)

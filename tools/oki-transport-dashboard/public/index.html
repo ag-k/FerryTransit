@@ -2,7 +2,7 @@
 <html lang="ja">
   <head>
     <meta charset="utf-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
     <title>隠岐交通ソース監視</title>
     <link rel="stylesheet" href="/styles.css">
   </head>
@@ -61,6 +61,32 @@
             <span class="metric-label">お知らせ</span>
             <strong id="noticeCount">-</strong>
             <small id="noticeStatus">新着</small>
+          </div>
+        </section>
+
+        <section class="coverage-panel" aria-labelledby="coverageTitle">
+          <div class="coverage-header">
+            <div>
+              <p class="eyeline">APP DELIVERY COVERAGE</p>
+              <h3 id="coverageTitle">時刻表カバレッジ</h3>
+              <p>本番アプリへ配信中の時刻表を、事業者・交通機関ごとに1日単位で点検します</p>
+            </div>
+            <div class="coverage-actions">
+              <label class="coverage-year-field" for="coverageYear">
+                <span>対象年</span>
+                <select id="coverageYear" aria-label="時刻表カバレッジの対象年"></select>
+              </label>
+              <button id="coverageTodayBtn" class="button" type="button">本日へ</button>
+              <button id="coverageReloadBtn" class="button" type="button">
+                <span class="icon" aria-hidden="true">↻</span>
+                配信データ再読込
+              </button>
+            </div>
+          </div>
+          <div id="coverageBody" class="coverage-body" aria-live="polite">
+            <div class="coverage-loading" aria-label="時刻表カバレッジを読み込み中">
+              <span></span><span></span><span></span>
+            </div>
           </div>
         </section>
 

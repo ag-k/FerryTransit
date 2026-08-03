@@ -16,6 +16,8 @@ npm --prefix tools/oki-transport-dashboard start
 
 UI の「最新取得」でライブ収集します。「保存して取得」は `tools/oki-transport-dashboard/data/snapshots/latest.json` と日時付き JSON を更新します。「PDF等も保存」は検出した PDF/画像資料を `tools/oki-transport-dashboard/data/downloads/` に保存します。
 
+トップページの「時刻表カバレッジ」は、本番アプリが Firebase Storage から取得する `data/timetable.json`、`data/bus-search/*.json` と各公開 manifest を読み込み、事業者・交通機関（フェリーおき、内航船いそかぜ、JAL各路線、町営バス、接続バスなど）ごとに1月1日から12月31日までの有効データ有無を表示します。本番Storageを取得できないデータだけローカル生成物を代替表示し、画面上にフォールバック状態を明示します。
+
 ダッシュボード起動中は、保存済みスナップショットが24時間以上古い場合に1日1回の自動更新を行い、`latest.json` を更新します。無効化する場合は `OKI_DASHBOARD_AUTO_REFRESH=0`、間隔を変える場合は `OKI_DASHBOARD_REFRESH_INTERVAL_HOURS=12` のように指定します。自動更新でも資料ファイルを保存する場合は `OKI_DASHBOARD_REFRESH_DOWNLOAD=1` を指定します。
 
 資料リンクは PDF/Excel/画像などのファイルだけでなく、HTML 本文に時刻表・運賃表などの表が掲載されているページも `HTML` 資料として検出します。
