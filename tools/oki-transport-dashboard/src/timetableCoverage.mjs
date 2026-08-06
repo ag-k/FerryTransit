@@ -29,11 +29,11 @@ const KNOWN_OPERATORS = {
 }
 
 const BUS_SERVICE_DEFINITIONS = {
-  ama: { serviceId: 'AMA_TOWN_BUS', serviceName: '海士町島内巡回バス', operatorId: 'AMA_TOWN', order: 100 },
-  nishinoshima: { serviceId: 'NISHINOSHIMA_TOWN_BUS', serviceName: '西ノ島町営バス', operatorId: 'NISHINOSHIMA_TOWN', order: 110 },
-  chibu: { serviceId: 'CHIBU_VILLAGE_BUS', serviceName: '知夫村営バス', operatorId: 'CHIBU_VILLAGE', order: 120 },
-  ichibata_bus_connection: { serviceId: 'ICHIBATA_BUS_CONNECTION', serviceName: '一畑バス・隠岐汽船接続バス', operatorId: 'ICHIBATA_BUS', order: 150 },
-  hatsumi_bus_connection: { serviceId: 'HATSUMI_BUS_CONNECTION', serviceName: 'はつみ交通・隠岐汽船連絡バス', operatorId: 'HATSUMI_BUS', order: 160 }
+  ama: { serviceId: 'AMA_TOWN_BUS', serviceName: '海士町島内巡回バス', operatorId: 'AMA_TOWN', group: '島前バス', order: 100 },
+  nishinoshima: { serviceId: 'NISHINOSHIMA_TOWN_BUS', serviceName: '西ノ島町営バス', operatorId: 'NISHINOSHIMA_TOWN', group: '島前バス', order: 110 },
+  chibu: { serviceId: 'CHIBU_VILLAGE_BUS', serviceName: '知夫村営バス', operatorId: 'CHIBU_VILLAGE', group: '島前バス', order: 120 },
+  ichibata_bus_connection: { serviceId: 'ICHIBATA_BUS_CONNECTION', serviceName: '一畑バス・隠岐汽船接続バス', operatorId: 'ICHIBATA_BUS', group: '連絡バス', order: 150 },
+  hatsumi_bus_connection: { serviceId: 'HATSUMI_BUS_CONNECTION', serviceName: 'はつみ交通・隠岐汽船連絡バス', operatorId: 'HATSUMI_BUS', group: '連絡バス', order: 160 }
 }
 
 const SERVICE_OPERATOR_IDS = {
@@ -80,6 +80,18 @@ const SERVICE_ORDER = {
   JAL_OKI_ITAMI: 70,
   JAL_OKI_IZUMO: 80,
   OKI_AIRPORT_BUS: 90
+}
+
+const SERVICE_GROUPS = {
+  FERRY_OKI: '船舶',
+  FERRY_SHIRASHIMA: '船舶',
+  FERRY_KUNIGA: '船舶',
+  RAINBOWJET: '船舶',
+  ISOKAZE: '船舶',
+  FERRY_DOZEN: '船舶',
+  JAL_OKI_ITAMI: '航空',
+  JAL_OKI_IZUMO: '航空',
+  OKI_AIRPORT_BUS: '島後バス'
 }
 
 export async function loadPublishedTimetableCoverage(options = {}) {
@@ -157,6 +169,7 @@ export function buildTimetableCoverage(trips, options = {}) {
       operatorOrder: service.operator.order,
       serviceId: service.serviceId,
       serviceName: service.serviceName,
+      group: SERVICE_GROUPS[service.serviceId] || 'その他',
       serviceOrder: service.serviceOrder,
       routes: [...service.routes.values()],
       coverage: coverage.map((available) => available ? '1' : '0').join(''),
@@ -227,6 +240,7 @@ function buildBusCoverageRows(feeds, dates) {
           serviceId: 'OKI_ICHIBATA_ROUTE_BUS',
           serviceName: '隠岐一畑交通 路線バス',
           operatorId: 'OKI_ICHIBATA',
+          group: '島後バス',
           order: 130,
           routeAgencyId: 'OKI_ICHIBATA'
         }),
@@ -234,6 +248,7 @@ function buildBusCoverageRows(feeds, dates) {
           serviceId: 'OKINOSHIMA_TOWN_BUS',
           serviceName: '隠岐の島町営バス',
           operatorId: 'OKINOSHIMA_TOWN',
+          group: '島後バス',
           order: 140,
           routeAgencyId: 'OKINOSHIMA_TOWN'
         })
@@ -262,6 +277,7 @@ function buildBusCoverageRows(feeds, dates) {
       operatorOrder: operator.order,
       serviceId: group.serviceId,
       serviceName: group.serviceName,
+      group: group.group,
       serviceOrder: group.order,
       routes: group.routes,
       coverage: coverage.map((available) => available ? '1' : '0').join(''),

@@ -442,6 +442,7 @@ function render() {
   renderNotices(visibleNotices)
   renderPages(visiblePages)
   renderDocuments(visibleDocuments)
+  if (state.coverage) renderTimetableCoverage()
   syncFilterControls()
   if (state.gtfs) renderGtfsWorkflow()
   if (pendingScrollRestore) {
@@ -455,7 +456,7 @@ function renderGroups(groups, sources) {
   elements.groupNav.innerHTML = groups.map((group) => {
     const count = group === 'すべて' ? sources.length : sources.filter((source) => source.group === group).length
     const active = state.group === group ? 'active' : ''
-    return `<button class="group-button ${active}" type="button" data-group="${escapeAttr(group)}">
+    return `<button class="group-button ${active}" type="button" data-group="${escapeAttr(group)}" aria-pressed="${state.group === group ? 'true' : 'false'}">
       <span>${escapeHtml(group)}</span><span>${count}</span>
     </button>`
   }).join('')
@@ -505,7 +506,9 @@ function renderSummary(summary) {
 function renderTimetableCoverage() {
   const coverage = state.coverage
   if (!coverage) return
-  const { dates, months, rows, source, summary } = coverage
+  const { dates, months, source } = coverage
+  const rows = coverage.rows.filter((row) => state.group === 'すべて' || row.group === state.group)
+  const summary = summarizeCoverageRows(rows, dates.length)
   const sourceClass = source.fallback ? 'fallback' : 'production'
   const sourceDetail = [
     source.tripCount != null ? `${formatNumber(source.tripCount)}便` : '',
@@ -572,7 +575,7 @@ function renderTimetableCoverage() {
             <div class="coverage-day-ticks">${dayAxis}</div>
           </div>
         </div>
-        ${routeRows || '<div class="coverage-empty">表示できる区間がありません</div>'}
+        ${routeRows || '<div class="coverage-empty">このグループに該当する交通機関はありません</div>'}
       </div>
     </div>
     <p class="coverage-footnote">各交通機関に、その日に有効な便が1件以上あれば「あり」です。運航期間・曜日・追加日・除外日を反映しています。</p>
@@ -581,6 +584,21 @@ function renderTimetableCoverage() {
   if (state.coverageCenteredYear !== coverage.year) {
     state.coverageCenteredYear = coverage.year
     requestAnimationFrame(() => scrollCoverageToToday({ smooth: false }))
+  }
+}
+
+function summarizeCoverageRows(rows, dayCount) {
+  const availableServiceDays = rows.reduce((total, row) => total + row.availableDays, 0)
+  const serviceDays = rows.length * dayCount
+  return {
+    operatorCount: new Set(rows.map((row) => row.operatorId)).size,
+    serviceCount: rows.length,
+    dayCount,
+    availableServiceDays,
+    missingServiceDays: serviceDays - availableServiceDays,
+    coverageRate: serviceDays ? Math.round((availableServiceDays / serviceDays) * 1000) / 10 : 0,
+    fullyCoveredServices: rows.filter((row) => row.missingDays === 0).length,
+    servicesWithGaps: rows.filter((row) => row.missingDays > 0).length
   }
 }
 

@@ -39,10 +39,12 @@ test('同じ交通機関の複数区間をまとめて年間カバレッジを�
   assert.equal(ferry.availableDays, 5)
   assert.equal(ferry.coverage.slice(0, 7), '1111100')
   assert.equal(ferry.serviceName, 'フェリーおき')
+  assert.equal(ferry.group, '船舶')
   assert.equal(ferry.routes.length, 2)
   const jal = result.rows.find((row) => row.serviceId === 'JAL_OKI_IZUMO')
   assert.equal(jal.availableDays, 1)
   assert.equal(jal.coverage.slice(0, 7), '0000100')
+  assert.equal(jal.group, '航空')
 })
 
 test('曜日・追加日・除外日をアプリと同じ優先順で判定する', () => {
@@ -104,6 +106,7 @@ test('アプリ配信中のバスを交通機関単位で年間カバレッジ�
   ])
   assert.equal(result.summary.serviceCount, 3)
   assert.equal(result.rows[0].coverage.slice(0, 4), '0111')
+  assert.deepEqual(result.rows.map((row) => row.group), ['島後バス', '島後バス', '島前バス'])
 })
 
 test('本番Storageのmanifestと一致する時刻表をカバレッジに使用する', async () => {
