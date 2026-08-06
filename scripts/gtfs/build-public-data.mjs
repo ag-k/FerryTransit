@@ -140,11 +140,29 @@ function buildPublicData(mode, id) {
   const calendar = readCsv(join(gtfsDir, 'calendar.txt'))
   const calendarDates = readCsv(join(gtfsDir, 'calendar_dates.txt'))
   const feedInfo = readCsv(join(gtfsDir, 'feed_info.txt'))[0] || {}
+  const sourceInfo = existsSync(join(gtfsDir, 'source_info.json'))
+    ? JSON.parse(readFileSync(join(gtfsDir, 'source_info.json'), 'utf-8'))
+    : null
 
   const metadata = {
     id,
     mode,
     generatedAt: new Date().toISOString(),
+    convertedAt: sourceInfo?.convertedAt || null,
+    source: sourceInfo ? {
+      sourceId: sourceInfo.sourceId || null,
+      updatedAt: sourceInfo.sourceUpdatedAt || null,
+      officialPageUpdatedAt: sourceInfo.officialPageUpdatedAt || null,
+      legacyEndDate: sourceInfo.legacyEndDate || null,
+      urls: (sourceInfo.documents || []).map(document => document.url).filter(Boolean),
+      documents: (sourceInfo.documents || []).map(document => ({
+        id: document.id,
+        title: document.title,
+        sourceDate: document.sourceDate,
+        url: document.url || null,
+        sha256: document.sha256
+      }))
+    } : null,
     feed: {
       publisherName: feedInfo.feed_publisher_name || '',
       publisherUrl: feedInfo.feed_publisher_url || '',
@@ -254,6 +272,9 @@ function buildBusSearchFeed({ id, routes, stops, trips, stopTimes, calendar, cal
     version: 1,
     feedId: id,
     generatedAt: metadata.generatedAt,
+    convertedAt: metadata.convertedAt,
+    feedVersion: metadata.feed.version,
+    source: metadata.source,
     operatorId: config.operatorId,
     townLabelKey: config.townLabelKey,
     tripName: config.tripName,

@@ -45,11 +45,15 @@ export function buildTransportPipeline(sourceId, { root = process.cwd(), target,
   }
 
   if (source.sourceType === 'gtfs' && source.feedId) {
+    const acquisitionTask = source.acquisitionTask || source.conversionTask
+    const acquisitionArgs = source.acquisitionTask
+      ? (source.acquisitionArgs || [])
+      : (source.conversionArgs || [])
     return {
       sourceId,
       scope: 'gtfs',
       stages: {
-        acquire: npmTask(taskName(source.conversionTask), source.conversionArgs || []),
+        acquire: npmTask(taskName(acquisitionTask), acquisitionArgs),
         validate: npmTask('gtfs:validate', ['bus', source.feedId, '--check']),
         build: npmTask('gtfs:build', ['bus', source.feedId]),
         publish: target ? npmTask('gtfs:upload', ['--target', target]) : null,

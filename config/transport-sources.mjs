@@ -10,7 +10,8 @@ export const TRANSPORT_SOURCE_OPERATIONS = Object.freeze({
   'ama-town': Object.freeze({
     id: 'ama-town', sourceType: 'gtfs', officialUrl: 'https://www.town.ama.shimane.jp/',
     sourceUrl: 'https://www.town.ama.shimane.jp/about/access',
-    feedId: 'ama', conversionTask: 'npm run gtfs:convert:ama:r8', conversionArgs: ['--current']
+    feedId: 'ama', acquisitionTask: 'npm run gtfs:acquire:ama:r8', acquisitionArgs: ['--current'],
+    conversionTask: 'npm run gtfs:convert:ama:r8', conversionArgs: ['--current']
   }),
   'nishinoshima-town': Object.freeze({
     id: 'nishinoshima-town', sourceType: 'gtfs', officialUrl: 'https://www.town.nishinoshima.shimane.jp/',

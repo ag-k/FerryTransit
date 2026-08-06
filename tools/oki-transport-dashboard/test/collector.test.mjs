@@ -1,6 +1,6 @@
 import assert from 'node:assert/strict'
 import { test } from 'node:test'
-import { classifyResourceType, extractJapaneseDate, extractLinksFromHtml, extractStandaloneFileUrls, normalizeHtmlPageDocument, SOURCES } from '../src/collector.mjs'
+import { classifyResourceType, extractJapaneseDate, extractLinksFromHtml, extractStandaloneFileUrls, getDocumentChangeStatus, normalizeHtmlPageDocument, SOURCES } from '../src/collector.mjs'
 
 test('時刻表・運賃・運航状況のリンク種別を分類できる', () => {
   assert.equal(classifyResourceType('R8_海士島線時刻表.pdf', 'https://example.test/r8.pdf'), 'timetable')
@@ -138,4 +138,13 @@ test('航空フライト情報のHTML本文を時刻表資料として扱える'
   assert.equal(document.title, 'フライト情報｜隠岐世界ジオパーク空港')
   assert.equal(document.url, 'https://www.oki-airport.jp/flight')
   assert.equal(document.extension, 'html')
+})
+
+test('同じURLのPDF本体が差し替わった場合もハッシュで変更検知する', () => {
+  const url = 'https://example.test/timetable.pdf'
+  const previousIndex = {
+    documents: new Map([[url, { url, title: '時刻表', type: 'timetable', hash: 'old-hash' }]])
+  }
+  assert.equal(getDocumentChangeStatus({ url, title: '時刻表', type: 'timetable', hash: 'new-hash' }, previousIndex), 'changed')
+  assert.equal(getDocumentChangeStatus({ url, title: '時刻表', type: 'timetable', hash: 'old-hash' }, previousIndex), 'unchanged')
 })

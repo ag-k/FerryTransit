@@ -74,3 +74,28 @@ test('反映状態の件数を集計できる', () => {
     reflected: 1
   })
 })
+
+test('採用済み公式PDFは反映済み、新しい時刻表は要反映にする', () => {
+  const snapshot = {
+    documents: [
+      { url: 'https://example.test/adopted.pdf', sourceId: 'ama-town', type: 'timetable', dateText: '2026-06-11', reviewStatus: 'unreviewed', changeStatus: 'unchanged' },
+      { url: 'https://example.test/new.pdf', sourceId: 'ama-town', type: 'timetable', dateText: '2026-08-06', reviewStatus: 'unreviewed', changeStatus: 'new' }
+    ],
+    sources: [{
+      id: 'ama-town',
+      documents: [
+        { url: 'https://example.test/adopted.pdf', sourceId: 'ama-town', type: 'timetable', dateText: '2026-06-11', reviewStatus: 'unreviewed', changeStatus: 'unchanged' },
+        { url: 'https://example.test/new.pdf', sourceId: 'ama-town', type: 'timetable', dateText: '2026-08-06', reviewStatus: 'unreviewed', changeStatus: 'new' }
+      ]
+    }]
+  }
+  const currentFeeds = [{
+    id: 'ama',
+    sourceId: 'ama-town',
+    currentRawDate: '2026-06-11',
+    sourceDocuments: [{ url: 'https://example.test/adopted.pdf', sourceDate: '2026-06-11' }]
+  }]
+
+  const result = attachReflectionState(snapshot, null, currentFeeds)
+  assert.deepEqual(result.documents.map(document => document.reflectionStatus), ['reflected', 'needs-reflection'])
+})

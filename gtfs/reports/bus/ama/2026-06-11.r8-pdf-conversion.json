@@ -1,0 +1,46 @@
+{
+  "convertedAt": "2026-08-06T15:04:19.284Z",
+  "sourceDir": "/Users/ag/works/FerryTransit/gtfs/pdf/bus/ama/r8",
+  "outputDir": "/Users/ag/works/FerryTransit/gtfs/raw/bus/ama/2026-06-11",
+  "currentUpdated": true,
+  "feedStartDate": "20260102",
+  "feedEndDate": "20261231",
+  "feedVersion": "R8_20260611",
+  "sourceDocuments": [
+    {
+      "id": "toyoda-20251222",
+      "title": "R8_豊田線時刻表_20251222-1.pdf",
+      "sourceDate": "2025-12-22",
+      "file": "gtfs/pdf/bus/ama/r8/R8_豊田線時刻表_20251222-1.pdf",
+      "sha256": "9d7e70fc97776e7680a453a16f6daed00c743fb2bdccf77a7b5307fb179de167"
+    },
+    {
+      "id": "ama-20251222",
+      "title": "R8_海士島線時刻表_20251222-1.pdf",
+      "sourceDate": "2025-12-22",
+      "file": "gtfs/pdf/bus/ama/r8/R8_海士島線時刻表_20251222-1.pdf",
+      "sha256": "292eb6bf7f89bf21cc5b2639e13e0b24062f776145827e78390d5f057f55f63f"
+    },
+    {
+      "id": "toyoda-20260611",
+      "title": "R8_豊田線時刻表.pdf",
+      "sourceDate": "2026-06-11",
+      "url": "https://storage.googleapis.com/ama-town-portal/media/uploaded-files/R8_6.1%E8%B1%8A%E7%94%B0%E7%B7%9A%E6%99%82%E5%88%BB%E8%A1%A8%E6%94%B9%E5%AE%9A_20260611.pdf",
+      "file": "gtfs/pdf/bus/ama/r8/R8_豊田線時刻表改定_20260611.pdf",
+      "sha256": "55f04419fff498da59f6d7cd89791bc1b6f01929ced6af7f92c26ff6feb64f0b"
+    },
+    {
+      "id": "ama-20260611",
+      "title": "R8_海士島線時刻表.pdf",
+      "sourceDate": "2026-06-11",
+      "url": "https://storage.googleapis.com/ama-town-portal/media/uploaded-files/R8_6.1%E6%B5%B7%E5%A3%AB%E5%B3%B6%E7%B7%9A%E6%99%82%E5%88%BB%E8%A1%A8%E6%94%B9%E5%AE%9A_20260611.pdf",
+      "file": "gtfs/pdf/bus/ama/r8/R8_海士島線時刻表改定_20260611.pdf",
+      "sha256": "db2f84de76797985ee601dec37a2208822ff0b8544d5fec1cf525ee25e7e86c1"
+    }
+  ],
+  "counts": {
+    "services": 26,
+    "trips": 276,
+    "stopTimes": 5090
+  }
+}

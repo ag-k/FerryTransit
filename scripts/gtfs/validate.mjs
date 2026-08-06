@@ -3,6 +3,8 @@
 import { existsSync } from 'fs'
 import { join } from 'path'
 import { formatGtfsDate, readCsv, writeReport } from '../lib/transport-data.mjs'
+import { loadTransportSourceRegistry } from '../lib/transport-source-registry.mjs'
+import { collectSourceProvenanceIssues } from '../lib/transport-source-freshness.mjs'
 
 const ROOT = process.cwd()
 const REQUIRED_FILES = [
@@ -112,6 +114,15 @@ function main() {
   }
 
   const feed = feedInfo.rows[0]
+  const registrySource = loadTransportSourceRegistry(ROOT).feedById[id]
+  if (registrySource) {
+    issues.push(...collectSourceProvenanceIssues({
+      root: ROOT,
+      source: registrySource,
+      gtfsDir,
+      feedVersion: feed?.feed_version || null
+    }))
+  }
   const feedEndDate = formatGtfsDate(feed?.feed_end_date)
   if (feedEndDate && feedEndDate < new Date().toISOString().slice(0, 10)) {
     warnings.push({ code: 'feed_expired', file: 'feed_info.txt', feed_end_date: feed.feed_end_date })

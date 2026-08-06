@@ -3,13 +3,50 @@
   "mode": "bus",
   "name": "海士町バス",
   "agencyName": "海士町",
-  "sourceUrl": "http://www.town.ama.shimane.jp/access/chonai.html",
+  "sourceId": "ama-town",
+  "sourceUrl": "https://www.town.ama.shimane.jp/about/access",
   "license": "未確認",
   "updatePolicy": "自治体公開データを確認し、更新があれば raw に日付付きで保存して current に反映する",
-  "currentRawDate": "2025-12-22",
+  "currentRawDate": "2026-06-11",
+  "officialPageUpdatedAt": "2026-07-01",
   "currentPath": "gtfs/current/bus/ama",
+  "sourceDocuments": [
+    {
+      "id": "toyoda-20260611",
+      "title": "R8_豊田線時刻表.pdf",
+      "sourceDate": "2026-06-11",
+      "url": "https://storage.googleapis.com/ama-town-portal/media/uploaded-files/R8_6.1%E8%B1%8A%E7%94%B0%E7%B7%9A%E6%99%82%E5%88%BB%E8%A1%A8%E6%94%B9%E5%AE%9A_20260611.pdf",
+      "file": "gtfs/pdf/bus/ama/r8/R8_豊田線時刻表改定_20260611.pdf",
+      "sha256": "55f04419fff498da59f6d7cd89791bc1b6f01929ced6af7f92c26ff6feb64f0b"
+    },
+    {
+      "id": "ama-20260611",
+      "title": "R8_海士島線時刻表.pdf",
+      "sourceDate": "2026-06-11",
+      "url": "https://storage.googleapis.com/ama-town-portal/media/uploaded-files/R8_6.1%E6%B5%B7%E5%A3%AB%E5%B3%B6%E7%B7%9A%E6%99%82%E5%88%BB%E8%A1%A8%E6%94%B9%E5%AE%9A_20260611.pdf",
+      "file": "gtfs/pdf/bus/ama/r8/R8_海士島線時刻表改定_20260611.pdf",
+      "sha256": "db2f84de76797985ee601dec37a2208822ff0b8544d5fec1cf525ee25e7e86c1"
+    }
+  ],
+  "legacySourceDocuments": [
+    {
+      "id": "toyoda-20251222",
+      "title": "R8_豊田線時刻表_20251222-1.pdf",
+      "sourceDate": "2025-12-22",
+      "file": "gtfs/pdf/bus/ama/r8/R8_豊田線時刻表_20251222-1.pdf",
+      "sha256": "9d7e70fc97776e7680a453a16f6daed00c743fb2bdccf77a7b5307fb179de167"
+    },
+    {
+      "id": "ama-20251222",
+      "title": "R8_海士島線時刻表_20251222-1.pdf",
+      "sourceDate": "2025-12-22",
+      "file": "gtfs/pdf/bus/ama/r8/R8_海士島線時刻表_20251222-1.pdf",
+      "sha256": "292eb6bf7f89bf21cc5b2639e13e0b24062f776145827e78390d5f057f55f63f"
+    }
+  ],
   "notes": [
-    "R8 PDF 原本は gtfs/pdf/bus/ama/r8 に保管",
-    "scripts/gtfs/convert-ama-r8-pdf.mjs で raw/bus/ama/2025-12-22 と current/bus/ama を生成"
+    "R8 PDF 原本は gtfs/pdf/bus/ama/r8 に改訂日別で保管",
+    "2026年1月2日〜5月31日は2025年12月22日版、6月1日〜12月31日は2026年6月11日改訂版を採用",
+    "scripts/gtfs/acquire-ama-r8.mjs で公式資料を照合し、scripts/gtfs/convert-ama-r8-pdf.mjs で raw/bus/ama/2026-06-11 と current/bus/ama を生成"
   ]
 }

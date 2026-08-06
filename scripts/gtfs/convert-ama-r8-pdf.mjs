@@ -1,5 +1,6 @@
 #!/usr/bin/env node
 
+import { createHash } from 'node:crypto'
 import { existsSync, mkdirSync, readFileSync, writeFileSync, cpSync } from 'fs'
 import { basename, join, resolve } from 'path'
 import { spawnSync } from 'child_process'
@@ -7,14 +8,16 @@ import Papa from 'papaparse'
 
 const ROOT = process.cwd()
 const SOURCE_DIR = join(ROOT, 'gtfs', 'pdf', 'bus', 'ama', 'r8')
+const SOURCE_META_PATH = join(ROOT, 'gtfs', 'sources', 'ama.bus.json')
 const TEMPLATE_DIR = join(ROOT, 'gtfs', 'current', 'bus', 'ama')
-const RAW_DIR = join(ROOT, 'gtfs', 'raw', 'bus', 'ama', '2025-12-22')
+const RAW_DIR = join(ROOT, 'gtfs', 'raw', 'bus', 'ama', '2026-06-11')
 const CURRENT_DIR = join(ROOT, 'gtfs', 'current', 'bus', 'ama')
 const REPORT_DIR = join(ROOT, 'gtfs', 'reports', 'bus', 'ama')
 
 const FEED_START = '20260102'
 const FEED_END = '20261231'
-const FEED_VERSION = 'R8_20251222-1'
+const FEED_VERSION = 'R8_20260611'
+const LEGACY_END_DATE = '20260531'
 
 const ROUTE_FILES_TO_COPY = [
   'agency.txt',
@@ -176,7 +179,7 @@ function readCsv(filePath) {
 
 function writeCsv(filePath, rows, columns) {
   mkdirSync(join(filePath, '..'), { recursive: true })
-  writeFileSync(filePath, `${Papa.unparse(rows, { columns })}\n`, 'utf-8')
+  writeFileSync(filePath, `${Papa.unparse(rows, { columns, newline: '\n' })}\n`, 'utf-8')
 }
 
 function normalizeText(text) {
@@ -268,9 +271,9 @@ function splitAmaRows(pageText) {
   }
 }
 
-function buildServices(periods, kind, indexPrefix) {
+function buildServices(periods, kind, indexPrefix, indexOffset = 0) {
   return periods.map((period, index) => {
-    const serviceId = `R8_${indexPrefix}_${String(index + 1).padStart(2, '0')}_${kind}`
+    const serviceId = `R8_${indexPrefix}_${String(index + indexOffset + 1).padStart(2, '0')}_${kind}`
     return {
       ...period,
       serviceId,
@@ -369,19 +372,22 @@ function removeClinicForHoliday(stopIds, times) {
   return { stopIds: filteredStopIds, times: filteredTimes }
 }
 
-function convertToyodaPage(context, pageText, pageIndex) {
-  const periods = parsePeriods(pageText)
+function convertToyodaPage(context, pageText, pageIndex, options = {}) {
+  const periods = options.periods || parsePeriods(pageText)
   const rows = splitToyodaRows(pageText)
-  const forwardPatterns = TOYODA_FORWARD_PATTERNS[pageIndex]
-  const reversePatterns = TOYODA_REVERSE_PATTERNS[pageIndex]
+  const patternIndex = options.patternIndex ?? pageIndex
+  const servicePageIndex = options.servicePageIndex ?? patternIndex
+  const serviceIndexOffset = options.serviceIndexOffset || 0
+  const forwardPatterns = TOYODA_FORWARD_PATTERNS[patternIndex]
+  const reversePatterns = TOYODA_REVERSE_PATTERNS[patternIndex]
 
   if (rows.forward.length !== 8 || rows.reverse.length !== 8) {
     throw new Error(`豊田線 ${pageIndex + 1} ページ目の時刻行数が想定外です。`)
   }
 
   const services = [
-    ...buildServices(periods, 'weekday', `TOYODA_P${pageIndex + 1}`),
-    ...buildServices(periods, 'holiday', `TOYODA_P${pageIndex + 1}`)
+    ...buildServices(periods, 'weekday', `TOYODA_P${servicePageIndex + 1}`, serviceIndexOffset),
+    ...buildServices(periods, 'holiday', `TOYODA_P${servicePageIndex + 1}`, serviceIndexOffset)
   ]
   context.services.push(...services)
 
@@ -399,7 +405,7 @@ function convertToyodaPage(context, pageText, pageIndex) {
         routeId: '10',
         serviceId: service.serviceId,
         tripId: `R8_10_${service.serviceId}_F${rowIndex + 1}_${times[0].replace(':', '')}`,
-        patternId: `R8_TOYODA_F${pageIndex + 1}${rowIndex + 1}`,
+        patternId: `R8_TOYODA_F${patternIndex + 1}${rowIndex + 1}`,
         directionId: '0',
         stopIds,
         times: rowTimes
@@ -418,7 +424,7 @@ function convertToyodaPage(context, pageText, pageIndex) {
         routeId: '10',
         serviceId: service.serviceId,
         tripId: `R8_10_${service.serviceId}_R${rowIndex + 1}_${times[0].replace(':', '')}`,
-        patternId: `R8_TOYODA_R${pageIndex + 1}${rowIndex + 1}`,
+        patternId: `R8_TOYODA_R${patternIndex + 1}${rowIndex + 1}`,
         directionId: '1',
         stopIds,
         times: rowTimes
@@ -437,25 +443,28 @@ function amaHolidayPattern(rowIndex, times) {
   return AMA_HOLIDAY_PATTERNS[rowIndex]
 }
 
-function convertAmaPage(context, pageText, pageIndex) {
-  const periods = parsePeriods(pageText)
+function convertAmaPage(context, pageText, pageIndex, options = {}) {
+  const periods = options.periods || parsePeriods(pageText)
   const rows = splitAmaRows(pageText)
+  const patternIndex = options.patternIndex ?? pageIndex
+  const servicePageIndex = options.servicePageIndex ?? patternIndex
+  const serviceIndexOffset = options.serviceIndexOffset || 0
   if (rows.weekday.length !== 7 || rows.holiday.length !== 5) {
     throw new Error(`海士島線 ${pageIndex + 1} ページ目の時刻行数が想定外です。`)
   }
 
-  const weekdayServices = buildServices(periods, 'weekday', `AMA_P${pageIndex + 1}`)
-  const holidayServices = buildServices(periods, 'holiday', `AMA_P${pageIndex + 1}`)
+  const weekdayServices = buildServices(periods, 'weekday', `AMA_P${servicePageIndex + 1}`, serviceIndexOffset)
+  const holidayServices = buildServices(periods, 'holiday', `AMA_P${servicePageIndex + 1}`, serviceIndexOffset)
   context.services.push(...weekdayServices, ...holidayServices)
 
   for (const service of weekdayServices) {
     rows.weekday.forEach((times, rowIndex) => {
-      const pattern = amaWeekdayPattern(pageIndex, rowIndex, times)
+      const pattern = amaWeekdayPattern(patternIndex, rowIndex, times)
       addTrip(context, {
         routeId: pattern.routeId,
         serviceId: service.serviceId,
         tripId: `R8_${pattern.routeId}_${service.serviceId}_W${rowIndex + 1}_${times[0].replace(':', '')}`,
-        patternId: `R8_AMA_W${pageIndex + 1}${rowIndex + 1}`,
+        patternId: `R8_AMA_W${patternIndex + 1}${rowIndex + 1}`,
         directionId: '0',
         stopIds: pattern.stops,
         times
@@ -470,7 +479,7 @@ function convertAmaPage(context, pageText, pageIndex) {
         routeId: pattern.routeId,
         serviceId: service.serviceId,
         tripId: `R8_${pattern.routeId}_${service.serviceId}_H${rowIndex + 1}_${times[0].replace(':', '')}`,
-        patternId: `R8_AMA_H${pageIndex + 1}${rowIndex + 1}`,
+        patternId: `R8_AMA_H${patternIndex + 1}${rowIndex + 1}`,
         directionId: '0',
         stopIds: pattern.stops,
         times
@@ -502,7 +511,7 @@ function copyStaticGtfsFiles(outputDir) {
   }
 }
 
-function writeGtfs(outputDir, context) {
+function writeGtfs(outputDir, context, sourceInfo) {
   copyStaticGtfsFiles(outputDir)
 
   const calendarRows = context.services.map(calendarRow)
@@ -527,12 +536,14 @@ function writeGtfs(outputDir, context) {
     'feed_publisher_name', 'feed_publisher_url', 'feed_lang', 'feed_start_date',
     'feed_end_date', 'feed_version'
   ])
+  writeFileSync(join(outputDir, 'source_info.json'), `${JSON.stringify(sourceInfo, null, 2)}\n`, 'utf-8')
 }
 
 function parseArgs(argv) {
   return {
     outputDir: valueAfter(argv, '--output') || RAW_DIR,
-    updateCurrent: argv.includes('--current')
+    updateCurrent: argv.includes('--current'),
+    writeReport: !argv.includes('--no-report')
   }
 }
 
@@ -542,16 +553,52 @@ function valueAfter(argv, key) {
   return argv[index + 1] || null
 }
 
-function main() {
-  const args = parseArgs(process.argv.slice(2))
-  const toyodaPdf = join(SOURCE_DIR, 'R8_豊田線時刻表_20251222-1.pdf')
-  const amaPdf = join(SOURCE_DIR, 'R8_海士島線時刻表_20251222-1.pdf')
+function readSourceMetadata() {
+  return JSON.parse(readFileSync(SOURCE_META_PATH, 'utf-8'))
+}
 
-  for (const filePath of [toyodaPdf, amaPdf]) {
-    if (!existsSync(filePath)) {
-      throw new Error(`PDF 原本が見つかりません: ${filePath}`)
+function sourceDocumentPath(document) {
+  return resolve(ROOT, document.file)
+}
+
+function verifySourceDocuments(documents) {
+  for (const document of documents) {
+    const filePath = sourceDocumentPath(document)
+    if (!existsSync(filePath)) throw new Error(`PDF 原本が見つかりません: ${filePath}`)
+    const actualHash = createHash('sha256').update(readFileSync(filePath)).digest('hex')
+    if (actualHash !== document.sha256) {
+      throw new Error(`PDF原本のSHA-256が一致しません: ${document.file} expected=${document.sha256} actual=${actualHash}`)
     }
   }
+}
+
+function clipPeriods(periods, { startDate = FEED_START, endDate = FEED_END } = {}) {
+  return periods.flatMap((period) => {
+    const clipped = {
+      startDate: period.startDate < startDate ? startDate : period.startDate,
+      endDate: period.endDate > endDate ? endDate : period.endDate
+    }
+    return clipped.startDate <= clipped.endDate ? [clipped] : []
+  })
+}
+
+function documentById(documents, id) {
+  const document = documents.find((item) => item.id === id)
+  if (!document) throw new Error(`海士町バスのPDF定義が見つかりません: ${id}`)
+  return document
+}
+
+function main() {
+  const args = parseArgs(process.argv.slice(2))
+  const sourceMetadata = readSourceMetadata()
+  const legacyDocuments = sourceMetadata.legacySourceDocuments || []
+  const revisionDocuments = sourceMetadata.sourceDocuments || []
+  verifySourceDocuments([...legacyDocuments, ...revisionDocuments])
+
+  const legacyToyodaPdf = sourceDocumentPath(documentById(legacyDocuments, 'toyoda-20251222'))
+  const legacyAmaPdf = sourceDocumentPath(documentById(legacyDocuments, 'ama-20251222'))
+  const revisionToyodaPdf = sourceDocumentPath(documentById(revisionDocuments, 'toyoda-20260611'))
+  const revisionAmaPdf = sourceDocumentPath(documentById(revisionDocuments, 'ama-20260611'))
 
   const stopNames = new Map(readCsv(join(TEMPLATE_DIR, 'stops.txt')).map(row => [row.stop_id, row.stop_name]))
   const context = {
@@ -561,33 +608,87 @@ function main() {
     stopNames
   }
 
-  const toyodaPages = extractPdfPages(toyodaPdf)
-  const amaPages = extractPdfPages(amaPdf)
+  const legacyToyodaPages = extractPdfPages(legacyToyodaPdf)
+  const legacyAmaPages = extractPdfPages(legacyAmaPdf)
+  const revisionToyodaPages = extractPdfPages(revisionToyodaPdf)
+  const revisionAmaPages = extractPdfPages(revisionAmaPdf)
 
-  toyodaPages.forEach((pageText, index) => convertToyodaPage(context, pageText, index))
-  amaPages.forEach((pageText, index) => convertAmaPage(context, pageText, index))
+  convertToyodaPage(context, legacyToyodaPages[0], 0)
+  convertToyodaPage(context, legacyToyodaPages[1], 1, {
+    periods: clipPeriods(parsePeriods(legacyToyodaPages[1]), { endDate: LEGACY_END_DATE })
+  })
+  convertToyodaPage(context, legacyToyodaPages[2], 2, {
+    periods: clipPeriods(parsePeriods(legacyToyodaPages[2]), { endDate: LEGACY_END_DATE })
+  })
+  convertToyodaPage(context, revisionToyodaPages[0], 0, {
+    patternIndex: 1,
+    servicePageIndex: 1,
+    serviceIndexOffset: 1
+  })
+  convertToyodaPage(context, revisionToyodaPages[1], 1, {
+    patternIndex: 2,
+    servicePageIndex: 2,
+    serviceIndexOffset: 1
+  })
 
-  writeGtfs(args.outputDir, context)
-  if (args.updateCurrent) {
-    writeGtfs(CURRENT_DIR, context)
+  convertAmaPage(context, legacyAmaPages[0], 0)
+  convertAmaPage(context, legacyAmaPages[1], 1, {
+    periods: clipPeriods(parsePeriods(legacyAmaPages[1]), { endDate: LEGACY_END_DATE })
+  })
+  convertAmaPage(context, legacyAmaPages[2], 2, {
+    periods: clipPeriods(parsePeriods(legacyAmaPages[2]), { endDate: LEGACY_END_DATE })
+  })
+  convertAmaPage(context, revisionAmaPages[0], 0, {
+    patternIndex: 1,
+    servicePageIndex: 1,
+    serviceIndexOffset: 1
+  })
+  convertAmaPage(context, revisionAmaPages[1], 1, {
+    patternIndex: 2,
+    servicePageIndex: 2,
+    serviceIndexOffset: 1
+  })
+  convertAmaPage(context, revisionAmaPages[2], 2, {
+    patternIndex: 3,
+    servicePageIndex: 3
+  })
+
+  const convertedAt = new Date().toISOString()
+  const sourceInfo = {
+    version: 1,
+    sourceId: sourceMetadata.sourceId || 'ama-town',
+    sourceUpdatedAt: sourceMetadata.currentRawDate,
+    officialPageUpdatedAt: sourceMetadata.officialPageUpdatedAt,
+    convertedAt,
+    feedVersion: FEED_VERSION,
+    legacyEndDate: '2026-05-31',
+    documents: [...legacyDocuments, ...revisionDocuments]
   }
 
-  mkdirSync(REPORT_DIR, { recursive: true })
+  writeGtfs(args.outputDir, context, sourceInfo)
+  if (args.updateCurrent) {
+    writeGtfs(CURRENT_DIR, context, sourceInfo)
+  }
+
   const report = {
-    convertedAt: new Date().toISOString(),
+    convertedAt,
     sourceDir: SOURCE_DIR,
     outputDir: args.outputDir,
     currentUpdated: args.updateCurrent,
     feedStartDate: FEED_START,
     feedEndDate: FEED_END,
     feedVersion: FEED_VERSION,
+    sourceDocuments: sourceInfo.documents,
     counts: {
       services: context.services.length,
       trips: context.trips.length,
       stopTimes: context.stopTimes.length
     }
   }
-  writeFileSync(join(REPORT_DIR, '2025-12-22.r8-pdf-conversion.json'), `${JSON.stringify(report, null, 2)}\n`, 'utf-8')
+  if (args.writeReport) {
+    mkdirSync(REPORT_DIR, { recursive: true })
+    writeFileSync(join(REPORT_DIR, '2026-06-11.r8-pdf-conversion.json'), `${JSON.stringify(report, null, 2)}\n`, 'utf-8')
+  }
 
   console.log(`R8 PDF から GTFS を生成しました: ${args.outputDir}`)
   if (args.updateCurrent) {

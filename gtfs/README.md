@@ -69,7 +69,7 @@ npm run transport:promote -- --from dev --target prod \
 - 種別: `bus`
   - ID: `ama`
   - 事業者: 海士町
-  - 元データ日付: `2025-12-22`
+  - 元データ日付: `2026-06-11`（1月2日〜5月31日は `2025-12-22` 版を継続利用）
   - GTFS フィード期間: `2026-01-02` から `2026-12-31`
 - 種別: `bus`
   - ID: `nishinoshima`

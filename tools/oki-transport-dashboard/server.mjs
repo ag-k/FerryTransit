@@ -17,6 +17,7 @@ import { attachDocumentTypeState, loadDocumentTypeStore, setDocumentType } from 
 import {
   createGtfsDraftFromSnapshot,
   exportGtfsDraft,
+  loadCurrentFeeds,
   loadGtfsDraft,
   loadGtfsDashboard,
   loadGtfsView,
@@ -177,7 +178,8 @@ async function withDashboardState(snapshot) {
 async function withReviewState(snapshot) {
   const withDocumentTypes = attachDocumentTypeState(snapshot, await loadDocumentTypeStore())
   const withReviews = attachReviewState(withDocumentTypes, await loadReviewStore())
-  return attachReflectionState(withReviews, await loadGtfsDraft())
+  const [draft, currentFeeds] = await Promise.all([loadGtfsDraft(), loadCurrentFeeds()])
+  return attachReflectionState(withReviews, draft, currentFeeds)
 }
 
 async function readJsonBody(request) {

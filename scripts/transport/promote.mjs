@@ -6,6 +6,7 @@ import {
   downloadStorageObject,
   validateStorageManifest
 } from '../lib/storage-manifest.mjs'
+import { assertGtfsPublishReady } from '../lib/transport-source-freshness.mjs'
 
 const args = { from: '', target: '', manifestPath: '', gitSha: '', approveProd: false, dryRun: false }
 for (let index = 2; index < process.argv.length; index++) {
@@ -23,6 +24,11 @@ if (args.from !== 'dev' || args.target !== 'prod') throw new Error('昇格元は
 if (!args.approveProd) throw new Error('prod昇格には --approve-prod が必要です')
 if (!/^data\/manifests\/[a-z0-9._-]+\.json$/.test(args.manifestPath)) throw new Error('--manifest にStorage上のmanifestパスを指定してください')
 if (!/^[a-f0-9]{40}$/.test(args.gitSha)) throw new Error('--git-sha に40桁のリリースコミットSHAを指定してください')
+
+if (args.manifestPath === 'data/manifests/gtfs-public-data.json') {
+  const gate = assertGtfsPublishReady(process.cwd())
+  console.log(`公式資料ゲート: OK (${gate.checkedSources.join(', ') || '対象なし'})`)
+}
 
 const sourceManifest = JSON.parse((await downloadStorageObject('dev', args.manifestPath)).toString('utf8'))
 validateStorageManifest(sourceManifest, { environment: 'dev', gitSha: args.gitSha })

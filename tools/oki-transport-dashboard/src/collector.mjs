@@ -122,7 +122,7 @@ async function collectSource(source, previousIndex, options) {
   }
 }
 
-async function collectPage(source, page, previousIndex) {
+async function collectPage(source, page, previousIndex, options = {}) {
   const collectedAt = new Date().toISOString()
   try {
     const response = await fetchResource(page.url, page)
@@ -130,9 +130,13 @@ async function collectPage(source, page, previousIndex) {
     const links = response.isText ? extractLinksFromHtml(text, page.url) : []
     const discoveredFiles = response.isText ? extractStandaloneFileUrls(text, page.url) : []
     const allLinks = mergeLinks(links, discoveredFiles)
-    const linkDocuments = allLinks
+    const normalizedLinkDocuments = allLinks
       .map((link) => normalizeDocumentLink(link, source, page))
       .filter(Boolean)
+    const linkDocuments = options.fingerprintDocuments === false
+      ? normalizedLinkDocuments
+      : await fingerprintDocuments(normalizedLinkDocuments)
+    const fingerprintErrors = linkDocuments.filter(document => document.fingerprintError)
     const notices = extractNotices(text, page, page.url)
     const title = response.isText ? extractTitle(text) : filenameFromUrl(page.url)
     const updatedText = response.isText ? extractUpdatedText(text) : null
@@ -147,7 +151,7 @@ async function collectPage(source, page, previousIndex) {
       role: page.role,
       label: page.label,
       url: page.url,
-      status: response.ok ? 'ok' : 'warning',
+      status: response.ok && fingerprintErrors.length === 0 ? 'ok' : 'warning',
       statusCode: response.status,
       contentType: response.contentType,
       title,
@@ -162,7 +166,11 @@ async function collectPage(source, page, previousIndex) {
       keywordHits: countKeywords(text, source.expectedKeywords),
       documents,
       notices,
-      error: response.ok ? null : `HTTP ${response.status}`
+      error: !response.ok
+        ? `HTTP ${response.status}`
+        : fingerprintErrors.length
+          ? `資料ハッシュ取得失敗: ${fingerprintErrors.map(document => document.title).join(', ')}`
+          : null
     }
   } catch (error) {
     return {
@@ -189,6 +197,35 @@ async function collectPage(source, page, previousIndex) {
       error: error.message
     }
   }
+}
+
+async function fingerprintDocuments(documents) {
+  const results = []
+  for (const document of documents) {
+    try {
+      const response = await fetchResource(document.url)
+      if (!response.ok) throw new Error(`HTTP ${response.status}`)
+      results.push({
+        ...document,
+        hash: response.hash,
+        shortHash: response.hash.slice(0, 12),
+        sizeBytes: response.sizeBytes,
+        contentType: response.contentType,
+        fingerprintedAt: new Date().toISOString(),
+        fingerprintError: null
+      })
+    } catch (error) {
+      results.push({
+        ...document,
+        hash: null,
+        shortHash: null,
+        sizeBytes: null,
+        fingerprintedAt: new Date().toISOString(),
+        fingerprintError: error.message
+      })
+    }
+  }
+  return results
 }
 
 async function fetchResource(url, options = {}) {
@@ -591,7 +628,7 @@ function getPageChangeStatus(sourceId, pageUrl, hash, previousIndex) {
   return previous.hash === hash ? 'unchanged' : 'changed'
 }
 
-function getDocumentChangeStatus(document, previousIndex) {
+export function getDocumentChangeStatus(document, previousIndex) {
   const previous = previousIndex.documents.get(document.url)
   if (!previous) return 'new'
   if (document.hash && previous.hash && document.hash !== previous.hash) return 'changed'

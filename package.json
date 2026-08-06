@@ -77,6 +77,7 @@
     "gtfs:config:generate": "node scripts/config/generate-bus-feed-config.mjs",
     "gtfs:build": "npm run gtfs:config:generate && node scripts/gtfs/build-public-data.mjs",
     "gtfs:upload": "node scripts/gtfs/upload-public-data.mjs",
+    "gtfs:acquire:ama:r8": "node scripts/gtfs/acquire-ama-r8.mjs",
     "gtfs:convert:ama:r8": "node scripts/gtfs/convert-ama-r8-pdf.mjs",
     "gtfs:convert:nishinoshima:2026": "node scripts/gtfs/convert-nishinoshima-2026-pdf.mjs",
     "gtfs:convert:chibu:2023": "node scripts/gtfs/convert-chibu-2023-image.mjs",

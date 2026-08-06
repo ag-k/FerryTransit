@@ -1,10 +1,17 @@
 const REFLECTION_STATUSES = new Set(['undecided', 'not-needed', 'needs-reflection', 'reflected'])
 
-export function attachReflectionState(snapshot, gtfsDraft) {
+export function attachReflectionState(snapshot, gtfsDraft, currentFeeds = []) {
   if (!snapshot) return snapshot
   const routeStatusByDocumentUrl = buildRouteStatusByDocumentUrl(gtfsDraft?.routes || [])
+  const adoptedSourceByDocumentUrl = buildAdoptedSourceByDocumentUrl(currentFeeds)
+  const currentFeedBySourceId = new Map((currentFeeds || []).map(feed => [feed.sourceId, feed]))
   const documents = (snapshot.documents || []).map((document) => {
-    const reflection = resolveDocumentReflection(document, routeStatusByDocumentUrl.get(document.url))
+    const reflection = resolveDocumentReflection(
+      document,
+      routeStatusByDocumentUrl.get(document.url),
+      adoptedSourceByDocumentUrl.get(document.url),
+      currentFeedBySourceId.get(document.sourceId)
+    )
     return {
       ...document,
       reflectionStatus: reflection.status,
@@ -39,6 +46,22 @@ export function attachReflectionState(snapshot, gtfsDraft) {
   }
 }
 
+function buildAdoptedSourceByDocumentUrl(currentFeeds) {
+  const map = new Map()
+  for (const feed of currentFeeds || []) {
+    for (const document of feed.sourceDocuments || []) {
+      if (!document.url) continue
+      map.set(document.url, {
+        feedId: feed.id,
+        sourceId: feed.sourceId,
+        currentRawDate: feed.currentRawDate,
+        sourceDate: document.sourceDate
+      })
+    }
+  }
+  return map
+}
+
 export function summarizeReflectionStatuses(documents) {
   const summary = createReflectionCount()
   for (const document of documents || []) {
@@ -62,7 +85,7 @@ function buildRouteStatusByDocumentUrl(routes) {
   return map
 }
 
-function resolveDocumentReflection(document, routeState) {
+function resolveDocumentReflection(document, routeState, adoptedSource, currentFeed) {
   const reviewStatus = document.reviewStatus || 'unreviewed'
   const routeIds = routeState?.routeIds || []
   const statuses = routeState?.statuses || []
@@ -71,6 +94,24 @@ function resolveDocumentReflection(document, routeState) {
     return {
       status: 'not-needed',
       reason: 'レビューで不要に設定されています',
+      routeIds
+    }
+  }
+  if (adoptedSource && (!document.dateText || document.dateText <= adoptedSource.currentRawDate)) {
+    return {
+      status: 'reflected',
+      reason: `採用中GTFS ${adoptedSource.feedId} の公式資料です`,
+      routeIds
+    }
+  }
+  if (document.type === 'timetable' && (
+    document.changeStatus === 'new' ||
+    document.changeStatus === 'changed' ||
+    (currentFeed && document.dateText > currentFeed.currentRawDate)
+  )) {
+    return {
+      status: 'needs-reflection',
+      reason: '新規または更新された時刻表資料がGTFSへ未反映です',
       routeIds
     }
   }

@@ -21,7 +21,7 @@ describe('transport orchestrator', () => {
   it('GTFSの変換・検証・生成をsource IDから解決する', () => {
     const pipeline = buildTransportPipeline('ama-town', { root: resolve('.'), target: 'dev' })
     expect(pipeline.scope).toBe('gtfs')
-    expect(pipeline.stages.acquire.label).toBe('npm run gtfs:convert:ama:r8 -- --current')
+    expect(pipeline.stages.acquire.label).toBe('npm run gtfs:acquire:ama:r8 -- --current')
     expect(pipeline.stages.validate.label).toBe('npm run gtfs:validate -- bus ama --check')
     expect(pipeline.stages.build.label).toBe('npm run gtfs:build -- bus ama')
   })

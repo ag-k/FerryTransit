@@ -13,6 +13,7 @@ describe('transport source registry', () => {
     expect(registry.feedById.ama).toMatchObject({
       id: 'ama',
       sourceId: 'ama-town',
+      acquisitionTask: 'npm run gtfs:acquire:ama:r8',
       conversionTask: 'npm run gtfs:convert:ama:r8',
       currentPath: 'gtfs/current/bus/ama'
     })

@@ -5,6 +5,7 @@ import { relative, join } from 'path'
 import { createFirebaseStoragePublisher } from '../lib/firebase-storage-publisher.mjs'
 import { FIREBASE_STORAGE_BUCKETS } from '../lib/firebase-publish-target.mjs'
 import { createPublishManifest, requireReleaseGitSha, sha256 } from '../lib/transport-data.mjs'
+import { assertGtfsPublishReady } from '../lib/transport-source-freshness.mjs'
 
 const ROOT = process.cwd()
 const SOURCE_ROOT = join(ROOT, 'gtfs', 'public-data', 'data')
@@ -60,6 +61,8 @@ const toStoragePath = (filePath) => {
 }
 
 const main = async () => {
+  const gate = assertGtfsPublishReady(ROOT)
+  console.log(`公式資料ゲート: OK (${gate.checkedSources.join(', ') || '対象なし'})`)
   if (!existsSync(SOURCE_ROOT)) {
     throw new Error(`外部公開データディレクトリが見つかりません: ${SOURCE_ROOT}`)
   }
