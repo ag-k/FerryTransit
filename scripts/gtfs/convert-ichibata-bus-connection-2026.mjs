@@ -6,6 +6,7 @@ import { join, resolve } from 'path'
 import { spawnSync } from 'child_process'
 import Papa from 'papaparse'
 import { getTransportSourceOperation } from '../../config/transport-sources.mjs'
+import { writeGtfsSourceInfo } from '../lib/gtfs-source-info.mjs'
 
 const { unparse: unparseCsv } = Papa
 
@@ -499,15 +500,24 @@ function valueAfter(argv, key) {
 function main() {
   const args = parseArgs(process.argv.slice(2))
   assertArchivedSourcePdf()
+  const convertedAt = new Date().toISOString()
 
   const { trips, stopTimes } = writeGtfs(args.outputDir)
+  writeGtfsSourceInfo({
+    root: ROOT,
+    feedId: 'ichibata_bus_connection',
+    feedVersion: FEED_VERSION,
+    convertedAt,
+    legacyEndDate: '2026-07-17',
+    outputDir: args.outputDir
+  })
   if (args.updateCurrent && resolve(args.outputDir) !== resolve(CURRENT_DIR)) {
     cpSync(args.outputDir, CURRENT_DIR, { recursive: true })
   }
 
   mkdirSync(REPORT_DIR, { recursive: true })
   const report = {
-    convertedAt: new Date().toISOString(),
+    convertedAt,
     archivedSourcePdf: ARCHIVED_SOURCE_PDF,
     sourceUrl: SOURCE_URL,
     sourcePageUrl: SOURCE_PAGE_URL,

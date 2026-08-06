@@ -5,6 +5,7 @@ import { cpSync, existsSync, mkdirSync, writeFileSync } from 'fs'
 import { join, resolve } from 'path'
 import Papa from 'papaparse'
 import { getTransportSourceOperation } from '../../config/transport-sources.mjs'
+import { writeGtfsSourceInfo } from '../lib/gtfs-source-info.mjs'
 
 // eslint-disable-next-line import/no-named-as-default-member
 const { unparse: unparseCsv } = Papa
@@ -596,15 +597,23 @@ function main() {
       throw new Error(`PDF 原本が見つかりません: ${sourcePath}`)
     }
   }
+  const convertedAt = new Date().toISOString()
 
   writeGtfs(args.outputDir)
+  writeGtfsSourceInfo({
+    root: ROOT,
+    feedId: 'okinoshima',
+    feedVersion: FEED_VERSION,
+    convertedAt,
+    outputDir: args.outputDir
+  })
   if (args.updateCurrent && resolve(args.outputDir) !== resolve(CURRENT_DIR)) {
     cpSync(args.outputDir, CURRENT_DIR, { recursive: true })
   }
 
   mkdirSync(REPORT_DIR, { recursive: true })
   const report = {
-    convertedAt: new Date().toISOString(),
+    convertedAt,
     sourceDir: SOURCE_DIR,
     sourceUrls: {
       town: TOWN_SOURCE_URL,

@@ -1,7 +1,34 @@
 {
   "id": "ichibata_bus_connection",
   "mode": "bus",
-  "generatedAt": "2026-07-19T05:49:39.824Z",
+  "generatedAt": "2026-08-06T16:00:10.803Z",
+  "convertedAt": "2026-08-06T15:59:47.105Z",
+  "source": {
+    "sourceId": "ichibata-bus-connection",
+    "updatedAt": "2026-07-18",
+    "officialPageUpdatedAt": null,
+    "legacyEndDate": "2026-07-17",
+    "urls": [
+      "https://bus.ichibata.co.jp/media/oki_2026_dia.pdf",
+      "https://bus.ichibata.co.jp/media/r8_0718_kisen_dia.pdf"
+    ],
+    "documents": [
+      {
+        "id": "ichibata-connection-20260401",
+        "title": "隠岐汽船連絡バス時刻表 2026年4月1日から",
+        "sourceDate": "2026-04-01",
+        "url": "https://bus.ichibata.co.jp/media/oki_2026_dia.pdf",
+        "sha256": "a6e0c1134237bb757b0d4c1333e182cd5f75921d70aee13211238da8acda45b0"
+      },
+      {
+        "id": "ichibata-connection-20260718",
+        "title": "隠岐汽船連絡バス時刻表 2026年7月18日から",
+        "sourceDate": "2026-07-18",
+        "url": "https://bus.ichibata.co.jp/media/r8_0718_kisen_dia.pdf",
+        "sha256": "0f085626c21fb29450415baaa45b19a0e38ecaf0610754474e1bf12024634288"
+      }
+    ]
+  },
   "feed": {
     "publisherName": "一畑バス株式会社",
     "publisherUrl": "https://bus.ichibata.co.jp/oki-kisen/oki-kisen-sichirui/",

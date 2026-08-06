@@ -1,0 +1,17 @@
+{
+  "version": 1,
+  "sourceId": "chibu-village",
+  "sourceUpdatedAt": "2023-02-01",
+  "convertedAt": "2026-08-06T15:59:46.859Z",
+  "feedVersion": "20230201_20260101-20261231",
+  "documents": [
+    {
+      "id": "chibu-bus-20230201",
+      "title": "知夫村営バス時刻表 令和5年2月1日改正",
+      "sourceDate": "2023-02-01",
+      "url": "http://www.chibu.jp/_src/73262207/img20230316164406123313.jpg?v=1744091048959",
+      "file": "gtfs/pdf/bus/chibu/20230201_chibu_bus_timetable.jpg",
+      "sha256": "988c0e7ed75bd5ff7a24b96e5afebf0580000930efbd4b0fcfa46b1d6c7b6f87"
+    }
+  ]
+}

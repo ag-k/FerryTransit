@@ -3,17 +3,38 @@
   "mode": "bus",
   "name": "一畑バス・隠岐汽船接続バス",
   "agencyName": "一畑バス株式会社",
+  "sourceId": "ichibata-bus-connection",
   "sourceUrl": "https://bus.ichibata.co.jp/media/r8_0718_kisen_dia.pdf",
   "sourcePageUrl": "https://bus.ichibata.co.jp/oki-kisen/oki-kisen-sichirui/",
   "license": "未確認",
   "updatePolicy": "一畑バス公式サイトの隠岐汽船接続バス時刻表PDFを確認し、更新があれば raw に日付付きで保存して current に反映する",
   "currentRawDate": "2026-07-18",
   "currentPath": "gtfs/current/bus/ichibata_bus_connection",
+  "sourceDocuments": [
+    {
+      "id": "ichibata-connection-20260718",
+      "title": "隠岐汽船連絡バス時刻表 2026年7月18日から",
+      "sourceDate": "2026-07-18",
+      "url": "https://bus.ichibata.co.jp/media/r8_0718_kisen_dia.pdf",
+      "file": "gtfs/pdf/bus/ichibata_bus_connection/r8_0718_kisen_dia.pdf",
+      "sha256": "0f085626c21fb29450415baaa45b19a0e38ecaf0610754474e1bf12024634288"
+    }
+  ],
+  "legacySourceDocuments": [
+    {
+      "id": "ichibata-connection-20260401",
+      "title": "隠岐汽船連絡バス時刻表 2026年4月1日から",
+      "sourceDate": "2026-04-01",
+      "url": "https://bus.ichibata.co.jp/media/oki_2026_dia.pdf",
+      "file": "gtfs/pdf/bus/ichibata_bus_connection/oki_2026_dia.pdf",
+      "sha256": "a6e0c1134237bb757b0d4c1333e182cd5f75921d70aee13211238da8acda45b0"
+    }
+  ],
   "routeId": "route_ichibata_bus_connection_https_bus_ichibata_8927b51c",
   "routeStatus": "ready",
   "documentReviewStatus": "reviewed",
   "notes": [
-    "2026年4月1日版PDF原本は gtfs/pdf/bus/ichibata_bus_connection/oki_2026_dia.pdf に履歴資料として保管",
+    "2026年4月1日版と7月18日版のPDF原本は gtfs/pdf/bus/ichibata_bus_connection に保管",
     "scripts/gtfs/convert-ichibata-bus-connection-2026.mjs で raw/bus/ichibata_bus_connection/2026-07-18 と current/bus/ichibata_bus_connection を生成",
     "最新公式PDFの掲出期間は2026年7月18日から2027年2月28日。4月1日から7月17日は旧版を保持し、FerryTransitの2026年feedとして12月31日までを採用",
     "松江駅-七類港、松江駅-境港の接続バス時刻をGTFS化し、隠岐汽船発着時刻は jp_trip_desc に接続船情報として保持",

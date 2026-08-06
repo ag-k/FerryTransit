@@ -1,7 +1,58 @@
 {
   "id": "okinoshima",
   "mode": "bus",
-  "generatedAt": "2026-07-02T13:08:53.437Z",
+  "generatedAt": "2026-08-06T16:00:10.814Z",
+  "convertedAt": "2026-08-06T15:58:59.534Z",
+  "source": {
+    "sourceId": "okinoshima-town",
+    "updatedAt": "2026-03-02",
+    "officialPageUpdatedAt": "2026-03-02",
+    "legacyEndDate": null,
+    "urls": [
+      "https://www.town.okinoshima.shimane.jp/material/files/group/17/sougoujikoku_2.pdf",
+      "https://www.town.okinoshima.shimane.jp/material/files/group/17/rosen_2.pdf",
+      "https://www.town.okinoshima.shimane.jp/material/files/group/17/goka_2.pdf",
+      "https://www.town.okinoshima.shimane.jp/material/files/group/17/sinnryoujo_2.pdf",
+      "https://www.town.okinoshima.shimane.jp/material/files/group/17/seibu_2.pdf"
+    ],
+    "documents": [
+      {
+        "id": "okinoshima-sougou-20260302",
+        "title": "隠岐の島町バス総合時刻表",
+        "sourceDate": "2026-03-02",
+        "url": "https://www.town.okinoshima.shimane.jp/material/files/group/17/sougoujikoku_2.pdf",
+        "sha256": "450b85620004d4dae2439177a6879a2636e6616efae2da0d981e3921ff498053"
+      },
+      {
+        "id": "okinoshima-rosen-20260401",
+        "title": "隠岐一畑交通 路線バス時刻表",
+        "sourceDate": "2026-04-01",
+        "url": "https://www.town.okinoshima.shimane.jp/material/files/group/17/rosen_2.pdf",
+        "sha256": "88d359f040cdfa61468167efd616043246074680a0cbef4d6decc6da664757c7"
+      },
+      {
+        "id": "okinoshima-goka-20260302",
+        "title": "五箇循環線時刻表",
+        "sourceDate": "2026-03-02",
+        "url": "https://www.town.okinoshima.shimane.jp/material/files/group/17/goka_2.pdf",
+        "sha256": "4ba3e7649b655e4238bcb054e5165ee49303d97dd09d21a0010f242f60318de9"
+      },
+      {
+        "id": "okinoshima-sinnryoujo-20260302",
+        "title": "都万診療所循環線時刻表",
+        "sourceDate": "2026-03-02",
+        "url": "https://www.town.okinoshima.shimane.jp/material/files/group/17/sinnryoujo_2.pdf",
+        "sha256": "e75530e2225a29c0a1969055a07ceeca2c0d5abda31b617cf77063efa33b9671"
+      },
+      {
+        "id": "okinoshima-seibu-20260302",
+        "title": "都万西部線時刻表",
+        "sourceDate": "2026-03-02",
+        "url": "https://www.town.okinoshima.shimane.jp/material/files/group/17/seibu_2.pdf",
+        "sha256": "498b36b348263aa841c57c618d8b74a0ca94c25a628e499687d532dcf662931f"
+      }
+    ]
+  },
   "feed": {
     "publisherName": "隠岐の島町",
     "publisherUrl": "https://www.town.okinoshima.shimane.jp/kanko/tounaikoutuujouhou/7990.html",

@@ -5,6 +5,7 @@ import { cpSync, mkdirSync, writeFileSync } from 'fs'
 import { join, resolve } from 'path'
 import Papa from 'papaparse'
 import { getTransportSourceOperation } from '../../config/transport-sources.mjs'
+import { writeGtfsSourceInfo } from '../lib/gtfs-source-info.mjs'
 
 const { unparse: unparseCsv } = Papa
 
@@ -363,15 +364,23 @@ function valueAfter(argv, key) {
 function main() {
   const args = parseArgs(process.argv.slice(2))
   assertScheduleDefinition()
+  const convertedAt = new Date().toISOString()
 
   const { trips, stopTimes } = writeGtfs(args.outputDir)
+  writeGtfsSourceInfo({
+    root: ROOT,
+    feedId: 'hatsumi_bus_connection',
+    feedVersion: FEED_VERSION,
+    convertedAt,
+    outputDir: args.outputDir
+  })
   if (args.updateCurrent && resolve(args.outputDir) !== resolve(CURRENT_DIR)) {
     cpSync(args.outputDir, CURRENT_DIR, { recursive: true })
   }
 
   mkdirSync(REPORT_DIR, { recursive: true })
   const report = {
-    convertedAt: new Date().toISOString(),
+    convertedAt,
     sourceUrl: SOURCE_URL,
     sourcePageUrl: SOURCE_PAGE_URL,
     outputDir: args.outputDir,

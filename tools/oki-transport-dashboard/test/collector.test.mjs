@@ -1,6 +1,6 @@
 import assert from 'node:assert/strict'
 import { test } from 'node:test'
-import { classifyResourceType, extractJapaneseDate, extractLinksFromHtml, extractStandaloneFileUrls, getDocumentChangeStatus, normalizeHtmlPageDocument, SOURCES } from '../src/collector.mjs'
+import { classifyResourceType, extractJapaneseDate, extractLinksFromHtml, extractStandaloneFileUrls, getDocumentChangeStatus, normalizeDocumentLink, normalizeHtmlPageDocument, SOURCES } from '../src/collector.mjs'
 
 test('時刻表・運賃・運航状況のリンク種別を分類できる', () => {
   assert.equal(classifyResourceType('R8_海士島線時刻表.pdf', 'https://example.test/r8.pdf'), 'timetable')
@@ -37,6 +37,27 @@ test('監視対象のお知らせURLは現行の一覧ページを指す', () =>
 
   const chibu = SOURCES.find((item) => item.id === 'chibu-village')
   assert.equal(chibu?.pages.find((page) => page.label === 'お知らせ')?.url, 'http://www.chibu.jp/news/')
+})
+
+test('知夫の時刻表画像と案内図をURLごとの役割で分類する', () => {
+  const source = SOURCES.find((item) => item.id === 'chibu-village')
+  const page = source.pages.find((item) => item.role === 'timetable')
+  const timetable = normalizeDocumentLink({
+    url: 'http://www.chibu.jp/_src/73262207/img20230316164406123313.jpg?v=1744091048959',
+    text: '画像',
+    context: '村営バス時刻表 運航状況を含むページ文脈',
+    source: 'file'
+  }, source, page)
+  const map = normalizeDocumentLink({
+    url: 'http://www.chibu.jp/_src/73255395/img20230316103536103491.png?v=1744091048959',
+    text: '画像',
+    context: '島内交通の停留所マップ',
+    source: 'file'
+  }, source, page)
+
+  assert.equal(timetable?.type, 'timetable')
+  assert.equal(map?.type, 'map')
+  assert.equal(source.ignoredDocumentUrls.length, 2)
 })
 
 test('HTML 本文の時刻表ページを資料として扱える', () => {

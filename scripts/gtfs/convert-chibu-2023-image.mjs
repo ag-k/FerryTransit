@@ -4,7 +4,8 @@
 import { cpSync, existsSync, mkdirSync, writeFileSync } from 'fs'
 import { join, resolve } from 'path'
 import Papa from 'papaparse'
-import { getTransportSourceOperation } from '../../config/transport-sources.mjs'
+import { writeGtfsSourceInfo } from '../lib/gtfs-source-info.mjs'
+import { loadTransportSourceRegistry } from '../lib/transport-source-registry.mjs'
 
 // eslint-disable-next-line import/no-named-as-default-member
 const { unparse: unparseCsv } = Papa
@@ -18,7 +19,7 @@ const REPORT_DIR = join(ROOT, 'gtfs', 'reports', 'bus', 'chibu')
 const FEED_START = '20260101'
 const FEED_END = '20261231'
 const FEED_VERSION = '20230201_20260101-20261231'
-const SOURCE_URL = getTransportSourceOperation('chibu-village').sourceUrl
+const SOURCE_URL = loadTransportSourceRegistry(ROOT).feedById.chibu.sourceUrl
 
 const ROUTES = [
   {
@@ -321,15 +322,23 @@ function main() {
   if (!existsSync(SOURCE_IMAGE)) {
     throw new Error(`時刻表画像が見つかりません: ${SOURCE_IMAGE}`)
   }
+  const convertedAt = new Date().toISOString()
 
   writeGtfs(args.outputDir)
+  writeGtfsSourceInfo({
+    root: ROOT,
+    feedId: 'chibu',
+    feedVersion: FEED_VERSION,
+    convertedAt,
+    outputDir: args.outputDir
+  })
   if (args.updateCurrent && resolve(args.outputDir) !== resolve(CURRENT_DIR)) {
     cpSync(args.outputDir, CURRENT_DIR, { recursive: true })
   }
 
   mkdirSync(REPORT_DIR, { recursive: true })
   const report = {
-    convertedAt: new Date().toISOString(),
+    convertedAt,
     sourceImage: SOURCE_IMAGE,
     sourceUrl: SOURCE_URL,
     outputDir: args.outputDir,

@@ -3,14 +3,25 @@
   "mode": "bus",
   "name": "西ノ島町営バス",
   "agencyName": "西ノ島町",
+  "sourceId": "nishinoshima-town",
   "sourceUrl": "https://www.town.nishinoshima.shimane.jp/bunya/b_kurashi/b_kotsu/47",
   "license": "未確認",
   "updatePolicy": "西ノ島町公式サイトの町営バス時刻表 PDF と停留所マップを確認し、更新があれば raw に日付付きで保存して current に反映する",
-  "currentRawDate": "2026-01-01",
+  "currentRawDate": "2026-03-01",
   "currentPath": "gtfs/current/bus/nishinoshima",
+  "sourceDocuments": [
+    {
+      "id": "nishinoshima-20260301",
+      "title": "西ノ島町営バス時刻表 2026年3月1日～12月31日",
+      "sourceDate": "2026-03-01",
+      "url": "https://www.town.nishinoshima.shimane.jp/files/original/20260220140915710489010da.pdf",
+      "file": "gtfs/pdf/bus/nishinoshima/20260220140915710489010da.pdf",
+      "sha256": "60f9f0217b397d3f3d4cdfc72b6c1611bdf9c63fef3b9f017c7394993f7bc0f3"
+    }
+  ],
   "notes": [
     "2026年3月1日から2026年12月31日までの時刻表 PDF は gtfs/pdf/bus/nishinoshima/20260220140915710489010da.pdf に保管",
-    "scripts/gtfs/convert-nishinoshima-2026-pdf.mjs で raw/bus/nishinoshima/2026-01-01 と current/bus/nishinoshima を生成",
+    "scripts/gtfs/convert-nishinoshima-2026-pdf.mjs で raw/bus/nishinoshima/2026-03-01 と current/bus/nishinoshima を生成",
     "波止と浦郷観光船のりばは停留所マップ掲載停留所として stops.txt に追加"
   ]
 }

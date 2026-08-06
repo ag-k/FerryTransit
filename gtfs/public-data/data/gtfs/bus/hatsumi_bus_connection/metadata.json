@@ -1,7 +1,26 @@
 {
   "id": "hatsumi_bus_connection",
   "mode": "bus",
-  "generatedAt": "2026-07-31T06:25:33.904Z",
+  "generatedAt": "2026-08-06T16:00:10.801Z",
+  "convertedAt": "2026-08-06T15:58:59.552Z",
+  "source": {
+    "sourceId": "oki-kouiki-bus",
+    "updatedAt": "2026-06-08",
+    "officialPageUpdatedAt": null,
+    "legacyEndDate": null,
+    "urls": [
+      "https://okikouiki.jp/wp/wp-content/uploads/2026/06/2026timetable_6-12.pdf"
+    ],
+    "documents": [
+      {
+        "id": "hatsumi-connection-20260608",
+        "title": "令和8年6月8日から12月31日までの時刻表",
+        "sourceDate": "2026-06-08",
+        "url": "https://okikouiki.jp/wp/wp-content/uploads/2026/06/2026timetable_6-12.pdf",
+        "sha256": "0d3b12427fc832c666adce5131debabd3d18c61075b7deae024c7be7dce57c9d"
+      }
+    ]
+  },
   "feed": {
     "publisherName": "はつみ交通株式会社",
     "publisherUrl": "https://okikouiki.jp/oki-route/bus/",

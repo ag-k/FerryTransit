@@ -129,7 +129,9 @@ async function collectPage(source, page, previousIndex, options = {}) {
     const text = response.text || ''
     const links = response.isText ? extractLinksFromHtml(text, page.url) : []
     const discoveredFiles = response.isText ? extractStandaloneFileUrls(text, page.url) : []
+    const ignoredDocumentUrls = new Set(source.ignoredDocumentUrls || [])
     const allLinks = mergeLinks(links, discoveredFiles)
+      .filter(link => !ignoredDocumentUrls.has(link.url))
     const normalizedLinkDocuments = allLinks
       .map((link) => normalizeDocumentLink(link, source, page))
       .filter(Boolean)
@@ -431,7 +433,7 @@ function extractNotices(html, page, baseUrl) {
     }))
 }
 
-function normalizeDocumentLink(link, source, page) {
+export function normalizeDocumentLink(link, source, page) {
   const extension = extname(new URL(link.url).pathname).toLowerCase()
   if (!DOCUMENT_EXTENSIONS.has(extension)) return null
   if (isIgnorableAsset(link.url)) return null
@@ -441,7 +443,9 @@ function normalizeDocumentLink(link, source, page) {
   const shouldUseContext = link.source === 'file' || isGenericLinkText(text)
   const usefulValue = shouldUseContext ? `${text} ${context}` : text
   const typeValue = shouldUseContext ? `${text} ${context}` : text
-  const classifiedType = classifyResourceType(typeValue, link.url, page.role)
+  const typeOverride = (source.documentTypeOverrides || [])
+    .find(override => link.url.startsWith(override.urlPrefix))
+  const classifiedType = typeOverride?.type || classifyResourceType(typeValue, link.url, page.role)
   const hasUsefulText = /時刻|時刻表|運賃|料金|ダイヤ|路線バス|町営バス|連絡バス|接続バス|空港連絡|デマンドタクシー|タクシー|停留所|マップ|令和|R\d|いそかぜ|どうぜん/i.test(usefulValue)
   const pathIsUseful = /timetable|jikoku|rosen|fare|fee|goka|seibu|sinnryoujo|sougou|demando|isokaze|douzen|unchin|route-time/i.test(new URL(link.url).pathname.toLowerCase())
 

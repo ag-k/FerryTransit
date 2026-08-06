@@ -1,0 +1,17 @@
+{
+  "version": 1,
+  "sourceId": "nishinoshima-town",
+  "sourceUpdatedAt": "2026-03-01",
+  "convertedAt": "2026-08-06T15:59:47.094Z",
+  "feedVersion": "20260220140915710489010da_20260301-20261231_rev20260731_symbols",
+  "documents": [
+    {
+      "id": "nishinoshima-20260301",
+      "title": "西ノ島町営バス時刻表 2026年3月1日～12月31日",
+      "sourceDate": "2026-03-01",
+      "url": "https://www.town.nishinoshima.shimane.jp/files/original/20260220140915710489010da.pdf",
+      "file": "gtfs/pdf/bus/nishinoshima/20260220140915710489010da.pdf",
+      "sha256": "60f9f0217b397d3f3d4cdfc72b6c1611bdf9c63fef3b9f017c7394993f7bc0f3"
+    }
+  ]
+}

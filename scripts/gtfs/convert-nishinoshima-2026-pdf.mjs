@@ -4,10 +4,11 @@ import { cpSync, existsSync, mkdirSync, readFileSync, writeFileSync } from 'fs'
 import { basename, join, resolve } from 'path'
 import { spawnSync } from 'child_process'
 import Papa from 'papaparse'
+import { writeGtfsSourceInfo } from '../lib/gtfs-source-info.mjs'
 
 const ROOT = process.cwd()
 const SOURCE_PDF = join(ROOT, 'gtfs', 'pdf', 'bus', 'nishinoshima', '20260220140915710489010da.pdf')
-const RAW_DIR = join(ROOT, 'gtfs', 'raw', 'bus', 'nishinoshima', '2026-01-01')
+const RAW_DIR = join(ROOT, 'gtfs', 'raw', 'bus', 'nishinoshima', '2026-03-01')
 const CURRENT_DIR = join(ROOT, 'gtfs', 'current', 'bus', 'nishinoshima')
 const REPORT_DIR = join(ROOT, 'gtfs', 'reports', 'bus', 'nishinoshima')
 
@@ -984,6 +985,7 @@ function valueAfter(argv, key) {
 function main() {
   const args = parseArgs(process.argv.slice(2))
   assertSourcePdf()
+  const convertedAt = new Date().toISOString()
 
   const stopNames = new Map(readStops().map(stop => [stop.stop_id, stop.stop_name]))
   const context = {
@@ -997,6 +999,13 @@ function main() {
   }
 
   writeGtfs(args.outputDir, context)
+  writeGtfsSourceInfo({
+    root: ROOT,
+    feedId: 'nishinoshima',
+    feedVersion: FEED_VERSION,
+    convertedAt,
+    outputDir: args.outputDir
+  })
   if (args.updateCurrent) {
     if (resolve(args.outputDir) !== resolve(CURRENT_DIR)) {
       cpSync(args.outputDir, CURRENT_DIR, { recursive: true })
@@ -1005,7 +1014,7 @@ function main() {
 
   mkdirSync(REPORT_DIR, { recursive: true })
   const report = {
-    convertedAt: new Date().toISOString(),
+    convertedAt,
     sourcePdf: SOURCE_PDF,
     outputDir: args.outputDir,
     currentUpdated: args.updateCurrent,
@@ -1034,7 +1043,7 @@ function main() {
       '波止と浦郷観光船のりばは停留所マップ掲載停留所として stops.txt に追加'
     ]
   }
-  writeFileSync(join(REPORT_DIR, '2026-01-01.pdf-conversion.json'), `${JSON.stringify(report, null, 2)}\n`, 'utf-8')
+  writeFileSync(join(REPORT_DIR, '2026-03-01.pdf-conversion.json'), `${JSON.stringify(report, null, 2)}\n`, 'utf-8')
 
   console.log(`西ノ島町営バス PDF から GTFS を生成しました: ${args.outputDir}`)
   if (args.updateCurrent) {

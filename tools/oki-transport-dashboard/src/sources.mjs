@@ -102,7 +102,21 @@ const DASHBOARD_SOURCE_DEFINITIONS = [
       { role: 'notices', label: 'お知らせ', url: 'http://www.chibu.jp/news/' }
     ],
     expectedKeywords: ['アクセス', '島内交通', '時刻表'],
-    includeImageDocuments: true
+    includeImageDocuments: true,
+    ignoredDocumentUrls: [
+      'https://www.oki-kisen.co.jp/files/original/2023011013474575937aa1f44.pdf',
+      'https://www.oki-kisen.co.jp/files/original/20230110134727917f9684634.pdf'
+    ],
+    documentTypeOverrides: [
+      {
+        urlPrefix: 'http://www.chibu.jp/_src/73262207/img20230316164406123313.',
+        type: 'timetable'
+      },
+      { urlPrefix: 'http://www.chibu.jp/_src/73255395/', type: 'map' },
+      { urlPrefix: 'http://www.chibu.jp/_src/73255397/', type: 'map' },
+      { urlPrefix: 'http://www.chibu.jp/_src/73255399/', type: 'map' },
+      { urlPrefix: 'http://www.chibu.jp/_src/73260797/', type: 'other' }
+    ]
   },
   {
     id: 'oki-kouiki-bus',

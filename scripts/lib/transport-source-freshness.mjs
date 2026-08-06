@@ -56,7 +56,7 @@ export function collectSourceProvenanceIssues({ root, source, gtfsDir, feedVersi
   return issues
 }
 
-export function collectSourceMonitorIssues({ source, snapshot, now = new Date() }) {
+export function collectSourceMonitorIssues({ source, snapshot, now = new Date(), feedEndDate = null }) {
   const issues = []
   if (!snapshot?.collectedAt) return [{ code: 'missing_source_monitor_snapshot', sourceId: source.sourceId }]
   const collectedAt = Date.parse(snapshot.collectedAt)
@@ -66,11 +66,12 @@ export function collectSourceMonitorIssues({ source, snapshot, now = new Date() 
   const monitoredSource = (snapshot.sources || []).find(item => item.id === source.sourceId)
   if (!monitoredSource) return [...issues, { code: 'missing_monitored_source', sourceId: source.sourceId }]
 
-  const timetablePage = (monitoredSource.pages || []).find(page => page.url === source.sourceUrl)
+  const monitoredPageUrl = source.sourcePageUrl || source.sourceUrl
+  const timetablePage = (monitoredSource.pages || []).find(page => page.url === monitoredPageUrl)
   const officialUpdatedAt = parseUpdatedText(timetablePage?.updatedText)
-  if (!officialUpdatedAt) {
+  if (source.officialPageUpdatedAt && !officialUpdatedAt) {
     issues.push({ code: 'missing_official_page_updated_at', sourceId: source.sourceId })
-  } else if (officialUpdatedAt > source.officialPageUpdatedAt) {
+  } else if (source.officialPageUpdatedAt && officialUpdatedAt > source.officialPageUpdatedAt) {
     issues.push({
       code: 'unadopted_official_page_update',
       sourceId: source.sourceId,
@@ -79,10 +80,27 @@ export function collectSourceMonitorIssues({ source, snapshot, now = new Date() 
     })
   }
 
-  const adoptedUrls = new Set((source.sourceDocuments || []).map(document => document.url))
+  const adoptedDocuments = new Map((source.sourceDocuments || []).map(document => [document.url, document]))
   for (const document of monitoredSource.documents || []) {
-    if (document.type !== 'timetable' || adoptedUrls.has(document.url)) continue
-    if (document.dateText && document.dateText > source.currentRawDate) {
+    if (document.type !== 'timetable') continue
+    const adoptedDocument = adoptedDocuments.get(document.url)
+    if (adoptedDocument) {
+      if (document.hash && document.hash !== adoptedDocument.sha256) {
+        issues.push({
+          code: 'official_document_hash_mismatch',
+          sourceId: source.sourceId,
+          url: document.url,
+          expected: adoptedDocument.sha256,
+          actual: document.hash
+        })
+      }
+      continue
+    }
+    if (
+      document.dateText &&
+      document.dateText > source.currentRawDate &&
+      (!feedEndDate || document.dateText <= feedEndDate)
+    ) {
       issues.push({ code: 'unadopted_timetable_document', sourceId: source.sourceId, url: document.url, dateText: document.dateText })
     }
   }
@@ -99,11 +117,23 @@ export function assertGtfsPublishReady(root = process.cwd(), options = {}) {
   for (const source of managedFeeds) {
     const gtfsDir = resolve(root, source.currentPath)
     const feedInfoPath = join(gtfsDir, 'feed_info.txt')
-    const feedVersion = existsSync(feedInfoPath)
-      ? readFileSync(feedInfoPath, 'utf8').trim().split(/\r?\n/)[1]?.split(',').at(-1)
+    const feedInfoLines = existsSync(feedInfoPath)
+      ? readFileSync(feedInfoPath, 'utf8').trim().split(/\r?\n/)
+      : []
+    const feedInfoColumns = feedInfoLines[0]?.split(',') || []
+    const feedInfoValues = feedInfoLines[1]?.split(',') || []
+    const feedInfo = Object.fromEntries(feedInfoColumns.map((column, index) => [column, feedInfoValues[index]]))
+    const feedVersion = feedInfo.feed_version || null
+    const feedEndDate = /^\d{8}$/.test(feedInfo.feed_end_date || '')
+      ? `${feedInfo.feed_end_date.slice(0, 4)}-${feedInfo.feed_end_date.slice(4, 6)}-${feedInfo.feed_end_date.slice(6, 8)}`
       : null
     issues.push(...collectSourceProvenanceIssues({ root, source, gtfsDir, feedVersion }))
-    issues.push(...collectSourceMonitorIssues({ source, snapshot, now: options.now || new Date() }))
+    issues.push(...collectSourceMonitorIssues({
+      source,
+      snapshot,
+      now: options.now || new Date(),
+      feedEndDate
+    }))
   }
 
   if (issues.length > 0) {
