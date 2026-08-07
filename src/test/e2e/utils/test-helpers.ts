@@ -83,8 +83,22 @@ export const setupPublicPageStubs = async (page: Page, options: StubOptions = {}
     })
   })
 
+  const isWebKitInterruptedModuleImport = (message: string) => {
+    const normalizedMessage = message
+      .replace(/^Unhandled Promise Rejection: /, '')
+      .replace(/^TypeError: /, '')
+
+    return normalizedMessage === 'Importing a module script failed.' &&
+      page.context().browser()?.browserType().name() === 'webkit'
+  }
+
   // Surface client-side crashes in Playwright output (helps keep E2E stable)
   page.on('pageerror', (error) => {
+    // WebKit はコンテキスト終了時に Nuxt の遅延 import を中断すると、この汎用エラーを
+    // pageerror にも出す。実際の読込失敗は requestfailed で別途検出する。
+    if (isWebKitInterruptedModuleImport(error.message)) {
+      return
+    }
     // eslint-disable-next-line no-console
     console.error('[pageerror]', error)
   })
@@ -92,10 +106,7 @@ export const setupPublicPageStubs = async (page: Page, options: StubOptions = {}
     if (msg.type() === 'error') {
       // WebKit はコンテキスト終了時に Nuxt の遅延 import を中断すると、この汎用エラーだけを
       // console へ出す。実際の読込失敗は pageerror / requestfailed で別途検出する。
-      if (
-        msg.text() === 'TypeError: Importing a module script failed.' &&
-        page.context().browser()?.browserType().name() === 'webkit'
-      ) {
+      if (isWebKitInterruptedModuleImport(msg.text())) {
         return
       }
       // eslint-disable-next-line no-console
@@ -205,7 +216,7 @@ export const setupPublicPageStubs = async (page: Page, options: StubOptions = {}
         }
         if (decodedUrl.endsWith('/status-kankou')) return Promise.resolve(jsonResponse(shipStatusKankouData))
         if (decodedUrl.endsWith('/status')) return Promise.resolve(jsonResponse(shipStatusData))
-        if (decodedUrl.includes('/trackAnalytics')) return Promise.resolve(jsonResponse({ success: true }))
+        if (decodedUrl.includes('/trackAnalytics')) return Promise.resolve(jsonResponse({ data: { success: true } }))
         if (decodedUrl.includes('firebase.googleapis.com/v1alpha/projects/-/apps/')) {
           return Promise.resolve(jsonResponse({
             projectId: 'test',

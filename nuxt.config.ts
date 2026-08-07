@@ -122,6 +122,26 @@ export default defineNuxtConfig({
   // Remove inline config, use tailwind.config.js instead
   tailwindcss: {},
 
+  icon: {
+    clientBundle: {
+      icons: [
+        "heroicons:arrow-path",
+        "heroicons:arrow-top-right-on-square",
+        "heroicons:exclamation-circle",
+        "heroicons:exclamation-triangle",
+        "heroicons:information-circle",
+        "heroicons:magnifying-glass",
+        "heroicons:map",
+        "heroicons:map-pin",
+        "heroicons:x-mark",
+        "mdi:airplane",
+        "mdi:bus",
+        "mdi:ferry",
+        "mdi:pin",
+      ],
+    },
+  },
+
   css: ["@/assets/css/tailwind.css", "@/assets/css/main.scss"],
 
   i18n: {
@@ -145,6 +165,9 @@ export default defineNuxtConfig({
     vueI18n: "../i18n.config.ts",
     bundle: {
       optimizeTranslationDirective: false,
+    },
+    experimental: {
+      optimizeMessageBundling: false,
     },
   },
 

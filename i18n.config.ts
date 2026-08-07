@@ -3,5 +3,7 @@ export default defineI18nConfig(() => ({
   locale: 'ja',
   fallbackLocale: 'ja',
   messages: {},
-  flatJson: false
+  flatJson: false,
+  missingWarn: /\S/,
+  fallbackWarn: /\S/
 }))

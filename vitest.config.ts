@@ -9,7 +9,7 @@ export default defineConfig({
   },
   // root の `.env` が権限で読めない環境でもテストが起動できるように、
   // Vitest 実行時の env 読み込み対象ディレクトリをテスト用に切り替える。
-  envDir: resolve(__dirname, './src/test'),
+  envDir: resolve(import.meta.dirname, './src/test'),
   test: {
     globals: true,
     environment: 'happy-dom',
@@ -43,11 +43,11 @@ export default defineConfig({
   },
   resolve: {
     alias: {
-      '@': resolve(__dirname, './src'),
-      '~': resolve(__dirname, './src'),
-      '#app': resolve(__dirname, './src/test/mocks/nuxt.ts'),
-      '#imports': resolve(__dirname, './src/test/mocks/nuxt.ts'),
-      '@/composables/useHolidayCalendar': resolve(__dirname, './src/test/mocks/nuxt.ts')
+      '@': resolve(import.meta.dirname, './src'),
+      '~': resolve(import.meta.dirname, './src'),
+      '#app': resolve(import.meta.dirname, './src/test/mocks/nuxt.ts'),
+      '#imports': resolve(import.meta.dirname, './src/test/mocks/nuxt.ts'),
+      '@/composables/useHolidayCalendar': resolve(import.meta.dirname, './src/test/mocks/nuxt.ts')
     }
   }
 })
