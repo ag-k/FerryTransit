@@ -121,27 +121,52 @@
       </div>
     </ClientOnly>
 
-    <!-- 地図表示 -->
-    <ClientOnly>
-      <TimetableMap
-        :selected-port="selectedMapPort"
-        :selected-route="selectedMapRoute"
-        :transport-mode="selectedMapTransportMode"
-        :bus-stops="mapBusStops"
-        :show-port-details="true"
-        height="300px"
-        @port-click="handleMapPortClick"
-        @location-click="handleMapLocationClick"
-        @location-set-departure="handleMapLocationSetDeparture"
-        @location-set-arrival="handleMapLocationSetArrival"
-        @port-set-departure="handleMapPortSetDeparture"
-        @port-set-arrival="handleMapPortSetArrival"
-        @route-select="handleMapRouteSelect"
-      />
-    </ClientOnly>
+    <div class="ad-timetable-layout">
+      <!-- 1枠目: スマホでは時刻表の上、タブレット/PCでは左 -->
+      <ClientOnly>
+        <AdSlot
+          service-id="oki-ferry-transit"
+          slot-id="oki-ferry-transit-common"
+          island-id="common"
+          class="ad-slot-primary"
+          @resolved="handlePrimaryAdResolved"
+        />
+      </ClientOnly>
 
-    <!-- 時刻表 -->
-    <Card class="overflow-hidden" padding="none">
+      <!-- 2枠目: スマホでは時刻表の下、タブレット/PCでは右 -->
+      <ClientOnly>
+        <AdSlot
+          v-if="primaryAdResolved"
+          service-id="oki-ferry-transit"
+          slot-id="oki-ferry-transit-common-secondary"
+          island-id="common"
+          :exclude-ad-id="primaryAdId || undefined"
+          class="ad-slot-secondary"
+        />
+      </ClientOnly>
+
+      <!-- 地図表示 -->
+      <ClientOnly>
+        <TimetableMap
+          class="timetable-map-area"
+          :selected-port="selectedMapPort"
+          :selected-route="selectedMapRoute"
+          :transport-mode="selectedMapTransportMode"
+          :bus-stops="mapBusStops"
+          :show-port-details="true"
+          height="300px"
+          @port-click="handleMapPortClick"
+          @location-click="handleMapLocationClick"
+          @location-set-departure="handleMapLocationSetDeparture"
+          @location-set-arrival="handleMapLocationSetArrival"
+          @port-set-departure="handleMapPortSetDeparture"
+          @port-set-arrival="handleMapPortSetArrival"
+          @route-select="handleMapRouteSelect"
+        />
+      </ClientOnly>
+
+      <!-- 時刻表 -->
+      <Card class="timetable-card-area overflow-hidden" padding="none">
       <div
         class="bg-gradient-to-r from-app-primary to-app-primary-2 text-white px-4 py-3 flex items-center justify-between border-b border-white/10">
         <div class="flex flex-col min-w-0">
@@ -346,7 +371,8 @@
           {{ $t('SEARCH_WITH_TRANSFER') }}
         </PrimaryButton>
       </div>
-    </Card>
+      </Card>
+    </div>
 
     <!-- モーダル -->
     <ClientOnly>
@@ -368,6 +394,7 @@ import { useFareStore } from '@/stores/fare'
 import { useHistoryStore } from '@/stores/history'
 import { useSettingsStore } from '@/stores/settings'
 import { useFerryData } from '@/composables/useFerryData'
+import AdSlot from '@/components/ads/AdSlot.vue'
 import FavoriteButton from '@/components/favorites/FavoriteButton.vue'
 import PortBadges from '@/components/common/PortBadges.vue'
 import TimetableMap from '@/components/map/TimetableMap.vue'
@@ -433,6 +460,13 @@ const vehicleLengthMeters = ref(DEFAULT_VEHICLE_LENGTH_METERS)
 const vehicleLengthSelectId = 'timetable-vehicle-length-select'
 const vehicleLengthOptions = VEHICLE_LENGTH_OPTIONS
 const directBusTimetable = ref<Trip[]>([])
+const primaryAdId = ref<string | null>(null)
+const primaryAdResolved = ref(false)
+
+const handlePrimaryAdResolved = (adId: string | null): void => {
+  primaryAdId.value = adId
+  primaryAdResolved.value = true
+}
 let directBusTimetableRequestId = 0
 
 const {
@@ -1186,3 +1220,55 @@ useHead({
   title: `${t('TIMETABLE')} - ${t('TITLE')}`
 })
 </script>
+
+<style scoped>
+.ad-timetable-layout {
+  display: grid;
+  min-width: 0;
+  grid-template-columns: minmax(0, 1fr);
+  grid-template-areas:
+    "primary"
+    "map"
+    "timetable"
+    "secondary";
+}
+
+.ad-slot-primary {
+  grid-area: primary;
+  min-width: 0;
+  margin-bottom: 1rem;
+}
+
+.ad-slot-secondary {
+  grid-area: secondary;
+  min-width: 0;
+  margin-top: 1rem;
+}
+
+.timetable-map-area {
+  grid-area: map;
+  min-width: 0;
+}
+
+.timetable-card-area {
+  grid-area: timetable;
+  min-width: 0;
+}
+
+@media (min-width: 768px) {
+  .ad-timetable-layout {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    grid-template-areas:
+      "primary secondary"
+      "map map"
+      "timetable timetable";
+    column-gap: 1rem;
+  }
+
+  .ad-slot-primary,
+  .ad-slot-secondary {
+    margin-top: 0;
+    margin-bottom: 1rem;
+  }
+}
+</style>

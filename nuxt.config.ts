@@ -195,6 +195,8 @@ export default defineNuxtConfig({
       shipStatusApi:
         process.env.NUXT_PUBLIC_SHIP_STATUS_API ||
         "https://ship.nkk-oki.com/api",
+      adDeliveryBaseUrl:
+        process.env.NUXT_PUBLIC_AD_DELIVERY_BASE_URL || "",
       googleMapsApiKey: process.env.NUXT_PUBLIC_GOOGLE_MAPS_API_KEY || "",
       features: {
         calendar: parseBooleanEnv(process.env.NUXT_PUBLIC_FEATURE_CALENDAR),
