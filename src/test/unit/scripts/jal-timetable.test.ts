@@ -1,4 +1,5 @@
 import { describe, expect, it } from "vitest";
+import { readFileSync } from "fs";
 import { resolve } from "path";
 import { pathToFileURL } from "url";
 
@@ -40,6 +41,10 @@ const outbound = {
   departure: "AIRPORT_ITAMI",
   arrival: "AIRPORT_OKI",
 };
+
+const publishedTrips = JSON.parse(
+  readFileSync(resolve("gtfs/raw/air/jal_oki_timetable.json"), "utf-8"),
+) as Array<Record<string, unknown>>;
 
 describe("JAL timetable parser", () => {
   it("公式サイトの掲載期間をISO日付へ変換する", () => {
@@ -149,5 +154,55 @@ describe("JAL timetable parser", () => {
   it("未対応の備考は誤った時刻表を生成せずエラーにする", () => {
     const period = parsePublicationPeriod("20260701_20260831");
     expect(() => parseTimetableEffects("8月は時刻変更予定", period)).toThrow(/未対応の備考/);
+  });
+});
+
+describe("JAL 2026年度冬ダイヤ", () => {
+  it("伊丹線の全期間と時刻を反映する", () => {
+    const winterTrips = publishedTrips
+      .filter((trip) => trip.name === "JAL_OKI_ITAMI" && String(trip.start_date) >= "2026-10-25")
+      .map((trip) => ({
+        flight: trip.vehicle_id,
+        startDate: trip.start_date,
+        endDate: trip.end_date,
+        departureTime: trip.departure_time,
+        arrivalTime: trip.arrival_time,
+      }));
+
+    expect(winterTrips).toEqual([
+      { flight: "JAL2331", startDate: "2026-10-25", endDate: "2026-11-30", departureTime: "12:20", arrivalTime: "13:10" },
+      { flight: "JAL2331", startDate: "2026-12-01", endDate: "2026-12-17", departureTime: "12:30", arrivalTime: "13:20" },
+      { flight: "JAL2331", startDate: "2026-12-18", endDate: "2027-01-04", departureTime: "11:55", arrivalTime: "12:45" },
+      { flight: "JAL2331", startDate: "2027-01-05", endDate: "2027-01-31", departureTime: "12:30", arrivalTime: "13:20" },
+      { flight: "JAL2331", startDate: "2027-02-01", endDate: "2027-02-28", departureTime: "13:35", arrivalTime: "14:25" },
+      { flight: "JAL2331", startDate: "2027-03-01", endDate: "2027-03-27", departureTime: "13:50", arrivalTime: "14:35" },
+      { flight: "JAL2332", startDate: "2026-10-25", endDate: "2026-11-30", departureTime: "13:40", arrivalTime: "14:20" },
+      { flight: "JAL2332", startDate: "2026-12-01", endDate: "2026-12-17", departureTime: "13:50", arrivalTime: "14:30" },
+      { flight: "JAL2332", startDate: "2026-12-18", endDate: "2027-01-04", departureTime: "13:15", arrivalTime: "13:55" },
+      { flight: "JAL2332", startDate: "2027-01-05", endDate: "2027-01-31", departureTime: "13:50", arrivalTime: "14:30" },
+      { flight: "JAL2332", startDate: "2027-02-01", endDate: "2027-02-28", departureTime: "14:55", arrivalTime: "15:35" },
+      { flight: "JAL2332", startDate: "2027-03-01", endDate: "2027-03-27", departureTime: "15:05", arrivalTime: "15:45" },
+    ]);
+  });
+
+  it("出雲線の現行ダイヤを冬ダイヤ終了日まで継続する", () => {
+    const izumoTrips = publishedTrips.filter((trip) => trip.name === "JAL_OKI_IZUMO");
+
+    expect(izumoTrips).toEqual([
+      expect.objectContaining({
+        vehicle_id: "JAL3433",
+        start_date: "2026-06-01",
+        end_date: "2027-03-27",
+        departure_time: "09:00",
+        arrival_time: "09:30",
+      }),
+      expect.objectContaining({
+        vehicle_id: "JAL3434",
+        start_date: "2026-06-01",
+        end_date: "2027-03-27",
+        departure_time: "10:00",
+        arrival_time: "10:30",
+      }),
+    ]);
   });
 });
