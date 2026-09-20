@@ -43,9 +43,11 @@ jobs:
         run: npm ci
 
       - name: Install Chromium
+        if: inputs.publish_existing != true
         run: npx playwright install --with-deps chromium
 
       - name: Acquire JAL timetable
+        if: inputs.publish_existing != true
         run: xvfb-run -a npm run transport:acquire -- --source jal-oki-flights
 
       - name: Validate JAL source
