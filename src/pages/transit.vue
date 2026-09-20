@@ -82,7 +82,14 @@ v-model="isArrivalMode"
 
       <!-- Search Button -->
       <div>
-        <PrimaryButton type="button" block size="lg" :disabled="!canSearch || isSearching" @click="handleSearch">
+        <PrimaryButton
+          type="button"
+          block
+          size="lg"
+          data-testid="transit-search-button"
+          :disabled="!canSearch || isSearching"
+          @click="handleSearch"
+        >
           <span
 v-if="isSearching"
             class="inline-block animate-spin rounded-full h-4 w-4 border-b-2 border-white mr-2"></span>
@@ -98,8 +105,27 @@ stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
       </div>
     </div>
 
-    <!-- Search Results -->
-    <div v-if="filteredResults.length > 0">
+    <div class="mb-6 grid grid-cols-1 gap-4 md:grid-cols-2">
+      <!-- スマホでは検索結果の前、タブレット・PCでは副枠と横並び -->
+      <div class="order-1 min-w-0" data-testid="transit-lead-primary-wrap">
+        <ClientOnly>
+          <AdSlot
+            :key="transitResultsLeadAdSlotId"
+            service-id="oki-ferry-transit"
+            :slot-id="transitResultsLeadAdSlotId"
+            :island-id="adIslandId"
+            class="min-w-0 w-full"
+            @resolved="handleTransitLeadPrimaryResolved"
+          />
+        </ClientOnly>
+      </div>
+
+      <!-- Search Results -->
+      <div
+        v-if="filteredResults.length > 0"
+        class="order-2 min-w-0 md:order-3 md:col-span-2"
+        data-testid="transit-results-wrap"
+      >
       <div class="flex flex-row items-center justify-between gap-3 mb-4 flex-wrap">
         <h3 class="text-lg font-medium text-gray-900 dark:text-gray-100">
           {{ $t('SEARCH_RESULTS') }}
@@ -426,26 +452,64 @@ href="#" class="text-app-primary dark:text-white group inline-flex items-center 
           {{ $t('MORE_BUTTON') }}
         </PrimaryButton>
       </div>
-    </div>
 
-    <!-- No Results -->
-    <div
-v-else-if="hasSearched && !isSearching"
-      class="bg-blue-100 dark:bg-blue-900/30 border border-blue-200 dark:border-gray-700 text-blue-900 dark:text-blue-300 px-4 py-3 rounded">
-      <div class="flex flex-col gap-3">
-        <p class="font-medium">
-          {{ $t('NO_ROUTES_FOUND') }}
-        </p>
-        <button
-          type="button"
-          class="inline-flex items-center justify-center px-4 py-2 text-sm font-medium rounded-md border transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-500
-            border-blue-700 dark:border-blue-400 text-blue-800 dark:text-blue-200 bg-white/90 dark:bg-gray-800 hover:bg-blue-50 dark:hover:bg-gray-700 disabled:opacity-60 disabled:cursor-not-allowed"
-          :disabled="!canSearch || isSearching"
-          data-testid="transit-retry-search"
-          @click="retrySearchWithAdjustedTime"
-        >
-          {{ retrySearchLabel }}
-        </button>
+      </div>
+
+      <!-- No Results -->
+      <div
+        v-else-if="hasSearched && !isSearching"
+        class="order-2 bg-blue-100 dark:bg-blue-900/30 border border-blue-200 dark:border-gray-700 text-blue-900 dark:text-blue-300 px-4 py-3 rounded md:order-3 md:col-span-2"
+      >
+        <div class="flex flex-col gap-3">
+          <p class="font-medium">
+            {{ $t('NO_ROUTES_FOUND') }}
+          </p>
+          <button
+            type="button"
+            class="inline-flex items-center justify-center px-4 py-2 text-sm font-medium rounded-md border transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-500
+              border-blue-700 dark:border-blue-400 text-blue-800 dark:text-blue-200 bg-white/90 dark:bg-gray-800 hover:bg-blue-50 dark:hover:bg-gray-700 disabled:opacity-60 disabled:cursor-not-allowed"
+            :disabled="!canSearch || isSearching"
+            data-testid="transit-retry-search"
+            @click="retrySearchWithAdjustedTime"
+          >
+            {{ retrySearchLabel }}
+          </button>
+        </div>
+      </div>
+
+      <!-- スマホでは検索結果の後、タブレット・PCでは主枠と横並び -->
+      <div
+        v-if="transitLeadPrimaryResolved"
+        class="order-3 min-w-0 md:order-2"
+        data-testid="transit-lead-secondary-wrap"
+      >
+        <ClientOnly>
+          <AdSlot
+            :key="transitResultsLeadSecondaryAdSlotId"
+            service-id="oki-ferry-transit"
+            :slot-id="transitResultsLeadSecondaryAdSlotId"
+            :island-id="adIslandId"
+            :exclude-ad-id="transitLeadPrimaryAdId || undefined"
+            class="min-w-0 w-full"
+          />
+        </ClientOnly>
+      </div>
+
+      <!-- 画像広告: 乗換案内の検索結果とテキスト／バナー副枠の後ろだけに表示 -->
+      <div
+        v-if="filteredResults.length > 0"
+        class="order-4 min-w-0 md:col-span-2"
+        data-testid="transit-results-image-wrap"
+      >
+        <ClientOnly>
+          <AdSlot
+            :key="transitResultsImageAdSlotId"
+            service-id="oki-ferry-transit"
+            :slot-id="transitResultsImageAdSlotId"
+            :island-id="adIslandId"
+            class="mx-auto w-full max-w-[640px]"
+          />
+        </ClientOnly>
       </div>
     </div>
 
@@ -578,6 +642,8 @@ import PrimaryButton from '@/components/common/PrimaryButton.vue'
 import Badge from '@/components/common/Badge.vue'
 import ToggleSwitch from '@/components/common/ToggleSwitch.vue'
 import LocationTypeIcon from '@/components/common/LocationTypeIcon.vue'
+import AdSlot from '@/components/ads/AdSlot.vue'
+import { getFerryAdSlotId, resolveAdIslandId } from '@/utils/adIsland'
 import type { LocationType, TransportMode, TransitRoute, TransitSegment } from '@/types'
 import { createLogger } from '~/utils/logger'
 import { getPortMapZoom } from '@/utils/portMapZoom'
@@ -618,6 +684,24 @@ const withCar = ref(false)
 const vehicleLengthMeters = ref(DEFAULT_VEHICLE_LENGTH_METERS)
 const vehicleLengthSelectId = 'transit-vehicle-length-select'
 const vehicleLengthOptions = VEHICLE_LENGTH_OPTIONS
+const transitLeadPrimaryAdId = ref<string | null>(null)
+const transitLeadPrimaryResolved = ref(false)
+const adIslandId = computed(() => resolveAdIslandId([departure.value, arrival.value]))
+const transitResultsLeadAdSlotId = computed(() => getFerryAdSlotId('transit-results-lead', adIslandId.value))
+const transitResultsLeadSecondaryAdSlotId = computed(() =>
+  getFerryAdSlotId('transit-results-lead-secondary', adIslandId.value)
+)
+const transitResultsImageAdSlotId = computed(() => getFerryAdSlotId('transit-results-image', adIslandId.value))
+
+const handleTransitLeadPrimaryResolved = (adId: string | null): void => {
+  transitLeadPrimaryAdId.value = adId
+  transitLeadPrimaryResolved.value = true
+}
+
+watch(adIslandId, () => {
+  transitLeadPrimaryAdId.value = null
+  transitLeadPrimaryResolved.value = false
+})
 
 // Watch for changes in departure/arrival and update ferryStore
 watch(departure, (newVal) => {

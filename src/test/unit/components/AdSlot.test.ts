@@ -128,4 +128,75 @@ describe('AdSlot', () => {
     expect(requestUrl.searchParams.get('slotId')).toBe('oki-ferry-transit-common-secondary')
     expect(requestUrl.searchParams.get('excludeAdId')).toBe('primary-ad')
   })
+
+  it.each([
+    ['top-left', ['left-2', 'top-2']],
+    ['top-right', ['right-2', 'top-2']],
+    ['bottom-left', ['bottom-2', 'left-2']],
+    ['bottom-right', ['bottom-2', 'right-2']]
+  ] as const)('広告ラベルを%sに表示する', async (labelPosition, expectedClasses) => {
+    vi.stubGlobal('fetch', vi.fn(() => jsonResponse({
+      id: `ad-${labelPosition}`,
+      slotId: 'oki-ferry-transit-common',
+      format: 'image',
+      content: {
+        labelPosition,
+        assetUrl: 'https://ads.example.com/image.png',
+        altText: '画像広告',
+        width: 1200,
+        height: 800
+      },
+      clickUrl: null
+    })))
+
+    const wrapper = mountAdSlot()
+    await flushPromises()
+
+    const label = wrapper.get('[data-test="ad-slot"] span')
+    for (const className of expectedClasses) expect(label.classes()).toContain(className)
+  })
+
+  it('位置未指定の既存広告は左上に表示する', async () => {
+    vi.stubGlobal('fetch', vi.fn(() => jsonResponse({
+      id: 'legacy-ad',
+      slotId: 'oki-ferry-transit-common',
+      format: 'text',
+      content: {
+        advertiserName: 'テスト広告主',
+        headline: '既存広告',
+        body: '既存データです。',
+        cta: '詳細'
+      },
+      clickUrl: null
+    })))
+
+    const wrapper = mountAdSlot()
+    await flushPromises()
+
+    expect(wrapper.get('[data-test="ad-slot"] span').classes()).toEqual(expect.arrayContaining(['left-2', 'top-2']))
+  })
+
+  it('テキスト広告のラベルは指定値にかかわらず左上に固定する', async () => {
+    vi.stubGlobal('fetch', vi.fn(() => jsonResponse({
+      id: 'compact-text-ad',
+      slotId: 'oki-ferry-transit-common',
+      format: 'text',
+      content: {
+        labelPosition: 'bottom-right',
+        advertiserName: 'テスト広告主',
+        headline: 'コンパクトな広告',
+        body: '高さを抑えて表示します。',
+        cta: '詳細'
+      },
+      clickUrl: null
+    })))
+
+    const wrapper = mountAdSlot()
+    await flushPromises()
+
+    const label = wrapper.get('[data-test="ad-slot"] > * > span')
+    expect(label.classes()).toEqual(expect.arrayContaining(['left-2', 'top-2']))
+    expect(label.classes()).not.toEqual(expect.arrayContaining(['right-2', 'bottom-2']))
+    expect(wrapper.get('h3').classes()).toContain('leading-tight')
+  })
 })

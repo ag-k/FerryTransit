@@ -14,26 +14,30 @@
       class="group relative block overflow-hidden rounded-lg border border-app-border bg-app-surface text-app-fg shadow-sm transition-shadow hover:shadow-md focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-app-primary focus-visible:ring-offset-2"
     >
       <span
-        class="absolute left-2 top-2 z-10 inline-flex min-h-6 items-center rounded bg-app-primary px-2 py-0.5 text-xs font-semibold leading-none text-white shadow-sm"
+        class="absolute z-10 inline-flex min-h-6 items-center rounded bg-app-primary px-2 py-0.5 text-xs font-semibold leading-none text-white shadow-sm"
+        :class="labelPositionClass"
       >
         {{ t('ADVERTISEMENT') }}
       </span>
 
-      <div v-if="ad.format === 'text'" class="px-4 pb-4 pt-11 sm:px-5">
-        <p class="text-xs font-medium text-app-muted">
+      <div
+        v-if="ad.format === 'text'"
+        class="px-3 pb-3 pt-2.5 sm:px-4 sm:pb-3.5 sm:pt-3"
+      >
+        <p class="min-h-6 truncate pl-12 text-xs font-medium leading-6 text-app-muted">
           {{ ad.content.advertiserName }}
         </p>
-        <h3 class="mt-1 text-lg font-bold leading-snug text-app-fg">
+        <h3 class="mt-1 text-base font-bold leading-tight text-app-fg sm:text-[17px]">
           {{ ad.content.headline }}
         </h3>
-        <p class="mt-1.5 text-sm leading-relaxed text-app-muted">
+        <p class="mt-1 text-sm leading-snug text-app-muted">
           {{ ad.content.body }}
         </p>
         <span
           v-if="ad.content.cta"
-          class="mt-3 inline-flex min-h-9 items-center rounded-md border border-app-primary px-3 py-1.5 text-sm font-semibold text-app-primary group-hover:bg-app-surface-2"
+          class="mt-2 inline-flex items-center text-sm font-semibold leading-5 text-app-primary group-hover:underline"
         >
-          {{ ad.content.cta }}
+          {{ ad.content.cta }}<span aria-hidden="true" class="ml-1">→</span>
         </span>
       </div>
 
@@ -57,8 +61,8 @@
 </template>
 
 <script setup lang="ts">
-import { onBeforeUnmount, onMounted, ref } from 'vue'
-import type { DeliveredAd } from '@/types/ad'
+import { computed, onBeforeUnmount, onMounted, ref } from 'vue'
+import type { AdLabelPosition, DeliveredAd } from '@/types/ad'
 import { createLogger } from '@/utils/logger'
 
 defineOptions({ inheritAttrs: false })
@@ -79,6 +83,14 @@ const { t } = useI18n()
 const logger = createLogger('AdSlot')
 const ad = ref<DeliveredAd | null>(null)
 const abortController = new AbortController()
+const labelPositionClass = computed(() => ad.value?.format === 'text'
+  ? 'left-2 top-2'
+  : ({
+  'top-left': 'left-2 top-2',
+  'top-right': 'right-2 top-2',
+  'bottom-left': 'bottom-2 left-2',
+  'bottom-right': 'bottom-2 right-2'
+  })[ad.value?.content.labelPosition ?? 'top-left'])
 
 const isRecord = (value: unknown): value is Record<string, unknown> =>
   typeof value === 'object' && value !== null
@@ -102,6 +114,12 @@ const parseDeliveredAd = (value: unknown): DeliveredAd | null => {
     return null
   }
 
+  const labelPosition = (
+    ['top-left', 'top-right', 'bottom-left', 'bottom-right'] as const
+  ).includes(value.content.labelPosition as AdLabelPosition)
+    ? value.content.labelPosition as AdLabelPosition
+    : 'top-left'
+
   if (value.format === 'text') {
     const content = value.content
     if (typeof content.advertiserName !== 'string'
@@ -116,6 +134,7 @@ const parseDeliveredAd = (value: unknown): DeliveredAd | null => {
       format: 'text',
       clickUrl: value.clickUrl,
       content: {
+        labelPosition,
         advertiserName: content.advertiserName,
         headline: content.headline,
         body: content.body,
@@ -137,6 +156,7 @@ const parseDeliveredAd = (value: unknown): DeliveredAd | null => {
     format: value.format as 'banner' | 'image',
     clickUrl: value.clickUrl,
     content: {
+      labelPosition,
       assetUrl: content.assetUrl,
       altText: content.altText,
       width: content.width,

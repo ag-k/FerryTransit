@@ -1,6 +1,8 @@
 export type AdFormat = 'text' | 'banner' | 'image'
+export type AdLabelPosition = 'top-left' | 'top-right' | 'bottom-left' | 'bottom-right'
 
 export interface TextAdContent {
+  labelPosition: AdLabelPosition
   advertiserName: string
   headline: string
   body: string
@@ -8,6 +10,7 @@ export interface TextAdContent {
 }
 
 export interface ImageAdContent {
+  labelPosition: AdLabelPosition
   assetUrl: string
   altText: string
   width: number

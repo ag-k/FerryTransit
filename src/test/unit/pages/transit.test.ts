@@ -14,6 +14,9 @@ vi.mock('#app', () => ({
     query: routeQuery
   }),
   useHead: vi.fn(),
+  useI18n: () => ({
+    t: (key: string) => key
+  }),
   useNuxtApp: () => ({
     $i18n: {
       t: (key: string) => key
@@ -222,6 +225,18 @@ describe('Transit Page', () => {
           $t: (key: string) => key
         },
         stubs: {
+          ClientOnly: {
+            template: '<div><slot /></div>'
+          },
+          AdSlot: {
+            name: 'AdSlot',
+            template: '<div data-test="page-ad-slot" :data-slot-id="slotId" :data-island-id="islandId" :data-exclude-ad-id="excludeAdId" />',
+            props: ['serviceId', 'slotId', 'islandId', 'excludeAdId'],
+            emits: ['resolved'],
+            mounted() {
+              if (this.slotId.endsWith('transit-results-lead')) this.$emit('resolved', 'lead-primary-ad')
+            }
+          },
           PortSelector: true,
           DatePicker: true,
           CommonShipModal: true,
@@ -235,6 +250,54 @@ describe('Transit Page', () => {
   it('renders correctly', () => {
     const wrapper = createWrapper()
     expect(wrapper.find('h2').text()).toBe('TRANSIT')
+  })
+
+  it('画像広告枠は乗換検索結果の後ろにだけ表示する', async () => {
+    const wrapper = createWrapper()
+    expect(wrapper.find('[data-slot-id="oki-ferry-transit-transit-results-image"]').exists()).toBe(false)
+
+    wrapper.vm.searchResults = [buildRoute({
+      tripId: 'image-slot-result',
+      departureTime: '09:00',
+      arrivalTime: '11:00',
+      totalFare: 3000
+    })]
+    await wrapper.vm.$nextTick()
+
+    expect(wrapper.find('[data-slot-id="oki-ferry-transit-transit-results-image"]').exists()).toBe(true)
+  })
+
+  it('スマホでは主枠・検索結果・副枠の順にし、PCでは2枠を同じ行にする', async () => {
+    const wrapper = createWrapper()
+    wrapper.vm.searchResults = [buildRoute({
+      tripId: 'lead-slot-result',
+      departureTime: '09:00',
+      arrivalTime: '11:00',
+      totalFare: 3000
+    })]
+    await wrapper.vm.$nextTick()
+    await flushPromises()
+    const primarySlot = wrapper.find('[data-slot-id="oki-ferry-transit-transit-results-lead"]')
+    const secondarySlot = wrapper.find('[data-slot-id="oki-ferry-transit-transit-results-lead-secondary"]')
+    const searchButton = wrapper.find('[data-testid="transit-search-button"]')
+    const primaryWrap = wrapper.find('[data-testid="transit-lead-primary-wrap"]')
+    const resultsWrap = wrapper.find('[data-testid="transit-results-wrap"]')
+    const secondaryWrap = wrapper.find('[data-testid="transit-lead-secondary-wrap"]')
+
+    expect(primarySlot.exists()).toBe(true)
+    expect(secondarySlot.exists()).toBe(true)
+    expect(secondarySlot.attributes('data-exclude-ad-id')).toBe('lead-primary-ad')
+    expect(searchButton.element.compareDocumentPosition(primarySlot.element) & Node.DOCUMENT_POSITION_FOLLOWING)
+      .toBeTruthy()
+    expect(primaryWrap.element.compareDocumentPosition(resultsWrap.element) & Node.DOCUMENT_POSITION_FOLLOWING)
+      .toBeTruthy()
+    expect(resultsWrap.element.compareDocumentPosition(secondaryWrap.element) & Node.DOCUMENT_POSITION_FOLLOWING)
+      .toBeTruthy()
+    expect(primaryWrap.classes()).toContain('order-1')
+    expect(resultsWrap.classes()).toContain('order-2')
+    expect(resultsWrap.classes()).toContain('md:order-3')
+    expect(secondaryWrap.classes()).toContain('order-3')
+    expect(secondaryWrap.classes()).toContain('md:order-2')
   })
 
   it('provides accessible names for date and time inputs', async () => {

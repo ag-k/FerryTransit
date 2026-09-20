@@ -150,6 +150,11 @@ const mountIndexPage = () =>
         StatusAlerts: {
           template: '<div data-test="status-alerts">StatusAlerts</div>',
         },
+        AdSlot: {
+          name: "AdSlot",
+          template: '<div data-test="page-ad-slot" :data-slot-id="slotId" />',
+          props: ["serviceId", "slotId", "islandId", "excludeAdId"],
+        },
         Icon: {
           template: '<span data-test="mode-filter-icon" :data-name="name" aria-hidden="true" />',
           props: ["name"],
@@ -177,6 +182,15 @@ describe("IndexPage (時刻表ページ)", () => {
     process,
     "client"
   );
+
+  it("画像広告枠を時刻表の後ろに配置する", async () => {
+    const wrapper = mountIndexPage();
+    await flushPromises();
+
+    const imageSlot = wrapper.find('[data-slot-id="oki-ferry-transit-timetable-image"]');
+    expect(imageSlot.exists()).toBe(true);
+    expect(imageSlot.classes()).toContain("ad-slot-image");
+  });
 
   beforeEach(() => {
     setActivePinia(createPinia());

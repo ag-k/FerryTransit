@@ -125,9 +125,10 @@
       <!-- 1枠目: スマホでは時刻表の上、タブレット/PCでは左 -->
       <ClientOnly>
         <AdSlot
+          :key="primaryAdSlotId"
           service-id="oki-ferry-transit"
-          slot-id="oki-ferry-transit-common"
-          island-id="common"
+          :slot-id="primaryAdSlotId"
+          :island-id="adIslandId"
           class="ad-slot-primary"
           @resolved="handlePrimaryAdResolved"
         />
@@ -137,9 +138,10 @@
       <ClientOnly>
         <AdSlot
           v-if="primaryAdResolved"
+          :key="secondaryAdSlotId"
           service-id="oki-ferry-transit"
-          slot-id="oki-ferry-transit-common-secondary"
-          island-id="common"
+          :slot-id="secondaryAdSlotId"
+          :island-id="adIslandId"
           :exclude-ad-id="primaryAdId || undefined"
           class="ad-slot-secondary"
         />
@@ -372,6 +374,17 @@
         </PrimaryButton>
       </div>
       </Card>
+
+      <!-- 画像広告: 時刻表の後ろだけに表示 -->
+      <ClientOnly>
+        <AdSlot
+          :key="timetableImageAdSlotId"
+          service-id="oki-ferry-transit"
+          :slot-id="timetableImageAdSlotId"
+          :island-id="adIslandId"
+          class="ad-slot-image"
+        />
+      </ClientOnly>
     </div>
 
     <!-- モーダル -->
@@ -395,6 +408,7 @@ import { useHistoryStore } from '@/stores/history'
 import { useSettingsStore } from '@/stores/settings'
 import { useFerryData } from '@/composables/useFerryData'
 import AdSlot from '@/components/ads/AdSlot.vue'
+import { getFerryAdSlotId, resolveAdIslandId } from '@/utils/adIsland'
 import FavoriteButton from '@/components/favorites/FavoriteButton.vue'
 import PortBadges from '@/components/common/PortBadges.vue'
 import TimetableMap from '@/components/map/TimetableMap.vue'
@@ -462,6 +476,16 @@ const vehicleLengthOptions = VEHICLE_LENGTH_OPTIONS
 const directBusTimetable = ref<Trip[]>([])
 const primaryAdId = ref<string | null>(null)
 const primaryAdResolved = ref(false)
+
+const adIslandId = computed(() => resolveAdIslandId([departure.value, arrival.value]))
+const primaryAdSlotId = computed(() => getFerryAdSlotId('primary', adIslandId.value))
+const secondaryAdSlotId = computed(() => getFerryAdSlotId('secondary', adIslandId.value))
+const timetableImageAdSlotId = computed(() => getFerryAdSlotId('timetable-image', adIslandId.value))
+
+watch(adIslandId, () => {
+  primaryAdId.value = null
+  primaryAdResolved.value = false
+})
 
 const handlePrimaryAdResolved = (adId: string | null): void => {
   primaryAdId.value = adId
@@ -1230,7 +1254,8 @@ useHead({
     "primary"
     "map"
     "timetable"
-    "secondary";
+    "secondary"
+    "image";
 }
 
 .ad-slot-primary {
@@ -1255,13 +1280,22 @@ useHead({
   min-width: 0;
 }
 
+.ad-slot-image {
+  grid-area: image;
+  min-width: 0;
+  width: 100%;
+  max-width: 640px;
+  margin: 1rem auto 0;
+}
+
 @media (min-width: 768px) {
   .ad-timetable-layout {
     grid-template-columns: repeat(2, minmax(0, 1fr));
     grid-template-areas:
       "primary secondary"
       "map map"
-      "timetable timetable";
+      "timetable timetable"
+      "image image";
     column-gap: 1rem;
   }
 

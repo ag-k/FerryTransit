@@ -125,6 +125,11 @@ test('JAL・隠岐空港発着便は空港公式のフライト時刻ページ�
       url: 'https://www.oki-airport.jp/news/archives/14',
       fetchStrategy: 'curl'
     },
+    {
+      role: 'timetable',
+      label: '島根県発表：JAL令和8年度冬ダイヤ',
+      url: 'https://www3.pref.shimane.jp/houdou/articles/166238'
+    },
     { role: 'timetable', label: '出雲空港 就航路線・時刻表', url: 'https://www.izumo-airport.co.jp/flight/flight-time' }
   ])
 })
