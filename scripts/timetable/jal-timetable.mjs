@@ -1,6 +1,6 @@
 const DATE_VALUE_PATTERN = /^(\d{4})(\d{2})(\d{2})_(\d{4})(\d{2})(\d{2})$/
 const TIME_PATTERN = /^(\d{1,2}):(\d{2})$/
-const DATE_EFFECT_PATTERN = /((?:\d{1,2}月[0-9～〜\-・、,]+日(?:[・、,]?))+)(?:(\d+)時間)?(?:(\d+)分)?(早発|遅発|早着|遅着|運休|運航)/g
+const DATE_EFFECT_PATTERN = /((?:\d{1,2}月[0-9～〜\-・、,]+日(?:[・、,]|[～〜-](?=\d{1,2}月))?)+)(?:(\d+)時間)?(?:(\d+)分)?(早発|遅発|早着|遅着|運休|運航)/g
 
 const pad2 = value => String(value).padStart(2, '0')
 
@@ -91,10 +91,25 @@ export const parseJapaneseDateExpression = (expression, period) => {
 
   const dates = new Set()
   const matchedParts = []
+  const crossMonthRangePattern = /(\d{1,2})月(\d{1,2})日[～-](\d{1,2})月(\d{1,2})日/g
+  let remainderSource = normalized
+  let crossMonthMatch
+
+  while ((crossMonthMatch = crossMonthRangePattern.exec(normalized)) !== null) {
+    matchedParts.push(crossMonthMatch[0])
+    const startDate = resolveDateYear(Number(crossMonthMatch[1]), Number(crossMonthMatch[2]), period)
+    const endDate = resolveDateYear(Number(crossMonthMatch[3]), Number(crossMonthMatch[4]), period)
+    if (startDate > endDate) {
+      throw new Error(`備考の日付範囲が不正です: ${crossMonthMatch[0]}`)
+    }
+    for (const date of listDates(startDate, endDate)) dates.add(date)
+    remainderSource = remainderSource.replace(crossMonthMatch[0], '')
+  }
+
   const monthPattern = /(\d{1,2})月([0-9～\-・、,]+)日/g
   let match
 
-  while ((match = monthPattern.exec(normalized)) !== null) {
+  while ((match = monthPattern.exec(remainderSource)) !== null) {
     matchedParts.push(match[0])
     const month = Number(match[1])
     const dayParts = match[2].split(/[・、,]/).filter(Boolean)

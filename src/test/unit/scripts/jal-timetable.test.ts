@@ -67,6 +67,23 @@ describe("JAL timetable parser", () => {
     ]);
   });
 
+  it("年をまたぐ日本語の日付範囲を展開する", () => {
+    const period = parsePublicationPeriod("20261025_20270131");
+    const dates = parseJapaneseDateExpression("12月26日～1月3日", period);
+
+    expect(dates).toEqual([
+      "2026-12-26",
+      "2026-12-27",
+      "2026-12-28",
+      "2026-12-29",
+      "2026-12-30",
+      "2026-12-31",
+      "2027-01-01",
+      "2027-01-02",
+      "2027-01-03",
+    ]);
+  });
+
   it("早発・遅発の注記を分単位の変更として解釈する", () => {
     const period = parsePublicationPeriod("20260701_20260831");
 
@@ -77,6 +94,37 @@ describe("JAL timetable parser", () => {
     expect(parseTimetableEffects("7月1～31日・8月29～31日1時間20分遅発", period)[0]).toMatchObject({
       action: "遅発",
       minutes: 80,
+    });
+  });
+
+  it("複数の時刻変更と年またぎ期間が連結された備考を解釈する", () => {
+    const period = parsePublicationPeriod("20261025_20270131");
+    const effects = parseTimetableEffects(
+      "12月1～25日・1月4日10分遅発12月26日～1月3日25分早発",
+      period,
+    );
+
+    expect(effects).toHaveLength(2);
+    expect(effects[0]).toMatchObject({
+      action: "遅発",
+      minutes: 10,
+      dates: expect.arrayContaining(["2026-12-01", "2026-12-25", "2027-01-04"]),
+    });
+    expect(effects[0].dates).toHaveLength(26);
+    expect(effects[1]).toMatchObject({
+      action: "早発",
+      minutes: 25,
+      dates: [
+        "2026-12-26",
+        "2026-12-27",
+        "2026-12-28",
+        "2026-12-29",
+        "2026-12-30",
+        "2026-12-31",
+        "2027-01-01",
+        "2027-01-02",
+        "2027-01-03",
+      ],
     });
   });
 
