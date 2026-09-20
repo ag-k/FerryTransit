@@ -1,7 +1,7 @@
 [
   {
     "trip_id": "8233101",
-    "start_date": "2026-06-01",
+    "start_date": "2026-07-01",
     "end_date": "2026-07-31",
     "active_days": [
       0,
@@ -15,7 +15,7 @@
     "name": "JAL_OKI_ITAMI",
     "mode": "AIR",
     "operator_id": "JAL",
-    "service_id": "jal_oki_itami_20260601_20260731",
+    "service_id": "jal_oki_itami_20260701_20260731",
     "vehicle_id": "JAL2331",
     "departure": "AIRPORT_ITAMI",
     "departure_type": "AIRPORT",
@@ -132,7 +132,7 @@
   {
     "trip_id": "8233106",
     "start_date": "2026-12-01",
-    "end_date": "2026-12-17",
+    "end_date": "2026-12-25",
     "active_days": [
       0,
       1,
@@ -145,7 +145,7 @@
     "name": "JAL_OKI_ITAMI",
     "mode": "AIR",
     "operator_id": "JAL",
-    "service_id": "jal_oki_itami_20261201_20261217",
+    "service_id": "jal_oki_itami_20261201_20261225",
     "vehicle_id": "JAL2331",
     "departure": "AIRPORT_ITAMI",
     "departure_type": "AIRPORT",
@@ -157,7 +157,33 @@
   },
   {
     "trip_id": "8233107",
-    "start_date": "2026-12-18",
+    "start_date": "2026-12-26",
+    "end_date": "2027-01-03",
+    "active_days": [
+      0,
+      1,
+      2,
+      3,
+      4,
+      5,
+      6
+    ],
+    "name": "JAL_OKI_ITAMI",
+    "mode": "AIR",
+    "operator_id": "JAL",
+    "service_id": "jal_oki_itami_20261226_20270103",
+    "vehicle_id": "JAL2331",
+    "departure": "AIRPORT_ITAMI",
+    "departure_type": "AIRPORT",
+    "departure_time": "11:55",
+    "arrival": "AIRPORT_OKI",
+    "arrival_type": "AIRPORT",
+    "arrival_time": "12:45",
+    "status": 0
+  },
+  {
+    "trip_id": "8233108",
+    "start_date": "2027-01-04",
     "end_date": "2027-01-04",
     "active_days": [
       0,
@@ -171,33 +197,7 @@
     "name": "JAL_OKI_ITAMI",
     "mode": "AIR",
     "operator_id": "JAL",
-    "service_id": "jal_oki_itami_20261218_20270104",
-    "vehicle_id": "JAL2331",
-    "departure": "AIRPORT_ITAMI",
-    "departure_type": "AIRPORT",
-    "departure_time": "11:55",
-    "arrival": "AIRPORT_OKI",
-    "arrival_type": "AIRPORT",
-    "arrival_time": "12:45",
-    "status": 0
-  },
-  {
-    "trip_id": "8233108",
-    "start_date": "2027-01-05",
-    "end_date": "2027-01-31",
-    "active_days": [
-      0,
-      1,
-      2,
-      3,
-      4,
-      5,
-      6
-    ],
-    "name": "JAL_OKI_ITAMI",
-    "mode": "AIR",
-    "operator_id": "JAL",
-    "service_id": "jal_oki_itami_20270105_20270131",
+    "service_id": "jal_oki_itami_20270104_20270104",
     "vehicle_id": "JAL2331",
     "departure": "AIRPORT_ITAMI",
     "departure_type": "AIRPORT",
@@ -208,85 +208,7 @@
     "status": 0
   },
   {
-    "trip_id": "8233109",
-    "start_date": "2027-02-01",
-    "end_date": "2027-02-28",
-    "active_days": [
-      0,
-      1,
-      2,
-      3,
-      4,
-      5,
-      6
-    ],
-    "name": "JAL_OKI_ITAMI",
-    "mode": "AIR",
-    "operator_id": "JAL",
-    "service_id": "jal_oki_itami_20270201_20270228",
-    "vehicle_id": "JAL2331",
-    "departure": "AIRPORT_ITAMI",
-    "departure_type": "AIRPORT",
-    "departure_time": "13:35",
-    "arrival": "AIRPORT_OKI",
-    "arrival_type": "AIRPORT",
-    "arrival_time": "14:25",
-    "status": 0
-  },
-  {
-    "trip_id": "8233110",
-    "start_date": "2027-03-01",
-    "end_date": "2027-03-27",
-    "active_days": [
-      0,
-      1,
-      2,
-      3,
-      4,
-      5,
-      6
-    ],
-    "name": "JAL_OKI_ITAMI",
-    "mode": "AIR",
-    "operator_id": "JAL",
-    "service_id": "jal_oki_itami_20270301_20270327",
-    "vehicle_id": "JAL2331",
-    "departure": "AIRPORT_ITAMI",
-    "departure_type": "AIRPORT",
-    "departure_time": "13:50",
-    "arrival": "AIRPORT_OKI",
-    "arrival_type": "AIRPORT",
-    "arrival_time": "14:35",
-    "status": 0
-  },
-  {
     "trip_id": "8233201",
-    "start_date": "2026-06-01",
-    "end_date": "2026-06-30",
-    "active_days": [
-      0,
-      1,
-      2,
-      3,
-      4,
-      5,
-      6
-    ],
-    "name": "JAL_OKI_ITAMI",
-    "mode": "AIR",
-    "operator_id": "JAL",
-    "service_id": "jal_oki_itami_20260601_20260630",
-    "vehicle_id": "JAL2332",
-    "departure": "AIRPORT_OKI",
-    "departure_type": "AIRPORT",
-    "departure_time": "15:05",
-    "arrival": "AIRPORT_ITAMI",
-    "arrival_type": "AIRPORT",
-    "arrival_time": "15:45",
-    "status": 0
-  },
-  {
-    "trip_id": "8233202",
     "start_date": "2026-07-01",
     "end_date": "2026-07-31",
     "active_days": [
@@ -312,7 +234,7 @@
     "status": 0
   },
   {
-    "trip_id": "8233203",
+    "trip_id": "8233202",
     "start_date": "2026-08-01",
     "end_date": "2026-08-28",
     "active_days": [
@@ -338,7 +260,7 @@
     "status": 0
   },
   {
-    "trip_id": "8233204",
+    "trip_id": "8233203",
     "start_date": "2026-08-29",
     "end_date": "2026-10-24",
     "active_days": [
@@ -364,7 +286,7 @@
     "status": 0
   },
   {
-    "trip_id": "8233205",
+    "trip_id": "8233204",
     "start_date": "2026-10-25",
     "end_date": "2026-11-30",
     "active_days": [
@@ -390,9 +312,9 @@
     "status": 0
   },
   {
-    "trip_id": "8233206",
+    "trip_id": "8233205",
     "start_date": "2026-12-01",
-    "end_date": "2026-12-17",
+    "end_date": "2026-12-25",
     "active_days": [
       0,
       1,
@@ -405,7 +327,7 @@
     "name": "JAL_OKI_ITAMI",
     "mode": "AIR",
     "operator_id": "JAL",
-    "service_id": "jal_oki_itami_20261201_20261217",
+    "service_id": "jal_oki_itami_20261201_20261225",
     "vehicle_id": "JAL2332",
     "departure": "AIRPORT_OKI",
     "departure_type": "AIRPORT",
@@ -416,8 +338,34 @@
     "status": 0
   },
   {
+    "trip_id": "8233206",
+    "start_date": "2026-12-26",
+    "end_date": "2027-01-03",
+    "active_days": [
+      0,
+      1,
+      2,
+      3,
+      4,
+      5,
+      6
+    ],
+    "name": "JAL_OKI_ITAMI",
+    "mode": "AIR",
+    "operator_id": "JAL",
+    "service_id": "jal_oki_itami_20261226_20270103",
+    "vehicle_id": "JAL2332",
+    "departure": "AIRPORT_OKI",
+    "departure_type": "AIRPORT",
+    "departure_time": "13:15",
+    "arrival": "AIRPORT_ITAMI",
+    "arrival_type": "AIRPORT",
+    "arrival_time": "13:55",
+    "status": 0
+  },
+  {
     "trip_id": "8233207",
-    "start_date": "2026-12-18",
+    "start_date": "2027-01-04",
     "end_date": "2027-01-04",
     "active_days": [
       0,
@@ -431,33 +379,7 @@
     "name": "JAL_OKI_ITAMI",
     "mode": "AIR",
     "operator_id": "JAL",
-    "service_id": "jal_oki_itami_20261218_20270104",
-    "vehicle_id": "JAL2332",
-    "departure": "AIRPORT_OKI",
-    "departure_type": "AIRPORT",
-    "departure_time": "13:15",
-    "arrival": "AIRPORT_ITAMI",
-    "arrival_type": "AIRPORT",
-    "arrival_time": "13:55",
-    "status": 0
-  },
-  {
-    "trip_id": "8233208",
-    "start_date": "2027-01-05",
-    "end_date": "2027-01-31",
-    "active_days": [
-      0,
-      1,
-      2,
-      3,
-      4,
-      5,
-      6
-    ],
-    "name": "JAL_OKI_ITAMI",
-    "mode": "AIR",
-    "operator_id": "JAL",
-    "service_id": "jal_oki_itami_20270105_20270131",
+    "service_id": "jal_oki_itami_20270104_20270104",
     "vehicle_id": "JAL2332",
     "departure": "AIRPORT_OKI",
     "departure_type": "AIRPORT",
@@ -468,61 +390,9 @@
     "status": 0
   },
   {
-    "trip_id": "8233209",
-    "start_date": "2027-02-01",
-    "end_date": "2027-02-28",
-    "active_days": [
-      0,
-      1,
-      2,
-      3,
-      4,
-      5,
-      6
-    ],
-    "name": "JAL_OKI_ITAMI",
-    "mode": "AIR",
-    "operator_id": "JAL",
-    "service_id": "jal_oki_itami_20270201_20270228",
-    "vehicle_id": "JAL2332",
-    "departure": "AIRPORT_OKI",
-    "departure_type": "AIRPORT",
-    "departure_time": "14:55",
-    "arrival": "AIRPORT_ITAMI",
-    "arrival_type": "AIRPORT",
-    "arrival_time": "15:35",
-    "status": 0
-  },
-  {
-    "trip_id": "8233210",
-    "start_date": "2027-03-01",
-    "end_date": "2027-03-27",
-    "active_days": [
-      0,
-      1,
-      2,
-      3,
-      4,
-      5,
-      6
-    ],
-    "name": "JAL_OKI_ITAMI",
-    "mode": "AIR",
-    "operator_id": "JAL",
-    "service_id": "jal_oki_itami_20270301_20270327",
-    "vehicle_id": "JAL2332",
-    "departure": "AIRPORT_OKI",
-    "departure_type": "AIRPORT",
-    "departure_time": "15:05",
-    "arrival": "AIRPORT_ITAMI",
-    "arrival_type": "AIRPORT",
-    "arrival_time": "15:45",
-    "status": 0
-  },
-  {
     "trip_id": "8343301",
-    "start_date": "2026-06-01",
-    "end_date": "2027-03-27",
+    "start_date": "2026-07-01",
+    "end_date": "2027-01-04",
     "active_days": [
       0,
       1,
@@ -535,7 +405,7 @@
     "name": "JAL_OKI_IZUMO",
     "mode": "AIR",
     "operator_id": "JAL",
-    "service_id": "jal_oki_izumo_20260601_20270327",
+    "service_id": "jal_oki_izumo_20260701_20270104",
     "vehicle_id": "JAL3433",
     "departure": "AIRPORT_IZUMO",
     "departure_type": "AIRPORT",
@@ -547,8 +417,8 @@
   },
   {
     "trip_id": "8343401",
-    "start_date": "2026-06-01",
-    "end_date": "2027-03-27",
+    "start_date": "2026-07-01",
+    "end_date": "2027-01-04",
     "active_days": [
       0,
       1,
@@ -561,7 +431,7 @@
     "name": "JAL_OKI_IZUMO",
     "mode": "AIR",
     "operator_id": "JAL",
-    "service_id": "jal_oki_izumo_20260601_20270327",
+    "service_id": "jal_oki_izumo_20260701_20270104",
     "vehicle_id": "JAL3434",
     "departure": "AIRPORT_OKI",
     "departure_type": "AIRPORT",
