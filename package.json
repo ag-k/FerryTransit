@@ -18,7 +18,7 @@
     "pregenerate": "npm run gtfs:config:generate",
     "generate": "nuxt generate && node scripts/generate-service-worker.mjs",
     "preview": "nuxt preview",
-    "postinstall": "node scripts/patch-devtools-simple-git.mjs && nuxt prepare",
+    "postinstall": "nuxt prepare",
     "test": "vitest --run",
     "test:ui": "vitest --ui",
     "test:coverage": "vitest --coverage",
@@ -142,10 +142,10 @@
     "firebase-admin": "^13.10.0",
     "firebase-functions": "^7.2.5",
     "marked": "^16.4.2",
-    "nuxt": "4.5.1",
+    "nuxt": "4.6.2",
     "papaparse": "^5.5.4",
     "pinia": "^3.0.4",
-    "vue": "3.5.42",
+    "vue": "3.5.44",
     "vue-router": "^5.2.0",
     "vuedraggable": "^4.1.0"
   },
@@ -161,13 +161,13 @@
     "@testing-library/vue": "^8.1.0",
     "@types/node": "^24.13.2",
     "@vitejs/plugin-vue": "^6.0.7",
-    "@vitest/coverage-v8": "^4.1.11",
+    "@vitest/coverage-v8": "4.1.12",
     "@vue/test-utils": "^2.4.11",
     "autoprefixer": "^10.5.0",
     "concurrently": "^9.2.3",
     "eslint": "^8.57.1",
     "eslint-config-prettier": "^10.1.8",
-    "happy-dom": "^20.10.6",
+    "happy-dom": "^21.0.4",
     "npm-run-all": "^4.1.5",
     "portless": "^0.13.0",
     "postcss": "^8.5.23",
@@ -175,8 +175,8 @@
     "sass-loader": "^16.0.8",
     "tailwindcss": "^4.3.2",
     "unstorage": "^1.17.5",
-    "vite": "8.2.0",
-    "vitest": "^4.1.11",
+    "vite": "8.3.5",
+    "vitest": "4.1.12",
     "vue-tsc": "3.3.3"
   },
   "optionalDependencies": {
@@ -204,7 +204,7 @@
     "google-gax": "^5.0.6",
     "http-proxy-agent": "^9.0.0",
     "protobufjs": "^7.6.4",
-    "qs": "6.16.0",
+    "qs": "6.16.1",
     "fast-xml-parser": "^5.7.1",
     "retry-request": "^8.0.2",
     "shell-quote": "1.11.0",
@@ -214,18 +214,17 @@
     "@fastify/busboy": "3.2.2",
     "browserslist": "4.28.7",
     "baseline-browser-mapping": "2.11.0",
-    "devalue": "5.9.3",
     "nanoid": "3.3.18",
     "postcss-selector-parser@^7": "7.1.6",
     "proxy-addr": "2.0.8",
-    "seroval": "1.6.8",
+    "seroval": "1.6.9",
     "source-map-js": "1.2.2",
     "svgo": "4.1.0",
-    "undici": "8.10.2",
-    "vue": "$vue",
+    "undici": "8.12.2",
+    "vue": "3.5.44",
     "@nuxt/devtools": {
-      ".": "3.4.0",
-      "simple-git": "4.0.2"
-    }
+      ".": "3.4.3"
+    },
+    "vitest": "4.1.12"
   }
 }

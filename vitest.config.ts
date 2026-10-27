@@ -15,7 +15,7 @@ export default defineConfig({
     environment: 'happy-dom',
     environmentOptions: {
       happyDOM: {
-        settings: { disableJavaScriptEvaluation: true }
+        settings: { enableJavaScriptEvaluation: false }
       }
     },
     // Sandbox 環境での `child_process.kill(EPERM)` を避けるため、

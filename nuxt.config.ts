@@ -106,7 +106,7 @@ export default defineNuxtConfig({
     },
     server: {
       fs: {
-        strict: false,
+        strict: true,
       },
     },
   },
