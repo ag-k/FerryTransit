@@ -33,18 +33,23 @@
     "@tootallnate/once": "^3.0.1",
     "body-parser": "^1.20.6",
     "lodash": "4.18.1",
-    "qs": "^6.14.2",
+    "qs": "6.16.0",
     "fast-xml-parser": "^5.10.1",
     "http-proxy-agent": "^9.0.0",
     "protobufjs": "^7.6.5",
-    "js-yaml": "^4.2.0",
+    "js-yaml": "4.3.2",
     "minimatch": {
-      "brace-expansion": "5.0.8"
+      "brace-expansion": "5.0.12"
     },
     "retry-request": "^8.0.2",
     "teeny-request": "^10.1.2",
     "uuid": "^14.0.0",
-    "ts-deepmerge": "8.0.0"
+    "ts-deepmerge": "8.0.0",
+    "@grpc/grpc-js": "1.14.5",
+    "@fastify/busboy": "3.2.2",
+    "browserslist": "4.28.7",
+    "baseline-browser-mapping": "2.11.0",
+    "proxy-addr": "2.0.8"
   },
   "private": true
 }

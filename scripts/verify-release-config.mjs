@@ -117,7 +117,7 @@ export function verifyReleaseConfigContents(contents) {
   assert(androidNamespace === ANDROID_APPLICATION_ID, 'Android namespaceが本番値ではありません')
   assert(capacitorAppId === ANDROID_APPLICATION_ID, 'Capacitor appIdがAndroid本番値ではありません')
   assert(iosBundleId === IOS_BUNDLE_ID, 'iOS Bundle IDが本番値ではありません')
-  assert(iosDeploymentTarget === 14, 'iOS deployment targetが14.0ではありません')
+  assert(iosDeploymentTarget === 15, 'iOS deployment targetが15.0ではありません')
   assert(minSdk === 23, 'Android minSdkVersionが23ではありません')
   assert(compileSdk === 36 && targetSdk === 36, 'Android compileSdkVersion/targetSdkVersionが36ではありません')
 

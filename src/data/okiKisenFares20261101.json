@@ -1,0 +1,28 @@
+{
+  "effectiveFrom": "2026-11-01",
+  "name": "2026年11月1日改定",
+  "sourceUrl": "https://www.oki-kisen.co.jp/files/original/2026100514465211836ff81a4.pdf",
+  "note": "改定対象はフェリー自動車航送運賃のみ。旅客運賃は2026年6月1日改定版から変更なし。",
+  "categories": {
+    "hondo-oki": {
+      "seatClass": { "class2": 3870, "class2Special": 4990, "class1": 7000, "classSpecial": 8730, "specialRoom": 9790 },
+      "vehicle": { "under3m": 14990, "under4m": 19910, "under5m": 24930, "under6m": 29860, "under7m": 38730, "under8m": 44370, "under9m": 49880, "under10m": 55400, "under11m": 60900, "under12m": 66430, "over12mPer1m": 5530 }
+    },
+    "dozen-dogo": {
+      "seatClass": { "class2": 1760, "class2Special": 2340, "class1": 3210, "classSpecial": 4000, "specialRoom": 4540 },
+      "vehicle": { "under3m": 6110, "under4m": 8150, "under5m": 10210, "under6m": 12230, "under7m": 14390, "under8m": 16550, "under9m": 18600, "under10m": 20630, "under11m": 22680, "under12m": 24700, "over12mPer1m": 2050 }
+    },
+    "beppu-hishiura": {
+      "seatClass": { "class2": 440, "class2Special": 680, "class1": 690, "classSpecial": 880, "specialRoom": 1220 },
+      "vehicle": { "under3m": 1040, "under4m": 1380, "under5m": 1740, "under6m": 2080, "under7m": 2440, "under8m": 2800, "under9m": 3130, "under10m": 3490, "under11m": 3830, "under12m": 4160, "over12mPer1m": 340 }
+    },
+    "hishiura-kuri": {
+      "seatClass": { "class2": 860, "class2Special": 1150, "class1": 1530, "classSpecial": 1910, "specialRoom": 2260 },
+      "vehicle": { "under3m": 1660, "under4m": 2230, "under5m": 2770, "under6m": 3320, "under7m": 4040, "under8m": 4630, "under9m": 5180, "under10m": 5760, "under11m": 6350, "under12m": 6920, "over12mPer1m": 570 }
+    },
+    "kuri-beppu": {
+      "seatClass": { "class2": 860, "class2Special": 1150, "class1": 1530, "classSpecial": 1910, "specialRoom": 2260 },
+      "vehicle": { "under3m": 1660, "under4m": 2230, "under5m": 2770, "under6m": 3320, "under7m": 4040, "under8m": 4630, "under9m": 5180, "under10m": 5760, "under11m": 6350, "under12m": 6920, "over12mPer1m": 570 }
+    }
+  }
+}

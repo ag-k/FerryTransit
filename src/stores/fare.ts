@@ -27,8 +27,8 @@ const normalizeFerryMainlandPort = (port: string): string =>
     : port
 
 const toDate = (value: string): Date => {
-  // ISO8601日付を日時型へ変換。無効な値の場合は1970-01-01扱い。
-  const parsed = new Date(value)
+  // 日付のみの適用開始日は日本時間の午前0時として扱う。
+  const parsed = new Date(/^\d{4}-\d{2}-\d{2}$/.test(value) ? `${value}T00:00:00+09:00` : value)
   return Number.isNaN(parsed.getTime()) ? new Date(DEFAULT_EFFECTIVE_FROM) : parsed
 }
 

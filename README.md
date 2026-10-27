@@ -89,7 +89,10 @@ npm run dev
 - **データベース**: Firebase Firestore
 - **ストレージ**: Firebase Storage
 - **テスト**: Vitest + Vue Test Utils（ユニット）、Playwright（E2E）
-- **モバイル**: Capacitor 7.4.1
+- **モバイル**: Capacitor 7.6.9（iOS 15以降 / Android API 23以降）
+
+iOSの対応下限は15です。次回の新バージョンをiOS 14へインストール・更新することはできません。
+XcodeプロジェクトのDebug/Release両構成と、`cap sync ios`が生成するSwiftPM設定で下限を15に揃えています。
 
 ## 主な機能
 

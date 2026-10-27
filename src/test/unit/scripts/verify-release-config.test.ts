@@ -28,7 +28,7 @@ function fixture(overrides: Record<string, string> = {}) {
     `,
     iosProject: `
       CURRENT_PROJECT_VERSION = 24000;
-      IPHONEOS_DEPLOYMENT_TARGET = 14.0;
+      IPHONEOS_DEPLOYMENT_TARGET = 15.0;
       MARKETING_VERSION = 2.4;
       PRODUCT_BUNDLE_IDENTIFIER = "com.naturebot-lab.FerryTransit";
     `,
@@ -46,7 +46,7 @@ describe('verifyReleaseConfigContents', () => {
       releaseDate: '2026-07-14',
       iosBundleId: 'com.naturebot-lab.FerryTransit',
       androidApplicationId: 'com.naturebotlab.ferrytransit',
-      iosDeploymentTarget: 14,
+      iosDeploymentTarget: 15,
       minSdk: 23,
       targetSdk: 36,
       firebaseProject: 'oki-ferryguide',
@@ -57,7 +57,7 @@ describe('verifyReleaseConfigContents', () => {
     expect(() => verifyReleaseConfigContents(fixture({
       iosProject: `
         CURRENT_PROJECT_VERSION = 24001;
-        IPHONEOS_DEPLOYMENT_TARGET = 14.0;
+        IPHONEOS_DEPLOYMENT_TARGET = 15.0;
         MARKETING_VERSION = 2.4;
         PRODUCT_BUNDLE_IDENTIFIER = "com.naturebot-lab.FerryTransit";
       `,
@@ -74,6 +74,20 @@ describe('verifyReleaseConfigContents', () => {
         'NUXT_PUBLIC_FIREBASE_STORAGE_BUCKET=oki-ferryguide-dev.firebasestorage.app',
       ].join('\n'),
     }))).toThrow('Firebase Project IDが本番値ではありません')
+  })
+
+  it('旧サポート下限のiOS 14を拒否する', () => {
+    const contents = fixture()
+    expect(() => verifyReleaseConfigContents(fixture({
+      iosProject: contents.iosProject.replace('15.0', '14.0'),
+    }))).toThrow('iOS deployment targetが15.0ではありません')
+  })
+
+  it('構成間で混在するiOS deployment targetを拒否する', () => {
+    const contents = fixture()
+    expect(() => verifyReleaseConfigContents(fixture({
+      iosProject: `${contents.iosProject}\nIPHONEOS_DEPLOYMENT_TARGET = 14.0;`,
+    }))).toThrow('iOS deployment targetが構成間で不一致です')
   })
 
   it('Android targetSdk 36未満を拒否する', () => {

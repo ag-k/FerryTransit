@@ -13,6 +13,11 @@ export default defineConfig({
   test: {
     globals: true,
     environment: 'happy-dom',
+    environmentOptions: {
+      happyDOM: {
+        settings: { disableJavaScriptEvaluation: true }
+      }
+    },
     // Sandbox 環境での `child_process.kill(EPERM)` を避けるため、
     // 子プロセスではなく worker_threads を使う。
     pool: 'threads',

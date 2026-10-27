@@ -8,8 +8,7 @@ def releaseSigningValues = [
 ]
 def configuredReleaseSigningValues = releaseSigningValues.findAll { key, value -> value?.trim() }
 def hasCompleteReleaseSigning = configuredReleaseSigningValues.size() == releaseSigningValues.size()
-de
-interface requestedReleaseArtifact = gradle.startParameter.taskNames.any { taskName ->
+def requestedReleaseArtifact = gradle.startParameter.taskNames.any { taskName ->
     def normalizedTaskName = taskName.toLowerCase()
     (normalizedTaskName.contains('bundle') || normalizedTaskName.contains('assemble')) &&
         normalizedTaskName.contains('release')

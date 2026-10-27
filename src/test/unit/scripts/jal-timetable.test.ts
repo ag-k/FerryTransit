@@ -1,5 +1,4 @@
 import { describe, expect, it } from "vitest";
-import { readFileSync } from "fs";
 import { resolve } from "path";
 import { pathToFileURL } from "url";
 
@@ -41,10 +40,6 @@ const outbound = {
   departure: "AIRPORT_ITAMI",
   arrival: "AIRPORT_OKI",
 };
-
-const publishedTrips = JSON.parse(
-  readFileSync(resolve("gtfs/raw/air/jal_oki_timetable.json"), "utf-8"),
-) as Array<Record<string, unknown>>;
 
 describe("JAL timetable parser", () => {
   it("公式サイトの掲載期間をISO日付へ変換する", () => {
@@ -206,6 +201,45 @@ describe("JAL timetable parser", () => {
 });
 
 describe("JAL 2026年度冬ダイヤ", () => {
+  // 自動取得で変わる公開JSONではなく、固定入力で期間分割を検証する。
+  // この入力は解析の回帰テスト用であり、最新の公式ダイヤを表すものではない。
+  const schedules = [
+    ["20261025_20261130", ["12:20", "13:10"], ["13:40", "14:20"], ""],
+    ["20261201_20270131", ["12:30", "13:20"], ["13:50", "14:30"], "12月18日～1月4日35分早発"],
+    ["20270201_20270228", ["13:35", "14:25"], ["14:55", "15:35"], ""],
+    ["20270301_20270327", ["13:50", "14:35"], ["15:05", "15:45"], ""],
+  ] as const;
+  const observations = schedules.flatMap(([value, outboundTimes, inboundTimes, remarks]) => [
+    {
+      route,
+      direction: outbound,
+      period: parsePublicationPeriod(value),
+      row: { flight: "JAL2331", departureTime: outboundTimes[0], arrivalTime: outboundTimes[1], remarks },
+    },
+    {
+      route,
+      direction: { departure: "AIRPORT_OKI", arrival: "AIRPORT_ITAMI" },
+      period: parsePublicationPeriod(value),
+      row: { flight: "JAL2332", departureTime: inboundTimes[0], arrivalTime: inboundTimes[1], remarks },
+    },
+  ]);
+  const izumoRoute = { name: "JAL_OKI_IZUMO", slug: "jal_oki_izumo" };
+  const publishedTrips = buildJalTimetableTrips([
+    ...observations,
+    {
+      route: izumoRoute,
+      direction: { departure: "AIRPORT_IZUMO", arrival: "AIRPORT_OKI" },
+      period: parsePublicationPeriod("20260601_20270327"),
+      row: { flight: "JAL3433", departureTime: "09:00", arrivalTime: "09:30", remarks: "" },
+    },
+    {
+      route: izumoRoute,
+      direction: { departure: "AIRPORT_OKI", arrival: "AIRPORT_IZUMO" },
+      period: parsePublicationPeriod("20260601_20270327"),
+      row: { flight: "JAL3434", departureTime: "10:00", arrivalTime: "10:30", remarks: "" },
+    },
+  ]);
+
   it("伊丹線の全期間と時刻を反映する", () => {
     const winterTrips = publishedTrips
       .filter((trip) => trip.name === "JAL_OKI_ITAMI" && String(trip.start_date) >= "2026-10-25")

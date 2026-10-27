@@ -304,6 +304,38 @@ describe('useFareStore', () => {
   })
 
   describe('version selection', () => {
+    it('applies the November vehicle fare from midnight in Japan', async () => {
+      const makeVersion = (id: string, effectiveFrom: string, vehiclePrice: number): VersionWithLegacyFares => ({
+        id,
+        vesselType: 'ferry',
+        effectiveFrom,
+        routes: [{
+          id: 'hondo-saigo',
+          departure: 'HONDO',
+          arrival: 'SAIGO',
+          fares: { ...routeFare(3870), vehicle: vehicleFare(vehiclePrice) }
+        }]
+      })
+      const fareStore = await loadStoreWith(createFareMaster({
+        versions: [
+          makeVersion('june', '2026-06-01', 13750),
+          makeVersion('november', '2026-11-01', 14990)
+        ]
+      }))
+
+      for (const [date, expectedVersion, expectedVehicleFare] of [
+        ['2026-10-31T14:59:59.999Z', 'june', 13750],
+        ['2026-10-31T15:00:00.000Z', 'november', 14990],
+        ['2026-10-31T23:59:59.999Z', 'november', 14990],
+        ['2026-11-01T00:00:00.000Z', 'november', 14990]
+      ] as const) {
+        const options = { date: new Date(date), vesselType: 'ferry' as const }
+        expect(fareStore.getActiveVersion('ferry', options)?.id).toBe(expectedVersion)
+        expect(fareStore.getFareByRoute('HONDO', 'SAIGO', options)?.fares?.vehicle?.under3m).toBe(expectedVehicleFare)
+        expect(fareStore.getRoutesByVesselType('ferry', options)[0]?.versionId).toBe(expectedVersion)
+      }
+    })
+
     it('sorts versions by effective date and chooses the active version for the target date', async () => {
       const fareStore = await loadStoreWith(createFareMaster({
         versions: [

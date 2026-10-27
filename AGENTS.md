@@ -60,7 +60,7 @@ npm run build-prod
 ### iOS / Android アプリ版QA
 - `npm run cap:ios:build` / `npm run cap:android:build` は、本番 Web アセットの生成と各ネイティブプロジェクトへの `cap sync` までであり、ストア提出物の完成ではない。その後に Xcode の Release Archive と Android の `./android/gradlew -p android bundleRelease` を成功させる。
 - 最終判定は IDE の Debug 実行ではなく、同じ Release Archive/AAB を TestFlight と Google Play 内部テストへ配布し、そこからインストールした実機で行う。ストア署名、アプリ名、アイコン、バージョン、ビルド番号、プライバシー情報、スクリーンショット、リリースノートも確認する。
-- 端末は iOS/Android とも最新 OS を含め、可能ならサポート下限（iOS 14 / Android API 23）付近の OS、画面の小さい端末と大きい端末を含める。iPad/タブレットを配布対象にする場合はそのレイアウトも確認する。
+- 端末は iOS/Android とも最新 OS を含め、可能ならサポート下限（iOS 15 / Android API 23）付近の OS、画面の小さい端末と大きい端末を含める。iPad/タブレットを配布対象にする場合はそのレイアウトも確認する。
 - 共通の公開画面QAに加え、初回/再起動/バックグラウンド復帰、スプラッシュ、ステータスバー、セーフエリア、下部ナビゲーション、縦横回転、ソフトウェアキーボード、外部リンクを確認する。
 - Android は物理戻るボタン/ジェスチャーで、履歴がある場合は前画面へ、ルート画面では意図どおり終了することを確認する。iOS はスワイプバック、ステータスバー文字色、ノッチ/Dynamic Island 周辺を確認する。
 - iOS は `ferrytransit://` のコールド/ウォーム起動を確認し、Android も deep link を配布対象にする場合は対応する intent で確認する。両 OS で通信切断→復帰、キャッシュ利用、機内モード、日付変更を確認する。設定・お気に入り・履歴が再起動後も保持され、更新インストールでは保持、削除後の再インストールでは期待どおり初期化されることを確認する。
