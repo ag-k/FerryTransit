@@ -278,6 +278,7 @@ export interface TransitSegment {
   gate?: string;
   status: number;
   fare: number;
+  fareStatus?: 'KNOWN' | 'VARIABLE' | 'UNAVAILABLE' | 'FREE' | 'WALK';
   passengerFare?: number;
   vehicleFare?: number;
 }

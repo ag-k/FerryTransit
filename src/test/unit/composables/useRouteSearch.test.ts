@@ -2759,7 +2759,30 @@ describe("useRouteSearch", () => {
       expect(dominatedTransfer).toBeUndefined();
     });
 
-    it("should remove transfer routes dominated by direct-like routes and keep earlier-arriving transfers (BUG-003)", async () => {
+    it.each(["HONDO", "HONDO_SAKAIMINATO"])("keeps Shirashima via Beppu + Isokaze alongside Rainbow Jet from %s", async (departure) => {
+      const store = useFerryStore();
+      store.hondoPorts = ["HONDO_SHICHIRUI", "HONDO_SAKAIMINATO"];
+      // Published November 2026 timetable: Shirashima continues through Kuri.
+      store.timetableData = [
+        { tripId: 986, nextId: 987, name: "FERRY_SHIRASHIMA", departure: "HONDO_SAKAIMINATO", departureTime: "14:10", arrival: "KURI", arrivalTime: "16:35" },
+        { tripId: 987, name: "FERRY_SHIRASHIMA", departure: "KURI", departureTime: "16:40", arrival: "BEPPU", arrivalTime: "17:10" },
+        { tripId: 614, name: "ISOKAZE", departure: "BEPPU", departureTime: "17:20", arrival: "HISHIURA", arrivalTime: "17:27" },
+        { tripId: 1036, nextId: 1037, name: "RAINBOWJET", departure: "HONDO_SAKAIMINATO", departureTime: "15:10", arrival: "SAIGO", arrivalTime: "16:33" },
+        { tripId: 1037, name: "RAINBOWJET", departure: "SAIGO", departureTime: "16:39", arrival: "HISHIURA", arrivalTime: "17:10" },
+      ].map(trip => createTestFerryTrip({ ...trip, startDate: "2026-11-01", endDate: "2026-11-30" }));
+      const { searchRoutes } = useRouteSearch();
+      for (const arrivalMode of [false, true]) {
+        const results = await searchRoutes(departure, "HISHIURA", new Date("2026-11-17T00:00:00+09:00"), arrivalMode ? "18:00" : "00:00", arrivalMode, false);
+        const transfer = results.find(route => route.segments.map(segment => segment.ship).join("|") === "FERRY_SHIRASHIMA|ISOKAZE");
+        expect(transfer).toBeDefined();
+        expect(transfer?.segments[0]?.arrival).toBe("BEPPU");
+        expect(transfer?.arrivalTime.getHours()).toBe(17);
+        expect(transfer?.arrivalTime.getMinutes()).toBe(27);
+        expect(results.some(route => route.segments.length === 1 && route.segments[0]?.ship === "RAINBOWJET")).toBe(true);
+      }
+    });
+
+    it("should keep alternatives when fares cannot be compared, even with a faster direct route", async () => {
       const store = useFerryStore();
       store.timetableData = [
         createTestFerryTrip({
@@ -2818,7 +2841,7 @@ describe("useRouteSearch", () => {
         route.segments.map((segment) => segment.tripId).join("|")
       );
       expect(routeTripIds).toContain("1000");
-      expect(routeTripIds).not.toContain("1001|1002");
+      expect(routeTripIds).toContain("1001|1002");
       expect(routeTripIds).toContain("1003|1004");
     });
 
