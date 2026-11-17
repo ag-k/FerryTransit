@@ -26,6 +26,7 @@ import {
   loadBusTripsForRoute,
 } from "@/utils/gtfsBusTimetable";
 import { summarizeTransitRouteFare } from "@/utils/transitFare";
+import { isTransferRouteDominated } from "@/utils/transitRouteDominance";
 
 const WALK_TRANSFER_MINUTES = 3;
 const WALK_SEGMENT_SHIP = "WALK";
@@ -139,18 +140,9 @@ export const useRouteSearch = () => {
         return true;
       }
 
-      return !singleSegmentRoutes.some((directRoute) => {
-        const directDeparture = directRoute.departureTime.getTime();
-        const directArrival = directRoute.arrivalTime.getTime();
-        const routeDeparture = route.departureTime.getTime();
-        const routeArrival = route.arrivalTime.getTime();
-
-        return (
-          directDeparture >= routeDeparture &&
-          directArrival <= routeArrival &&
-          (directDeparture > routeDeparture || directArrival < routeArrival)
-        );
-      });
+      return !singleSegmentRoutes.some((directRoute) =>
+        isTransferRouteDominated(route, directRoute)
+      );
     });
   };
 
