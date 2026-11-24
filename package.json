@@ -28,6 +28,8 @@
     "test:integration": "vitest run src/test/integration/",
     "test:integration:watch": "vitest src/test/integration/",
     "test:helpers": "vitest run src/test/unit/api/helpers.test.ts",
+    "forecast:collect": "node scripts/forecast/collect-weekly-outlook.mjs",
+    "forecast:test": "vitest run src/test/unit/utils/weeklyOutlook.test.ts src/test/unit/scripts/weeklyOutlookCollector.test.ts",
     "test:all": "vitest run src/test/unit/api/ src/test/integration/",
     "test:e2e": "playwright test --workers=1",
     "test:e2e:prod": "PLAYWRIGHT_STATIC_ROOT=.output/public PLAYWRIGHT_PORT=3031 playwright test",
