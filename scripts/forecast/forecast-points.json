@@ -1,0 +1,26 @@
+{
+  "schemaVersion": 1,
+  "purpose": "週間見通しの取得処理を検証するための海上代表点",
+  "routeValidated": false,
+  "note": "手動で選んだ試験点です。実際の航跡、港内の波・風、船舶ごとの運航判断を代表することは未検証です。APIが返す海上格子の座標も原データに保存します。",
+  "points": [
+    {
+      "id": "mainland-offshore",
+      "name": "本土沖（試験点）",
+      "latitude": 35.75,
+      "longitude": 133.1
+    },
+    {
+      "id": "oki-mainland-midpoint",
+      "name": "本土・隠岐中間（試験点）",
+      "latitude": 35.9,
+      "longitude": 133.05
+    },
+    {
+      "id": "oki-south-offshore",
+      "name": "隠岐諸島南側（試験点）",
+      "latitude": 36.05,
+      "longitude": 133.05
+    }
+  ]
+}
